@@ -74,6 +74,9 @@ exports.deleteAccount = onCall({ region: REGION, maxInstances: 5, timeoutSeconds
   }
 });
 
+// notifications push (appareils enregistrés dans push_tokens) à chaque nouvelle notification
+exports.pushOnNotification = require("./push").createPush({ db, messaging: admin.messaging(), region: REGION });
+
 // le 1er de chaque mois : clôture du concours photo précédent (gagnant, carte spéciale) et ouverture du suivant
 exports.monthlyContest = onSchedule({ schedule: "10 0 1 * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.monthlyContest(); });
 

@@ -78,10 +78,26 @@
       <div class="club-cols"><div>
         ${mem ? `<form id="club-post-form" class="club-post-form"><textarea id="club-post-text" maxlength="500" rows="2" placeholder="Un message pour le club…" aria-label="Message au club"></textarea><button type="submit" class="cta-btn fill-btn compact-btn">Publier</button></form>` : `<p class="lap-meta">Rejoins le club pour publier dans son fil.</p>`}
         <div class="feed-list">${posts.length ? posts.map((p) => `<div class="feed-item">${C.avatarImg(p.avatar, "feed-avatar")}<span class="feed-text"><a href="#/pilote/${encodeURIComponent(p.uid)}"><b>${C.esc(p.name || "Pilote")}</b></a> ${C.esc(p.text)}<span class="feed-when">${window.MACommunity ? window.MACommunity.ago(tsMs(p.createdAt)) : ""}${C.user && (C.user.uid === p.uid || C.isAdmin) ? ` · <button type="button" class="cmt-del" data-club-post-del="${C.esc(p.id)}" aria-label="Supprimer">🗑</button>` : ""}</span></span></div>`).join("") : `<div class="empty-note">Le fil du club est vide.</div>`}</div></div>
-        <aside><h3 class="panel-section-title">Membres</h3><div class="club-members">${ms.slice().sort((a, b) => xp(b.uid) - xp(a.uid)).map((m) => `<a class="mini-row" href="#/pilote/${encodeURIComponent(m.uid)}">${C.avatarImg(m.avatar, "pilot-row-avatar")}<span class="mini-main"><b>${C.esc(m.name || "Pilote")}</b><small>${nf(xp(m.uid))} XP</small></span></a>`).join("") || `<div class="empty-note small">Personne pour l'instant.</div>`}</div>
+        <aside>${chatControls(club, ms)}<h3 class="panel-section-title">Membres</h3><div class="club-members">${ms.slice().sort((a, b) => xp(b.uid) - xp(a.uid)).map((m) => `<a class="mini-row" href="#/pilote/${encodeURIComponent(m.uid)}">${C.avatarImg(m.avatar, "pilot-row-avatar")}<span class="mini-main"><b>${C.esc(m.name || "Pilote")}</b><small>${nf(xp(m.uid))} XP</small></span></a>`).join("") || `<div class="empty-note small">Personne pour l'instant.</div>`}</div>
         ${cars.length ? `<h3 class="panel-section-title">Fiches ${C.esc(club.key)}</h3><div class="club-cars">${cars.slice(0, 12).map((c) => `<a href="#/voiture/${encodeURIComponent(c.id)}" class="chip">${C.esc(String(c.model).replace(/\s*\(.*$/, ""))}</a>`).join("")}</div>` : ""}</aside></div>`;
     const f = document.getElementById("club-post-form");
     if (f) f.addEventListener("submit", post);
+  }
+  /** canal de discussion du club : créé par le président, vice-président au choix parmi les membres */
+  function chatControls(club, ms) {
+    const esc = C.esc, owner = C.user && club.ownerUid === C.user.uid, staff = owner || (C.user && club.viceUid === C.user.uid), mem = isMember(club.id);
+    const vice = club.viceUid ? `<p class="lap-meta">🛡 Vice-président : <b>${esc(club.viceName || "Pilote")}</b></p>` : "";
+    const pres = ms.find((m) => m.uid === club.ownerUid);
+    let h = `<div class="club-chatbox"><h3 class="panel-section-title">Canal de discussion</h3><p class="lap-meta">👑 Président : <b>${esc((pres && pres.name) || "Pilote")}</b></p>${vice}`;
+    if (club.chatEnabled) h += `<a class="cta-btn fill-btn compact-btn" href="chat.html#club/${encodeURIComponent(club.id)}">💬 ${mem || C.isAdmin ? "Ouvrir le canal" : "Réservé aux membres"}</a><p class="lap-meta">Visible par les membres du club et par les administrateurs (modération).</p>`;
+    else if (owner) h += `<button type="button" class="cta-btn fill-btn compact-btn" data-club-chat-create="${esc(club.id)}">Créer le canal de discussion du club</button><p class="lap-meta">Un canal privé réservé aux membres, que tu modères.</p>`;
+    else h += `<p class="lap-meta">Le président n'a pas encore créé de canal de discussion.</p>`;
+    if (owner) h += `<div class="input-stack"><label for="club-vice">Vice-président</label><select id="club-vice" class="custom-select" data-club-vice="${esc(club.id)}"><option value="">Aucun</option>${ms.filter((m) => m.uid !== club.ownerUid).map((m) => `<option value="${esc(m.uid)}" ${club.viceUid === m.uid ? "selected" : ""}>${esc(m.name || "Pilote")}</option>`).join("")}</select></div>`;
+    return h + "</div>";
+  }
+  async function updateClub(id, patch) {
+    try { await C.db.collection("clubs").doc(id).update(patch); const c = clubs.find((x) => x.id === id); if (c) Object.assign(c, patch); renderClub(id); }
+    catch (e) { C.toast("Action impossible : " + e.message, "err"); }
   }
   async function join(id, silent) {
     if (!C.requireLogin()) return;
@@ -118,10 +134,12 @@
     document.addEventListener("click", (e) => {
       const k = e.target.closest("[data-club-kind]"); if (k) { kindFilter = k.dataset.clubKind; renderList(); return; }
       const j = e.target.closest("[data-club-join]"); if (j) { join(j.dataset.clubJoin); return; }
+      const cc = e.target.closest("[data-club-chat-create]"); if (cc) { updateClub(cc.dataset.clubChatCreate, { chatEnabled: true, chatName: String((clubs.find((x) => x.id === cc.dataset.clubChatCreate) || {}).name || "Club").slice(0, 60) }); return; }
       const d = e.target.closest("[data-club-del]"); if (d) { delClub(d.dataset.clubDel); return; }
       const pd = e.target.closest("[data-club-post-del]");
       if (pd && confirm("Supprimer ce message ?")) C.db.collection("club_posts").doc(pd.dataset.clubPostDel).delete().then(() => renderClub(cur)).catch((x) => C.toast("Suppression impossible : " + x.message, "err"));
     });
+    document.addEventListener("change", (e) => { const v = e.target.closest && e.target.closest("[data-club-vice]"); if (!v) return; const id = v.dataset.clubVice, m = members.find((x) => x.clubId === id && x.uid === v.value); updateClub(id, { viceUid: v.value, viceName: m ? String(m.name || "Pilote").slice(0, 40) : "" }); });
     document.addEventListener("ma:auth", () => { if (ctx.Router.is("clubs")) renderList(); else if (ctx.Router.current() && ctx.Router.current().name === "club") renderClub(cur); });
   });
 })();

@@ -35,7 +35,7 @@
     const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, trades: d.trades || 0, chal: d.chal || 0 });
     async function readCol(tx, uid) { const s = await tx.get(col("collections").doc(uid)); return s.exists ? Object.assign(core.blankCollection(), s.data()) : core.blankCollection(); }
     function writeCol(tx, uid, d) { core.recount(d); d.claimed = (d.claimed || []).slice(0, 190); d.updatedAt = ts(); tx.set(col("collections").doc(uid), d); }
-    const blankWeekly = (wk) => ({ week: wk, packs: 0, dailyDays: [], trades: 0, logs: { duel: 0, quiz: 0, share: 0 }, logDay: {}, claimed: [] });
+    const blankWeekly = (wk) => ({ week: wk, packs: 0, dailyDays: [], trades: 0, logs: { duel: 0, share: 0 }, logDay: {}, claimed: [], claimedDaily: [] });
     function normWeekly(s, wk) { const d = s.exists ? s.data() : null; return !d || d.week !== wk ? blankWeekly(wk) : Object.assign(blankWeekly(wk), d); }
     async function readWeekly(tx, uid, wk) { return normWeekly(await tx.get(col("weekly").doc(uid)), wk); }
     function writeWeekly(tx, uid, w) { w.updatedAt = ts(); tx.set(col("weekly").doc(uid), w); }
@@ -148,7 +148,7 @@
     }
 
     // ---------------------------------------------------------------- défis de la semaine
-    const LOGS = ["duel", "quiz", "share"];
+    const LOGS = ["duel", "share"];
     async function logAction(caller, data) {
       const type = data && data.type, uid = caller.uid, today = core.dayKey(now()), wk = core.weekKey(now());
       if (LOGS.indexOf(type) < 0) fail("invalid-argument", "Action inconnue.");
@@ -166,46 +166,61 @@
       return r.docs.filter((d) => tsMs(d.data()[tsField || "createdAt"]) >= start).length;
     }
     /** valeurs des défis fondés sur les données du site (le reste vient du compteur hebdomadaire) */
-    async function queryValues(uid, items) {
-      const start = core.weekStart(now()), out = {};
+    async function queryValues(uid, items, since) {
+      const start = since != null ? since : core.weekStart(now()), out = {};
       for (const ch of items) {
         const src = ch.src;
         if (src === "q:comments") out[ch.id] = await countSince("comments", "uid", uid, start);
         else if (src === "q:laps") out[ch.id] = await countSince("global_laps", "pilotUid", uid, start);
         else if (src === "q:likes") out[ch.id] = await countSince("likes", "uid", uid, start);
         else if (src === "q:reacts") out[ch.id] = await countSince("reactions", "uid", uid, start);
+        else if (src === "q:chat") out[ch.id] = await countSince("global_chat", "uid", uid, start, "timestamp");
         else if (src === "q:rsvps") out[ch.id] = await countSince("rsvps", "uid", uid, start);
         else if (src === "q:votes") out[ch.id] = await countSince("contest_votes", "uid", uid, start);
         else if (src === "state:wish") { const s = await col("wishlists").doc(uid).get(); out[ch.id] = s.exists && Array.isArray(s.data().ids) ? s.data().ids.length : 0; }
       }
       return out;
     }
-    function valueOf(ch, w, qv) {
+    function valueOf(ch, w, qv, daily) {
       const p = ch.src.split(":"), k = p[1];
+      if (daily) {
+        const today = core.dayKey(now());
+        if (p[0] === "counter") return k === "daily" ? (w.dailyDays.indexOf(today) >= 0 ? 1 : 0) : 0;
+        if (p[0] === "log") { const l = w.logDay && w.logDay[k]; return l && l.day === today ? l.n : 0; }
+        return qv[ch.id] || 0;
+      }
       if (p[0] === "counter") return k === "packs" ? w.packs : k === "daily" ? w.dailyDays.length : k === "trades" ? w.trades : 0;
       if (p[0] === "log") return (w.logs && w.logs[k]) || 0;
       return qv[ch.id] || 0;
     }
+    const dayStartMs = () => core.parisMidnight(core.dayKey(now()));
     async function weeklyStatus(caller) {
-      const uid = caller.uid, wk = core.weekKey(now()), items = core.weekChallenges(wk);
-      const [w, qv] = await Promise.all([col("weekly").doc(uid).get().then((s) => normWeekly(s, wk)), queryValues(uid, items)]);
+      const uid = caller.uid, wk = core.weekKey(now()), items = core.weekChallenges(wk), today = core.dayKey(now()), dch = core.dailyChallenge(today);
+      const [w, qv, dqv] = await Promise.all([col("weekly").doc(uid).get().then((s) => normWeekly(s, wk)), queryValues(uid, items), queryValues(uid, [dch], dayStartMs())]);
       const list = items.map((ch) => { const v = Math.min(ch.goal, valueOf(ch, w, qv)); return { id: ch.id, icon: ch.icon, label: ch.label, goal: ch.goal, value: v, done: v >= ch.goal, claimed: w.claimed.indexOf(ch.id) >= 0, reward: ch.reward }; });
-      return { week: wk, endsAt: core.weekEnd(now()), items: list, perfectBonus: core.PERFECT_WEEK_BONUS, allClaimed: list.every((x) => x.claimed) };
+      const dv = Math.min(dch.goal, valueOf(dch, w, dqv, true));
+      const daily = { id: dch.id, icon: dch.icon, label: dch.label, goal: dch.goal, value: dv, done: dv >= dch.goal, claimed: (w.claimedDaily || []).indexOf(today + ":" + dch.id) >= 0, reward: dch.reward, day: today };
+      return { week: wk, endsAt: core.weekEnd(now()), items: list, daily, perfectBonus: core.PERFECT_WEEK_BONUS, allClaimed: list.every((x) => x.claimed) };
     }
     async function claimChallenge(caller, data) {
-      const uid = caller.uid, wk = core.weekKey(now()), items = core.weekChallenges(wk), id = str(data && data.id, 40);
-      const ch = items.find((c) => c.id === id);
-      if (!ch) fail("not-found", "Ce défi ne fait pas partie de la semaine en cours.");
-      const qv = await queryValues(uid, [ch]);
+      const uid = caller.uid, wk = core.weekKey(now()), items = core.weekChallenges(wk), id = str(data && data.id, 40), today = core.dayKey(now());
+      const isDaily = id.indexOf("d-") === 0, dch = core.dailyChallenge(today);
+      const ch = isDaily ? (dch.id === id ? dch : null) : items.find((c) => c.id === id);
+      if (!ch) fail("not-found", isDaily ? "Ce n'est pas le défi du jour." : "Ce défi ne fait pas partie de la semaine en cours.");
+      const qv = await queryValues(uid, [ch], isDaily ? dayStartMs() : null);
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid), w = await readWeekly(tx, uid, wk);
-        if (w.claimed.indexOf(id) >= 0) fail("failed-precondition", "Récompense déjà récupérée.");
-        if (valueOf(ch, w, qv) < ch.goal) fail("failed-precondition", "Défi pas encore accompli.");
+        const key = today + ":" + id;
+        if (isDaily ? (w.claimedDaily || []).indexOf(key) >= 0 : w.claimed.indexOf(id) >= 0) fail("failed-precondition", "Récompense déjà récupérée.");
+        if (valueOf(ch, w, qv, isDaily) < ch.goal) fail("failed-precondition", "Défi pas encore accompli.");
         const r = ch.reward; let perfect = false;
         if (r.dust) d.dust += r.dust;
         if (r.bonus) d.bonus += r.bonus;
-        w.claimed.push(id); d.chal = (d.chal || 0) + 1;
-        if (items.every((c) => w.claimed.indexOf(c.id) >= 0)) { perfect = true; d.bonus += core.PERFECT_WEEK_BONUS; }
+        if (isDaily) { w.claimedDaily = (w.claimedDaily || []).concat([key]).slice(-14); }
+        else {
+          w.claimed.push(id); d.chal = (d.chal || 0) + 1;
+          if (items.every((c) => w.claimed.indexOf(c.id) >= 0)) { perfect = true; d.bonus += core.PERFECT_WEEK_BONUS; }
+        }
         writeCol(tx, uid, d); writeWeekly(tx, uid, w);
         return { reward: r, perfect, doc: view(d) };
       });
@@ -431,10 +446,10 @@
       vr.docs.forEach((d) => { const v = d.data(); const e = entries.find((x) => x.id === v.entry); if (e && v.uid !== e.uid) tally.set(e.id, tally.get(e.id) + 1); });
       const ranked = entries.map((e) => ({ e, votes: tally.get(e.id) })).sort((a, b) => b.votes - a.votes || tsMs(a.e.createdAt) - tsMs(b.e.createdAt));
       const results = ranked.slice(0, 3).map((r) => ({ entry: r.e.id, uid: r.e.uid, name: str(r.e.name, 40), photo: str(r.e.photo, 500), votes: r.votes }));
-      const win = ranked[0] ? ranked[0].e : null, label = core.monthLabel(month);
+      const custom = !/^\d{4}-\d{2}$/.test(month), win = ranked[0] ? ranked[0].e : null, label = custom ? str(cs.data().theme, 40) : core.monthLabel(month);
       if (win) {
         const sid = "sp-photo-" + month;
-        await col("special_cards").doc(sid).set({ name: "Photographe du mois", edition: "Concours photo · " + label, image: str(win.photo, 500), color: "gold", power: 0, speed: 0, zero: 0,
+        await col("special_cards").doc(sid).set({ name: custom ? "Gagnant du concours" : "Photographe du mois", edition: "Concours photo · " + label, image: str(win.photo, 500), color: "gold", power: 0, speed: 0, zero: 0,
           text: "« " + str(win.caption || cs.data().theme, 100) + " » — photo de " + str(win.name, 40), supply: 1, granted: 0, active: true, kind: "contest", createdAt: ts() });
         await adminGrantCard({ uid: "system", system: true }, { uid: win.uid, cardId: sid, qty: 1 });
         const dustTo = [null, 150, 80];
@@ -449,7 +464,7 @@
     }
     async function adminContest(caller, data) {
       await requireAdmin(caller);
-      const action = data && data.action, month = /^\d{4}-\d{2}$/.test(str(data && data.month, 7)) ? data.month : core.monthKey(now());
+      const action = data && data.action, month = /^[\w-]{4,40}$/.test(str(data && data.month, 40)) ? data.month : core.monthKey(now());
       if (action === "open") return openContest(month, data.theme);
       if (action === "close") return closeContest(month);
       if (action === "theme") { await col("contests").doc(month).update({ theme: str(data.theme, 80) }); return { ok: true }; }

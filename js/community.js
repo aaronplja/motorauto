@@ -101,7 +101,7 @@
       <div class="event-main">
         <span class="event-kind">${esc(KIND_LABEL[ev.kind] || "Sortie")}</span>
         <h3>${esc(ev.title)}</h3>
-        <div class="event-meta">📍 ${esc(ev.place)} · 🕒 ${d.toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</div>
+        <div class="event-meta">📍 ${esc([ev.place, ev.city].filter(Boolean).join(", "))}${ev.address ? " (" + esc(ev.address) + ")" : ""} · 🕒 ${d.toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</div>
         ${ev.description ? `<p class="event-desc">${esc(ev.description)}</p>` : ""}
         <div class="event-meta">Proposé par <b data-ev="profile" data-uid="${esc(ev.uid)}" style="cursor:pointer">${esc(ev.pilot || "Pilote")}</b></div>
         <div class="event-meta">${going.size} participant${going.size > 1 ? "s" : ""}${names ? " : " + names + (going.size > 4 ? "…" : "") : ""}</div>
@@ -170,7 +170,10 @@
         description: document.getElementById("ev-desc").value.trim().slice(0, 600), uid: C.user.uid, pilot: C.pilotName().slice(0, 40),
         avatar: String((C.profile && C.profile.avatar) || "").slice(0, 400), createdAt: C.FieldValue.serverTimestamp()
       };
-      if (window.MAMap) { const g = await window.MAMap.geocode(place); if (g) { doc.lat = g.lat; doc.lng = g.lng; } }
+      const city = (document.getElementById("ev-city") || {}).value, addr = (document.getElementById("ev-address") || {}).value;
+      if (city && city.trim()) doc.city = city.trim().slice(0, 80);
+      if (addr && addr.trim()) doc.address = addr.trim().slice(0, 160);
+      if (window.MAMap) { const g = (await window.MAMap.geocode(window.MAMap.evQuery(doc))) || (doc.city ? await window.MAMap.geocode(doc.city) : null) || (await window.MAMap.geocode(place)); if (g) { doc.lat = g.lat; doc.lng = g.lng; } }
       const ref = await C.db.collection("events").add(doc);
       postFeed("event", `propose une sortie : ${doc.title} (${doc.place})`, "#/communaute/evenements");
       C.closeModal(document.getElementById("event-modal"));

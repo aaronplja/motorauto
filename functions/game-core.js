@@ -101,29 +101,33 @@
 
   // ------------------------------------------------------------------ cartes
   const RAR = {
-    common: { id: "common", label: "Commune", dust: 5, craft: 30, odds: 0.62 },
+    common: { id: "common", label: "Commune", dust: 5, craft: 30, odds: 0.615 },
     rare: { id: "rare", label: "Rare", dust: 15, craft: 90, odds: 0.26 },
     epic: { id: "epic", label: "Épique", dust: 40, craft: 240, odds: 0.09 },
     legendary: { id: "legendary", label: "Légendaire", dust: 100, craft: 600, odds: 0.03 },
+    shiny: { id: "shiny", label: "Shiny", dust: 400, craft: 2400, odds: 0.005 },
     special: { id: "special", label: "Édition limitée", dust: 150, craft: 0, odds: 0 }
   };
-  const ORDER = ["legendary", "epic", "rare", "common"];          // raretés tirables, de la plus haute à la plus basse
+  const ORDER = ["shiny", "legendary", "epic", "rare", "common"];          // raretés tirables, de la plus haute à la plus basse
   const isSpecial = (id) => String(id).indexOf("sp-") === 0;
   /** puissance « de classement » : les voitures de course du Mans (identifiants lm-…) pèsent 60 % de leur puissance, pour ne pas écraser les voitures de route */
   const rankPower = (c) => (String(c.id).indexOf("lm-") === 0 ? c.power * 0.6 : c.power);
+  /** cartes « Shiny » (arc-en-ciel, ≈ 0,5 % par carte tirée) : voitures mythiques choisies à la main */
+  const SHINY = ["peugeot-205-t16", "peugeot-206-wrc", "nissan-skyline-gtr-r34", "nissan-gt-r-r35", "toyota-supra-a80-mk4", "ford-rs200", "ford-escort-rs-cosworth-t35", "audi-r8-v10", "honda-civic-ek9-type-r",
+    "lm-ford-gt40", "lm-porsche-917k", "lm-porsche-956", "lm-porsche-962c", "lm-mazda-787b", "lm-mclaren-f1-gtr", "lm-porsche-919"];
   /** rareté de chaque voiture selon son rang de puissance (égalités départagées par l'identifiant : même résultat partout) */
   function computeRarities(list) {
     const sorted = list.slice().sort((a, b) => (rankPower(b) - rankPower(a)) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const map = new Map();
     sorted.forEach((c, i) => {
       const p = i / Math.max(1, sorted.length - 1);
-      map.set(c.id, p < 0.06 || rankPower(c) >= 500 ? "legendary" : p < 0.2 ? "epic" : p < 0.5 ? "rare" : "common");
+      map.set(c.id, SHINY.indexOf(c.id) >= 0 ? "shiny" : p < 0.06 || rankPower(c) >= 500 ? "legendary" : p < 0.2 ? "epic" : p < 0.5 ? "rare" : "common");
     });
     return map;
   }
   function pickRarity(rng, min) {
     const x = rng(); let acc = 0;
-    for (const id of ["common", "rare", "epic", "legendary"]) {
+    for (const id of ["common", "rare", "epic", "legendary", "shiny"]) {
       acc += RAR[id].odds;
       if (x < acc) return min && ORDER.indexOf(id) > ORDER.indexOf(min) ? min : id;
     }
@@ -133,7 +137,7 @@
   function drawPack(rarities, ids, rng, pity) {
     const by = {}; ORDER.forEach((r) => { by[r] = []; });
     ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
-    const pick = (r) => { const list = by[r].length ? by[r] : ids; return list[Math.floor(rng() * list.length)]; };
+    const pick = (r) => { const list = by[r].length ? by[r] : (r === "shiny" && by.legendary.length ? by.legendary : ids); return list[Math.floor(rng() * list.length)]; };
     const out = [];
     for (let i = 0; i < 3; i++) out.push(pick(pickRarity(rng, pity && i === 2 ? "rare" : null)));
     if (pity && !out.some((id) => rarities.get(id) !== "common")) out[2] = pick("rare");
@@ -151,27 +155,43 @@
   /** src : counter:* (compté par le serveur), log:* (action signalée, 3 par jour maximum), q:* (compté dans les données du site) */
   const CHALLENGES = [
     { id: "packs3", icon: "🎴", label: "Ouvre 3 packs", goal: 3, src: "counter:packs", reward: { dust: 40 } },
+    { id: "packs5", icon: "📦", label: "Ouvre 5 packs", goal: 5, src: "counter:packs", reward: { dust: 70 } },
     { id: "daily3", icon: "📆", label: "Ouvre ton pack du jour 3 jours", goal: 3, src: "counter:daily", reward: { dust: 60 } },
     { id: "comment2", icon: "💬", label: "Commente 2 fiches", goal: 2, src: "q:comments", reward: { dust: 30 } },
+    { id: "comment5", icon: "🗨️", label: "Commente 5 fiches", goal: 5, src: "q:comments", reward: { dust: 60 } },
     { id: "duel1", icon: "🏁", label: "Fais un duel", goal: 1, src: "log:duel", reward: { dust: 25 } },
-    { id: "quiz1", icon: "🎯", label: "Fais le quiz", goal: 1, src: "log:quiz", reward: { dust: 20 } },
+    { id: "duel3", icon: "⚔️", label: "Fais 3 duels", goal: 3, src: "log:duel", reward: { dust: 50 } },
     { id: "share1", icon: "↗️", label: "Partage une fiche", goal: 1, src: "log:share", reward: { dust: 20 } },
+    { id: "share3", icon: "📣", label: "Partage 3 fiches", goal: 3, src: "log:share", reward: { dust: 45 } },
     { id: "lap1", icon: "⏱️", label: "Enregistre un chrono", goal: 1, src: "q:laps", reward: { bonus: 1 } },
     { id: "like5", icon: "❤️", label: "Aime 5 voitures", goal: 5, src: "q:likes", reward: { dust: 30 } },
+    { id: "like15", icon: "💖", label: "Aime 15 voitures", goal: 15, src: "q:likes", reward: { dust: 60 } },
     { id: "react3", icon: "🔥", label: "Réagis à 3 fiches (🔥 🏁 😍)", goal: 3, src: "q:reacts", reward: { dust: 25 } },
     { id: "rsvp1", icon: "📅", label: "Rejoins une sortie", goal: 1, src: "q:rsvps", reward: { dust: 40 } },
     { id: "vote1", icon: "📸", label: "Vote au concours photo", goal: 1, src: "q:votes", reward: { dust: 30 } },
+    { id: "chat5", icon: "💭", label: "Écris 5 messages dans le salon", goal: 5, src: "q:chat", reward: { dust: 30 } },
     { id: "trade1", icon: "🔄", label: "Réalise un échange de cartes", goal: 1, src: "counter:trades", reward: { bonus: 1 } },
     { id: "wish3", icon: "⭐", label: "Mets 3 cartes dans ta wishlist", goal: 3, src: "state:wish", reward: { dust: 20 } }
   ];
+  /** défi du jour (1 par jour, identique pour tous) : actions simples comptées depuis minuit (heure de Paris) */
+  const DAILY = [
+    { id: "d-pack", icon: "🎁", label: "Ouvre ton pack du jour", goal: 1, src: "counter:daily", reward: { dust: 15 } },
+    { id: "d-like3", icon: "❤️", label: "Aime 3 voitures", goal: 3, src: "q:likes", reward: { dust: 15 } },
+    { id: "d-comment1", icon: "💬", label: "Commente une fiche", goal: 1, src: "q:comments", reward: { dust: 15 } },
+    { id: "d-duel1", icon: "🏁", label: "Fais un duel", goal: 1, src: "log:duel", reward: { dust: 15 } },
+    { id: "d-share1", icon: "↗️", label: "Partage une fiche", goal: 1, src: "log:share", reward: { dust: 15 } },
+    { id: "d-react2", icon: "🔥", label: "Réagis à 2 fiches", goal: 2, src: "q:reacts", reward: { dust: 15 } },
+    { id: "d-chat3", icon: "💭", label: "Écris 3 messages dans le salon", goal: 3, src: "q:chat", reward: { dust: 15 } }
+  ];
   const hashStr = (s) => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h; };
   function mulberry(a) { return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  /** les 4 défis d'une semaine : identiques pour tous les pilotes, tirés au sort à partir du numéro de semaine */
+  /** les 10 défis d'une semaine : identiques pour tous les pilotes, tirés au sort à partir du numéro de semaine */
   function weekChallenges(wk) {
     const rnd = mulberry(hashStr("motorauto-" + wk)), pool = CHALLENGES.slice();
     for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
-    return pool.slice(0, 4);
+    return pool.slice(0, 10);
   }
+  function dailyChallenge(day) { return DAILY[hashStr("motorauto-day-" + day) % DAILY.length]; }
   const PERFECT_WEEK_BONUS = 1;
   const THEMES = ["Ma voiture au lever du soleil", "Détail mécanique", "Mon garage", "Route de rêve", "Voiture en mouvement", "Noir & blanc", "Mon plus beau reflet", "Sortie entre pilotes", "Voiture sous la pluie", "Intérieur et cockpit", "Avant / après", "Ma voiture de collection"];
 
@@ -179,6 +199,6 @@
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     RAR, ORDER, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount,
-    CHALLENGES, weekChallenges, PERFECT_WEEK_BONUS, THEMES
+    SHINY, CHALLENGES, DAILY, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

@@ -376,7 +376,7 @@
       const zone = document.createElement("div");
       zone.className = "social-zone";
       zone.innerHTML = `<div class="sheet-section-head">Avis de la communauté</div><div class="social-mount"></div>`;
-      if (recHead) { recHead.before(first); recHead.before(zone); } else { body.appendChild(first); body.appendChild(zone); }
+      if (recHead) { if (first) recHead.before(first); recHead.before(zone); } else { if (first) body.appendChild(first); body.appendChild(zone); }
       mount(zone.querySelector(".social-mount"), "cat", car.id, { ownerUid: null, title: car.brand + " " + car.model, link: "index.html#/voiture/" + encodeURIComponent(car.id) });
     }
     loadStats();

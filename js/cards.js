@@ -182,7 +182,7 @@
   function markSeen(id) { const s = seenSet(); if (!s.has(id)) { s.add(id); saveSeen(); } }
 
   // ------------------------------------------------------------------ ouverture d'un pack
-  const BURST = { rare: "#3b82f6", epic: "#a855f7", legendary: "#f59e0b", special: "#f472b6" };
+  const BURST = { rare: "#3b82f6", epic: "#a855f7", legendary: "#f59e0b", shiny: "#ff7ad9", special: "#cbd5e1" };
   const buzz = (p) => { try { if (navigator.vibrate) navigator.vibrate(p); } catch (_) { /* ignoré */ } };
   function sparks(el, n) {
     for (let i = 0; i < n; i++) {
@@ -192,7 +192,7 @@
     }
   }
   function showPack(results, dust, kind) {
-    const rank = (r) => (r === "special" ? 5 : 4 - ORDER.indexOf(r));
+    const rank = (r) => (r === "special" ? ORDER.length + 2 : ORDER.length - ORDER.indexOf(r));
     const best = results.reduce((b, r) => (rank(rarityOf(r.car)) > rank(rarityOf(b.car)) ? r : b), results[0]);
     const o = mountOverlay("pack", "Ouverture de pack", `<div class="pk3" id="pk3"><h2>Ton pack</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}" id="pk3-open" aria-label="Ouvrir le pack"><b>MOTOR<span>AUTO</span></b></button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`);
     const openBtn = o.querySelector("#pk3-open"); openBtn.focus();
@@ -217,7 +217,7 @@
         const rr = el.dataset.r;
         if (rr === "rare") buzz(15);
         else if (rr === "epic") { sparks(el, 10); buzz([20, 30, 20]); }
-        else if (rr === "legendary" || rr === "special") { sparks(el, 18); buzz([30, 40, 60]); }
+        else if (rr === "legendary" || rr === "shiny" || rr === "special") { sparks(el, 18); buzz([30, 40, 60]); }
         if (BURST[rr] && rr !== "rare") { o.style.setProperty("--burst", BURST[rr]); o.classList.remove("flash"); void o.offsetWidth; o.classList.add("flash"); }
         if (shown === results.length) finish();
       };

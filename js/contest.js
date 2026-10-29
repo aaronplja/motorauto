@@ -13,13 +13,20 @@
   let C = null, month = "", contest = null, entries = [], votes = [], mine = null, past = [], loadedAt = 0, busy = false, err = "", formOpen = false;
   const tsMs = (t) => (t && t.toMillis ? t.toMillis() : Number(t) || 0);
 
+  /** concours mis en avant : le dernier concours personnalisé ouvert, sinon celui du mois (même clôturé) */
+  function featured(list) {
+    const open = list.filter((c) => c.status === "open" && c.custom).sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt));
+    return open[0] || list.find((c) => c.id === G.monthKey()) || null;
+  }
+  const endText = (c) => { if (!c || c.status !== "open") return "concours terminé"; if (c.endsAt) { const d = Math.ceil((Date.parse(c.endsAt + "T23:59:59") - Date.now()) / 86400000); return d >= 0 ? "fin dans " + Math.max(1, d) + " jour" + (d > 1 ? "s" : "") : "se termine bientôt"; } const e = new Date(); e.setMonth(e.getMonth() + 1, 1); e.setHours(0, 0, 0, 0); const d = Math.max(1, Math.ceil((e - Date.now()) / 86400000)); return "fin dans " + d + " jour" + (d > 1 ? "s" : ""); };
   async function load(force) {
     if (!force && loadedAt && Date.now() - loadedAt < 15000) return;
     month = G.monthKey(); err = "";
     const all = await C.db.collection("contests").limit(60).get().catch((e) => { err = "Concours indisponible (règles Firestore à publier ?)."; return null; });
     const list = all ? all.docs.map((d) => Object.assign({ id: d.id }, d.data())) : [];
-    contest = list.find((c) => c.id === month) || null;
-    past = list.filter((c) => c.status === "closed" && c.id !== month).sort((a, b) => (a.id < b.id ? 1 : -1)).slice(0, 6);
+    contest = featured(list);
+    if (contest) month = contest.id;
+    past = list.filter((c) => c.status === "closed" && (!contest || c.id !== contest.id)).sort((a, b) => (tsMs(b.createdAt) - tsMs(a.createdAt)) || (a.id < b.id ? 1 : -1)).slice(0, 6);
     entries = []; votes = []; mine = null;
     if (contest) {
       const [er, vr, my] = await Promise.all([
@@ -39,13 +46,13 @@
 
   function heroHtml() {
     const esc = C.esc, open = contest && contest.status === "open";
-    const end = new Date(); end.setMonth(end.getMonth() + 1, 1); end.setHours(0, 0, 0, 0);
-    const days = Math.max(0, Math.ceil((end - Date.now()) / 86400000));
-    if (!contest) return `<div class="contest-hero off"><span class="contest-kicker">${esc(G.monthLabel(month))}</span><h3>Le concours du mois ouvre bientôt</h3><p class="lap-meta">Chaque mois : un thème, une photo par pilote, un vote de la communauté.</p>
+    if (!contest) return `<div class="contest-hero off"><span class="contest-kicker">${esc(G.monthLabel(G.monthKey()))}</span><h3>Pas de concours en ce moment</h3><p class="lap-meta">Un thème, une photo par pilote, un vote de la communauté.</p>
       ${C.isAdmin ? `<button type="button" class="cta-btn fill-btn mt" data-contest-open>Lancer le concours du mois</button>` : ""}</div>`;
-    return `<div class="contest-hero"><span class="contest-kicker">Concours photo · ${esc(G.monthLabel(month))}</span><h3>« ${esc(contest.theme)} »</h3>
-      <p class="lap-meta">${entries.length} participant${entries.length > 1 ? "s" : ""} · ${votes.length} vote${votes.length > 1 ? "s" : ""} ${open ? `· fin dans ${days} jour${days > 1 ? "s" : ""}` : "· concours terminé"}</p>
-      <p class="contest-prize">🏆 Le gagnant reçoit le badge <b>Photographe du mois</b> et une <b>carte spéciale</b> unique ; 2ᵉ et 3ᵉ gagnent de la poussière ✨.</p></div>`;
+    const kick = contest.custom ? "Concours photo" : "Concours photo · " + G.monthLabel(contest.id);
+    return `<div class="contest-hero"><span class="contest-kicker">${esc(kick)}</span><h3>« ${esc(contest.theme)} »</h3>
+      ${contest.desc ? `<p class="contest-desc">${esc(contest.desc)}</p>` : ""}
+      <p class="lap-meta">${entries.length} participant${entries.length > 1 ? "s" : ""} · ${votes.length} vote${votes.length > 1 ? "s" : ""} · ${esc(endText(contest))}</p>
+      <p class="contest-prize">🏆 ${contest.prize ? esc(contest.prize) : "Le gagnant reçoit le badge <b>Photographe du mois</b> et une <b>carte spéciale</b> unique ; 2ᵉ et 3ᵉ gagnent de la poussière ✨."}</p></div>`;
   }
   function participation() {
     const esc = C.esc;
@@ -95,8 +102,8 @@
       const blob = await C.MA.resizeImage(f, 1600, 0.85), ref = C.storage.ref(`car_photos/${C.user.uid}/contest_${month}_${Date.now()}.jpg`);
       await ref.put(blob, { contentType: "image/jpeg" });
       const photo = await ref.getDownloadURL(), p = C.profile || {};
-      await C.db.collection("contest_entries").doc(month + "_" + C.user.uid).set({ contest: month, uid: C.user.uid, name: C.pilotName ? C.pilotName() : p.username || "Pilote", avatar: p.avatar || "", photo, carName: car, caption: cap, status: "pending", createdAt: C.FieldValue.serverTimestamp() });
-      formOpen = false; C.toast("Photo envoyée 📸 Elle sera visible après validation.", "ok");
+      await C.db.collection("contest_entries").doc(month + "_" + C.user.uid).set({ contest: month, uid: C.user.uid, name: C.pilotName ? C.pilotName() : p.username || "Pilote", avatar: p.avatar || "", photo, carName: car, caption: cap, status: "approved", createdAt: C.FieldValue.serverTimestamp() });
+      formOpen = false; C.toast("Photo publiée dans le concours 📸", "ok");
       await load(true);
     } catch (ex) { errEl.textContent = "Envoi impossible : " + (ex.code === "storage/unauthorized" ? "photo refusée par les règles Storage." : ex.message); busy = false; btn.disabled = false; btn.textContent = "Envoyer ma photo"; return; }
     busy = false; render();
@@ -119,8 +126,23 @@
     o.addEventListener("click", close); document.addEventListener("keydown", key); document.body.appendChild(o); o.querySelector("button").focus();
   }
 
+  /** bandeau de l'accueil : seulement quand un concours est ouvert */
+  async function homeBanner() {
+    const box = document.getElementById("home-contest"); if (!box) return;
+    try {
+      const all = await C.db.collection("contests").limit(60).get();
+      const list = all.docs.map((d) => Object.assign({ id: d.id }, d.data())), c = featured(list);
+      if (!c || c.status !== "open") { box.hidden = true; box.innerHTML = ""; return; }
+      let n = 0; try { n = (await C.db.collection("contest_entries").where("contest", "==", c.id).where("status", "==", "approved").limit(300).get()).size; } catch (_) {}
+      const esc = C.esc;
+      box.innerHTML = `<a class="home-contest-card" href="#/jouer/concours"><span class="hc-ico" aria-hidden="true">📸</span><div><small>Concours photo · ${esc(endText(c))}</small><b>« ${esc(c.theme)} »</b>${c.desc ? `<span>${esc(String(c.desc).slice(0, 110))}</span>` : ""}<em>${n} photo${n > 1 ? "s" : ""} en lice</em></div><i class="hc-go">Participer ➔</i></a>`;
+      box.hidden = false;
+    } catch (_) { box.hidden = true; }
+  }
+
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
+    ctx.Router.register("home", { enter: () => { homeBanner(); } });
     ctx.Router.register("play", { enter: async (p) => {
       if (p.tab !== "concours") return;
       render();

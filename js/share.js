@@ -73,7 +73,7 @@
     const W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const ctx = cv.getContext("2d"), accent = css("--accent", "#ef4444");
     ctx.fillStyle = "#0b0f19"; ctx.fillRect(0, 0, W, H);
-    ctx.textAlign = "center"; ctx.fillStyle = "#fff"; ctx.font = "800 54px system-ui"; ctx.fillText(r.mode === "100" ? "DUEL · 0 → 100 km/h" : "DUEL · 400 m D.A.", W / 2, 120);
+    ctx.textAlign = "center"; ctx.fillStyle = "#fff"; ctx.font = "800 54px system-ui"; ctx.fillText("DUEL · " + ({ "100": "0 → 100 km/h", "200": "0 → 200 km/h", "400": "400 m D.A.", "1000": "1000 m D.A." }[r.mode] || "400 m D.A."), W / 2, 120);
     const imgs = await Promise.all([r.a, r.b].map((c) => loadImg(C.safeUrl(c.image))));
     [r.a, r.b].forEach((c, i) => {
       const x = 60 + i * 500, win = r.win === i;
@@ -88,7 +88,7 @@
     ctx.fillStyle = accent; ctx.font = "900 70px system-ui"; ctx.fillText("VS", W / 2, 380);
     const gap = Math.abs(r.tA - r.tB);
     ctx.fillStyle = "#fff"; ctx.font = "700 44px system-ui"; ctx.fillText(r.win < 0 ? "Égalité parfaite" : `${gap.toFixed(2).replace(".", ",")} s d'écart`, W / 2, 1070);
-    ctx.fillStyle = "#6b7280"; ctx.font = "500 24px system-ui"; ctx.fillText("Simulation à partir des données des fiches (400 m estimé)", W / 2, 1130);
+    ctx.fillStyle = "#6b7280"; ctx.font = "500 24px system-ui"; ctx.fillText("Simulation : boîte, adhérence, aéro, poids (estimation)", W / 2, 1130);
     brand(ctx, W, H, accent);
     shareBlob(await toBlob(cv), "duel.png", "Duel MOTORAUTO");
   }

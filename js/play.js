@@ -28,7 +28,12 @@
     if (!C.user) { root.innerHTML = `<div class="empty-note">Connecte-toi pour relever les défis de la semaine.<br><button type="button" class="cta-btn fill-btn mt" data-action="open-auth">Me connecter</button></div>`; return; }
     if (!weekly) { root.innerHTML = weeklyErr ? `<div class="empty-note error">${C.esc(weeklyErr)}</div>` : `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
     const esc = C.esc, done = weekly.items.filter((x) => x.claimed).length;
-    root.innerHTML = `<div class="chal-head"><div><h3 class="sec-title nomargin">Défis de la semaine</h3><p class="lap-meta">Nouveaux défis chaque lundi · <b id="chal-left">${remaining(weekly.endsAt - Date.now())}</b> restantes</p></div>
+    const dl = weekly.daily, dpct = dl ? Math.round((dl.value / dl.goal) * 100) : 0;
+    const dailyHtml = dl ? `<section class="chal-daily"><div class="chal-head"><div><h3 class="sec-title nomargin">Défi du jour</h3><p class="lap-meta">1 nouveau défi chaque jour, à minuit</p></div></div>
+      <article class="chal ${dl.claimed ? "claimed" : dl.done ? "ready" : ""}"><span class="chal-ico" aria-hidden="true">${dl.icon}</span>
+        <div class="chal-main"><b>${esc(dl.label)}</b><div class="xp-bar small" aria-hidden="true"><i style="width:${dpct}%"></i></div><small>${dl.value} / ${dl.goal} · récompense ${rewardText(dl.reward)}</small></div>
+        ${dl.claimed ? `<span class="chal-done">✓ Récupéré</span>` : dl.done ? `<button type="button" class="cta-btn fill-btn compact-btn" data-chal-claim="${esc(dl.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="${hintOf(dl.id)}">Y aller</a>`}</article></section>` : "";
+    root.innerHTML = dailyHtml + `<div class="chal-head chal-week-head"><div><h3 class="sec-title nomargin">Défis de la semaine</h3><p class="lap-meta">Nouveaux défis chaque lundi · <b id="chal-left">${remaining(weekly.endsAt - Date.now())}</b> restantes</p></div>
         <div class="chal-score" aria-label="${done} défis sur ${weekly.items.length} récupérés"><b>${done}</b>/${weekly.items.length}</div></div>
       <div class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${weekly.items.length}" aria-valuenow="${done}"><i style="width:${(done / weekly.items.length) * 100}%"></i></div>
       <div class="chal-list">${weekly.items.map((x) => {
@@ -40,7 +45,8 @@
       <p class="sec-lead">🎁 Les ${weekly.items.length} défis validés dans la semaine rapportent <b>${weekly.perfectBonus} pack bonus</b> en plus.</p>`;
   }
   function hintOf(id) {
-    return { packs3: "#/jouer/cartes", daily3: "#/jouer/cartes", comment2: "#/catalogue", duel1: "#/duel", quiz1: "#/quiz", share1: "#/catalogue", lap1: "#/classement/chronos", like5: "#/catalogue", react3: "#/catalogue", rsvp1: "#/communaute/evenements", vote1: "#/jouer/concours", trade1: "#/jouer/echanges", wish3: "#/jouer/cartes" }[id] || "#/jouer";
+    id = String(id).replace(/^d-/, "").replace(/1$|3$/, (m) => m);
+    return { "pack": "#/jouer/cartes", like3: "#/catalogue", comment1: "#/catalogue", react2: "#/catalogue", chat3: "chat.html", packs5: "#/jouer/cartes", comment5: "#/catalogue", duel3: "#/duel", share3: "#/catalogue", like15: "#/catalogue", chat5: "chat.html", packs3: "#/jouer/cartes", daily3: "#/jouer/cartes", comment2: "#/catalogue", duel1: "#/duel", share1: "#/catalogue", lap1: "#/classement/chronos", like5: "#/catalogue", react3: "#/catalogue", rsvp1: "#/communaute/evenements", vote1: "#/jouer/concours", trade1: "#/jouer/echanges", wish3: "#/jouer/cartes" }[id] || "#/jouer";
   }
   async function claim(id) {
     if (busy) return; busy = true; renderChallenges();
@@ -90,7 +96,6 @@
         ${tile("#/jouer/echanges", "🔄", "Échanges", st.trade, st.tradeBadge)}
         ${tile("#/jouer/concours", "📸", "Concours photo", st.contest, "")}
         ${tile("#/duel", "🏁", "Duel", "0-100 km/h et 400 m en course", "")}
-        ${tile("#/quiz", "🧭", "Quiz", "Quelle voiture est faite pour toi ?", "")}
         ${tile("#/classement", "🏆", "Classements", "Chronos, circuits, pilotes", "")}
       </div>`;
     };
@@ -127,7 +132,6 @@
     document.addEventListener("ma:auth", () => { weekly = null; weeklyAt = 0; if (ctx.Router.is("play", { tab: "apercu" })) renderHub(); else if (ctx.Router.is("play", { tab: "defis" })) { renderChallenges(); loadWeekly(true).then(renderChallenges); } });
     document.addEventListener("click", (e) => { const c = e.target.closest("[data-chal-claim]"); if (c) claim(c.dataset.chalClaim); });
     document.addEventListener("ma:duel-done", () => log("duel"));
-    document.addEventListener("ma:quiz-done", () => log("quiz"));
     document.addEventListener("ma:shared", () => log("share"));
     document.addEventListener("ma:cards", () => { weeklyAt = 0; });
   });

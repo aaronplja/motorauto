@@ -29,7 +29,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   ok(core.weekKey(Date.parse("2026-10-28T12:00:00Z")) === "2026-W44", "semaine ISO " + core.weekKey(Date.parse("2026-10-28T12:00:00Z")));
   ok(core.weekKey(Date.parse("2026-01-01T12:00:00Z")) === "2026-W01" && core.weekKey(Date.parse("2027-01-01T12:00:00Z")) === "2026-W53", "semaines ISO en fin d'année");
   ok(core.dayKey(core.weekStart(NOW)) === "2026-10-26", "début de semaine = lundi");
-  ok(core.weekChallenges("2026-W44").length === 4 && JSON.stringify(core.weekChallenges("2026-W44").map((c) => c.id)) === JSON.stringify(core.weekChallenges("2026-W44").map((c) => c.id)), "4 défis déterministes");
+  ok(core.weekChallenges("2026-W44").length === 10 && JSON.stringify(core.weekChallenges("2026-W44").map((c) => c.id)) === JSON.stringify(core.weekChallenges("2026-W44").map((c) => c.id)), "10 défis déterministes");
 
   // ---- raretés : déterministes, égalités départagées
   const r1 = core.computeRarities(pool), r2 = core.computeRarities(pool.slice().reverse());
@@ -93,7 +93,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   // ---- défis hebdomadaires
   let wkNow = NOW; for (let i = 0; i < 80; i++) { const ids2 = core.weekChallenges(core.weekKey(wkNow)).map((c) => c.id); if (ids2.includes("packs3") && ids2.includes("duel1")) break; wkNow += 7 * 86400000; }
   NOW = wkNow + 86400000;
-  let ws = await G.weeklyStatus(U2); ok(ws.items.length === 4 && ws.items.every((x) => !x.claimed && x.value === 0 || x.value >= 0), "statut hebdo : 4 défis " + ws.items.map((x) => x.id).join(","));
+  let ws = await G.weeklyStatus(U2); ok(ws.items.length === 10 && ws.items.every((x) => !x.claimed && x.value === 0 || x.value >= 0), "statut hebdo : 4 défis " + ws.items.map((x) => x.id).join(","));
   await rejects(G.claimChallenge(U2, { id: "packs3" }), "failed-precondition", "défi non accompli refusé");
   await rejects(G.claimChallenge(U2, { id: "inexistant" }), "not-found", "défi hors semaine refusé");
   db.seed("collections", "u2", Object.assign(core.blankCollection(), { bonus: 5, dust: 0 }));

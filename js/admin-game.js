@@ -8,24 +8,27 @@
 (function () {
   "use strict";
   const G = window.MAGameCore;
-  let C = null, cards = [], grants = [], users = [], entries = [], contest = null, editing = null, draft = null, loadedAt = 0, busy = false, grantFor = "";
-  const COLORS = [["gold", "Or"], ["ice", "Glace"], ["rose", "Rose"], ["emerald", "Émeraude"], ["violet", "Violet"]];
+  let C = null, cards = [], grants = [], users = [], entries = [], contest = null, contestId = "", ctForm = false, editing = null, draft = null, loadedAt = 0, busy = false, grantFor = "";
+  const COLORS = [["silver", "Silver (noir & argent)"], ["carbon", "Carbone"], ["gold", "Or"], ["ice", "Glace"], ["rose", "Rose"], ["emerald", "Émeraude"], ["violet", "Violet"], ["crimson", "Rouge sang"], ["bronze", "Bronze"], ["neon", "Néon"], ["sunset", "Coucher de soleil"]];
   const slug = (s) => C.normalize(s).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
   const tsMs = (t) => (t && t.toMillis ? t.toMillis() : Number(t) || 0);
-  const blankDraft = () => ({ id: "", name: "", edition: "Édition limitée", image: "", color: "gold", power: 0, speed: 0, zero: 0, text: "", supply: 0, granted: 0, active: true, claimable: false, startsAt: "", endsAt: "" });
+  const blankDraft = () => ({ id: "", name: "", edition: "Édition limitée", image: "", color: "silver", power: 0, speed: 0, zero: 0, text: "", supply: 0, granted: 0, active: true, claimable: false, startsAt: "", endsAt: "" });
   const dayStr = (ms) => ms ? new Date(Number(ms)).toISOString().slice(0, 10) : "";
 
   async function load() {
-    const month = G.monthKey();
-    const [cs, gr, us, ct, en] = await Promise.all([
+    const [cs, gr, us, ctAll] = await Promise.all([
       C.db.collection("special_cards").limit(200).get().catch(() => null), C.db.collection("special_grants").limit(500).get().catch(() => null),
-      C.db.collection("users").limit(500).get().catch(() => null), C.db.collection("contests").doc(month).get().catch(() => null),
-      C.db.collection("contest_entries").where("contest", "==", month).limit(300).get().catch(() => null)
+      C.db.collection("users").limit(500).get().catch(() => null), C.db.collection("contests").limit(60).get().catch(() => null)
     ]);
+    const clist = ctAll ? ctAll.docs.map((d) => Object.assign({ id: d.id }, d.data())) : [];
+    const open = clist.filter((c) => c.status === "open" && c.custom).sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt));
+    const cur = open[0] || clist.find((c) => c.id === G.monthKey()) || null;
+    const ct = cur ? { exists: true, data: () => cur } : null;
+    const en = cur ? await C.db.collection("contest_entries").where("contest", "==", cur.id).limit(300).get().catch(() => null) : null;
     cards = cs ? cs.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt)) : [];
     grants = gr ? gr.docs.map((d) => d.data()) : [];
     users = us ? us.docs.map((d) => ({ uid: d.id, name: d.data().username || "Pilote" })).sort((a, b) => a.name.localeCompare(b.name, "fr")) : [];
-    contest = ct && ct.exists ? ct.data() : null;
+    contest = ct && ct.exists ? ct.data() : null; contestId = cur ? cur.id : "";
     entries = en ? en.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt)) : [];
     loadedAt = Date.now();
   }
@@ -67,14 +70,20 @@
     const esc = C.esc, month = G.monthKey(), pending = entries.filter((e) => e.status === "pending"), ok = entries.filter((e) => e.status === "approved");
     const row = (e) => `<article class="admin-entry"><a href="${esc(C.safeUrl(e.photo) || "#")}" target="_blank" rel="noopener"><img src="${esc(C.safeUrl(e.photo) || "")}" alt="Photo de ${esc(e.name)}" loading="lazy"></a><div><b>${esc(e.name)}</b><small>${esc(e.carName || "")}${e.caption ? " — « " + esc(e.caption) + " »" : ""}</small>
       <div class="acr-actions">${e.status !== "approved" ? `<button type="button" class="cta-btn fill-btn compact-btn" data-entry="approved" data-id="${esc(e.id)}">Valider</button>` : ""}${e.status !== "rejected" ? `<button type="button" class="secondary-destructive-btn" data-entry="rejected" data-id="${esc(e.id)}">${e.status === "approved" ? "Retirer" : "Refuser"}</button>` : ""}</div></div></article>`;
-    return `<div class="admin-sec-head"><h3 class="admin-h3 nomargin">Concours photo · ${esc(G.monthLabel(month))}</h3></div>
-      ${contest ? `<div class="contest-admin"><div class="input-stack"><label for="ct-theme">Thème du mois</label><div class="inline-field"><input type="text" id="ct-theme" maxlength="80" value="${esc(contest.theme)}" ${contest.status !== "open" ? "disabled" : ""}><button type="button" class="cta-btn btn-ghost compact-btn" data-ct-theme ${contest.status !== "open" ? "disabled" : ""}>Changer</button></div></div>
-        <p class="lap-meta">Statut : <b>${contest.status === "open" ? "ouvert" : "clôturé"}</b> · ${ok.length} photo(s) validée(s)${contest.status === "closed" ? ` · gagnant : ${esc(contest.winnerName || "aucun")}` : ""}</p>
-        ${contest.status === "open" ? `<button type="button" class="cta-btn fill-btn compact-btn" data-ct-close>🏁 Clôturer et couronner le gagnant</button><p class="admin-note">Le serveur le fait automatiquement le 1er du mois : ce bouton sert à clôturer plus tôt (le gagnant reçoit le badge et une carte spéciale unique).</p>` : ""}</div>`
-      : `<div class="empty-note">Aucun concours pour ce mois. <button type="button" class="cta-btn fill-btn compact-btn" data-ct-open>Lancer le concours du mois</button></div>`}
-      <h3 class="admin-h3">Photos à valider ${pending.length ? `<span class="count-pill">${pending.length}</span>` : ""}</h3>
-      <div class="admin-entries">${pending.length ? pending.map(row).join("") : `<div class="empty-note small">Aucune photo en attente.</div>`}</div>
-      ${ok.length ? `<h3 class="admin-h3">Photos validées</h3><div class="admin-entries">${ok.map(row).join("")}</div>` : ""}`;
+    const fld = (id, l, v, ph, type) => `<div class="input-stack"><label for="${id}">${l}</label><input type="${type || "text"}" id="${id}" maxlength="200" value="${esc(v || "")}" placeholder="${esc(ph || "")}"></div>`;
+    const isOpen = contest && contest.status === "open";
+    const newForm = `<form class="contest-admin ct-form" id="ct-new-form" novalidate><h4 class="admin-h3">Nouveau concours personnalisé</h4>${fld("ctn-theme", "Thème (obligatoire)", "", "ex. Ma plus belle sortie")}${fld("ctn-desc", "Description", "", "Règles, ambiance…")}${fld("ctn-prize", "Récompense (texte affiché)", "", "ex. Le gagnant reçoit une carte Silver")}${fld("ctn-end", "Date de fin (facultatif)", "", "", "date")}
+      <p class="admin-note">Le concours est publié sur l'accueil tout de suite. Les photos sont publiées sans validation ; tu peux en retirer. S'il y a déjà un concours du mois ouvert, celui-ci passe en avant.</p><div class="acr-actions"><button type="submit" class="cta-btn fill-btn compact-btn">Lancer le concours</button><button type="button" class="cta-btn btn-ghost compact-btn" data-ct-newcancel>Annuler</button></div></form>`;
+    return `<div class="admin-sec-head"><h3 class="admin-h3 nomargin">Concours photo${contest ? " · " + esc(contest.custom ? contest.theme : G.monthLabel(contest.id)) : ""}</h3><button type="button" class="cta-btn btn-ghost compact-btn" data-ct-new>＋ Nouveau concours</button></div>
+      ${ctForm ? newForm : ""}
+      ${contest ? `<div class="contest-admin">${fld("ct-theme", "Thème", contest.theme)}${fld("ct-desc", "Description", contest.desc)}${fld("ct-prize", "Récompense (texte)", contest.prize)}${fld("ct-end", "Date de fin", contest.endsAt, "", "date")}
+        <div class="acr-actions"><button type="button" class="cta-btn fill-btn compact-btn" data-ct-save ${!isOpen ? "disabled" : ""}>Enregistrer les modifications</button></div>
+        <p class="lap-meta">Statut : <b>${isOpen ? "ouvert" : "clôturé"}</b> · ${ok.length} photo(s) en ligne${contest.status === "closed" ? ` · gagnant : ${esc(contest.winnerName || "aucun")}` : ""}</p>
+        ${isOpen ? `<button type="button" class="cta-btn fill-btn compact-btn" data-ct-close>🏁 Clôturer et couronner le gagnant</button><p class="admin-note">Le concours du mois se clôture tout seul le 1er du mois ; un concours personnalisé se clôture avec ce bouton (le gagnant reçoit une carte spéciale unique).</p>` : ""}</div>`
+      : `<div class="empty-note">Aucun concours. <button type="button" class="cta-btn fill-btn compact-btn" data-ct-open>Lancer le concours du mois</button></div>`}
+      ${pending.length ? `<h3 class="admin-h3">Anciennes photos en attente <span class="count-pill">${pending.length}</span></h3><div class="admin-entries">${pending.map(row).join("")}</div>` : ""}
+      <h3 class="admin-h3">Photos en ligne (modération : tu peux en retirer)</h3>
+      <div class="admin-entries">${ok.length ? ok.map(row).join("") : `<div class="empty-note small">Aucune photo pour l'instant.</div>`}</div>`;
   }
   // outils de test et gestes : packs de test illimités, packs bonus, poussière, remise à zéro…
   function toolsHtml() {
@@ -178,6 +187,21 @@
     try { await C.db.collection("contest_entries").doc(id).update({ status }); C.toast(status === "approved" ? "Photo validée." : "Photo retirée du concours.", "ok"); await load(); render(); window.dispatchEvent(new Event("ma:admin-refresh")); }
     catch (ex) { C.toast("Action impossible : " + ex.message, "err"); }
   }
+  const val = (id) => (document.getElementById(id) ? document.getElementById(id).value.trim() : "");
+  async function saveContest() {
+    if (!contestId) return; const theme = val("ct-theme");
+    if (theme.length < 2) { C.toast("Le thème est obligatoire.", "err"); return; }
+    try { await C.db.collection("contests").doc(contestId).update({ theme: theme.slice(0, 80), desc: val("ct-desc").slice(0, 200), prize: val("ct-prize").slice(0, 200), endsAt: val("ct-end") }); C.toast("Concours mis à jour.", "ok"); await load(); render(); }
+    catch (ex) { C.toast("Modification impossible : " + ex.message, "err"); }
+  }
+  async function createContest(e) {
+    e.preventDefault(); const theme = val("ctn-theme");
+    if (theme.length < 2) { C.toast("Donne un thème au concours.", "err"); return; }
+    try {
+      await C.db.collection("contests").doc("c-" + Date.now().toString(36)).set({ theme: theme.slice(0, 80), desc: val("ctn-desc").slice(0, 200), prize: val("ctn-prize").slice(0, 200), endsAt: val("ctn-end"), status: "open", custom: true, createdAt: C.FieldValue.serverTimestamp() });
+      ctForm = false; C.toast("Concours lancé : il apparaît sur l'accueil.", "ok"); await load(); render();
+    } catch (ex) { C.toast("Création impossible : " + ex.message, "err"); }
+  }
   async function contestAction(action, extra) {
     if (busy) return; busy = true;
     try { const r = await window.MAGameAPI.call("adminContest", Object.assign({ action }, extra || {})); C.toast(action === "close" ? (r.winner ? "Concours clôturé : le gagnant a reçu sa carte spéciale 🏆" : "Concours clôturé (aucun participant).") : "Fait.", "ok"); await load(); }
@@ -187,6 +211,7 @@
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
+    document.addEventListener("submit", (e) => { if (e.target.id === "ct-new-form") createContest(e); });
     ctx.Router.register("admin", { enter: async (p) => {
       if (p.tab !== "jeu" || !ctx.isAdmin) return;
       render();
@@ -224,9 +249,11 @@
       const g = t.closest("[data-sp-grant]"); if (g) { grantFor = grantFor === g.dataset.spGrant ? "" : g.dataset.spGrant; render(); const u = document.getElementById("gr-user"); if (u) u.focus(); return; }
       if (t.closest("[data-sp-grant-cancel]")) { grantFor = ""; render(); return; }
       const en = t.closest("[data-entry]"); if (en) { setEntry(en.dataset.id, en.dataset.entry); return; }
-      if (t.closest("[data-ct-close]")) { if (confirm("Clôturer le concours maintenant ? Le gagnant sera couronné et recevra sa carte spéciale.")) contestAction("close"); return; }
+      if (t.closest("[data-ct-close]")) { if (confirm("Clôturer le concours maintenant ? Le gagnant sera couronné et recevra sa carte spéciale.")) contestAction("close", { month: contestId }); return; }
       if (t.closest("[data-ct-open]")) { contestAction("open"); return; }
-      if (t.closest("[data-ct-theme]")) { const v = document.getElementById("ct-theme").value.trim(); if (v) contestAction("theme", { theme: v }); }
+      if (t.closest("[data-ct-new]")) { ctForm = true; render(); const el = document.getElementById("ctn-theme"); if (el) el.focus(); return; }
+      if (t.closest("[data-ct-newcancel]")) { ctForm = false; render(); return; }
+      if (t.closest("[data-ct-save]")) { saveContest(); return; }
     });
   });
 })();

@@ -167,7 +167,7 @@ service cloud.firestore {
     match /community_cars/{carId} {
       allow read: if true;
       allow create: if validCommunityCar() && request.resource.data.createdAt == request.time;
-      allow update: if validCommunityCar() && resource.data.uid == request.auth.uid
+      allow update: if validCommunityCar() && (resource.data.uid == request.auth.uid || isAdmin())
         && request.resource.data.createdAt == resource.data.createdAt;
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
@@ -281,10 +281,23 @@ service cloud.firestore {
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
+    // --- « Vu par » du salon général
+    match /global_seen/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['at', 'name']) && request.resource.data.at == request.time;
+    }
+
     // --- Canaux thématiques (création/suppression réservées à l'admin) ---
     match /custom_channels/{chanId} {
       allow read: if signedIn();
       allow write: if isAdmin();
+
+      match /seen/{uid} {
+        allow read: if signedIn();
+        allow write: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['at', 'name']) && request.resource.data.at == request.time;
+      }
 
       match /messages/{msgId} {
         allow read: if signedIn();
@@ -301,7 +314,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['uids', 'lastUid', 'lastName', 'lastText', 'lastAt'])
         && request.resource.data.uids is list && request.resource.data.uids.size() == 2
         && request.auth.uid in request.resource.data.uids
-        && request.resource.data.lastUid == request.auth.uid
+        && request.resource.data.lastUid in request.resource.data.uids
         && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 160
         && request.resource.data.lastName is string && request.resource.data.lastName.size() <= 60
         && request.resource.data.lastAt == request.time;
@@ -413,7 +426,7 @@ service cloud.firestore {
       allow create: if signedIn() && notMuted()
         && request.resource.data.keys().hasOnly(['type', 'uid', 'pilot', 'avatar', 'text', 'link', 'createdAt'])
         && request.resource.data.type in ['member', 'car', 'record', 'catalog', 'event']
-        && request.resource.data.uid == request.auth.uid
+        && (request.resource.data.uid == request.auth.uid || (isAdmin() && resource != null && request.resource.data.uid == resource.data.uid))
         && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
         && request.resource.data.get('avatar', '').size() <= 500
         && request.resource.data.text is string && request.resource.data.text.size() <= 160
@@ -424,10 +437,47 @@ service cloud.firestore {
     }
 
     // --- Sorties / événements et réponses « j'y vais »
+    // --- Notifications push : un document par appareil (écrit par le pilote, lu par le serveur) + préférences par catégorie
+    match /push_tokens/{tid} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create, update: if signedIn() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'token', 'ua', 'createdAt'])
+        && request.resource.data.token is string && request.resource.data.token.size() < 400
+        && request.resource.data.get('ua', '').size() <= 200
+        && request.resource.data.createdAt == request.time;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+    match /notif_prefs/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['dm', 'mention', 'reply', 'follow', 'like', 'comment', 'event', 'game', 'maint', 'updatedAt'])
+        && request.resource.data.get('dm', true) is bool && request.resource.data.get('mention', true) is bool
+        && request.resource.data.get('reply', true) is bool && request.resource.data.get('follow', true) is bool
+        && request.resource.data.get('like', true) is bool && request.resource.data.get('comment', true) is bool
+        && request.resource.data.get('event', true) is bool && request.resource.data.get('game', true) is bool
+        && request.resource.data.get('maint', true) is bool
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // --- Position approximative d'un pilote sur la carte : opt-in, ville seulement (coordonnées arrondies et décalées par le site)
+    match /pilot_locations/{uid} {
+      allow read: if true;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'avatar', 'city', 'lat', 'lng', 'updatedAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.city is string && request.resource.data.city.size() >= 2 && request.resource.data.city.size() <= 80
+        && request.resource.data.lat is number && request.resource.data.lat >= -90 && request.resource.data.lat <= 90
+        && request.resource.data.lng is number && request.resource.data.lng >= -180 && request.resource.data.lng <= 180
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin() || (signedIn() && request.auth.uid == uid);
+    }
+
     match /events/{eid} {
       allow read: if true;
       allow create: if signedIn() && notMuted()
-        && request.resource.data.keys().hasOnly(['title', 'kind', 'place', 'dateMs', 'description', 'uid', 'pilot', 'avatar', 'lat', 'lng', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['title', 'kind', 'place', 'city', 'address', 'dateMs', 'description', 'uid', 'pilot', 'avatar', 'lat', 'lng', 'createdAt'])
         && request.resource.data.get('lat', 0) is number && request.resource.data.get('lng', 0) is number
         && request.resource.data.get('lat', 0) >= -90 && request.resource.data.get('lat', 0) <= 90
         && request.resource.data.get('lng', 0) >= -180 && request.resource.data.get('lng', 0) <= 180
@@ -437,6 +487,7 @@ service cloud.firestore {
         && request.resource.data.place is string && request.resource.data.place.size() >= 2 && request.resource.data.place.size() <= 120
         && request.resource.data.dateMs is number
         && request.resource.data.get('description', '').size() <= 600
+        && request.resource.data.get('city', '').size() <= 80 && request.resource.data.get('address', '').size() <= 160
         && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
         && request.resource.data.get('avatar', '').size() <= 500
         && request.resource.data.createdAt == request.time;
@@ -603,7 +654,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // --- Photos du concours : le pilote dépose (en attente), l'admin valide ou refuse
+    // --- Photos du concours : le pilote publie directement (pas de validation préalable) ; l'admin peut modérer (retirer)
     match /contest_entries/{eid} {
       allow read: if resource.data.status == 'approved' || isOwner(resource.data.uid) || isAdmin();
       allow create: if signedIn() && notMuted()
@@ -611,7 +662,7 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/contests/$(request.resource.data.contest)).data.status == 'open'
         && request.resource.data.keys().hasOnly(['contest', 'uid', 'name', 'avatar', 'photo', 'carName', 'caption', 'status', 'createdAt'])
         && request.resource.data.uid == request.auth.uid
-        && request.resource.data.status == 'pending'
+        && request.resource.data.status == 'approved'
         && request.resource.data.name is string && request.resource.data.name.size() <= 40
         && request.resource.data.avatar is string && request.resource.data.avatar.size() <= 600
         && request.resource.data.photo is string && request.resource.data.photo.size() <= 600
@@ -670,8 +721,27 @@ service cloud.firestore {
         && request.resource.data.get('desc', '').size() <= 160
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.createdAt == request.time;
-      allow update: if false;
+      // le président active le canal de discussion et nomme un vice-président (rien d'autre ne change)
+      allow update: if signedIn() && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['chatEnabled', 'chatName', 'viceUid', 'viceName'])
+        && request.resource.data.get('chatName', '').size() <= 60
+        && request.resource.data.get('viceName', '').size() <= 40
+        && request.resource.data.get('viceUid', '').size() <= 60;
       allow delete: if isAdmin() || (signedIn() && resource.data.ownerUid == request.auth.uid);
+
+      // canal de discussion du club : membres + admins (modération)
+      match /chat/{msgId} {
+        allow read: if signedIn() && (isAdmin() || isClubMember(clubId));
+        allow create: if validMessage() && isClubMember(clubId)
+          && get(/databases/$(database)/documents/clubs/$(clubId)).data.get('chatEnabled', false) == true;
+        allow update: if signedIn() && (isAdmin() || isClubMember(clubId)) && onlyReactionsChanged();
+        allow delete: if isAdmin() || (signedIn() && (resource.data.uid == request.auth.uid || isClubStaff(clubId)));
+      }
+      match /seen/{uid} {
+        allow read: if signedIn() && (isAdmin() || isClubMember(clubId));
+        allow write: if signedIn() && request.auth.uid == uid && isClubMember(clubId)
+          && request.resource.data.keys().hasOnly(['at', 'name']) && request.resource.data.at == request.time;
+      }
     }
     match /club_members/{mid} {
       allow read: if true;
@@ -778,6 +848,14 @@ service cloud.firestore {
         && request.resource.data.get('photos', []) is list
         && request.resource.data.get('photos', []).size() <= 8
         && request.resource.data.updatedAt == request.time;
+    }
+
+    function isClubMember(clubId) {
+      return signedIn() && exists(/databases/$(database)/documents/club_members/$(clubId + '_' + request.auth.uid));
+    }
+    function isClubStaff(clubId) {
+      return signedIn() && (get(/databases/$(database)/documents/clubs/$(clubId)).data.ownerUid == request.auth.uid
+        || get(/databases/$(database)/documents/clubs/$(clubId)).data.get('viceUid', '') == request.auth.uid);
     }
 
     function validMessage() {

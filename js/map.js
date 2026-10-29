@@ -32,7 +32,7 @@
 
   function createMap(el) {
     const m = { el, z: 5, cx: 0, cy: 0, markers: [], tiles: new Map(), popup: null };
-    el.innerHTML = `<div class="mm-tiles"></div><div class="mm-markers"></div><div class="mm-ctl"><button type="button" data-mm="in" aria-label="Zoom avant">+</button><button type="button" data-mm="out" aria-label="Zoom arrière">−</button></div><div class="mm-attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>`;
+    el.innerHTML = `<div class="mm-tiles"></div><div class="mm-markers"></div><div class="mm-ctl"><button type="button" data-mm="in" aria-label="Zoom avant">+</button><button type="button" data-mm="out" aria-label="Zoom arrière">−</button><button type="button" data-mm="loc" aria-label="Ma position" title="Centrer sur ma position">◎</button><button type="button" data-mm="full" aria-label="Plein écran" title="Plein écran">⤢</button></div><div class="mm-attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>`;
     m.tilesEl = el.querySelector(".mm-tiles"); m.markersEl = el.querySelector(".mm-markers");
     const setCenter = (lat, lng) => { const [x, y] = proj(lat, lng, m.z); m.cx = x; m.cy = y; };
     m.center = () => unproj(m.cx, m.cy, m.z);
@@ -62,7 +62,7 @@
     m.setMarkers = (list) => {
       m.markers.forEach((mk) => mk.el.remove()); m.markers = []; m.closePopup();
       list.forEach((p) => {
-        const b = document.createElement("button"); b.type = "button"; b.className = "mm-pin"; b.textContent = p.icon || "📍"; b.setAttribute("aria-label", p.label || "Sortie");
+        const b = document.createElement("button"); b.type = "button"; b.className = "mm-pin" + (p.cls ? " " + p.cls : ""); if (p.img) { const im = document.createElement("img"); im.src = p.img; im.alt = ""; im.referrerPolicy = "no-referrer"; im.onerror = () => { im.remove(); b.textContent = "🧑"; }; b.appendChild(im); } else b.textContent = p.icon || "📍"; b.setAttribute("aria-label", p.label || "Sortie");
         b.addEventListener("click", (e) => { e.stopPropagation(); m.openPopup(p); });
         m.markersEl.appendChild(b); m.markers.push({ lat: p.lat, lng: p.lng, el: b });
       });
@@ -75,41 +75,97 @@
     };
     m.placePopup = () => { const [px, py] = proj(m.popup.lat, m.popup.lng, m.z), w = el.clientWidth, h = el.clientHeight; m.popup.el.style.transform = `translate(${Math.round(px - m.cx + w / 2)}px,${Math.round(py - m.cy + h / 2)}px)`; };
     m.closePopup = () => { if (m.popup) { m.popup.el.remove(); m.popup = null; } };
-    // interactions
-    let drag = null;
-    el.addEventListener("pointerdown", (e) => { if (e.target.closest(".mm-pin, .mm-ctl, .mm-popup, a")) return; drag = { x: e.clientX, y: e.clientY, cx: m.cx, cy: m.cy, moved: false }; el.setPointerCapture(e.pointerId); el.classList.add("grab"); });
-    el.addEventListener("pointermove", (e) => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true; m.cx = drag.cx - dx; m.cy = drag.cy - dy; m.draw(); });
-    const end = () => { if (drag && !drag.moved) m.closePopup(); drag = null; el.classList.remove("grab"); };
+    // interactions : glisser (souris / doigt), pincer pour zoomer (2 doigts), double-clic / double-tap pour zoomer
+    const ptrs = new Map(); let drag = null, pinch = null, lastTap = 0;
+    const dist = () => { const [a, b] = Array.from(ptrs.values()); return Math.hypot(a.x - b.x, a.y - b.y); };
+    el.addEventListener("pointerdown", (e) => {
+      if (e.target.closest(".mm-pin, .mm-ctl, .mm-popup, a, .mm-bar")) return;
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      if (ptrs.size === 2) { pinch = { d: dist(), z: m.z }; drag = null; return; }
+      drag = { x: e.clientX, y: e.clientY, cx: m.cx, cy: m.cy, moved: false }; el.classList.add("grab");
+    });
+    el.addEventListener("pointermove", (e) => {
+      if (!ptrs.has(e.pointerId)) return;
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && ptrs.size === 2) { const r = dist() / pinch.d; const dz = r > 1.35 ? 1 : r < 0.72 ? -1 : 0; if (dz) { m.zoom(dz); pinch = { d: dist(), z: m.z }; } return; }
+      if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true; m.cx = drag.cx - dx; m.cy = drag.cy - dy; m.draw();
+    });
+    const end = (e) => {
+      ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null;
+      if (drag && !drag.moved && ptrs.size === 0) { const t = Date.now(); if (t - lastTap < 320) { const r = el.getBoundingClientRect(), w = el.clientWidth, h = el.clientHeight; const [lat, lng] = unproj(m.cx + (e.clientX - r.left - w / 2), m.cy + (e.clientY - r.top - h / 2), m.z); m.setView(lat, lng, m.z + 1); lastTap = 0; } else { lastTap = t; m.closePopup(); } }
+      if (ptrs.size === 0) { drag = null; el.classList.remove("grab"); }
+    };
     el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
     el.addEventListener("wheel", (e) => { e.preventDefault(); m.zoom(e.deltaY < 0 ? 1 : -1); }, { passive: false });
-    el.addEventListener("click", (e) => { const b = e.target.closest("[data-mm]"); if (b) m.zoom(b.dataset.mm === "in" ? 1 : -1); });
+    el.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-mm]"); if (!b) return;
+      const k = b.dataset.mm;
+      if (k === "in" || k === "out") m.zoom(k === "in" ? 1 : -1);
+      else if (k === "full") { el.classList.toggle("mm-full"); document.body.classList.toggle("mm-lock", el.classList.contains("mm-full")); b.textContent = el.classList.contains("mm-full") ? "✕" : "⤢"; setTimeout(() => m.draw(), 60); }
+      else if (k === "loc") { if (!navigator.geolocation) return; navigator.geolocation.getCurrentPosition((pos) => m.setView(pos.coords.latitude, pos.coords.longitude, Math.max(m.z, 10)), () => { if (C) C.toast("Position indisponible (autorisation refusée ?).", "err"); }, { timeout: 8000 }); }
+    });
     el.addEventListener("keydown", (e) => { const s = 60; if (e.key === "+" || e.key === "=") m.zoom(1); else if (e.key === "-") m.zoom(-1); else if (e.key === "ArrowLeft") { m.cx -= s; m.draw(); } else if (e.key === "ArrowRight") { m.cx += s; m.draw(); } else if (e.key === "ArrowUp") { m.cy -= s; m.draw(); } else if (e.key === "ArrowDown") { m.cy += s; m.draw(); } });
     window.addEventListener("resize", () => m.draw(), { passive: true });
     return m;
   }
 
+  // ------------------------------------------------------------------ position approximative des pilotes (opt-in)
+  // pilot_locations/{uid} = { uid, name, avatar, city, lat, lng, updatedAt } : ville seulement, coordonnées arrondies + décalées (~5 km)
+  let layers = { events: true, pilots: true }, kindOn = null, pilotsCache = { at: 0, list: [] };
+  const fuzz = (v) => Math.round(v * 20) / 20 + (Math.random() - 0.5) * 0.03;
+  async function myLocation() { if (!C || !C.user) return null; try { const d = await C.db.collection("pilot_locations").doc(C.user.uid).get(); return d.exists ? d.data() : null; } catch (_) { return null; } }
+  async function saveMyLocation(city) {
+    if (!C.user) throw new Error("Connecte-toi d'abord.");
+    city = String(city || "").trim().slice(0, 80);
+    if (city.length < 2) throw new Error("Indique ta ville.");
+    const g = await geocode(city);
+    if (!g) throw new Error("Ville introuvable (réseau bloqué ou nom incorrect).");
+    const p = C.profile || {};
+    await C.db.collection("pilot_locations").doc(C.user.uid).set({ uid: C.user.uid, name: String(C.pilotName ? C.pilotName() : p.username || "Pilote").slice(0, 40), avatar: String(p.avatar || "").slice(0, 400), city, lat: Math.round(fuzz(g.lat) * 1e4) / 1e4, lng: Math.round(fuzz(g.lng) * 1e4) / 1e4, updatedAt: C.FieldValue.serverTimestamp() });
+    pilotsCache.at = 0; return city;
+  }
+  async function removeMyLocation() { if (!C.user) return; await C.db.collection("pilot_locations").doc(C.user.uid).delete(); pilotsCache.at = 0; }
+  async function loadPilots() {
+    if (Date.now() - pilotsCache.at < 30000) return pilotsCache.list;
+    try { const s = await C.db.collection("pilot_locations").limit(500).get(); pilotsCache = { at: Date.now(), list: s.docs.map((d) => Object.assign({ id: d.id }, d.data())).filter((x) => Number.isFinite(x.lat) && Number.isFinite(x.lng)) }; } catch (_) { pilotsCache = { at: Date.now(), list: [] }; }
+    return pilotsCache.list;
+  }
+  const evQuery = (ev) => [ev.address, ev.city].filter(Boolean).join(", ") || ev.place;
+
   // ------------------------------------------------------------------ carte des sorties
+  function barHtml() {
+    const kinds = [["circuit", "🏁 Circuit"], ["rassemblement", "🚗 Rassemblement"], ["balade", "🛣 Balade"], ["autre", "📍 Autre"]];
+    return `<div class="mm-bar" role="group" aria-label="Filtres de la carte"><button type="button" class="chip ${layers.events ? "on" : ""}" data-mm-layer="events">📅 Sorties</button><button type="button" class="chip ${layers.pilots ? "on" : ""}" data-mm-layer="pilots">🧑 Pilotes</button>${layers.events ? kinds.map(([k, l]) => `<button type="button" class="chip small ${!kindOn || kindOn === k ? "on" : ""}" data-mm-kind="${k}">${l}</button>`).join("") : ""}</div>`;
+  }
   async function drawEvents() {
     const box = document.getElementById("events-map"); if (!box || view !== "map") return;
     const status = document.getElementById("events-map-status");
-    const now = Date.now() - 6 * 3600 * 1000, list = lastList.filter((e) => e.dateMs >= now);
-    if (!map || !box.contains(map.el.firstChild)) { box.innerHTML = `<div class="mm" tabindex="0" role="application" aria-label="Carte des sorties à venir"></div>`; map = createMap(box.firstChild); }
+    const wrap = document.getElementById("events-map-wrap");
+    let bar = document.getElementById("events-map-bar"); if (!bar) { bar = document.createElement("div"); bar.id = "events-map-bar"; wrap.insertBefore(bar, box); }
+    bar.innerHTML = barHtml();
+    const now = Date.now() - 6 * 3600 * 1000, list = layers.events ? lastList.filter((e) => e.dateMs >= now && (!kindOn || e.kind === kindOn)) : [];
+    if (!map || !box.contains(map.el)) { box.innerHTML = `<div class="mm" tabindex="0" role="application" aria-label="Carte des sorties et des pilotes"></div>`; map = createMap(box.firstChild); }
     const pts = [], missing = [];
-    list.forEach((ev) => { if (Number.isFinite(ev.lat) && Number.isFinite(ev.lng) && (ev.lat || ev.lng)) pts.push(ev); else { const c = cacheGet()[key(ev.place)]; if (c) pts.push(Object.assign({}, ev, c)); else missing.push(ev); } });
+    list.forEach((ev) => { if (Number.isFinite(ev.lat) && Number.isFinite(ev.lng) && (ev.lat || ev.lng)) pts.push(ev); else { const c = cacheGet()[key(evQuery(ev))]; if (c) pts.push(Object.assign({}, ev, c)); else missing.push(ev); } });
+    const pilots = layers.pilots ? await loadPilots() : [];
+    if (view !== "map") return;
     const render = () => map.setMarkers(pts.map((ev) => { const d = new Date(ev.dateMs); return { lat: ev.lat, lng: ev.lng, icon: KIND[ev.kind] || "📍", label: ev.title,
-      html: `<b>${C.esc(ev.title)}</b><small>${d.getDate()} ${MONTHS[d.getMonth()]} · ${C.esc(ev.place)}</small><a href="#/communaute/evenements" data-ev-list>Voir la sortie</a>` }; }));
-    map.fit(pts); render();
-    status.textContent = list.length ? `${pts.length} sortie${pts.length > 1 ? "s" : ""} sur la carte${missing.length ? " · localisation de " + missing.length + " autre" + (missing.length > 1 ? "s" : "") + "…" : ""}` : "Aucune sortie à venir.";
+      html: `<b>${C.esc(ev.title)}</b><small>${d.getDate()} ${MONTHS[d.getMonth()]} · ${C.esc([ev.place, ev.city].filter(Boolean).join(", "))}</small>${ev.address ? `<small>${C.esc(ev.address)}</small>` : ""}<a href="#/communaute/evenements" data-ev-list>Voir la sortie</a>` }; })
+      .concat(pilots.map((p) => ({ lat: p.lat, lng: p.lng, cls: "pilot", img: C.safeUrl(p.avatar) || "", icon: "🧑", label: p.name || "Pilote", html: `<b>${C.esc(p.name || "Pilote")}</b><small>📍 ${C.esc(p.city || "")} (zone approximative)</small><a href="#/pilote/${encodeURIComponent(p.uid || p.id)}">Voir le profil</a>` }))));
+    const all = pts.concat(pilots);
+    if (!map.fitted) { map.fit(all); map.fitted = true; } render();
+    const info = [list.length || layers.events ? `${pts.length} sortie${pts.length > 1 ? "s" : ""}` : "", layers.pilots ? `${pilots.length} pilote${pilots.length > 1 ? "s" : ""} (opt-in, position approximative)` : ""].filter(Boolean).join(" · ");
+    status.textContent = (info || "Aucune couche affichée") + (missing.length ? " · localisation de " + missing.length + " autre" + (missing.length > 1 ? "s" : "") + "…" : "");
     if (missing.length && !geoBusy) {
       geoBusy = true;
       for (const ev of missing.slice(0, 8)) {
-        const g = await geocode(ev.place);
+        const g = await geocode(evQuery(ev)) || (ev.city ? await geocode(ev.city) : null) || await geocode(ev.place);
         if (view !== "map") break;
-        if (g) { pts.push(Object.assign({}, ev, g)); map.fit(pts); render(); }
+        if (g) { pts.push(Object.assign({}, ev, g)); render(); }
         await new Promise((r) => setTimeout(r, 1100));          // Nominatim : 1 requête par seconde
       }
       geoBusy = false;
-      status.textContent = `${pts.length} sortie${pts.length > 1 ? "s" : ""} sur la carte${pts.length < list.length ? " (certains lieux n'ont pas pu être localisés)" : ""}`;
+      status.textContent = `${pts.length} sortie${pts.length > 1 ? "s" : ""}${layers.pilots ? " · " + pilots.length + " pilote" + (pilots.length > 1 ? "s" : "") : ""}${pts.length < list.length ? " (certains lieux n'ont pas pu être localisés)" : ""}`;
     }
   }
   function setView(v) {
@@ -120,13 +176,15 @@
     if (v === "map") drawEvents();
   }
 
-  window.MAMap = { geocode, createMap };
+  window.MAMap = { geocode, createMap, myLocation, saveMyLocation, removeMyLocation, evQuery };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     document.addEventListener("ma:events-rendered", (e) => { lastList = e.detail.list; if (view === "map") drawEvents(); });
     document.addEventListener("click", (e) => {
       const b = e.target.closest("[data-ev-view]"); if (b) { setView(b.dataset.evView); return; }
+      const ly = e.target.closest("[data-mm-layer]"); if (ly) { layers[ly.dataset.mmLayer] = !layers[ly.dataset.mmLayer]; drawEvents(); return; }
+      const kd = e.target.closest("[data-mm-kind]"); if (kd) { kindOn = kindOn === kd.dataset.mmKind ? null : kd.dataset.mmKind; drawEvents(); return; }
       if (e.target.closest("[data-ev-list]")) { e.preventDefault(); setView("list"); }
     });
     ctx.Router.register("community", { enter: (p) => { if (p.tab === "evenements") setView(view); } });

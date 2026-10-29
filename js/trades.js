@@ -46,6 +46,8 @@
   }
 
   const who = (uid) => { const u = users.get(uid) || {}; return u.username || "Pilote"; };
+  /** pastille « tu l'as déjà » pour la carte que je recevrais */
+  const own = (id, receiving) => { if (!receiving) return ""; const n = ((window.MACards.mine() || { owned: {} }).owned || {})[id] || 0; return n > 0 ? `<span class="own-badge">Tu l'as déjà ×${n}</span>` : `<span class="own-badge new">Nouvelle pour toi</span>`; };
   function tradeRow(t) {
     const esc = C.esc, mineSent = t.fromUid === C.user.uid, other = mineSent ? t.toUid : t.fromUid;
     const st = { open: "En attente", accepted: "Échange réalisé", declined: "Refusée", cancelled: "Annulée" }[t.status] || t.status;
@@ -53,7 +55,7 @@
       ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-trade-cancel="${esc(t.id)}">Annuler</button>`
       : `<button type="button" class="cta-btn fill-btn compact-btn" data-trade-yes="${esc(t.id)}">Accepter</button><button type="button" class="cta-btn btn-ghost compact-btn" data-trade-no="${esc(t.id)}">Décliner</button>`) : "";
     return `<article class="trade-row ${t.status}"><div class="trade-head"><b>${esc(mineSent ? "Pour " + (t.toName || who(other)) : "De " + (t.fromName || who(other)))}</b><span class="trade-st ${t.status}">${st}</span></div>
-      <div class="trade-swap"><div><small>${mineSent ? "Tu donnes" : "Il te donne"}</small>${mini(mineSent ? t.give : t.want)}</div><i aria-hidden="true">⇄</i><div><small>${mineSent ? "Tu reçois" : "Tu donnes"}</small>${mini(mineSent ? t.want : t.give)}</div></div>
+      <div class="trade-swap"><div><small>${mineSent ? "Tu donnes" : "Il te donne"}</small>${mini(t.give)}${own(t.give, !mineSent)}</div><i aria-hidden="true">⇄</i><div><small>${mineSent ? "Tu reçois" : "Tu donnes"}</small>${mini(t.want)}${own(t.want, mineSent)}</div></div>
       ${t.message ? `<p class="trade-msg">« ${esc(t.message)} »</p>` : ""}<div class="trade-actions">${actions}<a class="cta-btn btn-ghost compact-btn" href="${dm(other)}">💬 Discuter</a></div></article>`;
   }
 

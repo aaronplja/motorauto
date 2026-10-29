@@ -124,7 +124,7 @@
   };
 
   // ------------------------------------------------------- clés de discussion
-  MA.chatKey = (c) => (c.type === "global" ? "global" : c.type === "channel" ? "chan:" + c.id : "dm:" + c.id);
+  MA.chatKey = (c) => (c.type === "global" ? "global" : c.type === "channel" ? "chan:" + c.id : c.type === "club" ? "club:" + c.id : "dm:" + c.id);
 
   // ----------------------------------------------------------- messages non lus
   MA.unread = (function () {
@@ -253,15 +253,17 @@
       stop();
       user = u; db = firestore;
       if (anchor) anchor.hidden = false;
+      if (window.MAPush) window.MAPush.loadPrefs(u.uid).then(() => { if (loaded) emit(); });
+      const allowed = (n) => !window.MAPush || window.MAPush.allows(n.type);
       unsub = db.collection("users").doc(u.uid).collection("notifications").orderBy("createdAt", "desc").limit(30).onSnapshot((snap) => {
         const fresh = [];
         if (loaded) snap.docChanges().forEach((ch) => { if (ch.type === "added") fresh.push(Object.assign({ id: ch.doc.id }, ch.doc.data({ serverTimestamps: "estimate" }))); });
-        items = snap.docs.map((d) => Object.assign({ id: d.id }, d.data({ serverTimestamps: "estimate" })));
+        items = snap.docs.map((d) => Object.assign({ id: d.id }, d.data({ serverTimestamps: "estimate" }))).filter(allowed);
         loaded = true;
         // déjà en train de lire la conversation concernée : inutile de notifier
         items.filter((n) => !n.read && api.activeLink && n.link === api.activeLink).forEach((n) => markRead(n.id));
         emit();
-        fresh.filter((n) => !n.read && !(api.activeLink && n.link === api.activeLink)).slice(0, 3)
+        fresh.filter((n) => allowed(n) && !n.read && !(api.activeLink && n.link === api.activeLink)).slice(0, 3)
           .forEach((n) => MA.toast(`${typeLabel(n)}${n.text ? " : " + n.text : ""}`, "ok"));
       }, (err) => console.warn("Notifications indisponibles :", err.message));
     }

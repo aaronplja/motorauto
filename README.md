@@ -194,3 +194,18 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 
 ## Tour 17 — Fluidité Android et en-tête opaque
 - Suppression du « verre » (backdrop-filter, surfaces translucides), du halo plein écran fixe (`body::before`), des flous animés, des perspectives 3D par carte et des animations de fond sur mobile/tactile : cause du clignotement sous Android. En-tête et barre du bas opaques. Tout est dans la fin de `css/refonte.css`.
+
+## Tour 18 — Duel v2, Réglages, notifications, carte, clubs
+- **Duel** : recherche de n'importe quelle voiture (catalogue, communauté, tes voitures), épreuves 0-100 / 0-200 / 400 m / 1000 m, sol sec ou mouillé, niveau de pilote. Moteur de calcul `js/duel-engine.js` (courbe de puissance, rapports de boîte et temps de passage, adhérence selon la transmission, traînée calée sur la vitesse maxi, départ calé sur le 0-100 publié) ; test `tests/duel.test.js`. Le quiz « voiture faite pour toi » est supprimé.
+- **Échanges** : la carte « Tu reçois » n'est plus inversée, pastille « Tu l'as déjà ». **Profils** : bouton Suivre rétabli. **Admin** : peut modifier les voitures des pilotes. **Chat** : aperçu mis à jour après suppression, « Vu par… » dans le salon et les canaux, « Envoyer dans le chat » (aperçu, plusieurs destinations, récents).
+- **Défis** : 10 défis par semaine + 1 défi du jour. **Raretés** : Shiny (arc-en-ciel, ≈ 0,5 % par carte, 16 voitures mythiques dans `SHINY` de `js/game-core.js`), couleurs Silver / Carbone / Rouge sang / Bronze / Néon / Coucher de soleil pour les cartes spéciales (admin → Jeu).
+- **Concours** : bandeau sur l'accueil seulement quand un concours est ouvert ; l'admin crée et modifie des concours personnalisés (admin → Jeu) ; les photos sont publiées sans validation (l'admin peut les retirer).
+- **Réglages** (`#/reglages`, menu « Moi ») : Profil, Ambiance, Notifications (catégories), Carte & vie privée.
+- **Notifications push** : voir « Activer le push » ci-dessous. **Carte des sorties** : tactile (pincer, double-tap), plein écran, « ma position », couche Pilotes (opt-in, ville seulement, position arrondie et décalée), ville + adresse dans le formulaire d'une sortie.
+- **Clubs** : le président crée le canal de discussion du club (`clubs/{id}/chat`) et nomme un vice-président ; visible des membres et des admins (modération). **Admin** : point rouge sur « Moi », sur la ligne Administration et sur l'onglet Tableau de bord quand il y a quelque chose à traiter.
+
+### Activer le push (une seule fois)
+1. Console Firebase → ⚙ Paramètres du projet → Cloud Messaging → « Certificats Web Push » → **Générer une paire de clés**, copie la clé publique.
+2. Colle-la dans `js/push-config.js` (`window.MA_VAPID_KEY = "…"`), puis `git push`.
+3. `cd functions && npm install && cd .. && firebase deploy --only functions` (nouvelle fonction `pushOnNotification`).
+4. Republie `firestore.rules`. Sur iPhone, le site doit d'abord être installé (Partager → Sur l'écran d'accueil).

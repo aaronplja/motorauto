@@ -137,8 +137,7 @@
     countUp($("stat-engines"), CATALOGUE.reduce((n, c) => n + c.phases.reduce((m, p) => m + p.engines.length, 0), 0));
     countUp($("stat-brands"), groups.length);
     const items = groups.map((g) => `<button type="button" class="marquee-item" data-action="filter-brand" data-brand="${esc(g)}" tabindex="-1">${esc(g)}</button>`).join("");
-    $("brand-marquee").innerHTML = items + items; // doublé pour une boucle sans coupure
-    $("brand-marquee").style.animationDuration = Math.max(40, groups.length * 3.2) + "s";
+    $("brand-marquee").innerHTML = items + items + items + items; // répété pour une boucle sans coupure (js/marquee.js)
   }
 
   function populateBrandSelect() {
@@ -1166,8 +1165,10 @@
   let mcEditing = null, mcImages = [];
   const communityCache = { list: [], at: 0 };
 
+  const adminCars = new Map();
   function commCarHtml(c, opts) {
     opts = opts || {};
+    const adminEdit = isAdmin && currentUser && c.uid !== currentUser.uid && !opts.manage; if (adminEdit) adminCars.set(c.id, c);
     const photos = (c.photos || []).filter((u) => safeUrl(u));
     const fake = { images: photos, image: photos[0] || "", model: c.name || "Voiture" };
     const meta = [c.year, c.engine, c.power ? c.power + " ch" : "", c.zero ? "0-100 : " + c.zero + " s" : ""].filter(Boolean).map(esc).join(" · ");
@@ -1178,7 +1179,7 @@
         <div class="comm-body">
           <h3><a class="comm-title-link" href="#/voiture-pilote/${encodeURIComponent(c.id)}">${esc(c.name || "Voiture")}</a></h3>
           ${meta ? `<div class="comm-meta">${meta}</div>` : ""}
-          ${c.description ? `<p class="comm-desc">${esc(c.description)}</p>` : ""}
+          ${c.description ? `<p class="comm-desc">${esc(c.description)}</p>` : ""}${adminEdit ? `<div class="comm-actions"><button type="button" class="cta-btn btn-ghost compact-btn" data-action="mycar-edit" data-id="${esc(c.id)}">🛠 Modifier (admin)</button></div>` : ""}
           ${mods.length ? `<ul class="mods-list">${mods.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}
           ${window.MASocial && c.id ? window.MASocial.badge("com", c.id) : ""}
           ${opts.owner ? `<button type="button" class="comm-owner" data-action="open-profile" data-uid="${esc(c.uid)}">${avatarImg(c.avatar, "pilot-row-avatar")}<span>${esc(c.pilot || "Pilote")}${MA.admins.tag(c.uid)}</span></button>` : ""}
@@ -1258,9 +1259,9 @@
 
   function openMyCarEditor(id) {
     if (!requireLogin()) return;
-    mcEditing = id ? myCars.find((c) => c.id === id) || null : null;
+    mcEditing = id ? myCars.find((c) => c.id === id) || (isAdmin ? adminCars.get(id) : null) || null : null;
     const c = mcEditing || {};
-    $("mc-title").textContent = mcEditing ? "Modifier ma voiture" : "Ajouter une voiture";
+    $("mc-title").textContent = mcEditing ? (mcEditing.uid !== currentUser.uid ? "Modifier la voiture de " + (mcEditing.pilot || "ce pilote") + " (admin)" : "Modifier ma voiture") : "Ajouter une voiture";
     $("mc-name").value = c.name || ""; $("mc-year").value = c.year || ""; $("mc-engine").value = c.engine || "";
     $("mc-power").value = c.power || ""; $("mc-zero").value = c.zero || ""; $("mc-desc").value = c.description || ""; $("mc-mods").value = c.mods || "";
     $("mc-url").value = ""; $("mc-error").textContent = ""; $("mc-upload-status").textContent = "";
@@ -1278,7 +1279,7 @@
     if (name.length < 2) { err.textContent = "Donne un nom à ta voiture (ex. Peugeot 106 S16)."; return; }
     const power = Number($("mc-power").value);
     const data = {
-      uid: currentUser.uid, pilot: profile.username, avatar: profile.avatar || "",
+      uid: mcEditing ? mcEditing.uid : currentUser.uid, pilot: mcEditing ? mcEditing.pilot : profile.username, avatar: mcEditing ? (mcEditing.avatar || "") : (profile.avatar || ""),
       name: name.slice(0, 80), year: $("mc-year").value.trim().slice(0, 20), engine: $("mc-engine").value.trim().slice(0, 100),
       power: power > 0 && power < 5000 ? Math.round(power) : 0,
       zero: (() => { const z = Number($("mc-zero").value.replace(",", ".")); return z > 0 && z < 60 ? Math.round(z * 10) / 10 : 0; })(),
@@ -1301,6 +1302,7 @@
       MA.toast("Voiture enregistrée.", "ok");
       communityCache.at = 0;
       await loadMyCars();
+      if (pubUid) renderUserCars(pubUid);
     } catch (e) {
       err.textContent = "Enregistrement impossible : " + e.message;
     } finally { btn.disabled = false; }
@@ -1357,7 +1359,7 @@
     if (!root) return;
     root.querySelectorAll("[data-sc]").forEach((b) => { b.textContent = "–"; });
     root.querySelectorAll(".social-count").forEach((b) => { b.dataset.uid = uid; });
-    const btn = root.querySelector(".follow-btn");
+    const btn = root.querySelector(".follow-btn") || (root.parentElement && root.parentElement.querySelector(".follow-btn"));
     if (btn) { btn.dataset.uid = uid; btn.hidden = !!(currentUser && currentUser.uid === uid); btn.disabled = false; btn.classList.remove("on"); btn.textContent = "Suivre"; }
     try {
       const col = (k) => db.collection("users").doc(uid).collection(k).limit(500).get();

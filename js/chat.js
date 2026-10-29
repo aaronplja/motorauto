@@ -27,7 +27,7 @@
     conv: null, pilots: [], channelsLoaded: false,
     msgs: new Map(), lastCount: 0, firstRender: true, newBelow: 0,
     replyTo: null, photo: null, photoUrl: "", sending: false, unsub: null, filter: "",
-    convs: new Map(), seenBy: new Map(), seenUnsubs: new Map(), unsubConvs: null, showPicker: false
+    clubs: [], convs: new Map(), seenBy: new Map(), seenUnsubs: new Map(), unsubConvs: null, showPicker: false
   };
 
   const desktop = () => window.matchMedia("(min-width: 861px)").matches;
@@ -45,10 +45,11 @@
     const id = decodeURIComponent(r.join("/"));
     if (t === "global") return { type: "global", id: "global" };
     if (t === "channel" && id) return { type: "channel", id };
+    if (t === "club" && id) return { type: "club", id };
     if (t === "dm" && id) return { type: "private", id };
     return null;
   }
-  const hashFor = (c) => (c.type === "global" ? "#global" : c.type === "channel" ? "#channel/" + encodeURIComponent(c.id) : "#dm/" + encodeURIComponent(c.id));
+  const hashFor = (c) => (c.type === "global" ? "#global" : c.type === "channel" ? "#channel/" + encodeURIComponent(c.id) : c.type === "club" ? "#club/" + encodeURIComponent(c.id) : "#dm/" + encodeURIComponent(c.id));
 
   function route() {
     if (!state.user) return;
@@ -113,12 +114,39 @@
     }, { merge: true }).catch(() => { /* règles non publiées : liste simplement moins vivante */ });
   }
 
+  /** après suppression du dernier message : l'aperçu de la liste reprend le message précédent */
+  function refreshSummary(conv, prev) {
+    if (!conv || conv.type !== "private" || !state.user) return;
+    const ids = [state.user.uid, conv.id].sort();
+    const text = prev ? (prev.text || (prev.mediaUrl ? "📷 Photo" : prev.tradeId ? "🃏 Proposition d'échange" : "")) : "";
+    db.collection("private_chats").doc(ids.join("_")).set({
+      uids: ids, lastUid: prev && ids.includes(prev.uid) ? prev.uid : state.user.uid, lastName: String(prev ? prev.pilot || prev.username || "Pilote" : state.profile.username || "Pilote").slice(0, 40),
+      lastText: String(text).replace(/\s+/g, " ").slice(0, 120), lastAt: FieldValue.serverTimestamp()
+    }, { merge: true }).catch(() => {});
+  }
+
   // ------------------------------------------------------------ listes (gauche)
   function convName(c) {
     if (c.type === "global") return "Salon général";
     if (c.type === "channel") { const f = MA.unread.channels().find((x) => x.id === c.id); return f ? f.name : c.id; }
+    if (c.type === "club") { const k = clubOf(c.id); return k ? k.name : "Club"; }
     const p = state.pilots.find((x) => x.id === c.id);
     return p ? p.username || "Pilote" : c.name || "Pilote";
+  }
+  // ---- canaux de club : clubs/{id}/chat — membres du club + admins (modération)
+  const clubOf = (id) => state.clubs.find((k) => k.id === id) || null;
+  async function loadClubs() {
+    const out = new Map();
+    try {
+      const mem = await db.collection("club_members").where("uid", "==", state.user.uid).limit(50).get();
+      const docs = await Promise.all(mem.docs.map((d) => db.collection("clubs").doc(d.data().clubId).get().catch(() => null)));
+      docs.forEach((d) => { if (d && d.exists && d.data().chatEnabled) out.set(d.id, Object.assign({ id: d.id, mine: true }, d.data(), { name: d.data().chatName || d.data().name || "Club" })); });
+      if (state.isAdmin) { const all = await db.collection("clubs").where("chatEnabled", "==", true).limit(100).get(); all.forEach((d) => { if (!out.has(d.id)) out.set(d.id, Object.assign({ id: d.id, mine: false }, d.data(), { name: d.data().chatName || d.data().name || "Club" })); }); }
+    } catch (e) { console.warn("Canaux de club :", e.code || e.message); }
+    state.clubs = Array.from(out.values()).sort((a, b) => a.name.localeCompare(b.name, "fr"));
+    renderLists();
+    const h = parseHash();
+    if (h && h.type === "club") { if (state.conv && state.conv.type === "club") updateHeader(); else route(); }
   }
   const isActive = (type, id) => state.conv && state.conv.type === type && state.conv.id === id;
 
@@ -128,6 +156,7 @@
 
     const chans = [{ type: "global", id: "global", name: "Salon général", icon: "🌐" }]
       .concat(MA.unread.channels().map((c) => ({ type: "channel", id: c.id, name: c.name, icon: "#" })))
+      .concat(state.clubs.map((k) => ({ type: "club", id: k.id, name: k.name + (k.mine ? "" : " (modération)"), icon: "🏁" })))
       .filter((c) => match(c.name));
     $("chat-channels-list").innerHTML = chans.length ? chans.map((c) => {
       const unread = MA.unread.has(MA.chatKey(c)) && !isActive(c.type, c.id);
@@ -212,6 +241,11 @@
       badge.textContent = "🌐";
       $("chat-header-title").textContent = "Salon général";
       $("chat-header-sub").textContent = "Canal public de la communauté";
+    } else if (c.type === "club") {
+      const k = clubOf(c.id);
+      badge.textContent = "🏁";
+      $("chat-header-title").textContent = name;
+      $("chat-header-sub").textContent = "Canal privé du club · membres et administrateurs" + (k && k.viceName ? " · vice-président : " + k.viceName : "");
     } else {
       badge.textContent = "#";
       $("chat-header-title").textContent = name;
@@ -220,14 +254,15 @@
     {
       const narrow = window.innerWidth < 480, cut = (t, n) => (t.length > n ? t.slice(0, n - 1) + "…" : t);
       $("chat-input-message").placeholder = narrow
-        ? (c.type === "private" ? "Écrire…" : c.type === "channel" ? cut(`#${name}`, 14) : "Message…")
-        : (c.type === "private" ? `Message à ${name}` : c.type === "channel" ? `Écrire dans #${name}` : "Écrire un message");
+        ? (c.type === "private" ? "Écrire…" : c.type === "channel" || c.type === "club" ? cut(`#${name}`, 14) : "Message…")
+        : (c.type === "private" ? `Message à ${name}` : c.type === "channel" || c.type === "club" ? `Écrire dans #${name}` : "Écrire un message");
     }
   }
 
   function collection(c) {
     if (c.type === "global") return db.collection("global_chat");
     if (c.type === "channel") return db.collection("custom_channels").doc(c.id).collection("messages");
+    if (c.type === "club") return db.collection("clubs").doc(c.id).collection("chat");
     return db.collection("private_chats").doc([state.user.uid, c.id].sort().join("_")).collection("messages");
   }
 
@@ -240,14 +275,26 @@
   const seenRef = (uid) => db.collection("private_chats").doc([state.user.uid, state.conv.id].sort().join("_")).collection("seen").doc(uid);
   let seenTimer = 0;
   function markSeen() {
-    if (!state.conv || state.conv.type !== "private" || !state.user || document.visibilityState === "hidden") return;
+    if (!state.conv || !state.user || document.visibilityState === "hidden") return;
     const now = Date.now();
     if (now - seenTimer < 2500) return;
     seenTimer = now;
+    if (state.conv.type !== "private") { groupSeenCol(state.conv).doc(state.user.uid).set({ at: FieldValue.serverTimestamp(), name: String(state.profile.username || "Pilote").slice(0, 40) }).catch(() => {}); return; }
     seenRef(state.user.uid).set({ at: FieldValue.serverTimestamp() }).catch(() => {});
   }
+  /** « vu par » des salons de groupe : global_seen/{uid} ou custom_channels/{id}/seen/{uid} = { at, name } */
+  const groupSeenCol = (c) => (c.type === "global" ? db.collection("global_seen") : c.type === "club" ? db.collection("clubs").doc(c.id).collection("seen") : db.collection("custom_channels").doc(c.id).collection("seen"));
   function watchSeen(c) {
-    if (c.type !== "private") return;
+    if (c.type !== "private") {
+      state.groupSeen = new Map();
+      state.unsubSeen = groupSeenCol(c).limit(200).onSnapshot((snap) => {
+        const m = new Map();
+        snap.forEach((d) => { const v = d.data(), at = v.at && v.at.toMillis ? v.at.toMillis() : 0; if (at) m.set(d.id, { at, name: v.name || "Pilote" }); });
+        state.groupSeen = m; paintReceipt();
+      }, () => { /* règles non publiées : pas de « vu par » */ });
+      markSeen();
+      return;
+    }
     state.unsubSeen = seenRef(c.id).onSnapshot((d) => {
       const at = d.exists && d.data().at;
       state.otherSeen = at && at.toMillis ? at.toMillis() : at && at.seconds ? at.seconds * 1000 : 0;
@@ -255,7 +302,17 @@
     }, () => { /* règles non publiées : pas de « vu » */ });
     markSeen();
   }
+  function groupReceiptHtml(list) {
+    const last = list[list.length - 1];
+    if (!last || !last.timestamp || !state.groupSeen) return "";
+    const sent = last.timestamp.toMillis();
+    const who = [...state.groupSeen.entries()].filter(([uid, v]) => uid !== state.user.uid && uid !== last.uid && v.at >= sent - 1500).sort((a, b) => b[1].at - a[1].at).map(([, v]) => v.name);
+    if (!who.length) return "";
+    const shown = who.slice(0, 3).map(esc).join(", "), more = who.length - 3;
+    return `<div class="seen-receipt seen group" role="status">Vu par ${shown}${more > 0 ? " et " + more + " autre" + (more > 1 ? "s" : "") : ""}</div>`;
+  }
   function receiptHtml(list) {
+    if (state.conv && state.conv.type !== "private" && list && list.length) return groupReceiptHtml(list);
     if (!state.conv || state.conv.type !== "private" || !list || !list.length) return "";
     const last = list[list.length - 1];
     if (!last || last.uid !== state.user.uid || !last.timestamp) return "";
@@ -373,7 +430,7 @@
     const mine = m.uid === state.user.uid;
     const d = m.timestamp ? m.timestamp.toDate() : new Date();
     const media = safeUrl(m.mediaUrl, { allowData: true });
-    const canDelete = state.isAdmin || mine;
+    const kc = state.conv && state.conv.type === "club" ? clubOf(state.conv.id) : null, canDelete = state.isAdmin || mine || (kc && (kc.ownerUid === state.user.uid || kc.viceUid === state.user.uid));
     const quote = m.replyTo ? `<div class="quote"><b>${esc(m.replyTo.pilot)}</b><span>${esc(m.replyTo.text)}</span></div>` : "";
     let reactions = "";
     if (m.reactions) {
@@ -594,10 +651,14 @@
 
   async function deleteMessage(id) {
     const m = state.msgs.get(id);
-    if (!m || !(state.isAdmin || m.uid === state.user.uid)) return;
+    const kc2 = state.conv && state.conv.type === "club" ? clubOf(state.conv.id) : null;
+    if (!m || !(state.isAdmin || m.uid === state.user.uid || (kc2 && (kc2.ownerUid === state.user.uid || kc2.viceUid === state.user.uid)))) return;
     if (!confirm("Supprimer ce message pour tout le monde ?")) return;
     try {
+      const remaining = [...state.msgs.values()].filter((x) => x.id !== id && x.timestamp).sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+      const wasLast = !remaining.length || (state.msgs.get(id).timestamp && state.msgs.get(id).timestamp.toMillis() >= remaining[remaining.length - 1].timestamp.toMillis());
       await collection(state.conv).doc(id).delete();
+      if (wasLast) refreshSummary(state.conv, remaining[remaining.length - 1]);
       if (state.isAdmin && m.uid !== state.user.uid) {
         db.collection("admin_log").add({ by: state.user.uid, byName: String(state.profile.username || "Admin").slice(0, 40), action: "chat-delete", target: String(m.uid || ""), targetName: String(m.pilot || "").slice(0, 80), detail: String(m.text || "📷 photo").slice(0, 120), createdAt: FieldValue.serverTimestamp() }).catch(() => {});
       }
@@ -707,6 +768,7 @@
     MA.unread.start(user, db);
     MA.notif.start(user, db);
     loadPilots();
+    loadClubs();
     watchConvs();
     renderLists();
     route();

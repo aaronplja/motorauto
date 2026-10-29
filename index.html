@@ -37,6 +37,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
 
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/style.css">
@@ -183,11 +184,12 @@
     <div class="feed-list" id="home-feed" aria-live="polite"></div>
   </section>
 
+  <section class="stage-shell home-section home-contest" id="home-contest" hidden></section>
+
   <section class="stage-shell home-section" id="home-play-sec">
-    <div class="section-head"><div><h2 class="section-title">À essayer</h2><p class="count-stream">Voiture du jour, quiz, duels, cartes à collectionner</p></div></div>
+    <div class="section-head"><div><h2 class="section-title">À essayer</h2><p class="count-stream">Voiture du jour, duels, cartes à collectionner</p></div></div>
     <div id="home-daily" class="daily-wrap"></div>
     <div class="play-tiles">
-      <a class="play-tile" href="#/quiz"><b>🎯 Quiz</b><small>Quelle voiture est faite pour toi ?</small></a>
       <a class="play-tile" href="#/duel"><b>🏁 Duel</b><small>0-100 et 400 m en course</small></a>
       <a class="play-tile" href="#/jouer/cartes"><b>🃏 Cartes</b><small>Un pack gratuit par jour</small></a>
       <a class="play-tile" href="#/clubs"><b>🛡 Clubs</b><small>Par marque ou par région</small></a>
@@ -550,52 +552,7 @@
         <section class="follow-block" id="follow-journal"><div id="journal-root"></div></section>
       </div>
     </section>
-    <section class="tab-panel" data-tab="parametres" hidden>
-      <div class="settings-box open">
-          <div class="form-grid">
-            <div class="input-stack"><label for="settings-username">Pseudo</label><input type="text" id="settings-username" placeholder="Ton pseudo" maxlength="24"></div>
-            <div class="input-stack"><label for="settings-avatar">Avatar (URL)</label><input type="text" id="settings-avatar" placeholder="https://…"></div>
-          </div>
-          <div class="avatar-upload">
-            <img id="settings-avatar-preview" class="avatar-preview" alt="Aperçu de l'avatar" data-fallback="avatar">
-            <div class="avatar-upload-body">
-              <button type="button" class="cta-btn btn-ghost compact-btn" id="avatar-upload-btn">📷 Téléverser une photo</button>
-              <input type="file" id="avatar-file-input" accept="image/*" hidden>
-              <small id="avatar-upload-status">Depuis ta galerie ou tes fichiers (n'importe quelle taille, jusqu'à 25 Mo), ou colle une URL ci-dessus.</small>
-            </div>
-          </div>
-          <div class="settings-sep">Ma voiture</div>
-          <div class="form-grid">
-            <div class="input-stack"><label for="settings-car">Voiture actuelle</label><input type="text" id="settings-car" maxlength="80" placeholder="Ex. Peugeot 106 S16 phase 2"></div>
-            <div class="input-stack"><label for="settings-car-photo">Photo de la voiture (URL)</label><input type="text" id="settings-car-photo" placeholder="https://…"></div>
-          </div>
-          <div class="avatar-upload">
-            <img id="settings-car-preview" class="car-preview" alt="Aperçu de la voiture" data-fallback="car">
-            <div class="avatar-upload-body">
-              <button type="button" class="cta-btn btn-ghost compact-btn" id="car-upload-btn">📷 Téléverser une photo</button>
-              <input type="file" id="car-file-input" accept="image/*" hidden>
-              <small id="car-upload-status">Depuis ta galerie ou tes fichiers, ou colle une URL ci-dessus.</small>
-            </div>
-          </div>
-          <div class="input-stack mt"><label for="settings-mods">Modifications</label><textarea id="settings-mods" rows="3" maxlength="500" placeholder="Une par ligne : ligne d'échappement, combinés filetés, jantes 16&quot;…"></textarea></div>
-          <div class="input-stack mt"><label for="settings-bio">Biographie</label><textarea id="settings-bio" rows="2" maxlength="300" placeholder="Quelques mots sur toi…"></textarea></div>
-          <div class="social-fields mt">
-            <div class="panel-section-title">Réseaux sociaux</div>
-            <p class="lap-meta">Colle le lien de ton profil ou juste ton pseudo. Ils s'affichent sur ton profil public.</p>
-            <div class="input-stack"><label for="settings-instagram">Instagram</label><input type="text" id="settings-instagram" maxlength="120" placeholder="@pseudo ou instagram.com/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
-            <div class="input-stack"><label for="settings-tiktok">TikTok</label><input type="text" id="settings-tiktok" maxlength="120" placeholder="@pseudo ou tiktok.com/@pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
-            <div class="input-stack"><label for="settings-snapchat">Snapchat</label><input type="text" id="settings-snapchat" maxlength="120" placeholder="pseudo ou snapchat.com/add/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
-          </div>
-          <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
-          <label class="check-row"><input type="checkbox" id="settings-public-garage"><span>Garage public : les autres pilotes voient mes favoris et mes chronos</span></label>
-          <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
-          <div class="danger-zone mt">
-            <div class="panel-section-title">Zone sensible</div>
-            <p class="lap-meta">Tu peux supprimer ton compte à tout moment. Ton profil, tes voitures, tes chronos, tes publications, ta collection de cartes et tes photos sont effacés définitivement.</p>
-            <button type="button" class="secondary-destructive-btn" id="open-delete-account">Supprimer mon compte</button>
-          </div>
-        </div>
-    </section>
+
   </div>
 </div>
 
@@ -668,7 +625,7 @@
         <h1 class="page-title">Jouer</h1>
         <p class="page-sub">Cartes à collectionner, échanges, défis de la semaine et concours photo.</p>
       </div>
-      <div class="page-head-actions"><a class="cta-btn btn-ghost compact-btn" href="#/duel">🏁 Duel</a><a class="cta-btn btn-ghost compact-btn" href="#/quiz">🎯 Quiz</a></div>
+      <div class="page-head-actions"><a class="cta-btn btn-ghost compact-btn" href="#/duel">🏁 Duel</a></div>
     </header>
     <nav data-section="play"></nav>
     <section class="tab-panel" data-tab="apercu" hidden><div id="play-hub"></div></section>
@@ -679,19 +636,67 @@
   </div>
   </div>
 
-  <div class="page page-layer" id="page-duel" data-page="duel">
+  <div class="page page-layer" id="page-settings" data-page="settings">
   <div class="stage-shell page-wrap">
-    <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Mode duel</h1><p class="page-sub">Deux voitures, une ligne droite : 0-100 km/h ou 400 m départ arrêté, calculés à partir des données de leurs fiches.</p></div></header>
-    <div id="duel-root"></div>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Mon espace</span><h1 class="page-title">Réglages</h1><p class="page-sub">Ton profil, l'ambiance du site, les notifications que tu veux recevoir et ta présence sur la carte.</p></div></header>
+    <nav data-section="settings"></nav>
+    <section class="tab-panel" data-tab="profil" hidden>
+      <div class="settings-box open">
+          <div class="form-grid">
+            <div class="input-stack"><label for="settings-username">Pseudo</label><input type="text" id="settings-username" placeholder="Ton pseudo" maxlength="24"></div>
+            <div class="input-stack"><label for="settings-avatar">Avatar (URL)</label><input type="text" id="settings-avatar" placeholder="https://…"></div>
+          </div>
+          <div class="avatar-upload">
+            <img id="settings-avatar-preview" class="avatar-preview" alt="Aperçu de l'avatar" data-fallback="avatar">
+            <div class="avatar-upload-body">
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="avatar-upload-btn">📷 Téléverser une photo</button>
+              <input type="file" id="avatar-file-input" accept="image/*" hidden>
+              <small id="avatar-upload-status">Depuis ta galerie ou tes fichiers (n'importe quelle taille, jusqu'à 25 Mo), ou colle une URL ci-dessus.</small>
+            </div>
+          </div>
+          <div class="settings-sep">Ma voiture</div>
+          <div class="form-grid">
+            <div class="input-stack"><label for="settings-car">Voiture actuelle</label><input type="text" id="settings-car" maxlength="80" placeholder="Ex. Peugeot 106 S16 phase 2"></div>
+            <div class="input-stack"><label for="settings-car-photo">Photo de la voiture (URL)</label><input type="text" id="settings-car-photo" placeholder="https://…"></div>
+          </div>
+          <div class="avatar-upload">
+            <img id="settings-car-preview" class="car-preview" alt="Aperçu de la voiture" data-fallback="car">
+            <div class="avatar-upload-body">
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="car-upload-btn">📷 Téléverser une photo</button>
+              <input type="file" id="car-file-input" accept="image/*" hidden>
+              <small id="car-upload-status">Depuis ta galerie ou tes fichiers, ou colle une URL ci-dessus.</small>
+            </div>
+          </div>
+          <div class="input-stack mt"><label for="settings-mods">Modifications</label><textarea id="settings-mods" rows="3" maxlength="500" placeholder="Une par ligne : ligne d'échappement, combinés filetés, jantes 16&quot;…"></textarea></div>
+          <div class="input-stack mt"><label for="settings-bio">Biographie</label><textarea id="settings-bio" rows="2" maxlength="300" placeholder="Quelques mots sur toi…"></textarea></div>
+          <div class="social-fields mt">
+            <div class="panel-section-title">Réseaux sociaux</div>
+            <p class="lap-meta">Colle le lien de ton profil ou juste ton pseudo. Ils s'affichent sur ton profil public.</p>
+            <div class="input-stack"><label for="settings-instagram">Instagram</label><input type="text" id="settings-instagram" maxlength="120" placeholder="@pseudo ou instagram.com/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+            <div class="input-stack"><label for="settings-tiktok">TikTok</label><input type="text" id="settings-tiktok" maxlength="120" placeholder="@pseudo ou tiktok.com/@pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+            <div class="input-stack"><label for="settings-snapchat">Snapchat</label><input type="text" id="settings-snapchat" maxlength="120" placeholder="pseudo ou snapchat.com/add/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+          </div>
+          <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
+          <label class="check-row"><input type="checkbox" id="settings-public-garage"><span>Garage public : les autres pilotes voient mes favoris et mes chronos</span></label>
+          <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
+          <div class="danger-zone mt">
+            <div class="panel-section-title">Zone sensible</div>
+            <p class="lap-meta">Tu peux supprimer ton compte à tout moment. Ton profil, tes voitures, tes chronos, tes publications, ta collection de cartes et tes photos sont effacés définitivement.</p>
+            <button type="button" class="secondary-destructive-btn" id="open-delete-account">Supprimer mon compte</button>
+          </div>
+        </div>
+    </section>
+    <section class="tab-panel" data-tab="ambiance" hidden><div id="settings-theme"></div></section>
+    <section class="tab-panel" data-tab="notifications" hidden><div id="settings-notifs"></div></section>
+    <section class="tab-panel" data-tab="carte" hidden><div id="settings-map"></div></section>
   </div>
   </div>
 
-  <div class="page page-layer" id="page-quiz" data-page="quiz">
+  <div class="page page-layer" id="page-duel" data-page="duel">
   <div class="stage-shell page-wrap">
     <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Quelle voiture est faite pour toi ?</h1><p class="page-sub">Quelques questions, et le catalogue te propose les fiches qui te correspondent.</p></div></header>
-    <div id="quiz-root"></div>
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Mode duel</h1><p class="page-sub">Choisis n'importe quelles deux voitures (catalogue, communauté, les tiennes) : 0-100, 0-200, 400 m ou 1000 m, sol sec ou mouillé. Le calcul tient compte de la boîte, de l'adhérence, de l'aérodynamique et du poids.</p></div></header>
+    <div id="duel-root"></div>
   </div>
   </div>
 
@@ -1159,7 +1164,11 @@
             <select id="ev-kind" class="custom-select"><option value="circuit">Journée circuit</option><option value="rassemblement">Rassemblement</option><option value="balade">Balade</option><option value="autre">Autre</option></select></div>
           <div class="input-stack"><label for="ev-date">Date et heure</label><input type="datetime-local" id="ev-date" required></div>
         </div>
-        <div class="input-stack"><label for="ev-place">Lieu (circuit, ville, adresse)</label><input type="text" id="ev-place" maxlength="120" required placeholder="Ex. Circuit de Folembray (02)"></div>
+        <div class="form-grid">
+          <div class="input-stack"><label for="ev-city">Ville</label><input type="text" id="ev-city" maxlength="80" placeholder="Ex. Le Mans"></div>
+          <div class="input-stack"><label for="ev-address">Adresse (facultatif, pour la carte)</label><input type="text" id="ev-address" maxlength="160" placeholder="Ex. 12 rue des Pilotes"></div>
+        </div>
+        <div class="input-stack"><label for="ev-place">Lieu (circuit, nom de l'endroit)</label><input type="text" id="ev-place" maxlength="120" required placeholder="Ex. Circuit de Folembray (02)"></div>
         <div class="input-stack"><label for="ev-desc">Détails</label><textarea id="ev-desc" rows="3" maxlength="600" placeholder="Programme, tarif, niveau, ce qu'il faut apporter…"></textarea></div>
         <div class="form-feedback error-txt" id="ev-error" role="alert"></div>
         <button type="submit" class="cta-btn fill-btn w-100">Publier la sortie</button>
@@ -1266,13 +1275,18 @@
   <script src="js/account.js"></script>
   <script src="js/admin-game.js"></script>
   <script src="js/share.js"></script>
+  <script src="js/push-config.js"></script>
+  <script src="js/push.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/admin-dot.js"></script>
+  <script src="js/duel-engine.js"></script>
   <script src="js/duel.js"></script>
-  <script src="js/quiz.js"></script>
   <script src="js/map.js"></script>
   <script src="js/clubs.js"></script>
   <script src="js/market.js"></script>
   <script src="js/app.js"></script>
   <script src="js/polish.js"></script>
   <script src="js/nav.js"></script>
+  <script src="js/marquee.js"></script>
 </body>
 </html>

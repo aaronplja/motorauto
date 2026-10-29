@@ -18,6 +18,7 @@
     mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
     shield: '<path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6z"/>',
     out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+    cog: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
     doc: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/>'
   };
   const ico = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
@@ -39,7 +40,7 @@
         ${row("#/jouer/cartes", "cards", "Mes cartes")}
         ${row("#/pilote/" + encodeURIComponent(user.uid), "user", "Mon profil public")}
         ${row("chat.html", "chat", "Messages", unread ? `<span class="me-badge">${unread}</span>` : "")}
-        ${c.isAdmin ? row("#/admin", "shield", "Administration") : ""}
+        ${c.isAdmin ? row("#/admin", "shield", "Administration", (window.MAAdminTodo && MAAdminTodo.count() ? `<span class="me-badge">${MAAdminTodo.count()}</span>` : "")) : ""}
       </div>` : "";
     return `
       <div class="me-sheet" role="dialog" aria-modal="true" aria-label="Mon espace">
@@ -52,6 +53,7 @@
           ${user ? "" : row("chat.html", "chat", "Salon des pilotes")}
         </div>
         <div class="me-group"><h3>Préférences &amp; aide</h3>
+          ${user ? row("#/reglages/profil", "cog", "Réglages", "", 'data-me-link') : ""}
           ${btnRow("theme", "sun", "Ambiance visuelle")}
           ${row("#/contact", "mail", "Contact")}
         </div>
