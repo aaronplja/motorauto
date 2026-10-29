@@ -1,7 +1,5 @@
 /**
  * MOTORAUTO — réglage des notifications push (FCM).
- * Colle ici la « clé publique Web Push » (VAPID) de ton projet Firebase :
- *   Console Firebase → ⚙ Paramètres du projet → Cloud Messaging → « Certificats Web Push » → Générer une paire de clés
- * Tant que la valeur est vide, le bouton « Activer les notifications » de Réglages explique ce qu'il reste à faire.
+ * Clé publique Web Push (VAPID) du projet Firebase motorautoireyv.
  */
-window.MA_VAPID_KEY = "";
+window.MA_VAPID_KEY = "BKly8kPFPiXtb5ERB8WipIyr8WWePtqK3UEnCMC8_ZxZPrRLNr5MpG1uiLSGlH7Fi2wh2q6c4Uw57BOksYyD2nE";
