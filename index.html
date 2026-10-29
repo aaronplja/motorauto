@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="onyx-carbon">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#09090b">
+  <meta property="og:title" content="MOTORAUTO — Archive automobile &amp; communauté de pilotes">
+  <meta property="og:description" content="Phases, motorisations et records de centaines de sportives, classement des chronos et salon des pilotes.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MOTORAUTO">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:url" content="https://motorauto.fr/">
+  <meta property="og:image" content="https://motorauto.fr/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:title" content="MOTORAUTO — Archive automobile &amp; communauté de pilotes">
+  <meta name="twitter:image" content="https://motorauto.fr/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://motorauto.fr/">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"MOTORAUTO","url":"https://motorautoireyv.web.app/","inLanguage":"fr","potentialAction":{"@type":"SearchAction","target":"https://motorautoireyv.web.app/index.html?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
+  <title>MOTORAUTO | Archive automobile & communauté de pilotes</title>
+  <meta name="description" content="Générations, phases, motorisations et records de centaines de sportives, classement des chronos, salon des pilotes.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MOTORAUTO">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111'/%3E%3Cpath d='M12 46 26 18h8L20 46zm18 0 14-28h8L38 46z' fill='%23ef4444'/%3E%3C/svg%3E">
+  <script>try{var t=localStorage.getItem('motorauto_theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/features.css">
+  <link rel="stylesheet" href="css/play.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/cards2.css">
+  <link rel="stylesheet" href="css/polish.css">
+  <link rel="stylesheet" href="css/refonte.css">
+</head>
+<body>
+  <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+  <a href="#page-main" class="skip-link">Aller au contenu</a>
+
+  <!-- ============ EN-TÊTE ============ -->
+  <header class="app-header" id="app-header">
+    <div class="header-bar">
+      <a href="#/" class="brand-link" id="brand-logo" aria-label="MOTORAUTO — accueil">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M5 31 16 9h6L11 31zm14 0L30 9h6L25 31z"/></svg>
+        <span class="logo-motor">MOTOR</span><span class="logo-auto">AUTO</span>
+      </a>
+
+      <nav class="desktop-navigation" id="desktop-nav" aria-label="Navigation principale">
+        <span class="nav-glider" id="nav-glider" aria-hidden="true"></span>
+        <a class="nav-link active" href="#/" data-nav="home" title="Accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>Accueil</span></a>
+        <a class="nav-link" href="#/catalogue" data-nav="catalog" title="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg><span>Catalogue</span></a>
+        <a class="nav-link" href="#/jouer" data-nav="play" title="Jouer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/><path d="m7.5 12.5 2 2 3.5-4"/></svg><span>Jouer</span></a>
+        <a class="nav-link" href="#/communaute" data-nav="community" title="Communauté"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 19.5c0-3.3 2.8-5.5 6.2-5.5s6.2 2.2 6.2 5.5"/><path d="M16.4 4.9a3.2 3.2 0 0 1 0 6.2M18.6 14.4c1.7.7 2.8 2.3 2.8 5.1"/></svg><span>Communauté</span></a>
+        <button type="button" class="nav-link nav-me" id="nav-me-btn" data-nav="me" aria-haspopup="dialog" aria-expanded="false" title="Mon espace"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"/></svg><span>Moi</span></button>
+      </nav>
+
+      <div class="header-actions">
+        <div id="admin-gear-container"></div>
+        <button type="button" class="icon-btn notif-btn" id="notif-btn" aria-label="Notifications" title="Notifications" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="notif-badge" hidden>0</span>
+        </button>
+        <a class="icon-btn" id="open-chat-btn" href="chat.html" aria-label="Ouvrir le salon des pilotes" title="Salon des pilotes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span id="header-chat-badge" class="unread-dot-indicator" style="display:none"></span>
+        </a>
+        <button type="button" class="icon-btn" id="theme-btn" hidden aria-label="Changer d'ambiance visuelle" title="Ambiance">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1.5 12h3M19.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+        </button>
+        <button type="button" class="pilot-chip" id="user-profile-btn" aria-label="Espace compte pilote">
+          <span class="live-status-dot logged-out"></span>
+          <span class="pilot-label" id="user-display-name">Connexion</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="page-main" class="app-pages" tabindex="-1">
+  <div class="page" id="page-home" data-page="home">
+  <!-- ============ HERO ============ -->
+  <section class="hero-stage">
+    <div class="hero-aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="hero-grid-lines" aria-hidden="true"></div>
+    <div class="hero-streaks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+    <div class="stage-shell hero-inner">
+      <div class="hero-copy">
+        <div class="badge-hero-pill"><span class="pulse-optic"></span><span>Archive vivante des sportives de route</span></div>
+        <h1 class="hero-heroic-title">
+          <span class="ht-line">Chaque version.</span>
+          <span class="ht-line ht-outline">Chaque chiffre.</span>
+        </h1>
+        <p class="hero-heroic-sub">
+          Puissance, couple, phases et records de centaines de voitures, comparés par les pilotes qui les conduisent. Cherchez un modèle, un moteur ou une génération.
+        </p>
+
+        <div class="command-search-container" id="search-container">
+          <div class="command-search-wrapper">
+            <svg class="search-lens" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="search" id="global-search-input" placeholder="Essayez : S16, Z32, MX-5, Rallye, V8…" autocomplete="off" spellcheck="false" aria-label="Rechercher une voiture" enterkeyhint="search">
+            <kbd class="cmd-key-indicator" title="Raccourci clavier">⌘K</kbd>
+          </div>
+          <div class="search-suggestions-dropdown" id="search-suggestions" aria-hidden="true"></div>
+        </div>
+
+        <div class="quick-chips" aria-label="Recherches rapides">
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="Rallye">Rallye</button>
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="Turbo">Turbo</button>
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="V6">V6</button>
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="Traction">Traction</button>
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="Break">Break</button>
+        </div>
+
+        <dl class="hero-stats">
+          <div><dt>Véhicules</dt><dd id="stat-cars">0</dd></div>
+          <div><dt>Motorisations</dt><dd id="stat-engines">0</dd></div>
+          <div><dt>Marques</dt><dd id="stat-brands">0</dd></div>
+        </dl>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-gauge" id="hero-gauge" aria-label="Compte-tours : puissance maximale des résultats affichés">
+          <svg viewBox="0 0 300 300" class="gauge-svg" role="img" aria-hidden="true">
+            <defs>
+              <linearGradient id="gaugeArc" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0" stop-color="var(--accent)" stop-opacity="0.15"/>
+                <stop offset="1" stop-color="var(--accent)" stop-opacity="0.95"/>
+              </linearGradient>
+              <filter id="needleGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <circle cx="150" cy="150" r="146" class="gauge-ring"/>
+            <circle cx="150" cy="150" r="140" class="gauge-bezel"/>
+            <circle cx="150" cy="150" r="128" class="gauge-face"/>
+            <path id="gauge-track" class="gauge-track"/>
+            <path id="gauge-redline" class="gauge-redline"/>
+            <path id="gauge-fill" class="gauge-fill"/>
+            <g id="gauge-ticks"></g>
+            <g id="gauge-needle" class="gauge-needle">
+              <polygon class="needle-body" points="150,146.2 256,149.2 256,150.8 150,153.8" filter="url(#needleGlow)"/>
+              <polygon class="needle-tail" points="150,145 126,147.2 126,152.8 150,155"/>
+            </g>
+            <circle cx="150" cy="150" r="10" class="gauge-hub"/>
+          </svg>
+          <div class="gauge-readout">
+            <div class="gauge-line"><span class="gauge-value" id="gauge-power">0</span><span class="gauge-unit">ch</span></div>
+            <span class="gauge-caption" id="gauge-count">Calcul…</span>
+          </div>
+          <div class="gauge-chip gauge-chip-a"><span>V-Max</span><b id="gauge-vmax">—</b></div>
+          <div class="gauge-chip gauge-chip-b"><span>0–100</span><b id="gauge-zero">—</b></div>
+        </div>
+      </div>
+    </div>
+    <a class="scroll-hint" href="#home-feed-sec" aria-label="Descendre vers l'actualité"><span></span></a>
+  </section>
+
+  <!-- ============ BANDEAU DES MARQUES ============ -->
+  <section class="brand-marquee" aria-label="Marques du catalogue">
+    <div class="marquee-track" id="brand-marquee"></div>
+  </section>
+
+  <section class="stage-shell home-section" id="home-feed-sec">
+    <div class="section-head">
+      <div><h2 class="section-title">Fil d'actualité</h2><p class="count-stream">Nouveaux pilotes, nouvelles voitures et nouveaux records</p></div>
+      <a class="link-more" href="#/communaute/fil">Tout voir&nbsp;➔</a>
+    </div>
+    <div class="feed-list" id="home-feed" aria-live="polite"></div>
+  </section>
+
+  <section class="stage-shell home-section" id="home-play-sec">
+    <div class="section-head"><div><h2 class="section-title">À essayer</h2><p class="count-stream">Voiture du jour, quiz, duels, cartes à collectionner</p></div></div>
+    <div id="home-daily" class="daily-wrap"></div>
+    <div class="play-tiles">
+      <a class="play-tile" href="#/quiz"><b>🎯 Quiz</b><small>Quelle voiture est faite pour toi ?</small></a>
+      <a class="play-tile" href="#/duel"><b>🏁 Duel</b><small>0-100 et 400 m en course</small></a>
+      <a class="play-tile" href="#/jouer/cartes"><b>🃏 Cartes</b><small>Un pack gratuit par jour</small></a>
+      <a class="play-tile" href="#/clubs"><b>🛡 Clubs</b><small>Par marque ou par région</small></a>
+      <a class="play-tile" href="#/annonces"><b>🏷 Annonces</b><small>Pièces entre pilotes</small></a>
+    </div>
+  </section>
+
+  <section class="stage-shell home-section" id="home-pilots-sec">
+    <div class="section-head">
+      <div><h2 class="section-title">Pilotes les plus actifs</h2><p class="count-stream">Niveaux, badges et séries de visites</p></div>
+      <a class="link-more" href="#/classement/pilotes">Classement&nbsp;➔</a>
+    </div>
+    <div class="mini-list" id="home-active-pilots" aria-live="polite"></div>
+  </section>
+
+  <section class="stage-shell home-section">
+    <div class="home-cols">
+      <div class="home-col">
+        <div class="section-head compact"><h2 class="section-title small">Prochains événements</h2><a class="link-more" href="#/communaute/evenements">Voir tout&nbsp;➔</a></div>
+        <div class="events-mini" id="home-events"></div>
+      </div>
+      <div class="home-col">
+        <div class="section-head compact"><h2 class="section-title small">Les plus aimées</h2><a class="link-more" href="#/classement/voitures">Classement&nbsp;➔</a></div>
+        <div class="top-mini" id="home-top-cars"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage-shell home-section">
+    <div class="section-head">
+      <div><h2 class="section-title">Dans les garages</h2><p class="count-stream">Les dernières voitures publiées par les pilotes</p></div>
+      <a class="link-more" href="#/communaute/voitures">Toutes les voitures&nbsp;➔</a>
+    </div>
+    <div class="comm-grid" id="home-community"></div>
+  </section>
+
+  <!-- ============ APPEL À REJOINDRE ============ -->
+  <section class="stage-shell">
+    <div class="cta-band">
+      <div class="cta-copy">
+        <h2>Ton garage, tes chronos, ta place au classement.</h2>
+        <p>Enregistre tes tours, garde tes favoris et discute avec les autres pilotes dans le salon.</p>
+      </div>
+      <div class="cta-actions">
+        <button type="button" class="cta-btn fill-btn" data-action="open-auth">Créer mon compte</button>
+        <a class="cta-btn btn-ghost" href="chat.html">Ouvrir le salon</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+  <div class="page" id="page-catalog" data-page="catalog">
+  <main class="stage-shell page-wrap" id="main-catalog-view">
+    <header class="page-head">
+        <div class="page-head-text">
+          <span class="status-tag-verified">Archive</span>
+          <h1 class="page-title" id="catalog-title">Le catalogue</h1>
+          
+        </div>
+        
+      </header>
+    <p class="count-stream" id="results-count" aria-live="polite">Calcul de l'archive en cours…</p>
+    <div class="catalog-search search-container" id="catalog-search-container">
+      <div class="command-search-wrapper">
+        <svg class="search-lens" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" id="catalog-search-input" placeholder="Rechercher un modèle, un moteur, une génération…" autocomplete="off" spellcheck="false" aria-label="Rechercher dans le catalogue" enterkeyhint="search" role="combobox" aria-expanded="false" aria-controls="catalog-suggestions">
+      </div>
+      <div class="search-suggestions-dropdown" id="catalog-suggestions" role="listbox" aria-hidden="true"></div>
+    </div>
+    <div class="toolbar-cluster">
+      <div class="categories-scroll" id="body-filter-chips" role="group" aria-label="Carrosserie">
+        <button type="button" class="filter-pill active" data-filter-type="all">Toutes</button>
+        <button type="button" class="filter-pill" data-filter-type="Berline">Berline</button>
+        <button type="button" class="filter-pill" data-filter-type="Coupé">Coupé &amp; Sport</button>
+        <button type="button" class="filter-pill" data-filter-type="Break">Break</button>
+        <button type="button" class="filter-pill" data-filter-type="Supercar">Supercar</button>
+        <button type="button" class="filter-pill" data-filter-type="Le Mans">Le Mans</button>
+      </div>
+      <div class="selectors-cluster">
+        <label class="sort-cluster"><span class="sort-title">Marque</span>
+          <select id="brand-select" class="custom-select" aria-label="Filtrer par marque"><option value="all">Toutes les marques</option></select>
+        </label>
+        <label class="sort-cluster"><span class="sort-title">Tri</span>
+          <select id="sort-select" class="custom-select" aria-label="Trier les véhicules">
+            <option value="name-asc">Nom (A-Z)</option>
+            <option value="power-desc">Puissance</option>
+            <option value="speed-desc">Vitesse de pointe</option>
+            <option value="zero-asc">0-100 km/h (le + rapide)</option>
+            <option value="torque-desc">Couple</option>
+            <option value="year-desc">Plus récentes</option>
+            <option value="year-asc">Plus anciennes</option>
+            <option value="likes-desc">Les plus aimées</option>
+            <option value="rating-desc">Les mieux notées</option>
+          </select>
+        </label>
+        <button type="button" class="cta-btn btn-ghost adv-toggle" id="adv-toggle" aria-expanded="false" aria-controls="adv-panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+          Filtres avancés <span class="adv-count" id="adv-count" hidden>0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="adv-panel" id="adv-panel" hidden>
+      <div class="adv-grid">
+        <label class="adv-field"><span>Transmission</span>
+          <select id="adv-drive" class="custom-select"><option value="all">Toutes</option><option value="traction">Traction</option><option value="propulsion">Propulsion</option><option value="4x4">4x4</option></select></label>
+        <label class="adv-field"><span>Moteur</span>
+          <select id="adv-turbo" class="custom-select"><option value="all">Tous</option><option value="turbo">Turbo / compresseur</option><option value="atmo">Atmosphérique</option></select></label>
+        <label class="adv-field"><span>Puissance min. (ch)</span><input type="number" id="adv-pmin" min="0" max="2000" inputmode="numeric" placeholder="ex. 150"></label>
+        <label class="adv-field"><span>Puissance max. (ch)</span><input type="number" id="adv-pmax" min="0" max="2000" inputmode="numeric" placeholder="ex. 300"></label>
+        <label class="adv-field"><span>0-100 km/h max. (s)</span><input type="number" id="adv-zero" min="1" max="30" step="0.1" inputmode="decimal" placeholder="ex. 6.5"></label>
+        <label class="adv-field"><span>V-max min. (km/h)</span><input type="number" id="adv-vmax" min="0" max="500" inputmode="numeric" placeholder="ex. 220"></label>
+        <label class="adv-field"><span>Produite à partir de</span><input type="number" id="adv-yfrom" min="1900" max="2100" inputmode="numeric" placeholder="ex. 1990"></label>
+        <label class="adv-field"><span>Jusqu'en</span><input type="number" id="adv-yto" min="1900" max="2100" inputmode="numeric" placeholder="ex. 2005"></label>
+      </div>
+      <div class="adv-actions"><button type="button" class="cta-btn btn-ghost" id="adv-reset">Réinitialiser les filtres</button></div>
+    </div>
+    <div class="vehicles-dynamic-grid" id="vehicles-grid"></div>
+    <nav class="pagination-bar" id="pagination-container" aria-label="Pagination du catalogue"></nav>
+  </main>
+</div>
+
+  <div class="page page-layer" id="page-community" data-page="community">
+  <div class="stage-shell page-wrap">
+    <header class="page-head">
+        <div class="page-head-text">
+          <span class="status-tag-verified">Communauté</span>
+          <h1 class="page-title">La communauté</h1>
+          <p class="page-sub">Les pilotes, leurs voitures, les sorties et l'actualité du site.</p>
+        </div>
+        <div class="page-head-actions"><a class="cta-btn fill-btn compact-btn" href="chat.html">💬 Ouvrir le salon</a></div>
+      </header>
+    <nav data-section="community"></nav>
+    <section class="tab-panel" data-tab="fil" hidden>
+      <div class="seg-switch" role="tablist" aria-label="Filtrer le fil"><button type="button" role="tab" class="seg-btn active" data-feed-mode="all">Tout</button><button type="button" role="tab" class="seg-btn" data-feed-mode="follow">Mes abonnements</button></div>
+      <div class="feed-list" id="feed-list" aria-live="polite"></div>
+      <button type="button" class="cta-btn btn-ghost w-100 mt" id="feed-more" data-action="feed-more" hidden>Voir plus</button>
+    </section>
+    <section class="tab-panel" data-tab="voitures" hidden>
+      <div class="community-tools">
+        <input type="search" id="community-search" placeholder="Rechercher une voiture, un moteur, un pilote…" aria-label="Rechercher une voiture de la communauté">
+        <span class="lap-meta" id="community-count" aria-live="polite"></span>
+        <button type="button" class="cta-btn fill-btn compact-btn" data-action="mycar-new">+ Ajouter ma voiture</button>
+      </div>
+      <div class="comm-grid" id="community-grid"></div>
+    </section>
+    <section class="tab-panel" data-tab="pilotes" hidden>
+      <div class="community-tools">
+        <input type="search" id="pilots-search" placeholder="Rechercher un pilote…" aria-label="Rechercher un pilote">
+        <span class="lap-meta" id="pilots-count" aria-live="polite"></span>
+      </div>
+      <div class="telemetry-stack" id="pilots-registry-list"></div>
+    </section>
+    <section class="tab-panel" data-tab="evenements" hidden>
+      <div class="community-tools">
+        <span class="lap-meta" id="events-count" aria-live="polite"></span>
+        <button type="button" class="cta-btn fill-btn compact-btn" data-action="event-new">+ Proposer une sortie</button>
+      </div>
+      <div class="seg-switch" role="tablist" aria-label="Affichage des sorties"><button type="button" role="tab" class="seg-btn active" data-ev-view="list">☰ Liste</button><button type="button" role="tab" class="seg-btn" data-ev-view="map">🗺 Carte</button></div>
+      <div id="events-map-wrap" hidden><div id="events-map" class="events-map"></div><p class="lap-meta" id="events-map-status" aria-live="polite"></p></div>
+      <div class="events-list" id="events-list"></div>
+      <details class="past-events"><summary>Événements passés</summary><div class="events-list" id="events-past"></div></details>
+    </section>
+  </div>
+</div>
+
+  <div class="page page-layer" id="leaderboard-modal" data-page="leaderboard">
+  <div class="stage-shell page-wrap">
+    <header class="page-head">
+        <div class="page-head-text">
+          <span class="status-tag-verified">Classement</span>
+          <h1 class="page-title">Les classements</h1>
+          <p class="page-sub">Chronos mondiaux, circuits et voitures préférées de la communauté.</p>
+        </div>
+        
+      </header>
+    <nav data-section="leaderboard"></nav>
+    <section class="tab-panel" data-tab="chronos" hidden>
+      <div class="lb-filters">
+          <label class="lb-field"><span>Circuit</span><select id="leaderboard-track-select" class="custom-select" aria-label="Choisir un circuit"></select></label>
+          <label class="lb-field"><span>Catégorie</span>
+            <select id="leaderboard-cat-select" class="custom-select" aria-label="Filtrer par catégorie">
+              <option value="all">Toutes</option>
+              <optgroup label="Transmission">
+                <option value="traction">Traction</option>
+                <option value="propulsion">Propulsion</option>
+                <option value="4x4">4x4</option>
+              </optgroup>
+              <optgroup label="Moteur">
+                <option value="turbo">Turbo / compressé</option>
+                <option value="atmo">Atmosphérique</option>
+              </optgroup>
+              <optgroup label="Carrosserie">
+                <option value="berline">Berline</option>
+                <option value="coupé">Coupé &amp; Sport</option>
+                <option value="break">Break</option>
+                <option value="supercar">Supercar</option>
+                <option value="le mans">Le Mans</option>
+              </optgroup>
+            </select>
+          </label>
+          <label class="lb-field"><span>Période</span>
+            <select id="leaderboard-period-select" class="custom-select" aria-label="Filtrer par période">
+              <option value="all">Depuis toujours</option>
+              <option value="365">12 derniers mois</option>
+              <option value="30">30 derniers jours</option>
+              <option value="7">7 derniers jours</option>
+            </select>
+          </label>
+        </div>
+      <div class="telemetry-stack" id="global-leaderboard-list"></div>
+    </section>
+    <section class="tab-panel" data-tab="circuits" hidden>
+      <div class="community-tools"><input type="search" id="circuits-search" placeholder="Rechercher un circuit…" aria-label="Rechercher un circuit"><span class="lap-meta" id="circuits-count"></span></div>
+      <div class="circuits-grid" id="circuits-list"></div>
+    </section>
+    <section class="tab-panel" data-tab="voitures" hidden>
+      <div class="seg-switch" role="tablist" aria-label="Critère">
+        <button type="button" role="tab" class="seg-btn active" data-top-mode="likes">♥ Les plus aimées</button>
+        <button type="button" role="tab" class="seg-btn" data-top-mode="rating">★ Les mieux notées</button>
+        <button type="button" role="tab" class="seg-btn" data-top-mode="community">🚗 Voitures de pilotes</button>
+      </div>
+      <ol class="top-list" id="top-cars-list"></ol>
+    </section>
+    <section class="tab-panel" data-tab="pilotes" hidden>
+      <p class="lap-meta">Les pilotes les plus actifs : chronos, commentaires, voitures, événements et connexions rapportent des points.</p>
+      <ol class="top-list pilots-rank" id="pilots-rank-list"></ol>
+    </section>
+    <section class="tab-panel" data-tab="collection" hidden>
+      <p class="lap-meta">Les plus grandes collections de cartes MOTORAUTO : ouvre des packs, échange tes doublons et monte dans le classement.</p>
+      <ol class="top-list pilots-rank" id="collectors-rank-list"></ol>
+    </section>
+  </div>
+</div>
+
+  <div class="page page-layer" id="page-circuit" data-page="circuit">
+  <div class="stage-shell page-wrap">
+    <a class="back-link" href="#/classement/circuits" data-back="#/classement/circuits">← Tous les circuits</a>
+    <header class="page-head">
+      <div class="page-head-text"><span class="status-tag-verified">Circuit</span><h1 class="page-title" id="circuit-title">Circuit</h1><p class="page-sub" id="circuit-sub"></p></div>
+    </header>
+    <div id="circuit-body"></div>
+  </div>
+</div>
+
+  <div class="page page-layer" id="vehicle-modal" data-page="car">
+  <div class="stage-shell page-wrap sheet-wrap">
+    <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Retour au catalogue</a>
+    <article class="vehicle-sheet page-box">
+      <div id="vehicle-detail-content"></div>
+    </article>
+  </div>
+</div>
+
+  <div class="page page-layer" id="page-commcar" data-page="commcar">
+  <div class="stage-shell page-wrap sheet-wrap">
+    <a class="back-link" href="#/communaute/voitures" data-back="#/communaute/voitures">← Voitures des pilotes</a>
+    <article class="vehicle-sheet page-box" id="commcar-content" aria-live="polite"></article>
+  </div>
+</div>
+
+  <div class="page page-layer" id="public-profile-modal" data-page="pilot">
+  <div class="stage-shell page-wrap">
+    <a class="back-link" href="#/communaute/pilotes" data-back="#/communaute/pilotes">← Tous les pilotes</a>
+    <section class="pro-hero" aria-labelledby="pub-profile-name">
+      <div class="pro-id">
+        <img id="pub-profile-avatar" src="" alt="Avatar du pilote" class="profile-avatar pro-avatar" data-fallback="avatar">
+        <div class="pro-id-text">
+          <span class="status-tag-verified" id="pub-profile-subtitle">Dossier pilote</span>
+          <h1 class="page-title" id="pub-profile-name">Pilote</h1>
+          <p class="page-sub" id="pub-profile-car">Projet : -</p>
+        </div>
+      </div>
+      <div id="pub-socials"></div>
+      <p id="pub-profile-bio" class="profile-bio">Aucune bio renseignée.</p>
+      <div class="badge-row" id="pub-profile-badges"></div>
+      <div class="pro-stats" id="pub-social">
+        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b><span>abonnés</span></button>
+        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="following"><b data-sc="following">–</b><span>abonnements</span></button>
+        <div class="pro-stat" id="pub-stat-cards"><b>–</b><span>cartes</span></div>
+        <div class="pro-stat" id="pub-stat-level"><b>–</b><span>niveau</span></div>
+      </div>
+      <div class="pro-actions">
+        <button type="button" class="cta-btn fill-btn compact-btn follow-btn" data-action="toggle-follow" hidden>Suivre</button>
+        <button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats">📊 Caractéristiques</button>
+        <button type="button" class="cta-btn btn-ghost compact-btn grade-btn" id="pub-admin-btn" data-action="toggle-admin" hidden>Nommer admin</button>
+      </div>
+    </section>
+    <div id="pub-profile-private-warning" class="private-warning" style="display:none">🔒 Ce pilote garde son garage privé.</div>
+    <nav class="pro-tabs" id="pub-tabs" role="tablist" aria-label="Sections du profil">
+      <button type="button" role="tab" class="pro-tab active" data-pt="vitrine" aria-selected="true">Vitrine</button>
+      <button type="button" role="tab" class="pro-tab" data-pt="badges" aria-selected="false">Badges</button>
+      <button type="button" role="tab" class="pro-tab" data-pt="garage" aria-selected="false">Garage</button>
+      <button type="button" role="tab" class="pro-tab" data-pt="chronos" aria-selected="false">Chronos</button>
+      <button type="button" role="tab" class="pro-tab" data-pt="ecurie" aria-selected="false">Écurie</button>
+    </nav>
+    <div class="page-body">
+      <section class="pro-panel" data-pp="vitrine"><div id="pub-vitrine"></div></section>
+      <section class="pro-panel" data-pp="badges" hidden><div id="pub-badges-slot"></div></section>
+      <section class="pro-panel" data-pp="garage" hidden>
+        <div class="car-showcase" id="pub-profile-carcard" hidden></div>
+        <div id="pub-profile-cars" hidden></div>
+      </section>
+      <div id="pub-profile-public-content">
+        <section class="pro-panel" data-pp="chronos" hidden>
+          <div class="telemetry-stack scroll-box" id="pub-profile-telemetry"></div>
+        </section>
+        <section class="pro-panel" data-pp="ecurie" hidden>
+          <div class="vehicles-dynamic-grid compact-subgrid" id="pub-profile-favorites"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="page page-layer" id="garage-modal" data-page="garage">
+  <div class="stage-shell page-wrap">
+    <header class="page-head">
+      <div class="page-head-text garage-id">
+        <img id="garage-pilot-avatar" src="" alt="Ta photo de profil" class="garage-avatar" data-fallback="avatar">
+        <div class="garage-id-text">
+        <span class="status-tag-verified">Dossier synchronisé</span>
+        <h1 class="page-title" id="garage-pilot-name">Pilote</h1>
+        <p class="page-sub" id="garage-pilot-meta">Membre</p>
+        <div class="badge-row" id="garage-badges"></div>
+        </div>
+      </div>
+      <div class="page-head-actions"><button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats" data-self="1">📊 Caractéristiques</button><button type="button" class="secondary-destructive-btn" id="logout-btn">Se déconnecter</button></div>
+    </header>
+    <nav data-section="garage"></nav>
+    <section class="tab-panel" data-tab="apercu" hidden>
+      <div class="social-row" id="garage-social">
+          <button type="button" class="social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b> abonnés</button>
+          <button type="button" class="social-count" data-action="show-follow-list" data-kind="following"><b data-sc="following">–</b> abonnements</button>
+        </div>
+      <div class="stats-ribbon">
+          <div class="ribbon-card"><span class="ribbon-value" id="stat-chronos-count">0</span><span class="ribbon-key">Chronos</span></div>
+          <div class="ribbon-card"><span class="ribbon-value" id="stat-favs-count">0</span><span class="ribbon-key">En écurie</span></div>
+          <div class="ribbon-card"><span class="ribbon-value" id="stat-status-badge">Actif</span><span class="ribbon-key">Statut</span></div>
+        </div>
+      <div class="subtabs-bar" role="tablist">
+          <button type="button" role="tab" class="subtab-btn active" id="tab-my-telemetry">Journal de télémétrie</button>
+          <button type="button" role="tab" class="subtab-btn" id="tab-my-favorites">Mes favoris</button>
+        </div>
+        <div class="garage-panel active" id="garage-telemetry-panel"><div class="telemetry-stack" id="user-telemetry-journal"></div></div>
+        <div class="garage-panel" id="garage-favorites-panel"><div class="vehicles-dynamic-grid compact-subgrid" id="user-favorites-grid"></div></div>
+      <div id="garage-reminders"></div>
+      <div id="garage-virtual" class="game-zone"></div>
+    </section>
+    <section class="tab-panel" data-tab="voitures" hidden>
+      <p class="lap-meta">Ajoute toutes tes voitures : motorisation, description, modifications et jusqu'à 8 photos défilables. Elles apparaissent sur ton profil et dans la communauté.</p>
+      <div id="my-gauge" class="game-zone"></div>
+      <div class="comm-grid" id="my-cars-list"></div>
+      <button type="button" class="cta-btn fill-btn mt" data-action="mycar-new">+ Ajouter une voiture</button>
+    </section>
+    <section class="tab-panel" data-tab="suivi" hidden>
+      <div class="follow-sections">
+        <section class="follow-block" id="follow-maint"><div id="maint-root"></div></section>
+        <section class="follow-block" id="follow-costs"><div id="costs-root"></div></section>
+        <section class="follow-block" id="follow-journal"><div id="journal-root"></div></section>
+      </div>
+    </section>
+    <section class="tab-panel" data-tab="parametres" hidden>
+      <div class="settings-box open">
+          <div class="form-grid">
+            <div class="input-stack"><label for="settings-username">Pseudo</label><input type="text" id="settings-username" placeholder="Ton pseudo" maxlength="24"></div>
+            <div class="input-stack"><label for="settings-avatar">Avatar (URL)</label><input type="text" id="settings-avatar" placeholder="https://…"></div>
+          </div>
+          <div class="avatar-upload">
+            <img id="settings-avatar-preview" class="avatar-preview" alt="Aperçu de l'avatar" data-fallback="avatar">
+            <div class="avatar-upload-body">
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="avatar-upload-btn">📷 Téléverser une photo</button>
+              <input type="file" id="avatar-file-input" accept="image/*" hidden>
+              <small id="avatar-upload-status">Depuis ta galerie ou tes fichiers (n'importe quelle taille, jusqu'à 25 Mo), ou colle une URL ci-dessus.</small>
+            </div>
+          </div>
+          <div class="settings-sep">Ma voiture</div>
+          <div class="form-grid">
+            <div class="input-stack"><label for="settings-car">Voiture actuelle</label><input type="text" id="settings-car" maxlength="80" placeholder="Ex. Peugeot 106 S16 phase 2"></div>
+            <div class="input-stack"><label for="settings-car-photo">Photo de la voiture (URL)</label><input type="text" id="settings-car-photo" placeholder="https://…"></div>
+          </div>
+          <div class="avatar-upload">
+            <img id="settings-car-preview" class="car-preview" alt="Aperçu de la voiture" data-fallback="car">
+            <div class="avatar-upload-body">
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="car-upload-btn">📷 Téléverser une photo</button>
+              <input type="file" id="car-file-input" accept="image/*" hidden>
+              <small id="car-upload-status">Depuis ta galerie ou tes fichiers, ou colle une URL ci-dessus.</small>
+            </div>
+          </div>
+          <div class="input-stack mt"><label for="settings-mods">Modifications</label><textarea id="settings-mods" rows="3" maxlength="500" placeholder="Une par ligne : ligne d'échappement, combinés filetés, jantes 16&quot;…"></textarea></div>
+          <div class="input-stack mt"><label for="settings-bio">Biographie</label><textarea id="settings-bio" rows="2" maxlength="300" placeholder="Quelques mots sur toi…"></textarea></div>
+          <div class="social-fields mt">
+            <div class="panel-section-title">Réseaux sociaux</div>
+            <p class="lap-meta">Colle le lien de ton profil ou juste ton pseudo. Ils s'affichent sur ton profil public.</p>
+            <div class="input-stack"><label for="settings-instagram">Instagram</label><input type="text" id="settings-instagram" maxlength="120" placeholder="@pseudo ou instagram.com/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+            <div class="input-stack"><label for="settings-tiktok">TikTok</label><input type="text" id="settings-tiktok" maxlength="120" placeholder="@pseudo ou tiktok.com/@pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+            <div class="input-stack"><label for="settings-snapchat">Snapchat</label><input type="text" id="settings-snapchat" maxlength="120" placeholder="pseudo ou snapchat.com/add/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+          </div>
+          <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
+          <label class="check-row"><input type="checkbox" id="settings-public-garage"><span>Garage public : les autres pilotes voient mes favoris et mes chronos</span></label>
+          <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
+          <div class="danger-zone mt">
+            <div class="panel-section-title">Zone sensible</div>
+            <p class="lap-meta">Tu peux supprimer ton compte à tout moment. Ton profil, tes voitures, tes chronos, tes publications, ta collection de cartes et tes photos sont effacés définitivement.</p>
+            <button type="button" class="secondary-destructive-btn" id="open-delete-account">Supprimer mon compte</button>
+          </div>
+        </div>
+    </section>
+  </div>
+</div>
+
+  <div class="page page-layer" id="admin-panel-modal" data-page="admin">
+  <div class="stage-shell page-wrap">
+    <header class="page-head">
+        <div class="page-head-text">
+          <span class="status-tag-verified">Administration</span>
+          <h1 class="page-title">Administration</h1>
+          <p class="page-sub">Tableau de bord, modération, catalogue et journal des actions.</p>
+        </div>
+        
+      </header>
+    <nav data-section="admin"></nav>
+    <section class="tab-panel" data-tab="tableau" hidden>
+      <h3 class="admin-h3">À traiter</h3>
+      <div id="admin-inbox"><div class="empty-note">Chargement…</div></div>
+      <div class="stats-ribbon" id="admin-stats">
+          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-cars">…</span><span class="ribbon-key">Véhicules</span></div>
+          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-users">…</span><span class="ribbon-key">Pilotes</span></div>
+          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-laps">…</span><span class="ribbon-key">Chronos</span></div>
+          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-msgs">…</span><span class="ribbon-key">Messages</span></div>
+          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-sg">…</span><span class="ribbon-key">Propositions</span></div>
+          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-rp">…</span><span class="ribbon-key">Signalements</span></div>
+        </div>
+      <div id="adm-dash"></div>
+    </section>
+    <section class="tab-panel" data-tab="moderation" hidden>
+      <h3 class="admin-h3">Messages signalés du salon</h3>
+      <div class="admin-list" id="admin-rp-list"></div>
+      <h3 class="admin-h3">Propositions de la communauté en attente</h3>
+      <div class="admin-list" id="admin-sg-list"></div>
+      <h3 class="admin-h3">Messages reçus (formulaire de contact)</h3>
+      <div class="admin-list" id="admin-msg-list"></div>
+      <h3 class="admin-h3">Pilotes en sourdine</h3>
+      <div class="admin-list" id="admin-mute-list"></div>
+      <div class="admin-quick">
+        <a class="cta-btn btn-ghost" href="#/communaute/pilotes">Gérer les pilotes</a>
+        <a class="cta-btn btn-ghost" href="#/classement/chronos">Modérer les chronos</a>
+        <a class="cta-btn btn-ghost" href="chat.html">Modérer le salon &amp; canaux</a>
+      </div>
+      <h3 class="admin-h3">Réponses toutes prêtes</h3>
+      <p class="lap-meta">Elles apparaissent dans le menu « Réponse rapide » de la messagerie, pour répondre en un clic aux demandes fréquentes.</p>
+      <div id="canned-root"></div>
+    </section>
+    <section class="tab-panel" data-tab="catalogue" hidden>
+      <div class="admin-quick">
+        <button type="button" class="cta-btn fill-btn" data-action="admin-new-car">＋ Ajouter un véhicule</button>
+        <button type="button" class="cta-btn btn-ghost" data-action="admin-open-import">⇪ Importer (CSV / lien)</button>
+      </div>
+      <h3 class="admin-h3">Véhicules ajoutés ou modifiés (catalogue en ligne)</h3>
+      <div class="admin-list" id="admin-car-list"></div>
+      <p class="admin-note">Astuce : en tant qu'administrateur, les boutons « Modifier » et « Supprimer » apparaissent aussi sur chaque carte du catalogue, et la corbeille 🗑 sur chaque message du salon.</p>
+    </section>
+    <section class="tab-panel" data-tab="jeu" hidden>
+      <div id="admin-game"><div class="empty-note">Chargement…</div></div>
+    </section>
+    <section class="tab-panel" data-tab="journal" hidden>
+      <p class="admin-note">Les dernières actions des administrateurs (suppressions, grades, sourdines, décisions…).</p>
+      <div class="admin-list" id="admin-log-list"></div>
+    </section>
+  </div>
+</div>
+
+  <div class="page page-layer" id="page-play" data-page="play">
+  <div class="stage-shell page-wrap">
+    <header class="page-head">
+      <div class="page-head-text">
+        <span class="status-tag-verified">Jouer</span>
+        <h1 class="page-title">Jouer</h1>
+        <p class="page-sub">Cartes à collectionner, échanges, défis de la semaine et concours photo.</p>
+      </div>
+      <div class="page-head-actions"><a class="cta-btn btn-ghost compact-btn" href="#/duel">🏁 Duel</a><a class="cta-btn btn-ghost compact-btn" href="#/quiz">🎯 Quiz</a></div>
+    </header>
+    <nav data-section="play"></nav>
+    <section class="tab-panel" data-tab="apercu" hidden><div id="play-hub"></div></section>
+    <section class="tab-panel" data-tab="cartes" hidden><div id="cards-root"></div></section>
+    <section class="tab-panel" data-tab="echanges" hidden><div id="trades-root"></div></section>
+    <section class="tab-panel" data-tab="defis" hidden><div id="challenges-root"></div></section>
+    <section class="tab-panel" data-tab="concours" hidden><div id="contest-root"></div></section>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-duel" data-page="duel">
+  <div class="stage-shell page-wrap">
+    <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Mode duel</h1><p class="page-sub">Deux voitures, une ligne droite : 0-100 km/h ou 400 m départ arrêté, calculés à partir des données de leurs fiches.</p></div></header>
+    <div id="duel-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-quiz" data-page="quiz">
+  <div class="stage-shell page-wrap">
+    <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Quelle voiture est faite pour toi ?</h1><p class="page-sub">Quelques questions, et le catalogue te propose les fiches qui te correspondent.</p></div></header>
+    <div id="quiz-root"></div>
+  </div>
+  </div>
+
+  <div class="modal-layer" id="sharecar-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="sharecar-title">
+    <div class="modal-dialog">
+      <div class="dialog-header"><div><span class="status-tag-verified">Chat</span><h2 class="dialog-title" id="sharecar-title">Envoyer cette fiche</h2><p class="dialog-sub" id="sharecar-sub"></p></div><button type="button" class="dialog-close-btn" id="close-sharecar-modal" aria-label="Fermer">&times;</button></div>
+      <div class="dialog-body">
+        <div class="input-stack"><label for="sharecar-q">Destination</label><input type="search" id="sharecar-q" autocomplete="off" placeholder="Salon, canal ou pseudo d'un pilote…"></div>
+        <div id="sharecar-list" class="engine-picker-list"></div>
+        <div class="input-stack mt"><label for="sharecar-note">Message (facultatif)</label><input type="text" id="sharecar-note" maxlength="300" placeholder="Regarde cette fiche !"></div>
+        <div class="form-feedback error-txt" id="sharecar-err" role="alert"></div>
+        <button type="button" class="cta-btn fill-btn w-100" id="sharecar-send" disabled>Envoyer dans le chat</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="archives-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="archives-title">
+    <div class="modal-dialog wide-box">
+      <div class="dialog-header"><div><span class="status-tag-verified">Archives</span><h2 class="dialog-title" id="archives-title">Archives</h2><p class="dialog-sub">Anciens catalogues, brochures et publicités d'époque</p></div><button type="button" class="dialog-close-btn" id="close-archives-modal" aria-label="Fermer">&times;</button></div>
+      <div class="dialog-body" id="archives-body"></div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="engine-picker-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="engine-picker-title">
+    <div class="modal-dialog">
+      <div class="dialog-header"><div><span class="status-tag-verified">Moteurs</span><h2 class="dialog-title" id="engine-picker-title">Choisir un moteur existant</h2><p class="dialog-sub">Les caractéristiques sont recopiées, tu peux ensuite les ajuster</p></div><button type="button" class="dialog-close-btn" id="close-engine-picker-modal" aria-label="Fermer">&times;</button></div>
+      <div class="dialog-body">
+        <div class="input-stack"><label for="engine-picker-q">Rechercher (nom, code, cylindrée…)</label><input type="search" id="engine-picker-q" autocomplete="off" placeholder="Ex : TU5, 2.0 turbo, V8…"></div>
+        <div id="engine-picker-list" class="engine-picker-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="engine-add-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="engine-add-title">
+    <div class="modal-dialog">
+      <div class="dialog-header"><div><span class="status-tag-verified">Administration</span><h2 class="dialog-title" id="engine-add-title">Ajouter ce moteur à une voiture</h2><p class="dialog-sub" id="engine-add-sub"></p></div><button type="button" class="dialog-close-btn" id="close-engine-add-modal" aria-label="Fermer">&times;</button></div>
+      <div class="dialog-body">
+        <div class="input-stack"><label for="engine-add-q">Voiture</label><input type="search" id="engine-add-q" autocomplete="off" placeholder="Rechercher une voiture du catalogue…"></div>
+        <div id="engine-add-list" class="engine-picker-list"></div>
+        <div class="input-stack mt" id="engine-add-phase-box" hidden><label for="engine-add-phase">Phase / génération</label><select id="engine-add-phase"></select></div>
+        <div class="form-feedback error-txt" id="engine-add-error" role="alert"></div>
+        <button type="button" class="cta-btn fill-btn w-100" id="engine-add-confirm" disabled>Ajouter le moteur</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page page-layer" id="page-engine" data-page="engine">
+  <div class="stage-shell page-wrap">
+    <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
+    <div id="engine-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-legal" data-page="legal">
+  <div class="stage-shell page-wrap">
+    <a class="back-link" href="#/" data-back="#/">← Accueil</a>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Informations légales</span><h1 class="page-title" id="legal-title">Mentions légales</h1></div></header>
+    <nav class="page-tabs legal-nav" id="legal-nav" aria-label="Documents légaux"></nav>
+    <article class="legal-doc" id="legal-root"></article>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-clubs" data-page="clubs">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Clubs & équipes</h1><p class="page-sub">Rejoins un club par marque ou par région : fil privé entre membres et classement.</p></div></header>
+    <nav data-section="community"></nav>
+    <div id="clubs-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-club" data-page="club">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Club</h1><p class="page-sub"></p></div></header>
+    <nav data-section="community"></nav>
+    <a class="back-link" href="#/clubs" data-back="#/clubs">← Tous les clubs</a>
+    <div id="club-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-market" data-page="market">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Annonces entre pilotes</h1><p class="page-sub">Vends ou échange des pièces. Signale toute annonce douteuse.</p></div></header>
+    <nav data-section="community"></nav>
+    <div id="market-root"></div>
+  </div>
+  </div>
+
+  <div class="page" id="page-contact" data-page="contact">
+  <section class="stage-shell page-wrap contact-section" id="contact">
+    <div class="contact-card">
+      <div class="contact-intro">
+        <span class="contact-kicker">Contact</span>
+        <h2>Une idée, un bug, une voiture manquante&nbsp;?</h2>
+        <p>Écris-nous : ta demande arrive directement dans la messagerie privée de l'administrateur, dans le salon. Il te répond là-bas, tu es prévenu par la cloche.</p>
+        <ul class="contact-points">
+          <li><b>Ajout de véhicule</b> : indique la version, le moteur et une source.</li>
+          <li><b>Bug</b> : dis-nous ce que tu faisais et sur quel appareil.</li>
+          <li><b>Suggestion</b> : toutes les idées sont lues.</li>
+        </ul>
+      </div>
+      <form class="contact-form" id="contact-form" novalidate>
+        <div class="form-grid">
+          <div class="input-stack"><label for="ct-type">Type de demande</label>
+            <select id="ct-type" class="custom-select" name="type">
+              <option value="vehicle">Ajout d'un véhicule</option>
+              <option value="bug">Signaler un bug</option>
+              <option value="data">Erreur dans une fiche</option>
+              <option value="idea">Suggestion</option>
+              <option value="other">Autre demande</option>
+            </select>
+          </div>
+          <div class="input-stack"><label for="ct-pilot">Ton pseudo</label><input type="text" id="ct-pilot" maxlength="40" placeholder="Pseudo de pilote" autocomplete="nickname"></div>
+        </div>
+        <div class="input-stack"><label for="ct-email">E-mail <small>(facultatif — seulement pour l'envoi par messagerie)</small></label><input type="email" id="ct-email" maxlength="120" placeholder="toi@exemple.fr" autocomplete="email"></div>
+        <div class="contact-vehicle" id="ct-vehicle-fields">
+          <div class="form-grid">
+            <div class="input-stack"><label for="ct-brand">Marque</label><input type="text" id="ct-brand" maxlength="60" placeholder="Ex. Peugeot"></div>
+            <div class="input-stack"><label for="ct-model">Modèle / version</label><input type="text" id="ct-model" maxlength="80" placeholder="Ex. 106 S16 phase 2"></div>
+            <div class="input-stack"><label for="ct-years">Années</label><input type="text" id="ct-years" maxlength="30" placeholder="Ex. 1996 - 2003"></div>
+            <div class="input-stack"><label for="ct-engine">Moteur &amp; puissance</label><input type="text" id="ct-engine" maxlength="80" placeholder="Ex. 1.6 16V, 120 ch"></div>
+          </div>
+        </div>
+        <div class="input-stack"><label for="ct-message">Ton message</label><textarea id="ct-message" rows="5" maxlength="2000" placeholder="Décris ta demande…" required></textarea><small class="char-count" id="ct-count">0 / 2000</small></div>
+        <input type="text" id="ct-honey" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="honeypot">
+        <div class="contact-actions">
+          <button type="submit" class="cta-btn fill-btn" id="ct-submit">Envoyer ma demande</button>
+          <button type="button" class="cta-btn btn-ghost" id="ct-mailto">Ouvrir dans ma messagerie</button>
+        </div>
+        <p class="contact-status" id="ct-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  
+  </section>
+</div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="stage-shell">
+      <div class="footer-inner">
+        <div class="footer-brand"><span class="logo-motor">MOTOR</span><span class="logo-auto">AUTO</span><p>L'archive des sportives de route, écrite par ceux qui les conduisent.</p></div>
+        <nav class="footer-links" aria-label="Pied de page">
+          <a href="#/catalogue">Catalogue</a>
+          <a href="#/jouer">Jouer</a>
+          <a href="#/communaute">Communauté</a>
+          <a href="#/classement">Classement</a>
+          <a href="chat.html">Salon</a>
+          <a href="#/contact">Contact</a>
+          <a href="#/legal/mentions">Mentions légales</a>
+          <a href="#/legal/confidentialite">Confidentialité</a>
+          <a href="#/legal/cgu">Conditions</a>
+          <button type="button" data-nav-foot="theme">Ambiance</button>
+        </nav>
+      </div>
+      <div class="footer-legal">
+        <span>© 2026 MOTORAUTOFR — by aaronplja</span>
+        <span>Tous droits réservés</span>
+      </div>
+    </div>
+  </footer>
+
+  <button type="button" class="to-top" id="to-top" aria-label="Retour en haut" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 15 7-7 7 7"/></svg>
+  </button>
+
+  <!-- ============ BARRE MOBILE ============ -->
+  <nav class="mobile-touch-bar" id="mobile-touch-bar" aria-label="Navigation mobile">
+    <a class="touch-bar-item active" href="#/" data-touch="home" aria-label="Accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>Accueil</span></a>
+    <a class="touch-bar-item" href="#/catalogue" data-touch="catalog" aria-label="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg><span>Catalogue</span></a>
+    <a class="touch-bar-item touch-bar-highlight" href="#/jouer" data-touch="play" aria-label="Jouer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/><path d="m7.5 12.5 2 2 3.5-4"/></svg><span>Jouer</span></a>
+    <a class="touch-bar-item" href="#/communaute" data-touch="community" aria-label="Communauté"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 19.5c0-3.3 2.8-5.5 6.2-5.5s6.2 2.2 6.2 5.5"/><path d="M16.4 4.9a3.2 3.2 0 0 1 0 6.2M18.6 14.4c1.7.7 2.9 2.3 2.9 5.1"/></svg><span>Communauté</span></a>
+    <button type="button" class="touch-bar-item" id="touch-me-btn" data-touch="me" aria-haspopup="dialog" aria-expanded="false" aria-label="Mon espace"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"/></svg><span>Moi</span></button>
+  </nav>
+
+  <!-- ============ FENÊTRES ============ -->
+  <div class="modal-layer" id="stats-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+    <div class="modal-dialog stats-box">
+      <div class="dialog-header">
+        <div><h2 class="dialog-title" id="stats-title">Caractéristiques</h2><p class="dialog-sub" id="stats-sub"></p></div>
+        <button type="button" class="dialog-close-btn" id="close-stats-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body" id="stats-body"></div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="auth-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <div class="modal-dialog auth-box">
+      <div class="dialog-header">
+        <div>
+          <h2 class="dialog-title" id="auth-title">Cockpit pilote</h2>
+          <p class="dialog-sub">Synchronise tes chronos et ton écurie sur tous tes appareils</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-auth-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-tabs">
+        <button class="dialog-tab-btn active" id="tab-login-btn" type="button">Connexion</button>
+        <button class="dialog-tab-btn" id="tab-register-btn" type="button">Nouveau pilote</button>
+      </div>
+      <div class="dialog-body">
+        <button type="button" class="google-auth-btn" id="google-login-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.14v3.15C3.15 21.32 7.21 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.14C.41 8.09 0 9.77 0 12s.41 3.91 1.14 5.39l4.13-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.21 0 3.15 2.68 1.14 6.61l4.13 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/></svg>
+          <span>Continuer avec Google</span>
+        </button>
+        <div class="divider-or"><span>ou avec ton e-mail</span></div>
+
+        <form class="auth-form active" id="login-form">
+          <div class="input-stack"><label for="login-email">Adresse e-mail</label><input type="email" id="login-email" placeholder="pilote@motorauto.com" autocomplete="email" required></div>
+          <div class="input-stack"><label for="login-password">Mot de passe</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required></div>
+          <div class="form-feedback error-txt" id="login-error" role="alert"></div>
+          <button type="submit" class="cta-btn fill-btn w-100" id="login-submit-btn"><span class="btn-text">Se connecter</span></button>
+        </form>
+
+        <form class="auth-form" id="register-form">
+          <div class="input-stack"><label for="register-username">Pseudo</label><input type="text" id="register-username" placeholder="Ex : ApexRacer" autocomplete="nickname" maxlength="24" required></div>
+          <div class="input-stack"><label for="register-email">Adresse e-mail</label><input type="email" id="register-email" placeholder="pilote@domaine.com" autocomplete="email" required></div>
+          <div class="input-stack"><label for="register-password">Mot de passe</label><input type="password" id="register-password" placeholder="6 caractères minimum" autocomplete="new-password" required minlength="6"></div>
+          <div class="input-stack"><label for="register-car">Ta voiture actuelle</label><input type="text" id="register-car" placeholder="Ex : 206 Quiksilver 1.6 16V" maxlength="80" required></div>
+          <label class="check-row consent-row"><input type="checkbox" id="register-consent" required><span>J'ai 15 ans ou plus et j'accepte les <a href="#/legal/cgu" target="_blank" rel="noopener">conditions d'utilisation</a> et la <a href="#/legal/confidentialite" target="_blank" rel="noopener">politique de confidentialité</a>.</span></label>
+          <div class="form-feedback error-txt" id="register-error" role="alert"></div>
+          <button type="submit" class="cta-btn fill-btn w-100">Créer mon compte</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="delete-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div><h2 class="dialog-title" id="delete-title">Supprimer mon compte</h2><p class="dialog-sub">Cette action est définitive.</p></div>
+        <button type="button" class="dialog-close-btn" id="close-delete-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <p>Seront effacés : ton profil et ton avatar, tes voitures et photos, tes chronos, tes commentaires, likes et annonces, tes événements, ta collection de cartes et tes échanges, puis ton compte de connexion. Tu ne pourras pas revenir en arrière.</p>
+        <div class="input-stack"><label for="delete-confirm">Pour confirmer, écris <b>SUPPRIMER</b></label><input type="text" id="delete-confirm" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="SUPPRIMER"></div>
+        <p class="form-feedback error-txt" id="delete-error" role="alert"></p>
+        <div class="acf-actions"><button type="button" class="secondary-destructive-btn" id="delete-go" disabled>Supprimer définitivement</button><button type="button" class="cta-btn btn-ghost" id="delete-cancel">Annuler</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="theme-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="theme-title">
+    <div class="modal-dialog wide-box theme-box">
+      <div class="dialog-header">
+        <div>
+          <span class="status-tag-verified">Ambiances</span>
+          <h2 class="dialog-title" id="theme-title">Choisis ton univers</h2>
+          <p class="dialog-sub">16 ambiances, de la nuit sur circuit au showroom lumineux</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-theme-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <!-- COCKPITS NOCTURNES -->
+        <div class="theme-family-title">🌙 Cockpits Nocturnes (8 Univers Sombres)</div>
+        <div class="theme-palette-grid">
+          <button class="theme-tile active" data-set-theme="onyx-carbon"><span class="swatch-circle" style="background:#09090b; border:2px solid #ef4444;"></span><span class="tile-meta"><span class="tile-title">Onyx Carbon</span><span class="tile-sub">Noir pur & rouge racing</span></span></button>
+          <button class="theme-tile" data-set-theme="midnight-blue"><span class="swatch-circle" style="background:#060913; border:2px solid #3b82f6;"></span><span class="tile-meta"><span class="tile-title">Midnight Blue</span><span class="tile-sub">Bleu nuit métallisé profond</span></span></button>
+          <button class="theme-tile" data-set-theme="asphalt-smoke"><span class="swatch-circle" style="background:#111111; border:2px solid #f59e0b;"></span><span class="tile-meta"><span class="tile-title">Asphalt Smoke</span><span class="tile-sub">Anthracite circuit mat</span></span></button>
+          <button class="theme-tile" data-set-theme="monza-night"><span class="swatch-circle" style="background:#0a0507; border:2px solid #e11d48;"></span><span class="tile-meta"><span class="tile-title">Monza Night</span><span class="tile-sub">Carbone noir & reflets bordeaux</span></span></button>
+          <button class="theme-tile" data-set-theme="tokyo-neon"><span class="swatch-circle" style="background:#050508; border:2px solid #a855f7;"></span><span class="tile-meta"><span class="tile-title">Tokyo Neon</span><span class="tile-sub">Nuit urbaine & lueur violette</span></span></button>
+          <button class="theme-tile" data-set-theme="cyber-matrix"><span class="swatch-circle" style="background:#022c22; border:2px solid #10b981;"></span><span class="tile-meta"><span class="tile-title">Cyber Matrix</span><span class="tile-sub">Vert terminal & acier sombre</span></span></button>
+          <button class="theme-tile" data-set-theme="abyss-titanium"><span class="swatch-circle" style="background:#070d1a; border:2px solid #06b6d4;"></span><span class="tile-meta"><span class="tile-title">Abyss Titanium</span><span class="tile-sub">Titane brossé & lagon cyan</span></span></button>
+          <button class="theme-tile" data-set-theme="velvet-gothic"><span class="swatch-circle" style="background:#18050f; border:2px solid #ec4899;"></span><span class="tile-meta"><span class="tile-title">Velvet Gothic</span><span class="tile-sub">Bordeaux sombre & rose fushia</span></span></button>
+        </div>
+
+        <!-- SHOWROOMS LUMINEUX -->
+        <div class="theme-family-title" style="margin-top: 2rem;">☀️ Showrooms Lumineux (8 Univers Clairs)</div>
+        <div class="theme-palette-grid">
+          <button class="theme-tile" data-set-theme="carrara-white"><span class="swatch-circle" style="background:#f8fafc; border:2px solid #dc2626;"></span><span class="tile-meta"><span class="tile-title">Carrara White</span><span class="tile-sub">Blanc atelier haute précision</span></span></button>
+          <button class="theme-tile" data-set-theme="silver-arrow"><span class="swatch-circle" style="background:#f1f5f9; border:2px solid #0284c7;"></span><span class="tile-meta"><span class="tile-title">Silver Arrow</span><span class="tile-sub">Aluminium brossé épuré</span></span></button>
+          <button class="theme-tile" data-set-theme="ivory-dune"><span class="swatch-circle" style="background:#fbf9f5; border:2px solid #b45309;"></span><span class="tile-meta"><span class="tile-title">Ivory Dune</span><span class="tile-sub">Sellerie vintage & beige luxe</span></span></button>
+          <button class="theme-tile" data-set-theme="nordic-frost"><span class="swatch-circle" style="background:#f0fdf4; border:2px solid #16a34a;"></span><span class="tile-meta"><span class="tile-title">Nordic Frost</span><span class="tile-sub">Blanc glacier teinté d'azur</span></span></button>
+          <button class="theme-tile" data-set-theme="solar-flare"><span class="swatch-circle" style="background:#fffbeb; border:2px solid #d97706;"></span><span class="tile-meta"><span class="tile-title">Solar Flare</span><span class="tile-sub">Sable chaud & éclat ambré</span></span></button>
+          <button class="theme-tile" data-set-theme="alpine-horizon"><span class="swatch-circle" style="background:#eff6ff; border:2px solid #2563eb;"></span><span class="tile-meta"><span class="tile-title">Alpine Horizon</span><span class="tile-sub">Bleu azur & clarté alpine</span></span></button>
+          <button class="theme-tile" data-set-theme="rose-gold-gt"><span class="swatch-circle" style="background:#fff1f2; border:2px solid #e11d48;"></span><span class="tile-meta"><span class="tile-title">Rose Gold GT</span><span class="tile-sub">Nacré rosé & élégance pure</span></span></button>
+          <button class="theme-tile" data-set-theme="mint-speedway"><span class="swatch-circle" style="background:#ecfdf5; border:2px solid #0d9488;"></span><span class="tile-meta"><span class="tile-title">Mint Speedway</span><span class="tile-sub">Vert menthe & design épuré</span></span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="suggest-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="suggest-title">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div>
+          <h2 class="dialog-title" id="suggest-title">Proposer une modification</h2>
+          <p class="dialog-sub" id="sg-car">Véhicule</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-suggest-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <form class="dialog-body" id="suggest-form" novalidate>
+        <div class="seg-switch" role="tablist" aria-label="Type de proposition">
+          <button type="button" role="tab" class="seg-btn active" data-sg-kind="correction">✎ Corriger une info</button>
+          <button type="button" role="tab" class="seg-btn" data-sg-kind="photo">📷 Ajouter une photo</button>
+        </div>
+
+        <div id="sg-correction-fields" class="sg-block">
+          <div class="input-stack"><label for="sg-field">Information concernée</label>
+            <select id="sg-field" class="custom-select full">
+              <option>Puissance</option><option>Couple</option><option>Vitesse de pointe</option><option>0-100 km/h</option>
+              <option>Années de production</option><option>Description</option><option>Motorisation</option><option>Record / anecdote</option><option>Autre</option>
+            </select>
+          </div>
+          <div class="input-stack"><label for="sg-text">Ta correction</label><textarea id="sg-text" rows="4" maxlength="1000" placeholder="Ex. La 106 S16 phase 2 fait 120 ch (et non 118) d'après la fiche constructeur…"></textarea></div>
+          <div class="input-stack"><label for="sg-source">Source (optionnel)</label><input type="text" id="sg-source" maxlength="300" placeholder="Lien ou référence"></div>
+        </div>
+
+        <div id="sg-photo-fields" class="sg-block" hidden>
+          <div class="avatar-upload">
+            <img id="sg-photo-preview" class="car-preview" alt="Aperçu" data-fallback="car">
+            <div class="avatar-upload-body">
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="sg-photo-btn">📷 Choisir une photo</button>
+              <input type="file" id="sg-photo-file" accept="image/*" hidden>
+              <small id="sg-photo-status">Depuis ta galerie ou tes fichiers (jusqu'à 25 Mo), ou colle une URL ci-dessous.</small>
+            </div>
+          </div>
+          <div class="input-stack"><label for="sg-photo-url">… ou adresse de l'image</label><input type="text" id="sg-photo-url" placeholder="https://…"></div>
+          <div class="input-stack"><label for="sg-caption">Légende (optionnel)</label><input type="text" id="sg-caption" maxlength="120" placeholder="Ex. Ma S16 au Mans, 2024"></div>
+          <label class="check-row"><input type="checkbox" id="sg-rights"><span>Je suis l'auteur de cette photo ou j'ai le droit de la partager.</span></label>
+        </div>
+
+        <div class="form-feedback error-txt" id="sg-error" role="alert"></div>
+        <button type="submit" class="cta-btn fill-btn w-100" id="sg-submit">Envoyer à l'équipe</button>
+        <p class="admin-note">Ta proposition est relue avant publication. Tu seras notifié de la décision.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="compare-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="compare-title">
+    <div class="modal-dialog wide-box">
+      <div class="dialog-header">
+        <div>
+          <h2 class="dialog-title" id="compare-title">Comparateur</h2>
+          <p class="dialog-sub">Les meilleures valeurs de chaque ligne sont mises en avant</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-compare-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body"><div class="compare-scroll" id="compare-content"></div></div>
+    </div>
+  </div>
+
+  <div class="compare-tray" id="compare-tray" hidden>
+    <div class="compare-chips" id="compare-chips"></div>
+    <button type="button" class="cta-btn fill-btn compact-btn" id="compare-go" data-action="open-compare">Comparer</button>
+    <button type="button" class="icon-btn compare-clear" data-action="clear-compare" aria-label="Vider la sélection" title="Vider">&times;</button>
+  </div>
+
+  <div class="modal-layer" id="follow-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="follow-title">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div><h2 class="dialog-title" id="follow-title">Abonnés</h2><p class="dialog-sub" id="follow-sub"></p></div>
+        <button type="button" class="dialog-close-btn" id="close-follow-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body"><div class="telemetry-stack scroll-box" id="follow-list"></div></div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="import-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="import-title">
+    <div class="modal-dialog wide-box">
+      <div class="dialog-header">
+        <div>
+          <h2 class="dialog-title" id="import-title">Importer des véhicules</h2>
+          <p class="dialog-sub">En masse par fichier CSV, ou depuis un lien / un nom de véhicule</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-import-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="seg-switch" role="tablist">
+          <button type="button" role="tab" class="seg-btn active" data-import-tab="csv">Fichier CSV</button>
+          <button type="button" role="tab" class="seg-btn" data-import-tab="wiki">Depuis un lien</button>
+        </div>
+
+        <div id="import-pane-csv" class="import-pane">
+          <p class="admin-note">Une ligne = un moteur. Les lignes qui partagent le même <b>id</b> forment un seul véhicule (puis des phases). Séparateur « ; » ou « , » (Excel FR : « ; »). Plusieurs records dans une cellule : <code>Type|Description || Type|Description</code>.</p>
+          <div class="admin-quick">
+            <button type="button" class="cta-btn btn-ghost" data-action="import-template">⬇ Modèle CSV</button>
+            <button type="button" class="cta-btn btn-ghost" data-action="import-export">⬇ Exporter le catalogue actuel</button>
+            <label class="cta-btn fill-btn file-pick">Choisir un fichier…<input type="file" id="import-file" accept=".csv,text/csv,text/plain" hidden></label>
+          </div>
+          <details class="paste-import"><summary>Ou coller depuis Excel / Google Sheets</summary>
+            <p class="admin-note">Copie les cellules du tableur (avec la ligne d'en-têtes du modèle) puis colle-les ici.</p>
+            <textarea id="import-paste" rows="5" placeholder="id&#9;brand&#9;model&#9;years…" aria-label="Tableau collé"></textarea>
+            <button type="button" class="cta-btn btn-ghost" id="import-paste-go">Analyser le tableau collé</button></details>
+          <div id="import-preview"></div>
+        </div>
+
+        <div id="import-pane-wiki" class="import-pane" hidden>
+          <p class="admin-note">Colle le <b>lien de n'importe quelle page</b> (constructeur, Wikipédia, site d'essais, annonce…) ou tape simplement <b>le nom du véhicule</b>. Le site lit la page, cherche les chiffres (moteurs, puissance, couple, V-max, 0-100), l'image et l'histoire, puis complète avec Wikipédia. Le brouillon s'ouvre dans l'éditeur : <b>relis-le avant de publier</b>.</p>
+          <div class="wiki-row">
+            <input type="text" id="wiki-url" placeholder="https://…  ou  « Renault Clio 3 RS »" autocomplete="off" aria-label="Lien de la page ou nom du véhicule">
+            <button type="button" class="cta-btn fill-btn" id="wiki-go">Analyser</button>
+          </div>
+          <p class="contact-status" id="wiki-status" role="status" aria-live="polite"></p>
+          <div id="wiki-paste-wrap" hidden>
+            <textarea id="wiki-paste" rows="6" placeholder="Colle ici le texte de la page (Ctrl+A puis Ctrl+C sur la page, ou son code source)…" aria-label="Texte de la page"></textarea>
+            <button type="button" class="cta-btn btn-ghost" id="wiki-paste-go">Analyser le texte collé</button>
+          </div>
+          <p class="admin-note">Les sites qui bloquent la lecture depuis un navigateur sont lus via des relais publics gratuits (le lien de la page leur est transmis). Respecte les droits d'auteur : reformule les textes et vérifie la licence des images.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="admin-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+    <div class="modal-dialog wide-box">
+      <div class="dialog-header">
+        <div>
+          <span class="status-tag-verified">Administration</span>
+          <h2 class="dialog-title" id="admin-title">Éditeur de véhicule</h2>
+          <p class="dialog-sub">Publie ou modifie une fiche du catalogue public</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-admin-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <form id="admin-car-form">
+          <div class="form-grid">
+            <div class="input-stack"><label for="adm-id">ID unique</label><input type="text" id="adm-id" required placeholder="peugeot-206-s16"></div>
+            <div class="input-stack"><label for="adm-brand">Marque</label><input type="text" id="adm-brand" required placeholder="Peugeot" list="adm-brand-list" autocomplete="off"></div>
+            <div class="input-stack"><label for="adm-model">Modèle</label><input type="text" id="adm-model" required placeholder="206 S16"></div>
+            <div class="input-stack"><label for="adm-years">Années</label><input type="text" id="adm-years" required placeholder="1999 - 2007"></div>
+            <div class="input-stack"><label for="adm-category">Catégorie</label>
+              <select id="adm-category"><option value="Berline">Berline</option><option value="Coupé">Coupé &amp; Sport</option><option value="Break">Break</option><option value="Supercar">Supercar</option><option value="Le Mans">Le Mans</option></select>
+            </div>
+            </div>
+          <div class="input-stack mt adm-photos">
+            <label for="adm-image">Photos (la première est la principale, les autres défilent sur la carte)</label>
+            <div id="adm-gallery" class="adm-gallery"></div>
+            <div class="adm-photo-add">
+              <input type="url" id="adm-image" placeholder="Coller l'URL d'une image (https://…)">
+              <button type="button" class="cta-btn btn-ghost compact-btn" data-action="adm-img-add-url">Ajouter l'URL</button>
+              <label class="cta-btn btn-ghost compact-btn adm-file-btn" for="adm-files">Depuis la galerie</label>
+              <input type="file" id="adm-files" accept="image/*" multiple hidden>
+            </div>
+            <span id="adm-upload-status" class="hint-line" aria-live="polite"></span>
+          </div>
+          <div class="input-stack mt"><label for="adm-related">Voir aussi — déclinaisons <small>(identifiants séparés par des virgules)</small></label><input type="text" id="adm-related" maxlength="300" placeholder="nissan-silvia-ps13, nissan-onevia, nissan-sileighty"></div>
+          <div class="input-stack mt"><label for="adm-desc">Description</label><textarea id="adm-desc" rows="3" placeholder="Résumé du châssis et de son histoire…"></textarea></div>
+          <div class="input-stack mt"><label for="adm-history">Histoire / biographie de la voiture <small>(plusieurs paragraphes possibles)</small></label><textarea id="adm-history" rows="6" placeholder="Genèse du projet, designers, évolution, carrière en compétition, héritage…"></textarea></div>
+          <div class="input-stack mt"><label for="adm-anecdotes">Anecdotes (une ligne = « Titre | Texte »)</label><textarea id="adm-anecdotes" rows="4" placeholder="Nom de code | Le projet s'appelait en interne…"></textarea></div>
+          <div class="input-stack mt"><label for="adm-archives">Archives : anciens catalogues, publicités (une ligne = « Titre | URL | type | année »)</label><textarea id="adm-archives" rows="3" placeholder="Brochure commerciale | https://… | catalogue | 1998"></textarea>
+            <div class="adm-photo-add"><label class="cta-btn btn-ghost compact-btn adm-file-btn" for="adm-archive-files">Envoyer des images d'archives</label><input type="file" id="adm-archive-files" accept="image/*" multiple hidden><span id="adm-archive-status" class="hint-line" aria-live="polite"></span></div></div>
+          <div class="input-stack mt"><label for="adm-records">Records &amp; anecdotes (une ligne = « Type | Description »)</label><textarea id="adm-records" rows="3" placeholder="Nürburgring | 8:12 en configuration route"></textarea></div>
+          <div class="admin-engines-head">
+            <span class="panel-section-title nomargin">Phases &amp; motorisations</span>
+            <button type="button" id="pick-engine-row-btn" class="cta-btn btn-ghost compact-btn">Choisir un moteur existant</button>
+            <button type="button" id="add-engine-row-btn" class="cta-btn fill-btn compact-btn">+ Ajouter un moteur</button>
+          </div>
+          <datalist id="adm-phase-list"></datalist><datalist id="adm-brand-list"></datalist>
+          <div id="admin-engines-container"></div>
+          <div class="form-feedback error-txt" id="admin-form-error" role="alert"></div>
+          <button type="submit" class="cta-btn fill-btn w-100">Publier dans l'archive</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="event-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ev-title-h">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div><span class="status-tag-verified">Sorties</span><h2 class="dialog-title" id="ev-title-h">Proposer une sortie</h2></div>
+        <button type="button" class="dialog-close-btn" id="close-event-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <form class="dialog-body" id="event-form" novalidate>
+        <div class="input-stack"><label for="ev-title">Titre</label><input type="text" id="ev-title" maxlength="80" required placeholder="Ex. Journée roulage au Mans Bugatti"></div>
+        <div class="form-grid">
+          <div class="input-stack"><label for="ev-kind">Type</label>
+            <select id="ev-kind" class="custom-select"><option value="circuit">Journée circuit</option><option value="rassemblement">Rassemblement</option><option value="balade">Balade</option><option value="autre">Autre</option></select></div>
+          <div class="input-stack"><label for="ev-date">Date et heure</label><input type="datetime-local" id="ev-date" required></div>
+        </div>
+        <div class="input-stack"><label for="ev-place">Lieu (circuit, ville, adresse)</label><input type="text" id="ev-place" maxlength="120" required placeholder="Ex. Circuit de Folembray (02)"></div>
+        <div class="input-stack"><label for="ev-desc">Détails</label><textarea id="ev-desc" rows="3" maxlength="600" placeholder="Programme, tarif, niveau, ce qu'il faut apporter…"></textarea></div>
+        <div class="form-feedback error-txt" id="ev-error" role="alert"></div>
+        <button type="submit" class="cta-btn fill-btn w-100">Publier la sortie</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="mute-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mute-title">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div><span class="status-tag-verified">Modération</span><h2 class="dialog-title" id="mute-title">Mettre en sourdine</h2></div>
+        <button type="button" class="dialog-close-btn" id="close-mute-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <form class="dialog-body" id="mute-form" novalidate>
+        <p class="lap-meta" id="mute-who"></p>
+        <div class="input-stack"><label for="mute-dur">Durée</label>
+          <select id="mute-dur" class="custom-select"><option value="1h">1 heure</option><option value="24h" selected>24 heures</option><option value="7d">7 jours</option><option value="30d">30 jours</option><option value="perma">Définitive (jusqu'à levée)</option></select></div>
+        <div class="input-stack"><label for="mute-reason">Motif (visible par le pilote)</label><input type="text" id="mute-reason" maxlength="140" placeholder="Ex. propos injurieux dans le salon"></div>
+        <button type="submit" class="cta-btn fill-btn w-100">Mettre en sourdine</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-layer" id="mycar-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mc-title">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div><span class="status-tag-verified">Mes voitures</span><h2 class="dialog-title" id="mc-title">Ajouter une voiture</h2></div>
+        <button type="button" class="dialog-close-btn" id="close-mycar-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-grid">
+          <div class="input-stack"><label for="mc-name">Voiture</label><input type="text" id="mc-name" maxlength="80" placeholder="Ex. Peugeot 106 S16"></div>
+          <div class="input-stack"><label for="mc-year">Année</label><input type="text" id="mc-year" maxlength="20" placeholder="1999"></div>
+          <div class="input-stack"><label for="mc-engine">Motorisation</label><input type="text" id="mc-engine" maxlength="100" placeholder="1.6 16V TU5J4"></div>
+          <div class="input-stack"><label for="mc-power">Puissance (ch)</label><input type="number" id="mc-power" min="0" max="4999" placeholder="120"></div>
+          <div class="input-stack"><label for="mc-zero">0-100 km/h (s)</label><input type="text" id="mc-zero" inputmode="decimal" maxlength="5" placeholder="7,9"></div>
+        </div>
+        <div class="input-stack mt"><label for="mc-desc">Description</label><textarea id="mc-desc" rows="3" maxlength="600" placeholder="Son histoire, ton projet…"></textarea></div>
+        <div class="input-stack mt"><label for="mc-mods">Modifications</label><textarea id="mc-mods" rows="3" maxlength="500" placeholder="Une par ligne : échappement, combinés filetés…"></textarea></div>
+        <div class="input-stack mt adm-photos">
+          <label for="mc-url">Photos (8 maximum, la première est la principale)</label>
+          <div id="mc-gallery" class="adm-gallery"></div>
+          <div class="adm-photo-add">
+            <input type="url" id="mc-url" placeholder="Coller l'URL d'une image (https://…)">
+            <button type="button" class="cta-btn btn-ghost compact-btn" data-action="mycar-add-url">Ajouter l'URL</button>
+            <label class="cta-btn btn-ghost compact-btn adm-file-btn" for="mc-files">Depuis la galerie</label>
+            <input type="file" id="mc-files" accept="image/*" multiple hidden>
+          </div>
+          <span id="mc-upload-status" class="hint-line" aria-live="polite"></span>
+        </div>
+        <div class="form-feedback error-txt" id="mc-error" role="alert"></div>
+        <button type="button" class="cta-btn fill-btn w-100 mt" id="mc-save" data-action="mycar-save">Enregistrer la voiture</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/firebase-init.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/data2.js"></script>
+  <script src="js/data-kit.js"></script>
+  <script src="js/data-alfa.js"></script>
+  <script src="js/data-audi.js"></script>
+  <script src="js/data-lemans.js"></script>
+  <script src="js/data-enrich-lemans1.js"></script>
+  <script src="js/data-enrich-lemans2.js"></script>
+  <script src="js/data-enrich-audi1.js"></script>
+  <script src="js/data-enrich-audi2.js"></script>
+  <script src="js/data-enrich-alfa.js"></script>
+  <script src="js/data-enrich-fr.js"></script>
+  <script src="js/data-enrich-world.js"></script>
+  <script src="js/data-enrich-more1.js"></script>
+  <script src="js/data-enrich-more2.js"></script>
+  <script src="js/data-enrich-auto.js"></script>
+  <script src="js/data-extra.js"></script>
+  <script src="js/wiki-import.js"></script>
+  <script src="js/import-any.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/social-links.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/social.js"></script>
+  <script src="js/community.js"></script>
+  <script src="js/circuits.js"></script>
+  <script src="js/admin-tools.js"></script>
+  <script src="js/garage-tools.js"></script>
+  <script src="js/garage-extra.js"></script>
+  <script src="js/admin-extra.js"></script>
+  <script src="js/game-core.js"></script>
+  <script src="js/game-engine.js"></script>
+  <script src="js/game-api.js"></script>
+  <script src="js/gamify.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/card-battle.js"></script>
+  <script src="js/trades.js"></script>
+  <script src="js/play.js"></script>
+  <script src="js/contest.js"></script>
+  <script src="js/profile-stats.js"></script>
+  <script src="js/pilot-profile.js"></script>
+  <script src="js/legal.js"></script>
+  <script src="js/engines.js"></script>
+  <script src="js/share-car.js"></script>
+  <script src="js/referral.js"></script>
+  <script src="js/account.js"></script>
+  <script src="js/admin-game.js"></script>
+  <script src="js/share.js"></script>
+  <script src="js/duel.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/clubs.js"></script>
+  <script src="js/market.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/polish.js"></script>
+  <script src="js/nav.js"></script>
+</body>
+</html>

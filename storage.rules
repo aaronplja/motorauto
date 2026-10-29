@@ -1,0 +1,80 @@
+rules_version = '2';
+
+// MOTORAUTO — règles Firebase Storage
+// Vocaux du chat : chat_voice/{uid}/{fichier} (audio < 5 Mo)
+// Photos du chat : chat_media/{uid}/{fichier}   (images jusqu'à 20 Mo, lecture : connectés)
+// Avatars / voitures / propositions : avatars|car_photos|suggestions/{uid}/{fichier} (images < 5 Mo, lecture publique)
+// catalog_images/{uid}/{fichier} : photos des fiches voiture, admins uniquement, sans limite de poids.
+// Seul le propriétaire écrit ; l'admin peut supprimer.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Admin principal OU pilote promu (document Firestore admins/{uid}).
+    function isAdmin() {
+      return request.auth != null
+        && (request.auth.token.admin == true || request.auth.token.email == 'admin@motorauto.fr'
+            || firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid)));
+    }
+
+    // Photos du catalogue (admins) : AUCUNE limite de taille ; le navigateur réduit déjà l'image à 2600 px.
+    match /catalog_images/{uid}/{fileName} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.auth.uid == uid
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if isAdmin();
+      allow update: if false;
+    }
+
+    match /chat_media/{uid}/{fileName} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 20 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow update: if false;
+    }
+
+    // Messages vocaux du chat : audio uniquement, 5 Mo maximum (environ 2 minutes)
+    match /chat_voice/{uid}/{fileName} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('audio/.*');
+      allow delete: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow update: if false;
+    }
+
+    match /avatars/{uid}/{fileName} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow update: if false;
+    }
+
+    match /car_photos/{uid}/{fileName} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow update: if false;
+    }
+
+    match /suggestions/{uid}/{fileName} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow update: if false;
+    }
+  }
+}

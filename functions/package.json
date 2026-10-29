@@ -1,0 +1,17 @@
+{
+  "name": "motorauto-functions",
+  "private": true,
+  "description": "Cloud Functions MOTORAUTO : jeu de cartes (tirage serveur), défis, échanges, concours photo, e-mails facultatifs",
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "test": "node ../tests/game.test.js && node ../tests/mail.test.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "nodemailer": "^6.9.0"
+  }
+}
