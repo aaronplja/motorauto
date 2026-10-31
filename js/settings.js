@@ -32,7 +32,10 @@
     root.innerHTML = `<section class="set-card"><div class="set-ico" aria-hidden="true">${ico}</div><div class="set-main"><h3>${esc(title)}</h3><p class="lap-meta">${esc(text)}</p><div class="set-actions">${action}${install}</div><p class="form-error" id="push-err" role="alert"></p></div></section>
       <section class="set-card col"><h3>Quelles notifications veux-tu recevoir ?</h3><p class="lap-meta">Ça s'applique à la cloche du site <b>et</b> aux notifications sur ton appareil.</p>
         <div class="set-toggles">${P.KINDS.map(([k, l, d]) => `<label class="set-toggle"><span><b>${esc(l)}</b><small>${esc(d)}</small></span><input type="checkbox" data-pref="${k}" ${prefs[k] === false ? "" : "checked"}><i class="set-sw" aria-hidden="true"></i></label>`).join("")}</div>
-        <p class="lap-meta">Les messages de modération (grade, sourdine) sont toujours envoyés.</p></section>`;
+        <p class="lap-meta">Les messages de modération (grade, sourdine) sont toujours envoyés.</p></section>
+      <section class="set-card col"><h3>🌙 Ne pas déranger</h3><p class="lap-meta">Pendant cette plage (heure de Paris), ton appareil reste silencieux. Tu retrouves tout dans la cloche du site.</p>
+        <label class="set-toggle"><span><b>Activer</b><small>Aucune notification sur l'appareil pendant la plage</small></span><input type="checkbox" id="dnd-on" ${P.dnd().on ? "checked" : ""}><i class="set-sw" aria-hidden="true"></i></label>
+        <div class="dnd-times"><label>De <input type="time" id="dnd-from" value="${P.dnd().from}"></label><label>à <input type="time" id="dnd-to" value="${P.dnd().to}"></label></div></section>`;
   }
   async function pushAction(a) {
     const err = $("push-err"); if (err) err.textContent = "";
@@ -84,6 +87,12 @@
       if (t.closest && t.closest("[data-loc-remove]")) { try { await window.MAMap.removeMyLocation(); C.toast("Tu n'apparais plus sur la carte.", "ok"); } catch (ex) { C.toast(ex.message, "err"); } renderMap(); }
     }, true);
     document.addEventListener("change", async (e) => {
+      const id = e.target.id;
+      if (id === "dnd-on" || id === "dnd-from" || id === "dnd-to") {
+        const patch = id === "dnd-on" ? { on: e.target.checked } : id === "dnd-from" ? { from: e.target.value || "22:00" } : { to: e.target.value || "08:00" };
+        try { await window.MAPush.setDnd(ctx.user.uid, patch); C.toast("Enregistré.", "ok"); } catch (ex) { C.toast("Enregistrement impossible : " + ex.message, "err"); }
+        return;
+      }
       const k = e.target.dataset && e.target.dataset.pref; if (!k) return;
       try { await window.MAPush.setPref(ctx.user.uid, k, e.target.checked); C.toast(e.target.checked ? "Notification activée." : "Notification désactivée.", "ok"); }
       catch (ex) { e.target.checked = !e.target.checked; C.toast("Enregistrement impossible : " + ex.message, "err"); }

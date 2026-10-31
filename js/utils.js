@@ -401,7 +401,21 @@
     return lines.join("\r\n");
   }
 
+  /** icône « poussière » : un cristal à facettes (remplace l'émoji). Le dessin est défini une seule fois dans la page. */
+  function dustIcon(px) {
+    if (typeof document !== "undefined" && document.body && !document.getElementById("ma-dust-sprite")) {
+      document.body.insertAdjacentHTML("afterbegin", `<svg id="ma-dust-sprite" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="ma-dust" viewBox="0 0 24 24">
+        <path d="M7 3h10l5 6-10 13L2 9z" fill="#b45309"/>
+        <path d="M7 3h10l-.5 6h-9z" fill="#fde68a"/><path d="M7 3 2 9h5.5z" fill="#fbbf24"/><path d="M17 3l5 6h-5.5z" fill="#f59e0b"/>
+        <path d="M2 9h5.5L12 22z" fill="#d97706"/><path d="M7.5 9h9L12 22z" fill="#fcd34d"/><path d="M16.5 9H22L12 22z" fill="#b45309"/>
+        <path d="M9 4.4h4.2l-.9 3.3H8.2z" fill="#fff" fill-opacity=".75"/>
+        <path d="M7 3h10l5 6-10 13L2 9z M2 9h20 M7.5 9 12 22 16.5 9 M7 3l.5 6 M17 3l-.5 6" fill="none" stroke="#78350f" stroke-opacity=".55" stroke-width=".7" stroke-linejoin="round"/></symbol></svg>`);
+    }
+    const s = px || 16;
+    return `<svg class="dust-ic" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ma-dust"/></svg>`;
+  }
   const api = {
+    dustIcon,
     FALLBACK_AVATAR, FALLBACK_CAR,
     esc, safeUrl, normalize,
     parseLapTime, formatLapTime, trackKey, lapMs, sortLaps,

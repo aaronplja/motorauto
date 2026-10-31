@@ -871,7 +871,8 @@
   function init() {
     MA.notif.mount($("notif-btn"));
     // thèmes
-    $("theme-grid").innerHTML = THEMES.map(([id, label, bg, ac]) =>
+    const cu = window.MATheme ? MATheme.getCustom() : { bg: "#0f172a", accent: "#38bdf8" };
+    $("theme-grid").innerHTML = THEMES.concat([["custom", "Mon thème", cu.bg, cu.accent]]).map(([id, label, bg, ac]) =>
       `<button type="button" class="theme-opt" data-set-theme="${id}"><i style="background:${bg};border-color:${ac}"></i><span>${esc(label)}</span></button>`).join("");
     MA.applyTheme(MA.store.get("motorauto_theme") || "onyx-carbon");
     $("new-dm-btn").addEventListener("click", () => { state.showPicker = !state.showPicker; renderLists(); if (state.showPicker) { const f = $("side-filter"); if (f) f.focus(); } });
@@ -1012,20 +1013,24 @@
         }
       }
     });
-    // clavier mobile : la page suit la zone réellement visible (visualViewport), la conversation reste calée en bas
+    // clavier mobile : la page suit la zone réellement visible (visualViewport).
+    // Une seule mise à jour par image, ignorée si rien n'a bougé de plus de 2 px : plus de va-et-vient quand le clavier s'ouvre.
     {
-      const vv = window.visualViewport; let stickBottom = true;
+      const vv = window.visualViewport; let stickBottom = true, raf = 0, lastH = -1, lastT = -1;
       scroller.addEventListener("scroll", () => { stickBottom = nearBottom(); }, { passive: true });
-      const fit = () => {
-        const h = vv ? vv.height : window.innerHeight, top = vv ? vv.offsetTop : 0;
-        const root = document.documentElement.style; root.setProperty("--vvh", Math.round(h) + "px"); root.setProperty("--vvt", Math.round(top) + "px");
-        if (window.scrollY || document.documentElement.scrollTop) window.scrollTo(0, 0);
-        if (stickBottom && state.conv) requestAnimationFrame(() => toBottom(false));
+      const apply = () => {
+        raf = 0;
+        const h = Math.round(vv ? vv.height : window.innerHeight), top = Math.round(vv ? vv.offsetTop : 0);
+        if (Math.abs(h - lastH) < 2 && Math.abs(top - lastT) < 2) return;
+        const resized = Math.abs(h - lastH) >= 2; lastH = h; lastT = top;
+        const root = document.documentElement.style; root.setProperty("--vvh", h + "px"); root.setProperty("--vvt", top + "px");
+        if (resized && stickBottom && state.conv) toBottom(false);
       };
+      const fit = () => { if (!raf) raf = requestAnimationFrame(apply); };
       if (vv) { vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); }
-      window.addEventListener("orientationchange", () => setTimeout(fit, 250));
-      input.addEventListener("focus", () => { fit(); setTimeout(fit, 120); setTimeout(fit, 350); });
-      input.addEventListener("blur", () => setTimeout(fit, 120));
+      window.addEventListener("orientationchange", () => setTimeout(fit, 300));
+      input.addEventListener("focus", () => { fit(); setTimeout(fit, 320); });
+      input.addEventListener("blur", () => setTimeout(fit, 150));
       fit();
     }
     window.addEventListener("hashchange", route);

@@ -28,7 +28,7 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if isOwner(uid)
-        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok'])
+        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'hideFollowing', 'hideFollowers', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok'])
         && request.resource.data.username is string
         && request.resource.data.username.size() >= 2
         && request.resource.data.username.size() <= 24
@@ -43,13 +43,15 @@ service cloud.firestore {
         && request.resource.data.get('mods', '') is string
         && request.resource.data.get('mods', '').size() <= 500
         && request.resource.data.get('isPublicGarage', true) is bool
+        && request.resource.data.get('hideFollowing', false) is bool
+        && request.resource.data.get('hideFollowers', false) is bool
         && request.resource.data.get('emailNotifs', true) is bool
         && validSocials();
 
       allow update: if isOwner(uid)
         // Le document final ne doit contenir que les champs publics : cela permet
         // de SUPPRIMER les anciens champs (favorites, telemetry, email...) lors de la migration.
-        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok'])
+        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'hideFollowing', 'hideFollowers', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok'])
         && request.resource.data.username is string
         && request.resource.data.username.size() >= 2
         && request.resource.data.username.size() <= 24
@@ -59,6 +61,8 @@ service cloud.firestore {
         && request.resource.data.get('carPhoto', '').size() <= 500
         && request.resource.data.get('mods', '').size() <= 500
         && request.resource.data.get('emailNotifs', true) is bool
+        && request.resource.data.get('hideFollowing', false) is bool
+        && request.resource.data.get('hideFollowers', false) is bool
         && validSocials();
 
       allow delete: if isOwner(uid) || isAdmin();
@@ -78,8 +82,10 @@ service cloud.firestore {
       }
 
       // --- Abonnements : following = écrit par uid ; followers = écrit par le pilote qui s'abonne (id = son uid)
+      // Masquage : la liste complète n'est lisible que par son propriétaire/admin si hideFollowing / hideFollowers = true ; un document seul reste lisible (bouton « Suivre »).
       match /following/{targetUid} {
-        allow read: if true;
+        allow get: if true;
+        allow list: if isOwner(uid) || isAdmin() || get(/databases/$(database)/documents/users/$(uid)).data.get('hideFollowing', false) != true;
         allow create, update: if isOwner(uid) && targetUid != uid
           && request.resource.data.keys().hasOnly(['username', 'avatar', 'createdAt'])
           && request.resource.data.username is string && request.resource.data.username.size() <= 24
@@ -87,7 +93,8 @@ service cloud.firestore {
         allow delete: if isOwner(uid) || isAdmin();
       }
       match /followers/{followerUid} {
-        allow read: if true;
+        allow get: if true;
+        allow list: if isOwner(uid) || isAdmin() || get(/databases/$(database)/documents/users/$(uid)).data.get('hideFollowers', false) != true;
         allow create, update: if signedIn() && request.auth.uid == followerUid && followerUid != uid
           && request.resource.data.keys().hasOnly(['username', 'avatar', 'createdAt'])
           && request.resource.data.username is string && request.resource.data.username.size() <= 24
@@ -450,12 +457,15 @@ service cloud.firestore {
     match /notif_prefs/{uid} {
       allow read: if isOwner(uid);
       allow write: if isOwner(uid)
-        && request.resource.data.keys().hasOnly(['dm', 'mention', 'reply', 'follow', 'like', 'comment', 'event', 'game', 'maint', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['dm', 'mention', 'reply', 'follow', 'like', 'comment', 'event', 'game', 'maint', 'dnd', 'dndFrom', 'dndTo', 'updatedAt'])
         && request.resource.data.get('dm', true) is bool && request.resource.data.get('mention', true) is bool
         && request.resource.data.get('reply', true) is bool && request.resource.data.get('follow', true) is bool
         && request.resource.data.get('like', true) is bool && request.resource.data.get('comment', true) is bool
         && request.resource.data.get('event', true) is bool && request.resource.data.get('game', true) is bool
         && request.resource.data.get('maint', true) is bool
+        && request.resource.data.get('dnd', false) is bool
+        && request.resource.data.get('dndFrom', '22:00') is string && request.resource.data.get('dndFrom', '22:00').size() == 5
+        && request.resource.data.get('dndTo', '08:00') is string && request.resource.data.get('dndTo', '08:00').size() == 5
         && request.resource.data.updatedAt == request.time;
     }
 
@@ -585,7 +595,8 @@ service cloud.firestore {
       allow delete: if false;
     }
     function validCollection() {
-      return request.resource.data.keys().hasOnly(['owned', 'count', 'specials', 'dust', 'lastPack', 'bonus', 'claimed', 'opened', 'trades', 'chal', 'updatedAt'])
+      return request.resource.data.keys().hasOnly(['owned', 'count', 'specials', 'dust', 'lastPack', 'bonus', 'claimed', 'opened', 'trades', 'chal', 'dustLog', 'updatedAt'])
+        && request.resource.data.get('dustLog', []) is list && request.resource.data.get('dustLog', []).size() <= 40
         && request.resource.data.owned is map
         && request.resource.data.count is number && request.resource.data.count >= 0 && request.resource.data.count <= 1000
         && request.resource.data.dust is number && request.resource.data.dust >= 0 && request.resource.data.dust <= 1000000
@@ -816,6 +827,16 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
     }
 
+    // --- Réglages du site (ambiances de saison…) : lecture publique, écriture admin ---
+    match /site_settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['halloween', 'noel', 'nouvelan'])
+        && request.resource.data.get('halloween', true) is bool
+        && request.resource.data.get('noel', true) is bool
+        && request.resource.data.get('nouvelan', true) is bool;
+    }
+
     // --- Réponses toutes prêtes de la messagerie (admins) ---
     match /canned_replies/{cid} {
       allow read: if isAdmin();
@@ -831,7 +852,9 @@ service cloud.firestore {
     function validCommunityCar() {
       return signedIn()
         && request.resource.data.keys().hasOnly(
-             ['uid', 'pilot', 'avatar', 'name', 'year', 'engine', 'power', 'zero', 'description', 'mods', 'photos', 'createdAt', 'updatedAt'])
+             ['uid', 'pilot', 'avatar', 'name', 'year', 'engine', 'power', 'zero', 'description', 'mods', 'photos', 'catalogId', 'createdAt', 'updatedAt'])
+        && request.resource.data.get('catalogId', '') is string
+        && request.resource.data.get('catalogId', '').size() <= 80
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
         && request.resource.data.get('avatar', '').size() <= 500

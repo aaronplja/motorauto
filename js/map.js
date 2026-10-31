@@ -171,8 +171,9 @@
   function setView(v) {
     view = v;
     document.querySelectorAll("[data-ev-view]").forEach((b) => { b.classList.toggle("active", b.dataset.evView === v); b.setAttribute("aria-selected", String(b.dataset.evView === v)); });
-    const list = document.getElementById("events-list"), past = document.querySelector(".past-events"), box = document.getElementById("events-map-wrap");
-    if (list) list.hidden = v === "map"; if (past) past.hidden = v === "map"; if (box) box.hidden = v !== "map";
+    const list = document.getElementById("events-list"), past = document.getElementById("events-past"), box = document.getElementById("events-map-wrap"), sw = document.querySelector(".ev-when");
+    const showPast = past && past.dataset.show === "1";
+    if (list) list.hidden = v === "map" || showPast; if (past) past.hidden = v === "map" || !showPast; if (sw) sw.hidden = v === "map"; if (box) box.hidden = v !== "map";
     if (v === "map") drawEvents();
   }
 

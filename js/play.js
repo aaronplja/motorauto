@@ -12,7 +12,7 @@
     const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
     return d ? `${d} j ${h} h` : h ? `${h} h ${String(m).padStart(2, "0")}` : `${m} min`;
   }
-  const rewardText = (r) => [r.dust ? `+${r.dust} ✨` : "", r.bonus ? `🎁 ${r.bonus} pack` : ""].filter(Boolean).join(" ");
+  const rewardText = (r, plain) => [r.dust ? `+${r.dust} ${plain ? "poussière" : window.MA.dustIcon(14)}` : "", r.bonus ? `🎁 ${r.bonus} pack` : ""].filter(Boolean).join(" ");
 
   async function loadWeekly(force) {
     if (!C.user) { weekly = null; return null; }
@@ -53,7 +53,12 @@
     try {
       const r = await window.MAGameAPI.call("claimChallenge", { id });
       window.MACards.applyDoc(r.doc);
-      C.toast(`🎯 Défi validé : ${rewardText(r.reward)}${r.perfect ? " · semaine parfaite : +1 pack bonus !" : ""}`, "ok");
+      // affichage immédiat : on marque le défi comme récupéré sans attendre un second aller-retour serveur
+      if (weekly) { const all = weekly.items.concat(weekly.daily ? [weekly.daily] : []); const it = all.find((x) => x.id === id); if (it) it.claimed = true; }
+      C.toast(`🎯 Défi validé : ${rewardText(r.reward, true)}${r.perfect ? " · semaine parfaite : +1 pack bonus !" : ""}`, "ok");
+      busy = false; renderChallenges();
+      loadWeekly(true).then(renderChallenges);            // resynchronisation en arrière-plan
+      return;
     } catch (e) { C.toast(e.message, "err"); }
     busy = false; await loadWeekly(true); renderChallenges();
   }
@@ -107,7 +112,7 @@
       C.db.collection("trades").where("toUid", "==", C.user.uid).limit(60).get().then((s) => s.docs.filter((d) => d.data().status === "open").length).catch(() => 0),
       C.db.collection("contests").doc(month).get().then((s) => (s.exists ? s.data() : null)).catch(() => null)
     ]);
-    if (col) { st.cards = canDaily(col) ? "Ton pack du jour t'attend !" : `${col.count} / ${C.cars.length} cartes · ✨ ${col.dust}`; st.cardsBadge = canDaily(col) ? "1" : col.bonus ? String(col.bonus) : ""; }
+    if (col) { st.cards = canDaily(col) ? "Ton pack du jour t'attend !" : `${col.count} / ${C.cars.length} cartes · ${window.MA.dustIcon(13)} ${col.dust}`; st.cardsBadge = canDaily(col) ? "1" : col.bonus ? String(col.bonus) : ""; }
     if (wk) { const done = wk.items.filter((x) => x.claimed).length, ready = wk.items.filter((x) => x.done && !x.claimed).length; st.chal = `${done} / ${wk.items.length} validés · fin dans ${remaining(wk.endsAt - Date.now())}`; st.chalBadge = ready ? String(ready) : ""; }
     st.trade = trades ? `${trades} proposition${trades > 1 ? "s" : ""} à traiter` : "Échange tes doublons avec les pilotes"; st.tradeBadge = trades ? String(trades) : "";
     if (contest) st.contest = contest.status === "open" ? `Thème : « ${contest.theme} »` : `Concours de ${G.monthLabel(month)} terminé`;

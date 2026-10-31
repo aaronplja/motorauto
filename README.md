@@ -218,3 +218,12 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - **Chat** : rendu incrémental (plus de clignotement, avatars stables), avatar de secours local, pilote inconnu chargé à la demande, conversation « Nouvelle conversation » visible dès l'ouverture, clavier mobile (visualViewport).
 - **Profil** : « Caractéristiques » plantait avec la rareté Shiny.
 - **Batailles de cartes** : mains de force égale, meneur à tour de rôle, adversaire battable.
+
+## Tour 20 — Collection, interface et vie privée
+- **Mes voitures liées au catalogue** (champ « Basée sur… », specs reprises dans les duels) ; garage virtuel retiré de l'Écurie.
+- **Chats** : clavier mobile sans clignotement ; notifications avec vraies icônes, suppression (glisser sur mobile, × sur PC) avec annulation 5 s.
+- **Cartes** : duel contre bot (tu choisis carte et caractéristique, IA rééquilibrée) ; la photo admin d'une voiture apparaît sur sa carte ; ouverture de pack et défis plus rapides.
+- **Poussière** : vraie icône cristal, *Pack cristal* (200 poussières = 2 voitures dont 1 rare ou mieux), historique de poussière.
+- **Interface** : barre mobile « liquid glass » flottante (glisser entre onglets, se réduit au défilement) ; thème personnalisé (fond + accent, lisibilité garantie, code à partager `MA-RRGGBB-RRGGBB`) ; ambiances de saison (Halloween 27/10→2/11, Noël 2→28/12, Nouvel an 29/12→3/1, activables par l'admin dans « Ambiances ») ; Sorties « À venir / Passés » par mois ; haptique, squelettes, tirer pour actualiser, mode économie.
+- **Vie privée** : masquer ses abonnements / abonnés (réglé aussi dans les règles Firestore) ; mode « Ne pas déranger » (plage horaire, push serveur).
+- **À redéployer** : `firebase deploy --only functions` + republier `firestore.rules` (nouveaux champs `catalogId`, `dustLog`, `hideFollowing/Followers`, `dnd*`, collection `site_settings`).

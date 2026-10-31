@@ -48,6 +48,8 @@
   <link rel="stylesheet" href="css/cards2.css">
   <link rel="stylesheet" href="css/polish.css">
   <link rel="stylesheet" href="css/refonte.css">
+  <link rel="stylesheet" href="css/glass.css">
+  <link rel="stylesheet" href="css/season.css">
 </head>
 <body>
   <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
@@ -350,8 +352,9 @@
       </div>
       <div class="seg-switch" role="tablist" aria-label="Affichage des sorties"><button type="button" role="tab" class="seg-btn active" data-ev-view="list">☰ Liste</button><button type="button" role="tab" class="seg-btn" data-ev-view="map">🗺 Carte</button></div>
       <div id="events-map-wrap" hidden><div id="events-map" class="events-map"></div><p class="lap-meta" id="events-map-status" aria-live="polite"></p></div>
+      <div class="seg-switch ev-when" role="tablist" aria-label="Sorties à venir ou passées"><button type="button" role="tab" class="seg-btn active" data-ev-when="up" aria-selected="true">À venir <span class="seg-n" id="ev-n-up"></span></button><button type="button" role="tab" class="seg-btn" data-ev-when="past" aria-selected="false">Passés <span class="seg-n" id="ev-n-past"></span></button></div>
       <div class="events-list" id="events-list"></div>
-      <details class="past-events"><summary>Événements passés</summary><div class="events-list" id="events-past"></div></details>
+      <div class="events-list" id="events-past" hidden></div>
     </section>
   </div>
 </div>
@@ -537,7 +540,6 @@
         <div class="garage-panel active" id="garage-telemetry-panel"><div class="telemetry-stack" id="user-telemetry-journal"></div></div>
         <div class="garage-panel" id="garage-favorites-panel"><div class="vehicles-dynamic-grid compact-subgrid" id="user-favorites-grid"></div></div>
       <div id="garage-reminders"></div>
-      <div id="garage-virtual" class="game-zone"></div>
     </section>
     <section class="tab-panel" data-tab="voitures" hidden>
       <p class="lap-meta">Ajoute toutes tes voitures : motorisation, description, modifications et jusqu'à 8 photos défilables. Elles apparaissent sur ton profil et dans la communauté.</p>
@@ -677,7 +679,11 @@
             <div class="input-stack"><label for="settings-snapchat">Snapchat</label><input type="text" id="settings-snapchat" maxlength="120" placeholder="pseudo ou snapchat.com/add/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
           </div>
           <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
-          <label class="check-row"><input type="checkbox" id="settings-public-garage"><span>Garage public : les autres pilotes voient mes favoris et mes chronos</span></label>
+          <fieldset class="priv-group"><legend>🔐 Confidentialité</legend>
+            <label class="check-row"><input type="checkbox" id="settings-public-garage"><span>Garage public : les autres pilotes voient mes favoris et mes chronos</span></label>
+            <label class="check-row"><input type="checkbox" id="settings-hide-following"><span>Masquer mes abonnements (les pilotes que je suis)</span></label>
+            <label class="check-row"><input type="checkbox" id="settings-hide-followers"><span>Masquer mes abonnés (ceux qui me suivent)</span></label>
+          </fieldset>
           <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
           <div class="danger-zone mt">
             <div class="panel-section-title">Zone sensible</div>
@@ -947,6 +953,22 @@
         <button type="button" class="dialog-close-btn" id="close-theme-modal" aria-label="Fermer">&times;</button>
       </div>
       <div class="dialog-body">
+        <!-- MON THEME -->
+        <section class="ct-box" id="ct-box" aria-labelledby="ct-title">
+          <div class="theme-family-title" id="ct-title">🎨 Mon thème</div>
+          <div class="ct-row">
+            <label class="ct-field"><span>Fond</span><input type="color" id="ct-bg" value="#0f172a"></label>
+            <label class="ct-field"><span>Accent</span><input type="color" id="ct-accent" value="#38bdf8"></label>
+            <div class="ct-preview" id="ct-preview" aria-hidden="true"><b>Aa</b><span>Aperçu</span><i>Bouton</i></div>
+          </div>
+          <p class="ct-note" id="ct-note">Les textes s'adaptent tout seuls pour rester toujours lisibles.</p>
+          <div class="ct-actions">
+            <button type="button" class="btn btn-ghost" id="ct-reset">Réinitialiser</button>
+            <button type="button" class="btn btn-ghost" id="ct-copy">Copier mon code</button>
+            <input type="text" id="ct-code" class="ct-code" placeholder="Coller un code MA-…" autocomplete="off" spellcheck="false" aria-label="Code de thème à importer">
+            <button type="button" class="btn btn-ghost" id="ct-import">Importer</button>
+          </div>
+        </section>
         <!-- COCKPITS NOCTURNES -->
         <div class="theme-family-title">🌙 Cockpits Nocturnes (8 Univers Sombres)</div>
         <div class="theme-palette-grid">
@@ -1201,6 +1223,7 @@
       <div class="dialog-body">
         <div class="form-grid">
           <div class="input-stack"><label for="mc-name">Voiture</label><input type="text" id="mc-name" maxlength="80" placeholder="Ex. Peugeot 106 S16"></div>
+          <div class="input-stack wide"><label for="mc-cat">Basée sur une fiche du catalogue <small>(facultatif)</small></label><input type="text" id="mc-cat" list="mc-cat-list" maxlength="120" autocomplete="off" placeholder="Tape un nom et choisis dans la liste"><datalist id="mc-cat-list"></datalist><small class="hint-line" id="mc-cat-hint">Ta voiture affichera le lien vers la fiche et reprendra ses caractéristiques pour les duels.</small></div>
           <div class="input-stack"><label for="mc-year">Année</label><input type="text" id="mc-year" maxlength="20" placeholder="1999"></div>
           <div class="input-stack"><label for="mc-engine">Motorisation</label><input type="text" id="mc-engine" maxlength="100" placeholder="1.6 16V TU5J4"></div>
           <div class="input-stack"><label for="mc-power">Puissance (ch)</label><input type="number" id="mc-power" min="0" max="4999" placeholder="120"></div>
@@ -1227,6 +1250,7 @@
 
   <script src="js/firebase-init.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/themes.js"></script>
   <script src="js/common.js"></script>
   <script src="js/data.js"></script>
   <script src="js/data2.js"></script>
@@ -1287,6 +1311,10 @@
   <script src="js/app.js"></script>
   <script src="js/polish.js"></script>
   <script src="js/nav.js"></script>
+  <script src="js/glassbar.js"></script>
+  <script src="js/theme-ui.js"></script>
+  <script src="js/seasonal.js"></script>
+  <script src="js/feel.js"></script>
   <script src="js/marquee.js"></script>
 </body>
 </html>

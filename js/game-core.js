@@ -143,7 +143,19 @@
     if (pity && !out.some((id) => rarities.get(id) !== "common")) out[2] = pick("rare");
     return out;
   }
-  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0 });
+  /** pack acheté avec de la poussière : 2 voitures, dont une « rare » ou mieux garantie */
+  const SHOP_PACK = { cost: 200, cards: 2 };
+  function drawShopPack(rarities, ids, rng) {
+    const by = {}; ORDER.forEach((r) => { by[r] = []; });
+    ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
+    const pick = (r) => { const list = by[r] && by[r].length ? by[r] : ids; return list[Math.floor(rng() * list.length)]; };
+    const out = [pick(pickRarity(rng, "rare"))];
+    let second = pick(pickRarity(rng, null));
+    for (let k = 0; k < 4 && second === out[0] && ids.length > 2; k++) second = pick(pickRarity(rng, null));   // évite le doublon dans le même pack quand c'est possible
+    out.push(second);
+    return out;
+  }
+  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [] });
   /** recompte cartes distinctes (hors éditions spéciales) et éditions spéciales */
   function recount(doc) {
     let c = 0, s = 0;
@@ -198,7 +210,7 @@
   return {
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    RAR, ORDER, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount,
+    RAR, ORDER, SHOP_PACK, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount,
     SHINY, CHALLENGES, DAILY, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

@@ -15,6 +15,7 @@
   // ------------------------------------------------------------------ thème
   MA.applyTheme = function (theme) {
     document.documentElement.setAttribute("data-theme", theme);
+    if (window.MATheme) { if (theme === "custom") MATheme.applyCustom(); else MATheme.clear(); }
     document.querySelectorAll("[data-set-theme]").forEach((t) => t.classList.toggle("active", t.dataset.setTheme === theme));
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) requestAnimationFrame(() => { meta.content = getComputedStyle(document.documentElement).getPropertyValue("--bg-core").trim() || "#09090b"; });
@@ -290,17 +291,33 @@
       batch.commit().catch(() => {});
     }
 
+    // suppression avec « Annuler » pendant 5 s : on garde les données pour les réécrire si besoin
+    let undoBuf = null, undoTimer = null;
+    const raw = (n) => { const o = Object.assign({}, n); delete o.id; return o; };
+    function armUndo(list) {
+      undoBuf = list; clearTimeout(undoTimer);
+      undoTimer = setTimeout(() => { undoBuf = null; if (panel && !panel.hidden) renderPanel(); }, 5000);
+    }
+    function undo() {
+      if (!undoBuf || !db || !user) return;
+      const list = undoBuf, batch = db.batch(), uid = user.uid; undoBuf = null; clearTimeout(undoTimer);
+      list.forEach((n) => batch.set(db.collection("users").doc(uid).collection("notifications").doc(n.id), raw(n)));
+      list.forEach((n) => { if (!items.some((x) => x.id === n.id)) items.push(n); });
+      items.sort((a, b) => ((b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0) - (a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0)));
+      emit();
+      batch.commit().catch(() => {});
+    }
     function remove(id) {
       const i = items.findIndex((x) => x.id === id);
       if (i < 0 || !db || !user) return;
-      items.splice(i, 1); emit();
+      const gone = items.splice(i, 1); armUndo(gone); emit();
       db.collection("users").doc(user.uid).collection("notifications").doc(id).delete().catch(() => {});
     }
     function removeAll() {
       if (!items.length || !db || !user) return;
-      const batch = db.batch(), uid = user.uid;
+      const batch = db.batch(), uid = user.uid, gone = items.slice();
       items.forEach((n) => batch.delete(db.collection("users").doc(uid).collection("notifications").doc(n.id)));
-      items = []; emit();
+      items = []; armUndo(gone); emit();
       batch.commit().catch(() => {});
     }
 
@@ -338,7 +355,7 @@
           </button>
           <button type="button" class="notif-del" data-del="${MA.esc(n.id)}" aria-label="Supprimer cette notification" title="Supprimer">${trash}</button>
         </div>`).join("") : `<div class="notif-empty">Rien pour l'instant.<br><small>Tu seras prévenu ici quand quelqu'un te répond, te mentionne ou t'écrit.</small></div>`;
-      panel.innerHTML = `<div class="notif-head"><b>Notifications</b><span class="notif-actions"><button type="button" class="notif-all" ${unreadCount() ? "" : "disabled"}>Tout lire</button><button type="button" class="notif-clear" ${items.length ? "" : "disabled"} aria-label="Tout effacer" title="Tout effacer">${trash}</button></span></div><div class="notif-list">${list}</div>`;
+      panel.innerHTML = `<div class="notif-head"><b>Notifications</b><span class="notif-actions"><button type="button" class="notif-all" ${unreadCount() ? "" : "disabled"}>Tout lire</button><button type="button" class="notif-clear" ${items.length ? "" : "disabled"} aria-label="Tout effacer" title="Tout effacer">${trash}</button></span></div><div class="notif-list">${list}</div>${undoBuf ? `<div class="notif-undo" role="status"><span>${undoBuf.length > 1 ? undoBuf.length + " notifications supprimées" : "Notification supprimée"}</span><button type="button" class="notif-undo-btn">Annuler</button></div>` : ""}`;
     }
     function placePanel() {
       const r = anchor.getBoundingClientRect();
@@ -362,10 +379,33 @@
         e.stopPropagation();
         if (e.target.closest(".notif-all")) { markAllRead(); return; }
         if (e.target.closest(".notif-clear")) { removeAll(); return; }
+        if (e.target.closest(".notif-undo-btn")) { undo(); return; }
         const del = e.target.closest(".notif-del"); if (del) { remove(del.dataset.del); return; }
         const it = e.target.closest(".notif-item");
         if (it) { const n = items.find((x) => x.id === it.dataset.nid); if (n) go(n); }
       });
+      // tactile : glisser une notification vers la gauche pour la supprimer
+      let sw = null;
+      panel.addEventListener("touchstart", (e) => {
+        const row = e.target.closest(".notif-row"); if (!row || e.touches.length !== 1) return;
+        sw = { row, x: e.touches[0].clientX, y: e.touches[0].clientY, dx: 0, lock: null };
+      }, { passive: true });
+      panel.addEventListener("touchmove", (e) => {
+        if (!sw) return;
+        const dx = e.touches[0].clientX - sw.x, dy = e.touches[0].clientY - sw.y;
+        if (sw.lock === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) sw.lock = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+        if (sw.lock !== "x") return;
+        sw.dx = Math.min(0, dx); sw.row.style.transition = "none"; sw.row.style.transform = `translateX(${sw.dx}px)`; sw.row.style.opacity = String(Math.max(.35, 1 - Math.abs(sw.dx) / 260));
+      }, { passive: true });
+      const endSwipe = () => {
+        if (!sw) return; const s = sw; sw = null;
+        s.row.style.transition = "transform .2s, opacity .2s";
+        if (s.lock === "x" && s.dx < -90) {
+          s.row.style.transform = "translateX(-110%)"; s.row.style.opacity = "0";
+          const id = s.row.querySelector(".notif-del").dataset.del; setTimeout(() => remove(id), 180);
+        } else { s.row.style.transform = ""; s.row.style.opacity = ""; }
+      };
+      panel.addEventListener("touchend", endSwipe); panel.addEventListener("touchcancel", endSwipe);
       document.addEventListener("click", () => closePanel());
       document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
       window.addEventListener("resize", () => { if (!panel.hidden) placePanel(); }, { passive: true });

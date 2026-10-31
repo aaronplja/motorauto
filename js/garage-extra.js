@@ -144,7 +144,6 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx); C.app = window.MAApp;
     ctx.Router.register("garage", { enter: async (p) => {
-      if (p.tab === "apercu") { const el = document.getElementById("garage-virtual"); if (el) el.innerHTML = virtualGarage((C.app.getGarage() || {}).favorites || [], "Mon garage virtuel"); }
       if (p.tab === "voitures") { const el = document.getElementById("my-gauge"); if (el) { gaugeCars = C.app.getMyCars() || []; el.innerHTML = gaugeBlock(gaugeCars, "", true); } }
       if (p.tab === "suivi") {
         renderCosts(); renderJournal();
@@ -161,11 +160,6 @@
       gaugeCars = e.detail.list; let el = document.getElementById("pub-gauge");
       if (!el) { const a = document.getElementById("pub-profile-cars"); if (!a) return; el = document.createElement("div"); el.id = "pub-gauge"; el.className = "game-zone"; a.insertAdjacentElement("afterend", el); }
       el.innerHTML = gaugeBlock(e.detail.list, "", false);
-    });
-    document.addEventListener("ma:profile-garage", (e) => {
-      let el = document.getElementById("pub-vgarage");
-      if (!el) { const a = document.getElementById("pub-profile-favorites"); if (!a) return; el = document.createElement("div"); el.id = "pub-vgarage"; el.className = "game-zone"; a.parentElement.insertBefore(el, a); }
-      el.innerHTML = virtualGarage(e.detail.favorites, "Garage virtuel");
     });
     document.addEventListener("click", (e) => {
       const g = e.target.closest("[data-gauge-share]");

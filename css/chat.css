@@ -5,7 +5,8 @@
 html, body.chat-page { height: 100%; overflow: hidden; }
 body.chat-page { height: 100vh; height: 100dvh; }
 /* clavier mobile : la page suit la zone réellement visible (variables posées par js/chat.js via visualViewport) */
-body.chat-page { position: fixed; left: 0; right: 0; top: var(--vvt, 0px); width: 100%; height: var(--vvh, 100dvh); overflow: hidden; overscroll-behavior: none; }
+html { position: fixed; inset: 0; width: 100%; overflow: hidden; }
+body.chat-page { position: fixed; left: 0; right: 0; top: 0; width: 100%; height: var(--vvh, 100dvh); transform: translate3d(0, var(--vvt, 0px), 0); overflow: hidden; overscroll-behavior: none; transition: none; }
 
 .chat-app {
   position: relative; display: grid; grid-template-columns: minmax(300px, 25vw) 1fr; height: 100%; overflow: hidden;

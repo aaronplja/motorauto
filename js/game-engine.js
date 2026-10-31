@@ -32,7 +32,13 @@
     async function isKnownCard(pool, id) { return pool.byId.has(id) || (core.isSpecial(id) && !!(await specialCard(id))); }
 
     // ---------------------------------------------------------------- petits utilitaires
-    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, trades: d.trades || 0, chal: d.chal || 0 });
+    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0 });
+    /** historique de poussière (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
+    function dustMove(d, n, why) {
+      if (!n) return;
+      d.dust = Math.max(0, Math.min(1000000, d.dust + n));
+      d.dustLog = (d.dustLog || []).concat([{ t: now(), n, w: String(why).slice(0, 40) }]).slice(-40);
+    }
     async function readCol(tx, uid) { const s = await tx.get(col("collections").doc(uid)); return s.exists ? Object.assign(core.blankCollection(), s.data()) : core.blankCollection(); }
     function writeCol(tx, uid, d) { core.recount(d); d.claimed = (d.claimed || []).slice(0, 190); d.updatedAt = ts(); tx.set(col("collections").doc(uid), d); }
     const blankWeekly = (wk) => ({ week: wk, packs: 0, dailyDays: [], trades: 0, logs: { duel: 0, share: 0 }, logDay: {}, claimed: [], claimedDaily: [] });
@@ -97,14 +103,18 @@
 
     async function openPack(caller, data) {
       const uid = caller.uid, kind = data && data.kind;
-      if (kind !== "daily" && kind !== "bonus" && kind !== "test") fail("invalid-argument", "Type de pack inconnu.");
+      if (kind !== "daily" && kind !== "bonus" && kind !== "test" && kind !== "shop") fail("invalid-argument", "Type de pack inconnu.");
       if (kind === "test") await requireAdmin(caller);   // pack de test illimité : réservé à l'administration, sans effet sur les défis ni les compteurs
       const pool = await getPool(), today = core.dayKey(now()), wk = core.weekKey(now());
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid), w = await readWeekly(tx, uid, wk);
         if (kind === "daily" && d.lastPack === today) fail("failed-precondition", "Ton pack du jour est déjà ouvert : reviens demain !");
         if (kind === "bonus" && d.bonus < 1) fail("failed-precondition", "Aucun pack bonus disponible.");
-        const ids = core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % 10 === 0);
+        if (kind === "shop") {
+          if (d.dust < core.SHOP_PACK.cost) fail("failed-precondition", "Il te faut " + core.SHOP_PACK.cost + " poussière pour ce pack (tu en as " + d.dust + ").");
+          dustMove(d, -core.SHOP_PACK.cost, "Pack acheté");
+        }
+        const ids = kind === "shop" ? core.drawShopPack(pool.rar, pool.ids, rng) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % 10 === 0);
         let dust = 0;
         const cards = ids.map((id) => {
           const had = d.owned[id] || 0; d.owned[id] = had + 1;
@@ -112,7 +122,8 @@
           if (had > 0) dust += core.RAR[rar].dust;
           return { id, fresh: had === 0, rarity: rar };
         });
-        d.dust += dust;
+        if (dust) dustMove(d, dust, kind === "shop" ? "Doublons du pack acheté" : "Doublons");
+        if (kind === "shop") { writeCol(tx, uid, d); return { cards, dust, doc: view(d) }; }   // n'entre ni dans les packs ouverts, ni dans les défis
         if (kind === "test") { core.recount(d); writeCol(tx, uid, d); return { cards, dust, doc: view(d), test: true }; }
         if (kind === "daily") { d.lastPack = today; if (w.dailyDays.indexOf(today) < 0) w.dailyDays.push(today); } else d.bonus--;
         d.opened++; w.packs++;
@@ -129,7 +140,7 @@
         const d = await readCol(tx, uid);
         if ((d.owned[id] || 0) > 0) fail("failed-precondition", "Tu possèdes déjà cette carte.");
         if (d.dust < cost) fail("failed-precondition", "Il te faut " + cost + " poussière (tu en as " + d.dust + ").");
-        d.dust -= cost; d.owned[id] = 1;
+        dustMove(d, -cost, "Carte fabriquée"); d.owned[id] = 1;
         writeCol(tx, uid, d);
         return { id, doc: view(d) };
       });
@@ -167,18 +178,23 @@
     }
     /** valeurs des défis fondés sur les données du site (le reste vient du compteur hebdomadaire) */
     async function queryValues(uid, items, since) {
-      const start = since != null ? since : core.weekStart(now()), out = {};
-      for (const ch of items) {
-        const src = ch.src;
-        if (src === "q:comments") out[ch.id] = await countSince("comments", "uid", uid, start);
-        else if (src === "q:laps") out[ch.id] = await countSince("global_laps", "pilotUid", uid, start);
-        else if (src === "q:likes") out[ch.id] = await countSince("likes", "uid", uid, start);
-        else if (src === "q:reacts") out[ch.id] = await countSince("reactions", "uid", uid, start);
-        else if (src === "q:chat") out[ch.id] = await countSince("global_chat", "uid", uid, start, "timestamp");
-        else if (src === "q:rsvps") out[ch.id] = await countSince("rsvps", "uid", uid, start);
-        else if (src === "q:votes") out[ch.id] = await countSince("contest_votes", "uid", uid, start);
-        else if (src === "state:wish") { const s = await col("wishlists").doc(uid).get(); out[ch.id] = s.exists && Array.isArray(s.data().ids) ? s.data().ids.length : 0; }
-      }
+      // une requête par source (pas par défi) et toutes en parallèle : le statut des défis ne dépend plus du nombre de défis
+      const start = since != null ? since : core.weekStart(now()), out = {}, bySrc = new Map();
+      const run = (src) => {
+        if (src === "q:comments") return countSince("comments", "uid", uid, start);
+        if (src === "q:laps") return countSince("global_laps", "pilotUid", uid, start);
+        if (src === "q:likes") return countSince("likes", "uid", uid, start);
+        if (src === "q:reacts") return countSince("reactions", "uid", uid, start);
+        if (src === "q:chat") return countSince("global_chat", "uid", uid, start, "timestamp");
+        if (src === "q:rsvps") return countSince("rsvps", "uid", uid, start);
+        if (src === "q:votes") return countSince("contest_votes", "uid", uid, start);
+        if (src === "state:wish") return col("wishlists").doc(uid).get().then((s) => (s.exists && Array.isArray(s.data().ids) ? s.data().ids.length : 0));
+        return null;
+      };
+      items.forEach((ch) => { if (!bySrc.has(ch.src)) { const p = run(ch.src); if (p) bySrc.set(ch.src, p); } });
+      const keys = Array.from(bySrc.keys()), vals = await Promise.all(keys.map((k) => bySrc.get(k)));
+      const res = new Map(keys.map((k, i) => [k, vals[i]]));
+      items.forEach((ch) => { if (res.has(ch.src)) out[ch.id] = res.get(ch.src); });
       return out;
     }
     function valueOf(ch, w, qv, daily) {
@@ -214,7 +230,7 @@
         if (isDaily ? (w.claimedDaily || []).indexOf(key) >= 0 : w.claimed.indexOf(id) >= 0) fail("failed-precondition", "Récompense déjà récupérée.");
         if (valueOf(ch, w, qv, isDaily) < ch.goal) fail("failed-precondition", "Défi pas encore accompli.");
         const r = ch.reward; let perfect = false;
-        if (r.dust) d.dust += r.dust;
+        if (r.dust) dustMove(d, r.dust, "Défi validé");
         if (r.bonus) d.bonus += r.bonus;
         if (isDaily) { w.claimedDaily = (w.claimedDaily || []).concat([key]).slice(-14); }
         else {
@@ -455,7 +471,7 @@
         const dustTo = [null, 150, 80];
         for (let i = 1; i < results.length; i++) {
           await db.runTransaction(async (tx) => { const d = await readCol(tx, results[i].uid); d.dust += dustTo[i]; writeCol(tx, results[i].uid, d); });
-          await notify(results[i].uid, { name: "MOTORAUTO" }, "📸 " + (i + 1) + "e du concours photo de " + label + " : +" + dustTo[i] + " ✨", "#/jouer/concours");
+          await notify(results[i].uid, { name: "MOTORAUTO" }, "📸 " + (i + 1) + "e du concours photo de " + label + " : +" + dustTo[i] + " poussière", "#/jouer/concours");
         }
         await notify(win.uid, { name: "MOTORAUTO" }, "🏆 Tu remportes le concours photo de " + label + " !", "#/jouer/concours");
       }

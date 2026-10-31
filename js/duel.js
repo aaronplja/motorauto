@@ -26,6 +26,9 @@
     const num = (v) => { const m = String(v == null ? "" : v).replace(",", ".").match(/[\d.]+/); return m ? Number(m[0]) : 0; };
     const hp = num(d.power), zero = num(d.zero), year = Number(String(d.year || "").match(/\d{4}/)) || 2005;
     const spec = { hp: hp || 100, kg: hp > 0 ? Math.round(900 + hp * 1.1) : 1200, drive: "R", est: true, vmax: 0, zero, year, category: "Coupé", name: (d.name || "") + " " + (d.engine || "") };
+    // voiture liée à une fiche du catalogue : on reprend ses caractéristiques réelles pour le duel (sauf ce que le pilote a renseigné)
+    const base = d.catalogId ? C.carsById.get(d.catalogId) : null;
+    if (base) { try { const bs = specOf(base); spec.hp = hp || bs.hp; spec.kg = bs.kg || spec.kg; spec.drive = bs.drive || spec.drive; spec.vmax = bs.vmax || 0; spec.est = hp ? true : bs.est; spec.category = bs.category || spec.category; } catch (_) { /* fiche sans specs : estimation */ } }
     const name = String(d.name || "Voiture");
     return { id: "com-" + d.id, brand: d.pilot ? "@" + d.pilot : "Communauté", model: name, category: "Communauté", years: String(d.year || ""), image: (d.photos && d.photos[0]) || "", stats: { power: spec.hp, zero }, phases: [], community: true, _spec: spec };
   }

@@ -18,7 +18,7 @@
     ["maint", "Entretien", "Rappels d'entretien de ta voiture"]
   ];
   const CAT = { reply: "reply", mention: "mention", dm: "dm", follow: "follow", like: "like", comment: "comment", event: "event", maint: "maint", game: "game" };
-  let C = null, prefs = null, deferredInstall = null;
+  let C = null, prefs = null, deferredInstall = null, dnd = { on: false, from: "22:00", to: "08:00" };
   const TOKEN_KEY = "motorauto_push_token";
   const lsGet = (k) => { try { return localStorage.getItem(k); } catch (_) { return null; } };
   const lsSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (_) { /* ignoré */ } };
@@ -27,12 +27,21 @@
   // ------------------------------------------------------------------ préférences
   async function loadPrefs(uid) {
     prefs = {}; KINDS.forEach(([k]) => { prefs[k] = true; });
-    try { const d = await db().collection("notif_prefs").doc(uid).get(); if (d.exists) KINDS.forEach(([k]) => { if (d.data()[k] === false) prefs[k] = false; }); } catch (_) { /* règles non publiées : tout activé */ }
+    dnd = { on: false, from: "22:00", to: "08:00" };
+    try { const d = await db().collection("notif_prefs").doc(uid).get(); if (d.exists) { const x = d.data(); KINDS.forEach(([k]) => { if (x[k] === false) prefs[k] = false; }); dnd = { on: x.dnd === true, from: /^\d\d:\d\d$/.test(x.dndFrom) ? x.dndFrom : "22:00", to: /^\d\d:\d\d$/.test(x.dndTo) ? x.dndTo : "08:00" }; } } catch (_) { /* règles non publiées : tout activé */ }
     return prefs;
   }
   async function setPref(uid, kind, on) {
     prefs = prefs || {}; prefs[kind] = on;
-    const data = {}; KINDS.forEach(([k]) => { data[k] = prefs[k] !== false; });
+    await savePrefs(uid);
+  }
+  /** « Ne pas déranger » : pas de notification sur l'appareil pendant la plage (la cloche du site continue de se remplir). */
+  async function setDnd(uid, patch) {
+    dnd = Object.assign({}, dnd, patch); await savePrefs(uid);
+  }
+  async function savePrefs(uid) {
+    const data = {}; KINDS.forEach(([k]) => { data[k] = (prefs || {})[k] !== false; });
+    data.dnd = dnd.on === true; data.dndFrom = dnd.from; data.dndTo = dnd.to;
     data.updatedAt = window.MAFB.FieldValue.serverTimestamp();
     await db().collection("notif_prefs").doc(uid).set(data);
   }
@@ -126,7 +135,7 @@
     askTimer = setTimeout(() => { if (!lsGet(ASKED) && document.visibilityState === "visible") showAsk(user, st === "ios-install" ? "ios" : "web"); }, 6000);
   }
 
-  window.MAPush = { release, refresh, KINDS, state, enable, disable, install, canInstall: () => !!deferredInstall, standalone, isIOS, loadPrefs, setPref, allows, prefs: () => prefs };
+  window.MAPush = { release, refresh, KINDS, state, enable, disable, install, canInstall: () => !!deferredInstall, standalone, isIOS, loadPrefs, setPref, setDnd, dnd: () => dnd, allows, prefs: () => prefs };
   document.addEventListener("ma:auth", (e) => { const u = e.detail && e.detail.user; if (u) loadPrefs(u.uid); else prefs = null; onAuth(u || null); });
   // enregistre le service worker (site installable) dès que possible, sans demander d'autorisation
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) window.addEventListener("load", () => { navigator.serviceWorker.register("/firebase-messaging-sw.js").catch(() => {}); });

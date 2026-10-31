@@ -47,7 +47,7 @@
         tile(rar.common[0], "communes", { text: rar.common[0] + "/" + rar.common[1] }),
         tile(col.specials || 0, "éditions limitées", { cls: "rar-special" }),
         tile(dups, "doublons"), tile(col.trades || 0, "échanges réalisés"),
-        self ? tile(col.dust || 0, "poussière ✨") : ""
+        self ? tile(col.dust || 0, "poussière") : ""
       ].filter(Boolean))}
       ${section("Pilotage", [tile(s.laps, "chronos"), tile(s.records, "records"), tile(s.podiums, "podiums"), tile(s.tracks, "circuits roulés")])}
       ${section("Garage et communauté", [tile(d.cars.length, "voitures publiées", { sub: hp ? nf(hp) + " ch au total" : "" }), tile(s.comments, "commentaires"), tile(s.likes, "voitures aimées"), tile(s.events, "sorties organisées"), tile(s.rsvps, "sorties rejointes")])}

@@ -118,12 +118,31 @@
     try {
       const list = await loadEvents(true), now = Date.now() - 6 * 3600 * 1000;
       const next = list.filter((e) => e.dateMs >= now), old = list.filter((e) => e.dateMs < now).reverse();
-      document.getElementById("events-count").textContent = `${next.length} à venir`;
+      const cnt = document.getElementById("events-count");
       up.innerHTML = next.length ? next.map(eventCardHtml).join("") : `<div class="empty-note">Aucune sortie prévue. Propose la première !</div>`;
-      past.innerHTML = old.length ? old.slice(0, 20).map(eventCardHtml).join("") : `<div class="empty-note small">Rien de passé.</div>`;
+      // passés : regroupés par mois, avec le nombre de participants
+      let html = "", lastKey = "";
+      old.forEach((ev) => {
+        const d = new Date(ev.dateMs), key = d.getFullYear() + "-" + d.getMonth();
+        if (key !== lastKey) { lastKey = key; const inMonth = old.filter((o) => { const x = new Date(o.dateMs); return x.getFullYear() + "-" + x.getMonth() === key; }); const tot = inMonth.reduce((n, o) => n + ((rsvps.get(o.id) || new Map()).size), 0);
+          html += `<h3 class="ev-month">${d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })} <small>${inMonth.length} sortie${inMonth.length > 1 ? "s" : ""} · ${tot} participant${tot > 1 ? "s" : ""}</small></h3>`; }
+        html += eventCardHtml(ev);
+      });
+      past.innerHTML = html || `<div class="empty-note small">Aucune sortie passée.</div>`;
+      document.getElementById("ev-n-up").textContent = next.length || ""; document.getElementById("ev-n-past").textContent = old.length || "";
+      const showPast = past.dataset.show === "1";
+      up.hidden = showPast; past.hidden = !showPast;
+      cnt.textContent = showPast ? `${old.length} passée${old.length > 1 ? "s" : ""}` : `${next.length} à venir`;
       document.dispatchEvent(new CustomEvent("ma:events-rendered", { detail: { list } }));
     } catch (e) { up.innerHTML = `<div class="empty-note error">Sorties indisponibles.</div>`; }
   }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-ev-when]"); if (!b) return;
+    const past = document.getElementById("events-past"); if (!past) return;
+    past.dataset.show = b.dataset.evWhen === "past" ? "1" : "0";
+    document.querySelectorAll("[data-ev-when]").forEach((x) => { const on = x === b; x.classList.toggle("active", on); x.setAttribute("aria-selected", on); });
+    renderEvents();
+  });
   async function renderHomeEvents() {
     const box = document.getElementById("home-events");
     if (!box) return;

@@ -1,6 +1,6 @@
 /**
  * MOTORAUTO — Bataille de cartes (entraînement).
- * Règles équitables :
+ * Règles équitables (le joueur mène toujours : il choisit carte et caractéristique ; la réponse de l'adversaire est réglée par simulation) :
  *  - ton adversaire reçoit une main de la MÊME force que la tienne (cartes de niveau comparable, tirées dans tout le catalogue) ;
  *  - chaque manche a un « meneur » : il joue une carte et choisit la caractéristique, l'autre répond avec une de ses cartes
  *    en connaissant la carte et la caractéristique. Le meneur change à chaque manche (le premier meneur est tiré au sort) ;
@@ -10,7 +10,8 @@
 (function () {
   "use strict";
   let C = null, ov = null, st = null, meta = null;
-  const AI_SKILL = 0.3;   // part des réponses de l'adversaire jouées au mieux
+  const ALWAYS_LEAD = true;   // c'est toujours le joueur qui choisit carte ET caractéristique ; l'équilibre vient de la réponse de l'adversaire
+  let AI_SKILL = 0.25;   // réglé par simulation : un joueur malin gagne ≈ 50 %, un joueur au hasard ≈ 30 %   // part des réponses de l'adversaire jouées au mieux
   const STATS = [["power", "Puissance", "ch", 1], ["speed", "Vitesse", "km/h", 1], ["zero", "0 à 100", "s", -1]];
   const val = (car, k) => Number(car.stats && car.stats[k]) || 0;
   const shuffle = (a) => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
@@ -51,7 +52,7 @@
   /** début de manche : si c'est l'adversaire qui mène, il joue tout de suite sa carte et sa caractéristique */
   function startRound(g) {
     g.pick = -1; g.foePick = -1; g.stat = ""; g.shown = false; g.msg = ""; g.cls = "";
-    g.leader = (g.round % 2 === 0) === (g.first === "me") ? "me" : "ai";
+    g.leader = ALWAYS_LEAD ? "me" : (g.round % 2 === 0) === (g.first === "me") ? "me" : "ai";
     if (g.leader === "ai") {
       const free = g.foes.map((c, i) => i).filter((i) => !g.foeUsed.has(i));
       g.foePick = free[Math.floor(Math.random() * free.length)];
@@ -101,7 +102,7 @@
       <div class="bt-field"><div>${my ? card(my) : `<div class="bt-hidden">?</div>`}</div><span class="bt-vs">VS</span><div>${foe ? card(foe) : `<div class="bt-hidden">MOTOR<br>AUTO</div>`}</div></div>
       ${st.shown && !over ? `<div class="bt-res ${st.cls}" role="status">${C.esc(st.msg)}</div>` : over ? `<p class="bt-note">${C.esc(st.msg)}</p>` : ""}
       ${body}
-      <p class="bt-note">Entraînement équitable : mains de force égale, un meneur à tour de rôle. Aucune récompense.</p>`;
+      <p class="bt-note">Entraînement équitable : mains de force égale ; tu choisis la carte et la caractéristique, l'adversaire répond. Aucune récompense.</p>`;
     const f = ov.querySelector("[data-bt],[data-stat],[data-h]:not(.used)"); if (f) f.focus({ preventScroll: true });
   }
   const handHtml = () => st.hand.map((c, i) => `<button type="button" class="pick ${st.used.has(i) ? "used" : ""}" data-h="${i}" aria-label="${C.esc(c.brand + " " + c.model)}">${card(c)}</button>`).join("");
@@ -162,6 +163,6 @@
     }
     st = saved; out.ratingGap /= Math.max(1, n); return out;
   }
-  window.MABattle = { open, _test: { sim } };
+  window.MABattle = { open, _test: { sim, setSkill: (v) => { AI_SKILL = v; } } };
   (window.MAModules = window.MAModules || []).push(function (ctx) { C = ctx; });
 })();

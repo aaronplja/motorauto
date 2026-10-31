@@ -111,13 +111,24 @@
   async function openPack(kind) {
     if (busy || !C.requireLogin()) return;
     busy = true; renderHero();
+    // le pack apparaît tout de suite pendant que le serveur tire les cartes (plus d'écran figé)
+    mountOverlay("pack", "Ouverture de pack", `<div class="pk3 pk3-loading" id="pk3"><h2>${kind === "shop" ? "Ton pack cristal" : "Ton pack"}</h2><div class="pk3-pack ${C.esc(kind)} pk3-wait" aria-hidden="true"><b>MOTOR<span>AUTO</span></b></div><p class="tcg-hint" role="status">Préparation du pack…</p></div>`);
     try {
-      await load();
+      if (!doc) await load();
       const r = await API("openPack", { kind });
       applyDoc(r.doc);
       showPack(r.cards.map((c) => ({ car: cardObj(c.id), fresh: c.fresh })).filter((x) => x.car), r.dust, kind);
-    } catch (e) { C.toast(e.message, "err"); await load(true).catch(() => {}); }
+    } catch (e) { closeOverlay(); C.toast(e.message, "err"); await load(true).catch(() => {}); }
     finally { busy = false; renderHero(); }
+  }
+  // ----- historique de poussière
+  function showDustLog() {
+    if (!doc) return;
+    const log = (doc.dustLog || []).slice().reverse(), fmt = (t) => new Date(t).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    const lo = mountOverlay("dustlog", "Historique de poussière", `<div class="tcg-stage"><div class="dustlog"><h2>${window.MA.dustIcon(24)} Ta poussière</h2><p class="dustlog-bal"><b>${doc.dust}</b> en réserve</p>
+      ${log.length ? `<ul>${log.map((l) => `<li class="${l.n > 0 ? "gain" : "spend"}"><span>${C.esc(l.w || "")}<small>${fmt(l.t)}</small></span><b>${l.n > 0 ? "+" : "−"}${Math.abs(l.n)} ${window.MA.dustIcon(14)}</b></li>`).join("")}</ul>` : `<p class="tcg-hint">Rien pour l'instant : la poussière vient des doublons et des défis.</p>`}
+      <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div></div>`);
+    lo.addEventListener("click", (e) => { if (e.target === lo || e.target.closest("[data-close]")) closeOverlay(); });
   }
   async function craft(id) {
     if (busy || !C.requireLogin()) return;
@@ -224,7 +235,7 @@
       const finish = () => {
         const news = results.filter((r) => r.fresh).length, dups = results.length - news;
         const sum = o.querySelector("#tcg-sum");
-        sum.innerHTML = `<span>${news} nouvelle${news > 1 ? "s" : ""}</span><span>${dups} doublon${dups > 1 ? "s" : ""}</span>${dust ? `<span>+${dust} ✨ poussière</span>` : ""}`;
+        sum.innerHTML = `<span>${news} nouvelle${news > 1 ? "s" : ""}</span><span>${dups} doublon${dups > 1 ? "s" : ""}</span>${dust ? `<span>+${dust} ${window.MA.dustIcon(15)} poussière</span>` : ""}`;
         if (rank(rarityOf(best.car)) > 1) sum.insertAdjacentHTML("afterend", `<p class="pk3-best">Meilleure carte : ${C.esc(best.car.brand + " " + String(best.car.model).replace(/\s*\(.*$/, ""))} · ${RAR[rarityOf(best.car)].label}</p>`);
         sum.hidden = false; o.querySelector("#tcg-end").hidden = false; o.querySelector("#tcg-all").parentNode.hidden = true; o.querySelector("#tcg-hint").textContent = "";
         const again = doc && (doc.lastPack !== day() ? "daily" : doc.bonus > 0 ? "bonus" : "");
@@ -255,12 +266,12 @@
     const car = cardObj(id), n = countOf(id), R = RAR[rarityOf(car)], sp = car.special, inWish = (wish || []).includes(id);
     const info = sp
       ? `Édition limitée${sp.supply ? " · " + (sp.granted || 0) + " / " + sp.supply + " exemplaires attribués" : ""}. ${n > 0 ? "Elle fait partie de ta collection." : "Elle s'obtient uniquement en la gagnant (événements, concours)."}`
-      : n > 0 ? `Tu possèdes cette carte${n > 1 ? " en " + n + " exemplaires" : ""}.` : `Carte ${R.label.toLowerCase()} · fabrication : ${R.craft} ✨ (tu en as ${doc ? doc.dust : 0}).`;
+      : n > 0 ? `Tu possèdes cette carte${n > 1 ? " en " + n + " exemplaires" : ""}.` : `Carte ${R.label.toLowerCase()} · fabrication : ${R.craft} ${window.MA.dustIcon(14)} (tu en as ${doc ? doc.dust : 0}).`;
     const actions = [`<button type="button" class="cta-btn btn-ghost" data-flipcard>↻ Retourner</button>`];
     if (n > 0 && !sp) actions.push(`<a class="cta-btn btn-ghost" href="#/voiture/${encodeURIComponent(id)}" data-close>Voir la fiche</a>`);
     if (n > 1) actions.push(`<button type="button" class="cta-btn fill-btn" data-swap>🔄 Proposer à l'échange</button>`);
     if (n > 0) actions.push(`<button type="button" class="cta-btn btn-ghost" data-share>↗ Partager</button>`);
-    if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn fill-btn" data-craft ${doc && doc.dust >= R.craft ? "" : "disabled"}>Fabriquer (${R.craft} ✨)</button>`);
+    if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn fill-btn" data-craft ${doc && doc.dust >= R.craft ? "" : "disabled"}>Fabriquer (${R.craft} ${window.MA.dustIcon(14)})</button>`);
     if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-wish aria-pressed="${inWish}">${inWish ? "★ Dans ma wishlist" : "☆ Wishlist"}</button>`);
     actions.push(`<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button>`);
     const i = navIds.indexOf(id), nav = i >= 0 && navIds.length > 1 ? `<div class="tcg-nav"><button type="button" data-nav="-1" aria-label="Carte précédente" ${i > 0 ? "" : "disabled"}>‹</button><span class="tcg-hint">${i + 1} / ${navIds.length}</span><button type="button" data-nav="1" aria-label="Carte suivante" ${i < navIds.length - 1 ? "" : "disabled"}>›</button></div>` : "";
@@ -363,9 +374,10 @@
     el.innerHTML = `<div class="tcg-progress"><div class="tcg-pg-top"><span><b>${owned}</b> / ${total} cartes</span><em>${pct} %</em></div><div class="xp-bar"><i style="width:${pct}%"></i></div><div class="tcg-rar-row">${byR}${doc.specials ? `<span class="tcg-rar-chip special">✦ Éditions <b>${doc.specials}</b></span>` : ""}</div></div>
       <div class="tcg-packs">
         <button type="button" class="tcg-pack ${canDaily ? "ready" : "done"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="pk-logo">MOTOR<i>AUTO</i></span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
+        <button type="button" class="tcg-pack shop ${doc.dust >= G.SHOP_PACK.cost ? "ready" : "done"}" data-pack="shop" ${doc.dust >= G.SHOP_PACK.cost && !busy ? "" : "disabled"} aria-label="Pack cristal : ${G.SHOP_PACK.cost} poussière"><span class="pk-logo">${window.MA.dustIcon(34)}</span><b>Pack cristal</b><small>${G.SHOP_PACK.cards} voitures dont 1 rare+ · ${G.SHOP_PACK.cost} ${window.MA.dustIcon(13)}</small></button>
         <button type="button" class="tcg-pack bonus ${doc.bonus ? "ready" : "done"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="pk-logo">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
         <button type="button" class="tcg-pack battle ${canBattle ? "ready" : "done"}" data-battle ${canBattle ? "" : "disabled"} aria-label="Bataille de cartes"><span class="pk-logo">⚔</span><b>Bataille</b><small>${canBattle ? "entraînement, sans récompense" : "3 cartes minimum"}</small></button>
-        <div class="tcg-dust" title="Poussière issue des doublons : sert à fabriquer une carte"><b>✨ ${doc.dust}</b><small>poussière${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></div>
+        <button type="button" class="tcg-dust" data-dust-log title="Poussière issue des doublons et des défis : fabrique des cartes ou achète un pack. Touche pour voir l'historique"><b>${window.MA.dustIcon(20)} ${doc.dust}</b><small>poussière${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></button>
       </div>${notice ? `<p class="tcg-alert" role="status">⚠ ${C.esc(notice)}</p>` : ""}`;
   }
 
@@ -475,6 +487,7 @@
     ctx.Router.register("pilot", { enter: (p) => renderProfile(p.uid) });
     document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; if (ctx.Router.is("play", { tab: "cartes" })) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
+      if (e.target.closest("[data-dust-log]")) { showDustLog(); return; }
       const pk = e.target.closest("[data-pack]");
       if (pk) { openPack(pk.dataset.pack); return; }
       const cf = e.target.closest("[data-cf]");

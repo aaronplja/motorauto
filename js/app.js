@@ -17,7 +17,7 @@
   } = window.MA;
 
   const ITEMS_PER_PAGE = 20;
-  const ADMIN_FIELDS_ALLOWED = ["username", "currentCar", "avatar", "bio", "isPublicGarage", "carPhoto", "mods", "emailNotifs", "instagram", "snapchat", "tiktok"];
+  const ADMIN_FIELDS_ALLOWED = ["username", "currentCar", "avatar", "bio", "isPublicGarage", "hideFollowing", "hideFollowers", "carPhoto", "mods", "emailNotifs", "instagram", "snapchat", "tiktok"];
 
   const { auth, db, storage, FieldValue } = window.MAFB;
   const MA = window.MA;
@@ -43,7 +43,7 @@
   let editingCar = null;
 
   function defaultProfile() {
-    return { username: "Pilote", currentCar: "Non renseignée", avatar: "", bio: "", isPublicGarage: true, carPhoto: "", mods: "", emailNotifs: true, instagram: "", snapchat: "", tiktok: "" };
+    return { username: "Pilote", currentCar: "Non renseignée", avatar: "", bio: "", isPublicGarage: true, hideFollowing: false, hideFollowers: false, carPhoto: "", mods: "", emailNotifs: true, instagram: "", snapchat: "", tiktok: "" };
   }
 
   // ------------------------------------------------------------- utilitaires DOM
@@ -595,6 +595,8 @@
           avatar: d.avatar || "",
           bio: d.bio || "",
           isPublicGarage: d.isPublicGarage !== false,
+          hideFollowing: d.hideFollowing === true,
+          hideFollowers: d.hideFollowers === true,
           carPhoto: d.carPhoto || "",
           mods: d.mods || "",
           emailNotifs: d.emailNotifs !== false,
@@ -622,6 +624,8 @@
           avatar: currentUser.photoURL || "",
           bio: "",
           isPublicGarage: true,
+          hideFollowing: false,
+          hideFollowers: false,
           carPhoto: "",
           mods: "",
           emailNotifs: true,
@@ -641,6 +645,8 @@
     $("settings-avatar-preview").src = AVATAR_SRC(profile.avatar);
     $("settings-bio").value = profile.bio;
     $("settings-public-garage").checked = profile.isPublicGarage;
+    $("settings-hide-following").checked = profile.hideFollowing === true;
+    $("settings-hide-followers").checked = profile.hideFollowers === true;
     $("settings-email-notifs").checked = profile.emailNotifs !== false;
     $("settings-car").value = profile.currentCar === "Projet Principal" || profile.currentCar === "Non renseignée" ? "" : profile.currentCar;
     $("settings-car-photo").value = profile.carPhoto;
@@ -666,6 +672,7 @@
     const data = {
       username: profile.username, currentCar: profile.currentCar,
       avatar: profile.avatar, bio: profile.bio, isPublicGarage: profile.isPublicGarage,
+      hideFollowing: profile.hideFollowing === true, hideFollowers: profile.hideFollowers === true,
       carPhoto: profile.carPhoto || "", mods: profile.mods || "", emailNotifs: profile.emailNotifs !== false,
       instagram: profile.instagram || "", snapchat: profile.snapchat || "", tiktok: profile.tiktok || ""
     };
@@ -765,6 +772,8 @@
       profile.carPhoto = carPhoto;
       profile.mods = $("settings-mods").value.trim().slice(0, 500);
       profile.isPublicGarage = $("settings-public-garage").checked;
+      profile.hideFollowing = $("settings-hide-following").checked;
+      profile.hideFollowers = $("settings-hide-followers").checked;
       profile.emailNotifs = $("settings-email-notifs").checked;
       for (const k of ["instagram", "snapchat", "tiktok"]) {
         const raw = $("settings-" + k) ? $("settings-" + k).value : "";
@@ -1178,6 +1187,7 @@
         <div class="car-thumb-wrap comm-thumb">${slidesHtml(fake, true)}</div>
         <div class="comm-body">
           <h3><a class="comm-title-link" href="#/voiture-pilote/${encodeURIComponent(c.id)}">${esc(c.name || "Voiture")}</a></h3>
+          ${c.catalogId && carsById.get(c.catalogId) ? `<div class="comm-base">Basée sur <a href="#/voiture/${encodeURIComponent(c.catalogId)}">${esc(catLabel(carsById.get(c.catalogId)))}</a></div>` : ""}
           ${meta ? `<div class="comm-meta">${meta}</div>` : ""}
           ${c.description ? `<p class="comm-desc">${esc(c.description)}</p>` : ""}${adminEdit ? `<div class="comm-actions"><button type="button" class="cta-btn btn-ghost compact-btn" data-action="mycar-edit" data-id="${esc(c.id)}">🛠 Modifier (admin)</button></div>` : ""}
           ${mods.length ? `<ul class="mods-list">${mods.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}
@@ -1257,6 +1267,28 @@
     st.textContent = `${done} photo(s) ajoutée(s).`;
   }
 
+  // ----- lien vers une fiche du catalogue
+  const catLabel = (c) => (c.brand + " " + c.model).trim();
+  function fillCatalogList() {
+    const dl = $("mc-cat-list"); if (!dl || dl.dataset.n === String(cars.length)) return;
+    dl.dataset.n = String(cars.length);
+    dl.innerHTML = cars.map((c) => `<option value="${esc(catLabel(c))}"></option>`).join("");
+  }
+  function catalogFromInput() {
+    const v = $("mc-cat").value.trim(); if (!v) return { id: "" };
+    const n = normalize(v), hit = cars.find((c) => normalize(catLabel(c)) === n);
+    return hit ? { id: hit.id, car: hit } : { id: "", bad: true };
+  }
+  function onCatalogPick() {
+    const r = catalogFromInput(), hint = $("mc-cat-hint");
+    if (r.car) {
+      hint.textContent = "✔ Fiche liée : " + catLabel(r.car) + (r.car.stats && r.car.stats.power ? " · " + r.car.stats.power + " ch" : "");
+      if (!$("mc-name").value.trim()) $("mc-name").value = catLabel(r.car);
+      if (!$("mc-power").value && r.car.stats && r.car.stats.power) $("mc-power").value = r.car.stats.power;
+      if (!$("mc-year").value && r.car.years) $("mc-year").value = String(r.car.years).slice(0, 20);
+    } else hint.textContent = r.bad ? "Choisis une voiture dans la liste proposée (ou vide le champ)." : "Ta voiture affichera le lien vers la fiche et reprendra ses caractéristiques pour les duels.";
+  }
+
   function openMyCarEditor(id) {
     if (!requireLogin()) return;
     mcEditing = id ? myCars.find((c) => c.id === id) || (isAdmin ? adminCars.get(id) : null) || null : null;
@@ -1264,6 +1296,8 @@
     $("mc-title").textContent = mcEditing ? (mcEditing.uid !== currentUser.uid ? "Modifier la voiture de " + (mcEditing.pilot || "ce pilote") + " (admin)" : "Modifier ma voiture") : "Ajouter une voiture";
     $("mc-name").value = c.name || ""; $("mc-year").value = c.year || ""; $("mc-engine").value = c.engine || "";
     $("mc-power").value = c.power || ""; $("mc-zero").value = c.zero || ""; $("mc-desc").value = c.description || ""; $("mc-mods").value = c.mods || "";
+    fillCatalogList();
+    { const b = c.catalogId ? carsById.get(c.catalogId) : null; $("mc-cat").value = b ? catLabel(b) : ""; onCatalogPick(); }
     $("mc-url").value = ""; $("mc-error").textContent = ""; $("mc-upload-status").textContent = "";
     mcImages = (c.photos || []).slice();
     renderMcImages();
@@ -1278,7 +1312,10 @@
     const name = $("mc-name").value.trim();
     if (name.length < 2) { err.textContent = "Donne un nom à ta voiture (ex. Peugeot 106 S16)."; return; }
     const power = Number($("mc-power").value);
+    const cat = catalogFromInput();
+    if (cat.bad) { err.textContent = "Fiche du catalogue inconnue : choisis-la dans la liste ou vide le champ."; return; }
     const data = {
+      catalogId: cat.id,
       uid: mcEditing ? mcEditing.uid : currentUser.uid, pilot: mcEditing ? mcEditing.pilot : profile.username, avatar: mcEditing ? (mcEditing.avatar || "") : (profile.avatar || ""),
       name: name.slice(0, 80), year: $("mc-year").value.trim().slice(0, 20), engine: $("mc-engine").value.trim().slice(0, 100),
       power: power > 0 && power < 5000 ? Math.round(power) : 0,
@@ -1353,7 +1390,7 @@
   // -------------------------------------------------------------- abonnements
   // users/{uid}/following/{cible} (écrit par uid) + users/{cible}/followers/{uid} (écrit par uid) : posés ensemble en lot.
   let pubUid = null, pubName = "", pubAvatar = "";
-  const socialCache = {};
+  const socialCache = {}, socialHide = {};
   async function renderSocial(scope, uid) {
     const root = $(scope + "-social");
     if (!root) return;
@@ -1362,15 +1399,22 @@
     const btn = root.querySelector(".follow-btn") || (root.parentElement && root.parentElement.querySelector(".follow-btn"));
     if (btn) { btn.dataset.uid = uid; btn.hidden = !!(currentUser && currentUser.uid === uid); btn.disabled = false; btn.classList.remove("on"); btn.textContent = "Suivre"; }
     try {
-      const col = (k) => db.collection("users").doc(uid).collection(k).limit(500).get();
-      const [fr, fg] = await Promise.all([col("followers"), col("following")]);
+      const mineP = !!(currentUser && currentUser.uid === uid);
+      let hide = { followers: false, following: false };
+      if (!mineP) { const ud = await db.collection("users").doc(uid).get(); const x = ud.exists ? ud.data() : {}; hide = { followers: x.hideFollowers === true, following: x.hideFollowing === true }; }
+      socialHide[uid] = hide;
+      const empty = { size: 0, docs: [] };
+      const col = (k, hid) => hid ? Promise.resolve(empty) : db.collection("users").doc(uid).collection(k).limit(500).get();
+      const [fr, fg] = await Promise.all([col("followers", hide.followers), col("following", hide.following)]);
       if (root.querySelector(".social-count").dataset.uid !== uid) return;
       const fmt = (s) => (s.size >= 500 ? "500+" : String(s.size));
-      root.querySelector('[data-sc="followers"]').textContent = fmt(fr);
-      root.querySelector('[data-sc="following"]').textContent = fmt(fg);
+      root.querySelector('[data-sc="followers"]').textContent = hide.followers ? "🔒" : fmt(fr);
+      root.querySelector('[data-sc="following"]').textContent = hide.following ? "🔒" : fmt(fg);
+      root.querySelectorAll(".social-count").forEach((b) => { b.classList.toggle("is-hidden", hide[b.dataset.kind]); });
       socialCache[uid] = { followers: fr, following: fg };
       if (btn && currentUser && currentUser.uid !== uid) {
-        const on = fr.docs.some((d) => d.id === currentUser.uid);
+        // l'état « abonné » se lit sur MON document (toujours lisible), même si la liste est masquée
+        const on = hide.followers ? (await db.collection("users").doc(uid).collection("followers").doc(currentUser.uid).get()).exists : fr.docs.some((d) => d.id === currentUser.uid);
         btn.classList.toggle("on", on); btn.textContent = on ? "✓ Abonné" : "Suivre";
       }
     } catch (e) { console.warn("Abonnements :", e.code || e.message); }
@@ -1406,6 +1450,8 @@
     const list = $("follow-list");
     list.innerHTML = `<div class="empty-note">Chargement…</div>`;
     openModal($("follow-modal"));
+    const hid = socialHide[uid] && socialHide[uid][kind] && !(currentUser && currentUser.uid === uid);
+    if (hid) { list.innerHTML = `<div class="empty-note">🔒 Ce pilote garde cette liste privée.</div>`; return; }
     try {
       const snap = await db.collection("users").doc(uid).collection(kind).limit(200).get();
       const rows = snap.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => String(a.username).localeCompare(String(b.username), "fr"));
@@ -2590,6 +2636,7 @@
       "close-auth-modal": "auth-modal", "close-admin-modal": "admin-modal", "close-suggest-modal": "suggest-modal", "close-compare-modal": "compare-modal",
       "close-import-modal": "import-modal", "close-follow-modal": "follow-modal", "close-theme-modal": "theme-modal", "close-mycar-modal": "mycar-modal", "close-event-modal": "event-modal", "close-mute-modal": "mute-modal", "close-archives-modal": "archives-modal"
     };
+    { const mcCat = $("mc-cat"); if (mcCat) { mcCat.addEventListener("input", onCatalogPick); mcCat.addEventListener("change", onCatalogPick); } }
     Object.entries(closers).forEach(([btn, modal]) => { const b = $(btn); if (b) b.addEventListener("click", () => closeModal($(modal))); });
     document.querySelectorAll(".modal-layer").forEach((layer) => {
       layer.addEventListener("mousedown", (e) => { layer._downOnBackdrop = e.target === layer; });
@@ -2891,7 +2938,7 @@
     ctx: () => ({
       db, auth, storage, FieldValue, MA, esc, safeUrl, Router,
       get user() { return currentUser; }, get profile() { return profile; }, get isAdmin() { return isAdmin; }, get isSuper() { return isSuper; },
-      get cars() { return CATALOGUE; }, carsById, authReady, catReady,
+      get cars() { return CATALOGUE; }, get carsById() { return carsById; }, authReady, catReady,
       toast: (m, k) => MA.toast(m, k), openProfile: openPublicProfile, requireLogin, avatarImg, pilotName,
       openModal, closeModal, carCard, commCarHtml, normalize
     }),

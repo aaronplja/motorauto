@@ -65,6 +65,21 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   db.seed("collections", "u3", Object.assign(core.blankCollection(), { opened: 9, bonus: 1 }));
   for (let i = 0; i < 50; i++) { db.seed("collections", "u3", Object.assign(core.blankCollection(), { opened: 9, bonus: 1 })); const x = await G.openPack(U3, { kind: "bonus" }); if (!x.cards.some((c) => c.rarity !== "common")) { ok(false, "10e pack sans rare"); break; } if (i === 49) ok(true, "10e pack : 50 essais avec au moins une carte rare"); }
 
+  // ---- pack acheté avec de la poussière (2 voitures, 1 rare ou mieux)
+  db.seed("collections", "u4", Object.assign(core.blankCollection(), { dust: 450, opened: 3, bonus: 0 }));
+  const U4 = { uid: "u4", name: "P4" };
+  await rejects(G.openPack({ uid: "u5", name: "P5" }, { kind: "shop" }), "failed-precondition", "pack acheté : poussière insuffisante refusée");
+  let shopBad = 0, shopDust = 450;
+  for (let i = 0; i < 2; i++) {
+    const x = await G.openPack(U4, { kind: "shop" });
+    if (x.cards.length !== 2) shopBad++;
+    if (!x.cards.some((c) => c.rarity !== "common")) shopBad++;
+    shopDust = x.doc.dust;
+  }
+  await rejects(G.openPack(U4, { kind: "shop" }), "failed-precondition", "pack acheté : 3e achat refusé (poussière épuisée)");
+  ok(shopBad === 0, "pack acheté : toujours 2 cartes dont 1 rare ou mieux");
+  ok(db.raw("collections", "u4").opened === 3 && db.raw("collections", "u4").dust < 450, "pack acheté : ni pack ouvert ni défi comptés, poussière dépensée");
+  ok((db.raw("collections", "u4").dustLog || []).some((l) => l.n === -200), "historique : l'achat est tracé");
   // ---- fabrication
   db.seed("collections", "u3", Object.assign(core.blankCollection(), { dust: 100, owned: {}, bonus: 0 }));
   const common = ids.find((id) => r1.get(id) === "common"), legend = ids.find((id) => r1.get(id) === "legendary");
