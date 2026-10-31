@@ -14,30 +14,30 @@
     border: 1px solid color-mix(in srgb, #fff 34%, transparent) !important;
     box-shadow: inset 0 1.5px 0 rgba(255,255,255,.55), inset 0 -1.5px 0 rgba(0,0,0,.07), inset 0 0 22px rgba(255,255,255,.10), 0 12px 32px -8px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.12) !important;
     touch-action: pan-y;
-    transition: width .5s cubic-bezier(.34,1.3,.5,1), height .5s cubic-bezier(.34,1.3,.5,1), border-radius .5s, opacity .25s, transform .3s !important;
+    transition: width .35s cubic-bezier(.3,.7,.3,1), height .35s cubic-bezier(.3,.7,.3,1), border-radius .35s, opacity .25s, transform .3s !important;
   }
-  :root[data-theme="onyx-carbon"] .mobile-touch-bar, :root[data-theme="nuit"] .mobile-touch-bar { border-color: rgba(255,255,255,.16) !important; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.22), inset 0 0 22px rgba(255,255,255,.04), 0 14px 34px -8px rgba(0,0,0,.7) !important; }
+  :root[data-tone="dark"] .mobile-touch-bar { border-color: rgba(255,255,255,.09) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 18px rgba(255,255,255,.02), 0 14px 34px -8px rgba(0,0,0,.65) !important; }
+  :root[data-tone="dark"] .mobile-touch-bar::before { background: radial-gradient(120% 90% at 20% -20%, rgba(255,255,255,.10), transparent 55%), linear-gradient(180deg, rgba(255,255,255,.04), transparent 40%); }
   /* reflet spéculaire du verre */
   .mobile-touch-bar::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0;
     background: radial-gradient(120% 90% at 20% -20%, rgba(255,255,255,.38), transparent 52%), linear-gradient(180deg, rgba(255,255,255,.12), transparent 40%); }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .mobile-touch-bar { background: var(--bg-surface) !important; } }
 
   /* bulle de verre qui suit l'onglet actif */
-  .glass-bubble { position: absolute; z-index: 1; top: 5px; bottom: 5px; left: 0; width: var(--bw, 20%); transform: translateX(var(--bx, 5px)); border-radius: 28px; pointer-events: none;
-    background: linear-gradient(180deg, color-mix(in srgb, #fff 46%, transparent), color-mix(in srgb, #fff 16%, transparent));
-    border: 1px solid rgba(255,255,255,.55);
-    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.8), inset 0 -2px 6px rgba(0,0,0,.08), 0 6px 16px -6px rgba(0,0,0,.35);
-    -webkit-backdrop-filter: brightness(1.12) saturate(1.5); backdrop-filter: brightness(1.12) saturate(1.5);
-    transition: transform .55s cubic-bezier(.34,1.45,.5,1), width .55s cubic-bezier(.34,1.45,.5,1); will-change: transform, width; }
-  :root[data-theme="onyx-carbon"] .glass-bubble, :root[data-theme="nuit"] .glass-bubble { background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.07)); border-color: rgba(255,255,255,.28); }
-  .glass-bubble.moving { animation: glass-stretch .55s cubic-bezier(.34,1.45,.5,1); }
-  @keyframes glass-stretch { 0% { scale: 1 1; } 35% { scale: 1.22 .9; } 70% { scale: .97 1.04; } 100% { scale: 1 1; } }
-  .mobile-touch-bar.dragging .glass-bubble { transition: transform .12s linear, width .2s; scale: 1.1 1.06; }
+  .glass-bubble { position: absolute; z-index: 1; top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / 5); transform: translateX(calc(var(--i, 0) * 100%)); border-radius: 28px; pointer-events: none;
+    background: linear-gradient(180deg, color-mix(in srgb, #fff 40%, transparent), color-mix(in srgb, #fff 14%, transparent));
+    border: 1px solid rgba(255,255,255,.45);
+    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.7), inset 0 -2px 6px rgba(0,0,0,.08), 0 6px 16px -6px rgba(0,0,0,.3);
+    -webkit-backdrop-filter: brightness(1.1) saturate(1.4); backdrop-filter: brightness(1.1) saturate(1.4);
+    transition: transform .32s cubic-bezier(.3,.8,.3,1); will-change: transform; }
+  :root[data-tone="dark"] .glass-bubble { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05)); border-color: rgba(255,255,255,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 6px 16px -8px rgba(0,0,0,.5); }
+  .mobile-touch-bar.dragging .glass-bubble { transition: transform .1s linear; }
 
   .mobile-touch-bar .touch-bar-item { position: relative; z-index: 2; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; gap: 3px !important; border-radius: 28px !important; background: none !important; box-shadow: none !important;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; color: color-mix(in srgb, var(--color-ink) 74%, transparent) !important; font-size: .56rem !important; min-width: 0; max-width: 100%; white-space: nowrap; font-weight: 700 !important; letter-spacing: -.02em !important; text-transform: none !important;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; color: color-mix(in srgb, var(--color-ink) 74%, transparent) !important; font-size: .5rem !important; overflow: visible !important; min-width: 0; max-width: 100%; white-space: nowrap; font-weight: 700 !important; letter-spacing: -.03em !important; text-transform: none !important;
     -webkit-tap-highlight-color: transparent; transition: color .25s, transform .4s cubic-bezier(.34,1.56,.64,1); }
   .mobile-touch-bar .touch-bar-item::before, .mobile-touch-bar .touch-bar-item::after { display: none !important; }
+  .mobile-touch-bar .touch-bar-item span { overflow: visible !important; text-overflow: clip !important; max-width: none !important; padding: 0 1px; }
   .mobile-touch-bar .touch-bar-item svg { width: 24px !important; height: 24px !important; transform: none !important; stroke-width: 1.8; transition: transform .4s cubic-bezier(.34,1.56,.64,1); }
   .mobile-touch-bar .touch-bar-item.active, .mobile-touch-bar .touch-bar-item.peek { color: var(--accent) !important; background: none !important; }
   .mobile-touch-bar .touch-bar-item.active svg, .mobile-touch-bar .touch-bar-item.peek svg { transform: translateY(-1px) scale(1.12) !important; }

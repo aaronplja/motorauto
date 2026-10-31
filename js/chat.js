@@ -54,7 +54,7 @@
   const app = $("chat-app");
   const scroller = $("chat-messages-container");
 
-  function setView(v) { app.dataset.view = v; }
+  function setView(v) { app.dataset.view = v; state.view = v; }
 
   // ------------------------------------------------------------------ routage
   function parseHash() {
@@ -70,10 +70,13 @@
   }
   const hashFor = (c) => (c.type === "global" ? "#global" : c.type === "channel" ? "#channel/" + encodeURIComponent(c.id) : c.type === "club" ? "#club/" + encodeURIComponent(c.id) : "#dm/" + encodeURIComponent(c.id));
 
+  let cameFromList = false;   // la conversation a été ouverte depuis la liste de CETTE page : « retour » peut remonter l'historique
   function route() {
     if (!state.user) return;
     const c = parseHash();
+    if (c && state.view === "list") cameFromList = true;
     if (!c) {
+      cameFromList = false;
       if (desktop()) { location.replace("#global"); return; }
       closeConversation();
       setView("list");
@@ -936,7 +939,11 @@
     $("photo-lightbox-modal").addEventListener("click", (e) => { if (e.target.id === "photo-lightbox-modal") $("photo-lightbox-modal").hidden = true; });
     ["channel-modal", "theme-sheet"].forEach((id) => $(id).addEventListener("click", (e) => { if (e.target.id === id) $(id).hidden = true; }));
 
-    $("back-to-list").addEventListener("click", () => { location.hash = ""; });
+    $("back-to-list").addEventListener("click", () => {
+      // pas d'entrée d'historique en plus : le bouton « retour » du téléphone ne ramène plus dans la conversation
+      if (cameFromList) history.back();
+      else { history.replaceState(null, "", location.pathname + location.search); route(); }
+    });
     $("side-filter").addEventListener("input", (e) => { state.filter = e.target.value; renderLists(); });
     $("jump-latest").addEventListener("click", () => { toBottom(true); state.newBelow = 0; $("jump-latest").hidden = true; });
     scroller.addEventListener("scroll", () => { if (nearBottom()) { state.newBelow = 0; $("jump-latest").hidden = true; } else if (scroller.scrollHeight > scroller.clientHeight * 1.5) showJump(); }, { passive: true });
@@ -1018,6 +1025,9 @@
     {
       const vv = window.visualViewport; let stickBottom = true, raf = 0, lastH = -1, lastT = -1;
       scroller.addEventListener("scroll", () => { stickBottom = nearBottom(); }, { passive: true });
+      // une image / une vidéo qui finit de charger agrandit la liste : si on était en bas, on y reste (plus de « saut » vers le haut)
+      scroller.addEventListener("load", (e) => { if (stickBottom && e.target && /^(IMG|VIDEO|IFRAME)$/.test(e.target.tagName)) toBottom(false); }, true);
+      scroller.addEventListener("loadedmetadata", (e) => { if (stickBottom) toBottom(false); }, true);
       const apply = () => {
         raf = 0;
         const h = Math.round(vv ? vv.height : window.innerHeight), top = Math.round(vv ? vv.offsetTop : 0);

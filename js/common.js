@@ -138,6 +138,7 @@
     let channels = [];
     let loaded = false;
     let activeKey = null;
+    const latest = {};   // horodatage (serveur) du dernier message connu par discussion
 
     const storageKey = () => "motorauto_lastread_" + user.uid;
     const emit = () => listeners.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
@@ -149,6 +150,7 @@
         if (snap.empty || !user) return;
         const m = snap.docs[0].data({ serverTimestamps: "estimate" });
         const t = m.timestamp ? m.timestamp.toMillis() : Date.now();
+        latest[key] = t;
         if (lastRead[key] == null) { lastRead[key] = t; persist(); return; } // première visite : on part de l'existant
         if (m.uid === user.uid) return;
         if (activeKey === key) { markRead(key); return; }
@@ -158,11 +160,26 @@
     }
 
     function markRead(key) {
-      lastRead[key] = Date.now();
+      // max(horloge locale, dernier message) : si l'horloge de l'appareil retarde sur le serveur, la pastille ne reste plus allumée
+      lastRead[key] = Math.max(Date.now(), latest[key] || 0);
       const had = keys.delete(key);
       if (user) persist();
       if (had) emit();
     }
+
+    /** Relit les « lus » enregistrés (une autre page du site a pu lire des messages) et éteint les pastilles périmées. */
+    function resync() {
+      if (!user) return;
+      let fresh = {}; try { fresh = JSON.parse(store.get(storageKey()) || "{}"); } catch (_) { /* ignoré */ }
+      Object.keys(fresh).forEach((k) => { if (!(lastRead[k] >= fresh[k])) lastRead[k] = fresh[k]; });
+      let changed = false;
+      Array.from(keys).forEach((k) => { if (lastRead[k] >= (latest[k] || 0)) { keys.delete(k); changed = true; } });
+      if (changed) emit();
+    }
+    window.addEventListener("pageshow", resync);
+    window.addEventListener("focus", resync);
+    window.addEventListener("storage", (e) => { if (e.key && e.key.indexOf("motorauto_lastread_") === 0) resync(); });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) resync(); });
 
     function start(u, firestore) {
       stop();
@@ -188,6 +205,7 @@
       unsubs.clear();
       if (channelsUnsub) { channelsUnsub(); channelsUnsub = null; }
       keys.clear(); channels = []; loaded = false; user = null; activeKey = null;
+      Object.keys(latest).forEach((k) => delete latest[k]);
       emit();
     }
 

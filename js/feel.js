@@ -49,7 +49,11 @@
   if (coarse && !location.pathname.endsWith("chat.html")) {
     let y0 = 0, pull = 0, on = false, bar = null;
     const mk = () => { bar = document.createElement("div"); bar.className = "ptr"; bar.setAttribute("aria-hidden", "true"); bar.innerHTML = "<span></span>"; document.body.appendChild(bar); };
-    document.addEventListener("touchstart", (e) => { on = window.scrollY <= 0 && e.touches.length === 1 && !e.target.closest("input, textarea, select, .modal-layer, .tcg-overlay, #map, .events-map"); y0 = e.touches[0].clientY; pull = 0; }, { passive: true });
+    // uniquement sur les pages de listes, jamais quand une fenêtre / le menu « Moi » / un pack est ouvert
+    const LISTS = { catalog: 1, community: 1, leaderboard: 1, market: 1, clubs: 1, play: 1 };
+    const blocked = () => document.body.classList.contains("me-open") || document.body.classList.contains("mm-lock") || !!document.querySelector(".modal-layer[aria-hidden=\"false\"], .modal-layer.open, .modal-layer.on, .me-layer.on, .tcg-overlay, .pk3-overlay, [class*=\"overlay\"].on");
+    const okRoute = () => { try { const r = window.Router && Router.current && Router.current(); return !!(r && LISTS[r.name]); } catch (_) { return false; } };
+    document.addEventListener("touchstart", (e) => { on = window.scrollY <= 0 && e.touches.length === 1 && okRoute() && !blocked() && !e.target.closest("input, textarea, select, .modal-layer, .tcg-overlay, #map, .events-map, .mobile-touch-bar, [data-no-ptr]"); y0 = e.touches[0].clientY; pull = 0; }, { passive: true });
     document.addEventListener("touchmove", (e) => {
       if (!on) return;
       pull = Math.max(0, e.touches[0].clientY - y0);

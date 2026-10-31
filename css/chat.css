@@ -237,8 +237,11 @@ body.chat-page { position: fixed; left: 0; right: 0; top: 0; width: 100%; height
 .voice-msg small{white-space:nowrap}
 
 /* ===== Liste de messagerie (v2) ===== */
-.new-dm-btn { border: 1px solid var(--glow); background: var(--glow-soft); color: var(--accent); border-radius: 999px; padding: 0.3rem 0.75rem; font-weight: 800; font-size: 0.78rem; min-height: 32px; cursor: pointer; }
-.new-dm-btn[aria-expanded="true"] { background: var(--accent); color: var(--on-accent); }
+.new-dm-btn { display: inline-flex; align-items: center; gap: .35rem; border: 0; background: var(--accent); color: var(--on-accent); border-radius: 999px; padding: 0 .85rem 0 .65rem; height: 34px; font: inherit; font-weight: 700; font-size: .8rem; letter-spacing: 0; cursor: pointer; box-shadow: 0 4px 14px -6px var(--glow); transition: transform .2s ease, background .2s, box-shadow .2s; }
+.new-dm-btn:active { transform: scale(.96); }
+.new-dm-btn svg { transition: transform .25s ease; }
+.new-dm-btn[aria-expanded="true"] { background: var(--bg-elevated); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--stroke-line); }
+.new-dm-btn[aria-expanded="true"] svg { transform: rotate(45deg); }
 .side-section.sub { padding-top: 0.6rem; font-weight: 700; }
 .dm-picker { margin-top: 0.4rem; padding: 0.2rem 0 0.4rem; border-top: 1px dashed var(--stroke-line); }
 .dm-list { gap: 0; }

@@ -227,3 +227,9 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - **Interface** : barre mobile « liquid glass » flottante (glisser entre onglets, se réduit au défilement) ; thème personnalisé (fond + accent, lisibilité garantie, code à partager `MA-RRGGBB-RRGGBB`) ; ambiances de saison (Halloween 27/10→2/11, Noël 2→28/12, Nouvel an 29/12→3/1, activables par l'admin dans « Ambiances ») ; Sorties « À venir / Passés » par mois ; haptique, squelettes, tirer pour actualiser, mode économie.
 - **Vie privée** : masquer ses abonnements / abonnés (réglé aussi dans les règles Firestore) ; mode « Ne pas déranger » (plage horaire, push serveur).
 - **À redéployer** : `firebase deploy --only functions` + republier `firestore.rules` (nouveaux champs `catalogId`, `dustLog`, `hideFollowing/Followers`, `dnd*`, collection `site_settings`).
+
+## Tour 20.1 — Correctifs interface
+- Barre mobile : la bulle se place par colonne (plus de décalage vers la droite), animation légère, plus de saccade au rétrécissement ; contour plus discret en thème sombre (détecté automatiquement).
+- Tirer pour actualiser : seulement sur les pages de listes (catalogue, communauté, classement, jouer, annonces, clubs), jamais dans le menu « Moi » ni dans une fenêtre.
+- Chats : bouton « Nouveau » redessiné ; plus de saut de défilement quand une image finit de charger ; le bouton retour ne crée plus de boucle d'historique.
+- Pastille des messages : se met à jour au retour sur la page et ne reste plus allumée si l'horloge de l'appareil retarde.
