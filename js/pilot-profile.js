@@ -5,7 +5,7 @@
 (function () {
   "use strict";
   const G = window.MAGameCore;
-  const WEIGHT = { special: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
+  const WEIGHT = { special: 6, shiny: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   let token = 0;
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

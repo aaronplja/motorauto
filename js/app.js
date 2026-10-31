@@ -2768,7 +2768,7 @@
     });
 
     $("user-profile-btn").addEventListener("click", () => { if (requireLogin()) openGarageModal(); });
-    $("logout-btn").addEventListener("click", async () => { await auth.signOut(); Router.go("/", { replace: true }); MA.toast("À bientôt sur la piste.", "ok"); });
+    $("logout-btn").addEventListener("click", async () => { try { if (window.MAPush) await window.MAPush.release(); } catch (_) { /* ignoré */ } await auth.signOut(); Router.go("/", { replace: true }); MA.toast("À bientôt sur la piste.", "ok"); });
     $("save-profile-settings-btn").addEventListener("click", saveProfileSettings);
 
     // onglets du garage

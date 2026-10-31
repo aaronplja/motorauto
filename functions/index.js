@@ -78,6 +78,7 @@ exports.deleteAccount = onCall({ region: REGION, maxInstances: 5, timeoutSeconds
 exports.pushOnNotification = require("./push").createPush({ db, messaging: admin.messaging(), region: REGION });
 
 // le 1er de chaque mois : clôture du concours photo précédent (gagnant, carte spéciale) et ouverture du suivant
+exports.closeDueContests = onSchedule({ schedule: "20 0 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.closeDueContests(); });
 exports.monthlyContest = onSchedule({ schedule: "10 0 1 * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.monthlyContest(); });
 
 if (process.env.MAIL_ENABLED === "true") Object.assign(exports, require("./mail-functions"));

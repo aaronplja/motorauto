@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
 
-  const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80";
+  const FALLBACK_AVATAR = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2096%2096%22%3E%3Crect%20width%3D%2296%22%20height%3D%2296%22%20fill%3D%22%232a2e38%22%2F%3E%3Ccircle%20cx%3D%2248%22%20cy%3D%2237%22%20r%3D%2217%22%20fill%3D%22%236b7384%22%2F%3E%3Cpath%20d%3D%22M14%2096c2-22%2016-34%2034-34s32%2012%2034%2034z%22%20fill%3D%22%236b7384%22%2F%3E%3C%2Fsvg%3E";
   const FALLBACK_CAR = "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80";
 
   /** Échappe une valeur pour l'insérer dans du HTML (texte ET attributs). */

@@ -28,8 +28,8 @@
 
   function render(uid, d, self) {
     const esc = C.esc, L = G.levelOf(d.s.xp), s = d.s, col = d.col;
-    const rar = { legendary: [0, 0], epic: [0, 0], rare: [0, 0], common: [0, 0] };
-    C.cars.forEach((c) => { const r = window.MACards.rarityOf(c); rar[r][1]++; if ((col.owned[c.id] || 0) > 0) rar[r][0]++; });
+    const rar = { shiny: [0, 0], legendary: [0, 0], epic: [0, 0], rare: [0, 0], common: [0, 0] };
+    C.cars.forEach((c) => { const r = window.MACards.rarityOf(c); const row = rar[r] || (rar[r] = [0, 0]); row[1]++; if ((col.owned[c.id] || 0) > 0) row[0]++; });
     const dups = Object.keys(col.owned || {}).filter((k) => col.owned[k] > 1).reduce((n, k) => n + (col.owned[k] - 1), 0);
     const hp = d.cars.reduce((n, c) => n + (Number(c.power) || 0), 0), pct = Math.round(((col.count || 0) / Math.max(1, C.cars.length)) * 100);
     const name = d.u.username || (self ? C.pilotName() : "Pilote");
@@ -40,6 +40,7 @@
         <div class="lvl-main"><h3>${esc(L.level.name)}</h3><div class="xp-bar"><i style="width:${L.pct}%"></i></div><small>${nf(s.xp)} XP${L.next ? ` · encore ${nf(L.toNext)} pour « ${esc(L.next.name)} »` : " · niveau maximum"}</small></div></div>
       ${section("Cartes à collectionner", [
         tile(col.count || 0, "cartes différentes", { text: nf(col.count || 0) + " / " + C.cars.length, sub: pct + " % de la collection", cls: "wide" }),
+        tile(rar.shiny[0], "shiny", { text: rar.shiny[0] + "/" + rar.shiny[1], cls: "rar-shiny" }),
         tile(rar.legendary[0], "légendaires", { text: rar.legendary[0] + "/" + rar.legendary[1], cls: "rar-legendary" }),
         tile(rar.epic[0], "épiques", { text: rar.epic[0] + "/" + rar.epic[1], cls: "rar-epic" }),
         tile(rar.rare[0], "rares", { text: rar.rare[0] + "/" + rar.rare[1], cls: "rar-rare" }),

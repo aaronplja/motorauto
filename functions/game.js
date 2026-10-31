@@ -477,7 +477,18 @@
       return openContest(nowMonth);
     }
 
-    return { syncCollection, openPack, craftCard, touchStreak, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, _getPool: getPool };
+    /** appelé chaque nuit : clôture les concours dont la date de fin (réglable par l'admin) est passée */
+    async function closeDueContests() {
+      const today = core.dayKey(now()), out = [];
+      const snap = await col("contests").where("status", "==", "open").limit(50).get();
+      for (const d of snap.docs) {
+        const c = d.data();
+        if (c.endsAt && /^\d{4}-\d{2}-\d{2}$/.test(String(c.endsAt)) && String(c.endsAt) < today) { try { await closeContest(d.id); out.push(d.id); } catch (_) { /* déjà clôturé */ } }
+      }
+      return out;
+    }
+
+    return { closeDueContests, syncCollection, openPack, craftCard, touchStreak, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, _getPool: getPool };
   }
   return { createGame, GameError };
 });

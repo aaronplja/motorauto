@@ -209,3 +209,12 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 2. Colle-la dans `js/push-config.js` (`window.MA_VAPID_KEY = "…"`), puis `git push`.
 3. `cd functions && npm install && cd .. && firebase deploy --only functions` (nouvelle fonction `pushOnNotification`).
 4. Republie `firestore.rules`. Sur iPhone, le site doit d'abord être installé (Partager → Sur l'écran d'accueil).
+
+
+## Tour 19 — correctifs
+- **Notifications** : invitation unique à l'arrivée (bandeau « Activer » / « Plus tard »), appareil rattaché au pilote connecté et détaché à la déconnexion, jeton renouvelé à chaque visite. La Cloud Function `pushOnNotification` écoute maintenant aussi les *mises à jour* (les messages privés réécrivent la même notification : seul le 1er message était envoyé). Redéployer : `firebase deploy --only functions --project motorautoireyv`.
+- **Concours** : date de fin affichée (« jusqu'au 15 novembre 2026 · fin dans 3 jours »), réglable par l'admin ; nouvelle fonction planifiée `closeDueContests` (chaque nuit) qui clôture automatiquement les concours dont la date est passée.
+- **Duels** : les deux voitures franchissent la ligne (en 0→100 / 0→200 km/h, la plus rapide continuait de s'arrêter avant).
+- **Chat** : rendu incrémental (plus de clignotement, avatars stables), avatar de secours local, pilote inconnu chargé à la demande, conversation « Nouvelle conversation » visible dès l'ouverture, clavier mobile (visualViewport).
+- **Profil** : « Caractéristiques » plantait avec la rareté Shiny.
+- **Batailles de cartes** : mains de force égale, meneur à tour de rôle, adversaire battable.

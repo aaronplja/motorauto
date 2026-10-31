@@ -4,6 +4,8 @@
    ========================================================================== */
 html, body.chat-page { height: 100%; overflow: hidden; }
 body.chat-page { height: 100vh; height: 100dvh; }
+/* clavier mobile : la page suit la zone réellement visible (variables posées par js/chat.js via visualViewport) */
+body.chat-page { position: fixed; left: 0; right: 0; top: var(--vvt, 0px); width: 100%; height: var(--vvh, 100dvh); overflow: hidden; overscroll-behavior: none; }
 
 .chat-app {
   position: relative; display: grid; grid-template-columns: minmax(300px, 25vw) 1fr; height: 100%; overflow: hidden;
@@ -273,3 +275,6 @@ body.chat-page { height: 100vh; height: 100dvh; }
 .trade-btn.no { color: #ef4444; border-color: #ef4444; }
 .trade-btn:disabled { opacity: 0.5; }
 @media (max-width: 380px) { .tc-body { grid-template-columns: 1fr; } .tc-arrow { transform: rotate(90deg); justify-self: center; } }
+
+#chat-messages-container { overflow-anchor: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.avatar { background-color: var(--bg-elevated, #2a2e38); }

@@ -4,7 +4,7 @@
  * on envoie un message FCM à tous ses appareils enregistrés (push_tokens), sauf si le pilote a désactivé cette catégorie
  * (notif_prefs/{uid}). Les jetons invalides sont supprimés au passage.
  */
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 
@@ -32,10 +32,17 @@ function titleOf(n) {
 const absolute = (link) => { link = String(link || ""); if (/^https?:/.test(link)) return link; if (link.startsWith("#")) return SITE + "/" + link; return SITE + "/" + link.replace(/^\//, ""); };
 
 function createPush({ db, messaging, region }) {
-  return onDocumentCreated({ document: "users/{uid}/notifications/{nid}", region, maxInstances: 20 }, async (event) => {
-    const snap = event.data; if (!snap) return;
-    const n = snap.data() || {}, uid = event.params.uid;
+  // onDocumentWritten : les messages privés réécrivent la même notification (une ligne par expéditeur) — chaque réécriture doit aussi notifier
+  return onDocumentWritten({ document: "users/{uid}/notifications/{nid}", region, maxInstances: 20 }, async (event) => {
+    const after = event.data && event.data.after, before = event.data && event.data.before;
+    if (!after || !after.exists) return;
+    const n = after.data() || {}, uid = event.params.uid;
     if (n.read) return;
+    if (before && before.exists) {
+      const b = before.data() || {};
+      const t = (x) => (x && x.toMillis ? x.toMillis() : 0);
+      if (!b.read && t(b.createdAt) === t(n.createdAt) && b.text === n.text) return;   // simple mise à jour sans nouveau message
+    }
     const cat = CATEGORY[n.type];
     if (cat && ALWAYS.indexOf(n.type) < 0) {
       try { const p = await db.collection("notif_prefs").doc(uid).get(); if (p.exists && p.data()[cat] === false) return; } catch (_) { /* pas de préférences : on envoie */ }
@@ -44,9 +51,9 @@ function createPush({ db, messaging, region }) {
     if (toks.empty) return;
     const tokens = toks.docs.map((d) => d.data().token).filter(Boolean);
     const data = { title: titleOf(n).slice(0, 80), body: String(n.text || "").slice(0, 140), link: absolute(n.link), tag: String(n.type || "n") + ":" + String(n.fromUid || "") };
-    const res = await messaging.sendEachForMulticast({ tokens, data, webpush: { headers: { Urgency: "high", TTL: "86400" } } });
+    const res = await messaging.sendEachForMulticast({ tokens, data, webpush: { headers: { Urgency: "high", TTL: "86400" } }, android: { priority: "high" } });
     const bad = [];
-    res.responses.forEach((r, i) => { if (!r.success && r.error && /registration-token-not-registered|invalid-argument|invalid-registration-token/.test(r.error.code || "")) bad.push(toks.docs[i].ref); });
+    res.responses.forEach((r, i) => { if (!r.success && r.error && /registration-token-not-registered|invalid-registration-token/.test(r.error.code || "")) bad.push(toks.docs[i].ref); });
     await Promise.all(bad.map((ref) => ref.delete().catch(() => {})));
     if (res.failureCount) logger.info("Push : " + res.successCount + " envoyés, " + res.failureCount + " échecs (" + bad.length + " jetons supprimés)");
   });

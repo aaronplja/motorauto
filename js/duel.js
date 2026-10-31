@@ -144,7 +144,9 @@
     [SA, SB].forEach((S, i) => {
       const el = document.getElementById("dc" + i); if (!el) return;
       const T = tm(S), tt = T == null ? t : Math.min(t, T), f = frameFor(S, tt);
-      el.style.setProperty("--pos", Math.min(1, f.x / D));
+      // la voiture continue de rouler jusqu'à la ligne d'arrivée commune (en 0→100 / 0→200 km/h chacune atteint la vitesse à une distance différente)
+      const fp = frameFor(S, t);
+      el.style.setProperty("--pos", Math.min(1, Math.max(f.x, fp.x) / D));
       const h = document.querySelector("#dh" + i + " b"); if (h) h.textContent = Math.round(f.v);
       const g = document.getElementById("dg" + i); if (g) g.textContent = t <= 0 ? "N" : f.g;
       const r = document.getElementById("dr" + i); if (r) r.style.width = Math.round(f.r * 100) + "%";
@@ -174,6 +176,7 @@
     const res = document.getElementById("duel-result"), btn = document.getElementById("duel-go"), ca = findCar(st.a), cb = findCar(st.b);
     btn.disabled = false; btn.textContent = "↻ Rejouer";
     const aOK = tA != null, bOK = tB != null;
+    [[0, aOK], [1, bOK]].forEach(([i, ok]) => { const el = document.getElementById("dc" + i); if (el && ok) el.style.setProperty("--pos", 1); });   // les deux voitures finissent pile sur la ligne
     const win = !aOK && !bOK ? -1 : !bOK ? 0 : !aOK ? 1 : tA === tB ? -1 : tA < tB ? 0 : 1;
     last = { a: ca, b: cb, tA: aOK ? tA : 99, tB: bOK ? tB : 99, win, mode: st.mode };
     if (win < 0) res.innerHTML = `<b>${aOK ? "Égalité parfaite !" : "Aucune ne va au bout de l'épreuve."}</b>`;

@@ -70,8 +70,64 @@
   window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferredInstall = e; document.dispatchEvent(new CustomEvent("ma:install-ready")); });
   window.addEventListener("appinstalled", () => { deferredInstall = null; });
 
-  window.MAPush = { KINDS, state, enable, disable, install, canInstall: () => !!deferredInstall, standalone, isIOS, loadPrefs, setPref, allows, prefs: () => prefs };
-  document.addEventListener("ma:auth", (e) => { if (e.detail && e.detail.user) loadPrefs(e.detail.user.uid); else { prefs = null; } });
+  const docId = (token) => token.slice(-60).replace(/[^\w-]/g, "_");
+  /** retire cet appareil du pilote connecté (à appeler AVANT la déconnexion) : il ne recevra plus ses notifications */
+  async function release() {
+    const token = lsGet(TOKEN_KEY); if (!token || !window.MAFB) return;
+    try { await db().collection("push_tokens").doc(docId(token)).delete(); } catch (_) { /* déjà supprimé */ }
+    lsSet(TOKEN_KEY, null);
+  }
+  /** appareil déjà autorisé : on renouvelle l'identifiant et on le rattache au pilote connecté (sans rien demander) */
+  async function refresh(user) {
+    if (!user || !window.MA_VAPID_KEY || !supported() || Notification.permission !== "granted") return;
+    try {
+      const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js"); await navigator.serviceWorker.ready;
+      const token = await firebase.messaging().getToken({ vapidKey: window.MA_VAPID_KEY, serviceWorkerRegistration: reg });
+      if (!token) return;
+      const ref = db().collection("push_tokens").doc(docId(token)), snap = await ref.get().catch(() => null);
+      if (!snap || !snap.exists || snap.data().uid !== user.uid || lsGet(TOKEN_KEY) !== token)
+        await ref.set({ uid: user.uid, token, ua: navigator.userAgent.slice(0, 160), createdAt: window.MAFB.FieldValue.serverTimestamp() });
+      lsSet(TOKEN_KEY, token);
+    } catch (_) { /* réseau / règles : on réessaiera à la prochaine visite */ }
+  }
+
+  // ------------------------------------------------------------------ invitation (une seule fois par appareil)
+  const ASKED = "motorauto_push_asked";
+  function closeAsk() { const b = document.getElementById("push-ask"); if (b) b.remove(); }
+  function showAsk(user, kind) {
+    if (document.getElementById("push-ask")) return;
+    lsSet(ASKED, String(Date.now()));
+    const box = document.createElement("aside");
+    box.id = "push-ask"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Activer les notifications");
+    const ios = kind === "ios";
+    box.innerHTML = '<div class="push-ask-txt"><b>' + (ios ? "Installe MOTORAUTO pour être prévenu" : "Reste dans la course") + '</b><span>' +
+      (ios ? "Touche le bouton Partager de Safari puis « Sur l\u2019écran d\u2019accueil ». Ouvre ensuite le site depuis son icône pour activer les notifications."
+           : "Active les notifications : messages privés, réponses, échanges de cartes, défis.") + '</span></div>' +
+      '<div class="push-ask-btns">' + (ios ? "" : '<button type="button" class="cta-btn fill-btn compact-btn" data-push-yes>Activer</button>') + '<button type="button" class="ghost-btn compact-btn" data-push-no>' + (ios ? "Compris" : "Plus tard") + '</button></div>';
+    document.body.appendChild(box);
+    box.addEventListener("click", async (e) => {
+      if (e.target.closest("[data-push-no]")) { closeAsk(); return; }
+      if (e.target.closest("[data-push-yes]")) {
+        closeAsk();
+        try { await enable(user); if (C && C.toast) C.toast("Notifications activées sur cet appareil 🔔", "ok"); }
+        catch (err) { if (C && C.toast) C.toast(err.message || "Activation impossible.", "err"); }
+      }
+    });
+  }
+  let askTimer = 0;
+  function onAuth(user) {
+    clearTimeout(askTimer); closeAsk();
+    if (!user) return;
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") { refresh(user); return; }
+    if (lsGet(ASKED) || !window.MA_VAPID_KEY) return;
+    if (typeof Notification === "undefined" || Notification.permission === "denied") return;
+    const st = state();
+    if (st !== "off" && st !== "ios-install") return;
+    askTimer = setTimeout(() => { if (!lsGet(ASKED) && document.visibilityState === "visible") showAsk(user, st === "ios-install" ? "ios" : "web"); }, 6000);
+  }
+
+  window.MAPush = { release, refresh, KINDS, state, enable, disable, install, canInstall: () => !!deferredInstall, standalone, isIOS, loadPrefs, setPref, allows, prefs: () => prefs };
+  document.addEventListener("ma:auth", (e) => { const u = e.detail && e.detail.user; if (u) loadPrefs(u.uid); else prefs = null; onAuth(u || null); });
   // enregistre le service worker (site installable) dès que possible, sans demander d'autorisation
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) window.addEventListener("load", () => { navigator.serviceWorker.register("/firebase-messaging-sw.js").catch(() => {}); });
   (window.MAModules = window.MAModules || []).push(function (ctx) { C = ctx; if (ctx.user) loadPrefs(ctx.user.uid); });

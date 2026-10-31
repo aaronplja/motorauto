@@ -30,6 +30,25 @@
     clubs: [], convs: new Map(), seenBy: new Map(), seenUnsubs: new Map(), unsubConvs: null, showPicker: false
   };
 
+  // cache des pilotes (liste + fiches chargées à la demande) : sert aux noms, avatars et nouvelles conversations
+  const pilotCache = new Map();
+  const pilotOf = (id) => pilotCache.get(id) || null;
+  function avatarOf(uid, stored) {
+    if (state.user && uid === state.user.uid) return safeUrl(state.profile.avatar) || safeUrl(stored) || FALLBACK_AVATAR;
+    const p = pilotCache.get(uid);
+    return safeUrl(p && p.avatar) || safeUrl(stored) || FALLBACK_AVATAR;
+  }
+  async function ensurePilot(uid) {
+    if (!uid || pilotCache.has(uid) || (state.user && uid === state.user.uid)) return pilotCache.get(uid) || null;
+    try {
+      const d = await db.collection("users").doc(uid).get();
+      if (!d.exists) return null;
+      const p = Object.assign({ id: d.id }, d.data()); pilotCache.set(uid, p);
+      state.pilots = Array.from(pilotCache.values()).filter((x) => x.id !== state.user.uid).sort((a, b) => String(a.username || "").localeCompare(String(b.username || ""), "fr"));
+      return p;
+    } catch (_) { return null; }
+  }
+
   const desktop = () => window.matchMedia("(min-width: 861px)").matches;
   const coarse = () => window.matchMedia("(pointer: coarse)").matches;
   const app = $("chat-app");
@@ -130,7 +149,7 @@
     if (c.type === "global") return "Salon général";
     if (c.type === "channel") { const f = MA.unread.channels().find((x) => x.id === c.id); return f ? f.name : c.id; }
     if (c.type === "club") { const k = clubOf(c.id); return k ? k.name : "Club"; }
-    const p = state.pilots.find((x) => x.id === c.id);
+    const p = pilotOf(c.id);
     return p ? p.username || "Pilote" : c.name || "Pilote";
   }
   // ---- canaux de club : clubs/{id}/chat — membres du club + admins (modération)
@@ -150,6 +169,8 @@
   }
   const isActive = (type, id) => state.conv && state.conv.type === type && state.conv.id === id;
 
+  /** n'écrit dans le DOM que si le contenu a changé (évite de recharger les avatars et de faire clignoter les listes) */
+  function setHtml(el, html) { if (el.__h === html) return; el.__h = html; el.innerHTML = html; }
   function renderLists() {
     const q = normalize(state.filter.trim());
     const match = (name) => !q || normalize(name).includes(q);
@@ -158,7 +179,7 @@
       .concat(MA.unread.channels().map((c) => ({ type: "channel", id: c.id, name: c.name, icon: "#" })))
       .concat(state.clubs.map((k) => ({ type: "club", id: k.id, name: k.name + (k.mine ? "" : " (modération)"), icon: "🏁" })))
       .filter((c) => match(c.name));
-    $("chat-channels-list").innerHTML = chans.length ? chans.map((c) => {
+    setHtml($("chat-channels-list"), chans.length ? chans.map((c) => {
       const unread = MA.unread.has(MA.chatKey(c)) && !isActive(c.type, c.id);
       const del = state.isAdmin && c.type === "channel"
         ? `<button type="button" class="conv-del" data-action="delete-channel" data-id="${esc(c.id)}" aria-label="Supprimer le canal ${esc(c.name)}" title="Supprimer ce canal">&times;</button>` : "";
@@ -167,18 +188,19 @@
         <span class="conv-name">${esc(c.name)}</span>
         ${unread ? `<span class="unread-pip" aria-label="Nouveaux messages"></span>` : ""}${del}
       </div>`;
-    }).join("") : `<div class="empty-note small">Aucun canal.</div>`;
+    }).join("") : `<div class="empty-note small">Aucun canal.</div>`);
 
     // --- conversations privées : les plus récentes en haut, aperçu + « il y a… »
-    const pilotOf = (id) => state.pilots.find((x) => x.id === id);
-    const convRows = Array.from(state.convs.values())
+    const rowsSrc = Array.from(state.convs.values());
+    if (state.conv && state.conv.type === "private" && !state.convs.has(state.conv.id)) rowsSrc.push({ other: state.conv.id, otherName: "", lastUid: "", lastText: "Nouvelle conversation", lastAt: Date.now(), draft: true });
+    const convRows = rowsSrc
       .filter((c) => c.lastAt)
       .map((c) => ({ c, p: pilotOf(c.other) }))
       .filter((r) => match((r.p && r.p.username) || r.c.otherName || ""))
       .sort((a, b) => b.c.lastAt - a.c.lastAt);
-    $("chat-convs-list").innerHTML = convRows.length ? convRows.map(({ c, p }) => {
+    setHtml($("chat-convs-list"), convRows.length ? convRows.map(({ c, p }) => {
       const name = (p && p.username) || c.otherName || "Pilote";
-      const mine = c.lastUid === state.user.uid;
+      const mine = c.lastUid === state.user.uid && !c.draft;
       const unread = MA.unread.has("dm:" + c.other) && !isActive("private", c.other);
       let meta = ago(c.lastAt);
       let status = "";
@@ -188,7 +210,7 @@
       }
       const preview = (mine ? "Toi : " : "") + (c.lastText || "…");
       return `<div class="conv-item dm ${isActive("private", c.other) ? "active" : ""} ${unread ? "has-unread" : ""}" role="button" tabindex="0" data-action="open" data-type="private" data-id="${esc(c.other)}" data-name="${esc(name)}">
-        <img class="avatar" src="${esc(safeUrl(p && p.avatar) || FALLBACK_AVATAR)}" alt="" loading="lazy" data-fallback="avatar">
+        <img class="avatar" src="${esc(avatarOf(c.other))}" alt="" data-fallback="avatar">
         <span class="dm-body">
           <span class="dm-top"><span class="conv-name">${esc(name)}</span><time class="dm-ago">${esc(meta)}</time></span>
           <span class="dm-preview">${esc(preview)}</span>
@@ -196,7 +218,7 @@
         </span>
         ${unread ? `<span class="unread-pip" aria-label="Nouveaux messages"></span>` : ""}
       </div>`;
-    }).join("") : `<div class="empty-note small">${state.convs.size ? "Aucune conversation trouvée." : "Aucune discussion pour l'instant. Touche « ✉ Nouveau » pour écrire à un pilote."}</div>`;
+    }).join("") : `<div class="empty-note small">${state.convs.size ? "Aucune conversation trouvée." : "Aucune discussion pour l'instant. Touche « ✉ Nouveau » pour écrire à un pilote."}</div>`);
 
     // --- sélecteur de pilote (nouvelle conversation) : visible à la demande ou pendant une recherche
     const showPicker = state.showPicker || !!q;
@@ -204,11 +226,11 @@
     $("new-dm-btn").setAttribute("aria-expanded", String(state.showPicker));
     if (showPicker) {
       const pilots = state.pilots.filter((p) => match(p.username || ""));
-      $("chat-private-pilots-list").innerHTML = pilots.length ? pilots.map((p) => `
+      setHtml($("chat-private-pilots-list"), pilots.length ? pilots.map((p) => `
       <div class="conv-item ${isActive("private", p.id) ? "active" : ""}" role="button" tabindex="0" data-action="open" data-type="private" data-id="${esc(p.id)}" data-name="${esc(p.username || "Pilote")}">
-        <img class="avatar sm" src="${esc(safeUrl(p.avatar) || FALLBACK_AVATAR)}" alt="" loading="lazy" data-fallback="avatar">
+        <img class="avatar sm" src="${esc(avatarOf(p.id))}" alt="" data-fallback="avatar">
         <span class="conv-name">${esc(p.username || "Pilote")}</span>
-      </div>`).join("") : `<div class="empty-note small">${state.pilots.length ? "Aucun pilote trouvé." : "Aucun autre pilote pour l'instant."}</div>`;
+      </div>`).join("") : `<div class="empty-note small">${state.pilots.length ? "Aucun pilote trouvé." : "Aucun autre pilote pour l'instant."}</div>`);
     }
 
     const dot = MA.unread.count() > 0;
@@ -217,13 +239,12 @@
 
   async function loadPilots() {
     try {
-      const snap = await db.collection("users").limit(200).get();
-      state.pilots = [];
-      snap.forEach((d) => { if (d.id !== state.user.uid) state.pilots.push(Object.assign({ id: d.id }, d.data())); });
-      state.pilots.sort((a, b) => String(a.username || "").localeCompare(String(b.username || ""), "fr"));
+      const snap = await db.collection("users").limit(300).get();
+      snap.forEach((d) => { pilotCache.set(d.id, Object.assign({ id: d.id }, d.data())); });
+      state.pilots = Array.from(pilotCache.values()).filter((x) => x.id !== state.user.uid).sort((a, b) => String(a.username || "").localeCompare(String(b.username || ""), "fr"));
     } catch (err) { console.error("Liste des pilotes :", err); }
     renderLists();
-    if (state.conv) updateHeader();
+    if (state.conv) { updateHeader(); if (state.lastList) render(state.lastList, 0); }
   }
 
   // ------------------------------------------------------------ conversation
@@ -233,8 +254,10 @@
     const name = convName(c);
     const badge = $("conv-badge");
     if (c.type === "private") {
-      const p = state.pilots.find((x) => x.id === c.id);
-      badge.innerHTML = `<img class="avatar" src="${esc(safeUrl(p && p.avatar) || FALLBACK_AVATAR)}" alt="" data-fallback="avatar">`;
+      const badgeSrc = avatarOf(c.id);
+      const cur = badge.querySelector("img");
+      if (cur && cur.dataset.uid === c.id) { if (cur.getAttribute("src") !== badgeSrc) cur.src = badgeSrc; }
+      else badge.innerHTML = `<img class="avatar" data-uid="${esc(c.id)}" src="${esc(badgeSrc)}" alt="" data-fallback="avatar">`;
       $("chat-header-title").textContent = name;
       $("chat-header-sub").textContent = "Conversation privée entre vous deux";
     } else if (c.type === "global") {
@@ -321,11 +344,12 @@
     return `<div class="seen-receipt ${seen ? "seen" : ""}" role="status">${seen ? "Vu " + esc(ago(state.otherSeen)) + " · " + esc(timeFmt.format(new Date(state.otherSeen))) : "Envoyé " + esc(ago(sent))}</div>`;
   }
   function paintReceipt() {
-    if (!state.lastList) return;
-    const old = scroller.querySelector(".seen-receipt");
-    if (old) old.remove();
+    if (!state.lastList || !state.blocks) return;
+    const old = state.blocks.get("receipt");
     const h = receiptHtml(state.lastList);
-    if (h) { const stick = nearBottom(); scroller.insertAdjacentHTML("beforeend", h); if (stick) toBottom(false); }
+    if (old && old.html === h) return;
+    if (old) { old.el.remove(); state.blocks.delete("receipt"); }
+    if (h) { const stick = nearBottom(); const t = document.createElement("template"); t.innerHTML = h.trim(); const el = t.content.firstElementChild; el.dataset.bkey = "receipt"; scroller.appendChild(el); state.blocks.set("receipt", { el, html: h }); if (stick) toBottom(false); }
   }
   function closeConversation() { stopSub(); state.conv = null; MA.unread.setActive(null); MA.notif.activeLink = null; renderLists(); }
 
@@ -336,13 +360,14 @@
     state.msgs = new Map(); state.lastCount = 0; state.firstRender = true; state.newBelow = 0;
     clearReply(); clearPhoto(); hideEmoji();
     $("jump-latest").hidden = true;
-    scroller.innerHTML = `<div class="msg-empty"><span class="spinner"></span><span>Chargement des messages…</span></div>`;
-    if (c.type === "private" && !state.pilots.find((p) => p.id === c.id)) {
-      try {
-        const d = await db.collection("users").doc(c.id).get();
-        if (d.exists) state.pilots.push(Object.assign({ id: d.id }, d.data()));
-      } catch (_) { /* nom générique */ }
-      if (!state.conv || state.conv.id !== c.id) return; // l'utilisateur a changé de conversation entre-temps
+    scroller.innerHTML = `<div class="msg-empty"><span class="spinner"></span><span>Chargement des messages…</span></div>`; state.blocks = new Map();
+    if (c.type === "private") {
+      if (c.id === state.user.uid) { MA.toast("Tu ne peux pas t'écrire à toi-même.", "err"); location.hash = desktop() ? "#global" : ""; return; }
+      if (!pilotCache.has(c.id)) {
+        const p = await ensurePilot(c.id);
+        if (!state.conv || state.conv.id !== c.id) return; // l'utilisateur a changé de conversation entre-temps
+        if (!p && !state.convs.has(c.id)) { MA.toast("Ce pilote est introuvable.", "err"); state.conv = null; location.hash = desktop() ? "#global" : ""; return; }
+      }
     }
     updateHeader();
     MA.unread.setActive(MA.chatKey(c));
@@ -439,7 +464,7 @@
       if (pills.length) reactions = `<div class="reactions">${pills.join("")}</div>`;
     }
     const avatar = first
-      ? `<img class="avatar" src="${esc(safeUrl(m.avatar) || FALLBACK_AVATAR)}" alt="" loading="lazy" data-fallback="avatar" data-action="profile" data-uid="${esc(m.uid)}" title="Voir le profil">`
+      ? `<img class="avatar" src="${esc(avatarOf(m.uid, m.avatar))}" alt="" data-fallback="avatar" data-action="profile" data-uid="${esc(m.uid)}" title="Voir le profil">`
       : `<span class="avatar-spacer"></span>`;
     return `
       <article class="msg ${mine ? "mine" : "theirs"} ${grouped ? "grouped" : ""}" data-id="${esc(m.id)}">
@@ -469,24 +494,44 @@
   function nearBottom() { return scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 140; }
   function toBottom(smooth) { scroller.scrollTo({ top: scroller.scrollHeight, behavior: smooth ? "smooth" : "auto" }); }
 
+  /** rendu incrémental : seuls les messages nouveaux ou modifiés sont recréés (plus de clignotement, les images restent en place) */
+  function reconcile(blocks) {
+    if (!state.blocks) state.blocks = new Map();
+    if ([...scroller.children].some((el) => !el.dataset.bkey)) { scroller.innerHTML = ""; state.blocks = new Map(); }
+    const next = new Map();
+    let ref = scroller.firstElementChild;
+    for (const b of blocks) {
+      const e = state.blocks.get(b.key);
+      let el;
+      if (e && e.html === b.html) el = e.el;
+      else { const t = document.createElement("template"); t.innerHTML = b.html.trim(); el = t.content.firstElementChild; el.dataset.bkey = b.key; if (e && e.el === ref) ref = ref.nextElementSibling; }
+      if (el === ref) ref = ref.nextElementSibling; else scroller.insertBefore(el, ref);
+      next.set(b.key, { el, html: b.html });
+    }
+    state.blocks.forEach((e, k) => { const n = next.get(k); if (!n || n.el !== e.el) e.el.remove(); });
+    state.blocks = next;
+  }
+
   function render(list, newForeign) {
     if (list.length === 0) {
       const c = state.conv;
       scroller.innerHTML = `<div class="msg-empty"><svg viewBox="0 0 64 64" class="empty-ico" aria-hidden="true"><path d="M12 46 26 18h8L20 46zm18 0 14-28h8L38 46z"/></svg><b>Aucun message pour l'instant</b><span>${c.type === "private" ? "Lance la discussion avec un premier message." : "Sois le premier à écrire dans ce canal."}</span></div>`;
+      state.blocks = new Map();
       return;
     }
     const stick = state.firstRender || nearBottom();
     const keepFromBottom = scroller.scrollHeight - scroller.scrollTop;
-    let html = "", prevDay = "", prev = null, prevDate = 0;
+    const blocks = []; let prevDay = "", prev = null, prevDate = 0;
     for (const m of list) {
       const d = m.timestamp ? m.timestamp.toDate() : new Date();
       const day = d.toDateString();
-      if (day !== prevDay) { html += `<div class="day-sep"><span>${esc(dayLabel(d))}</span></div>`; prevDay = day; prev = null; }
+      if (day !== prevDay) { blocks.push({ key: "day:" + day, html: `<div class="day-sep"><span>${esc(dayLabel(d))}</span></div>` }); prevDay = day; prev = null; }
       const grouped = !!prev && prev.uid === m.uid && d - prevDate < 5 * 60000 && !m.replyTo;
-      html += renderMessage(m, !grouped, grouped);
+      blocks.push({ key: "m:" + m.id, html: renderMessage(m, !grouped, grouped) });
       prev = m; prevDate = d;
     }
-    scroller.innerHTML = html + receiptHtml(list);
+    const rc = receiptHtml(list); if (rc) blocks.push({ key: "receipt", html: rc });
+    reconcile(blocks);
     if (stick) { toBottom(false); state.newBelow = 0; $("jump-latest").hidden = true; }
     else {
       scroller.scrollTop = scroller.scrollHeight - keepFromBottom;
@@ -967,6 +1012,22 @@
         }
       }
     });
+    // clavier mobile : la page suit la zone réellement visible (visualViewport), la conversation reste calée en bas
+    {
+      const vv = window.visualViewport; let stickBottom = true;
+      scroller.addEventListener("scroll", () => { stickBottom = nearBottom(); }, { passive: true });
+      const fit = () => {
+        const h = vv ? vv.height : window.innerHeight, top = vv ? vv.offsetTop : 0;
+        const root = document.documentElement.style; root.setProperty("--vvh", Math.round(h) + "px"); root.setProperty("--vvt", Math.round(top) + "px");
+        if (window.scrollY || document.documentElement.scrollTop) window.scrollTo(0, 0);
+        if (stickBottom && state.conv) requestAnimationFrame(() => toBottom(false));
+      };
+      if (vv) { vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); }
+      window.addEventListener("orientationchange", () => setTimeout(fit, 250));
+      input.addEventListener("focus", () => { fit(); setTimeout(fit, 120); setTimeout(fit, 350); });
+      input.addEventListener("blur", () => setTimeout(fit, 120));
+      fit();
+    }
     window.addEventListener("hashchange", route);
     window.addEventListener("resize", () => { if (state.user && desktop() && !parseHash()) location.replace("#global"); });
     document.addEventListener("visibilitychange", renderLists);

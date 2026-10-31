@@ -18,7 +18,19 @@
     const open = list.filter((c) => c.status === "open" && c.custom).sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt));
     return open[0] || list.find((c) => c.id === G.monthKey()) || null;
   }
-  const endText = (c) => { if (!c || c.status !== "open") return "concours terminé"; if (c.endsAt) { const d = Math.ceil((Date.parse(c.endsAt + "T23:59:59") - Date.now()) / 86400000); return d >= 0 ? "fin dans " + Math.max(1, d) + " jour" + (d > 1 ? "s" : "") : "se termine bientôt"; } const e = new Date(); e.setMonth(e.getMonth() + 1, 1); e.setHours(0, 0, 0, 0); const d = Math.max(1, Math.ceil((e - Date.now()) / 86400000)); return "fin dans " + d + " jour" + (d > 1 ? "s" : ""); };
+  const dateFr = (d) => d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  /** date de fin (réglable par l'admin ; sinon fin du mois pour le concours mensuel) : « jusqu'au 15 novembre 2026 · fin dans 3 jours » */
+  function endDate(c) {
+    if (c && c.endsAt && /^\d{4}-\d{2}-\d{2}$/.test(c.endsAt)) return new Date(c.endsAt + "T23:59:59");
+    if (c && /^\d{4}-\d{2}$/.test(c.id || "")) { const [y, m] = c.id.split("-").map(Number); return new Date(y, m, 0, 23, 59, 59); }
+    return null;
+  }
+  const endText = (c) => {
+    if (!c || c.status !== "open") return "concours terminé";
+    const e = endDate(c); if (!e) return "";
+    const d = Math.ceil((e - Date.now()) / 86400000);
+    return "jusqu'au " + dateFr(e) + (d >= 1 ? " · " + (d === 1 ? "dernier jour" : "fin dans " + d + " jours") : " · se termine aujourd'hui");
+  };
   async function load(force) {
     if (!force && loadedAt && Date.now() - loadedAt < 15000) return;
     month = G.monthKey(); err = "";
@@ -62,12 +74,12 @@
       const st = { pending: ["⏳ Ta photo est en attente de validation par la modération.", "pending"], approved: ["✅ Ta photo participe au concours. Bonne chance !", "approved"], rejected: ["❌ Ta photo n'a pas été retenue. Tu peux en envoyer une autre.", "rejected"] }[mine.status] || ["", ""];
       return `<div class="contest-box ${st[1]}"><span>${st[0]}</span>${mine.photo ? `<img class="contest-thumb" src="${esc(C.safeUrl(mine.photo) || "")}" alt="Ta photo">` : ""}<button type="button" class="cta-btn btn-ghost compact-btn" data-contest-del>Retirer ma photo</button></div>`;
     }
-    if (!formOpen) return `<div class="contest-box"><span><b>Envoie ta plus belle photo</b> sur le thème du mois.</span><button type="button" class="cta-btn fill-btn compact-btn" data-contest-form>📸 Participer</button></div>`;
+    if (!formOpen) return `<div class="contest-box"><span><b>Envoie ta plus belle photo</b> sur le thème du concours.</span><button type="button" class="cta-btn fill-btn compact-btn" data-contest-form>📸 Participer</button></div>`;
     return `<form class="contest-box contest-form" id="contest-form" novalidate><div class="input-stack"><label for="ct-photo">Photo (JPG, PNG…)</label><input type="file" id="ct-photo" accept="image/*" required></div>
       <div class="input-stack"><label for="ct-car">Voiture</label><input type="text" id="ct-car" maxlength="80" placeholder="Ex. Peugeot 106 S16" required></div>
       <div class="input-stack"><label for="ct-cap">Légende (facultatif)</label><input type="text" id="ct-cap" maxlength="100" placeholder="Une phrase sur ta photo"></div>
       <p class="form-error" id="ct-err" role="alert"></p><div class="contest-actions"><button type="submit" class="cta-btn fill-btn" id="ct-send">Envoyer ma photo</button><button type="button" class="cta-btn btn-ghost" data-contest-cancel>Annuler</button></div>
-      <small class="lap-meta">Ta photo sera visible après validation. Une seule photo par mois.</small></form>`;
+      <small class="lap-meta">Ta photo est publiée tout de suite. Une seule photo par concours.</small></form>`;
   }
   function gallery() {
     const esc = C.esc, t = tally(), mv = myVote(), open = contest && contest.status === "open";
