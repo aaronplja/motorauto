@@ -96,7 +96,7 @@
         <div class="tool-btns">
           <button type="button" class="cta-btn fill-btn compact-btn" data-tool="test-pack">Ouvrir un pack de test (moi)</button>
           <button type="button" class="cta-btn btn-ghost compact-btn" data-tool="bonus">Donner des packs bonus</button>
-          <button type="button" class="cta-btn btn-ghost compact-btn" data-tool="dust">Donner de la poussière</button>
+          <button type="button" class="cta-btn btn-ghost compact-btn" data-tool="dust">Donner des cristaux</button>
           <button type="button" class="cta-btn btn-ghost compact-btn" data-tool="resetDaily">Réarmer le pack du jour</button>
           <button type="button" class="cta-btn btn-ghost compact-btn" data-tool="unlockAll">Tout débloquer</button>
           <button type="button" class="secondary-destructive-btn" data-tool="resetCollection">Remettre la collection à zéro</button>
@@ -142,11 +142,47 @@
     const root = document.getElementById("admin-game"); if (!root) return;
     if (!C.isAdmin) { root.innerHTML = ""; return; }
     if (!loadedAt) { root.innerHTML = `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i></div>`; return; }
-    root.innerHTML = toolsHtml() + `<div class="admin-sec-head"><h3 class="admin-h3 nomargin">Cartes spéciales (éditions limitées)</h3>${draft ? "" : `<button type="button" class="cta-btn fill-btn compact-btn" data-sp-new>＋ Nouvelle carte</button>`}</div>
+    root.innerHTML = toolsHtml() + `<section id="feat-plan"></section><hr class="admin-sep">` + `<div class="admin-sec-head"><h3 class="admin-h3 nomargin">Cartes spéciales (éditions limitées)</h3>${draft ? "" : `<button type="button" class="cta-btn fill-btn compact-btn" data-sp-new>＋ Nouvelle carte</button>`}</div>
       <p class="admin-note">Ces cartes ne sortent jamais des packs : toi seul les attribues (événements, concours, récompenses). Elles apparaissent dans la collection du pilote, avec leur numéro d'exemplaire.</p>
       ${draft ? formHtml() : ""}
       <div class="admin-cards">${cards.length ? cards.map(cardRow).join("") : `<div class="empty-note">Aucune carte spéciale pour l'instant.</div>`}</div>
       <hr class="admin-sep">${contestHtml()}`;
+    renderFeatPlan();
+  }
+
+  // ---- voitures mises en avant (défis « voiture de la semaine ») : planning des prochaines semaines
+  let featWeeks = null;
+  const carLabel = (c) => [c.brand, c.model].filter(Boolean).join(" ") || c.name || c.id;
+  async function renderFeatPlan() {
+    const box = document.getElementById("feat-plan"); if (!box) return;
+    const esc = C.esc, cars = C.cars || [];
+    if (featWeeks === null) {
+      box.innerHTML = `<div class="tcg-skeleton" aria-busy="true"><i></i></div>`;
+      try { const d = await C.db.collection("site_settings").doc("featured").get(); featWeeks = d.exists && d.data().weeks ? d.data().weeks : {}; } catch (_) { featWeeks = {}; }
+    }
+    const rows = [];
+    for (let i = 0; i < 6; i++) {
+      const ms = Date.now() + i * 7 * 86400000, wk = G.weekKey(ms), start = new Date(G.weekStart(ms));
+      const cur = featWeeks[wk] ? (cars.find((c) => c.id === featWeeks[wk]) || null) : null;
+      rows.push(`<div class="feat-row"><div class="feat-wk"><b>${i === 0 ? "Cette semaine" : i === 1 ? "Semaine prochaine" : "Semaine du " + start.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}</b><small>${esc(wk)}</small></div>
+        <input type="text" list="feat-cars" data-feat-wk="${esc(wk)}" placeholder="Automatique (tirage au sort)" value="${cur ? esc(carLabel(cur)) : ""}" autocomplete="off" aria-label="Voiture mise en avant ${esc(wk)}">
+        <button type="button" class="cta-btn btn-ghost compact-btn" data-feat-save="${esc(wk)}">Enregistrer</button></div>`);
+    }
+    box.innerHTML = `<div class="admin-sec-head"><h3 class="admin-h3 nomargin">Voitures mises en avant</h3></div>
+      <p class="admin-note">Chaque semaine, 3 défis portent sur une voiture (réagir, donner son avis, découvrir la fiche). Laisse vide pour un tirage automatique, ou choisis la voiture des prochaines semaines.</p>
+      <datalist id="feat-cars">${cars.map((c) => `<option value="${esc(carLabel(c))}"></option>`).join("")}</datalist>${rows.join("")}`;
+  }
+  async function saveFeat(wk) {
+    const input = document.querySelector(`[data-feat-wk="${wk}"]`); if (!input) return;
+    const v = input.value.trim(), cars = C.cars || [];
+    const car = v ? cars.find((c) => carLabel(c).toLowerCase() === v.toLowerCase()) : null;
+    if (v && !car) { C.toast("Choisis une voiture dans la liste proposée.", "err"); return; }
+    try {
+      const weeks = Object.assign({}, featWeeks || {}); if (car) weeks[wk] = car.id; else delete weeks[wk];
+      await C.db.collection("site_settings").doc("featured").set({ weeks });
+      featWeeks = weeks; if (window.MALog) window.MALog.log("featured-car", { detail: wk + " → " + (car ? car.id : "auto") });
+      C.toast(car ? "Voiture mise en avant enregistrée." : "Retour au tirage automatique.", "ok");
+    } catch (ex) { C.toast("Enregistrement impossible : " + ex.message, "err"); }
   }
 
   async function saveCard(e) {
@@ -223,7 +259,7 @@
       if (e.target.id === "sp-form") saveCard(e);
       else if (e.target.id === "grant-form") { e.preventDefault(); grant(e.target, (e.submitter && e.submitter.dataset.mode) || "grant"); }
     });
-    document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-tool]"); if (b) runTool(b.dataset.tool); });
+    document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-tool]"); if (b) runTool(b.dataset.tool); const f = e.target.closest && e.target.closest("[data-feat-save]"); if (f) saveFeat(f.dataset.featSave); });
     document.addEventListener("input", (e) => {
       const k = e.target.dataset && e.target.dataset.sp; if (!k || !draft) return;
       draft[k] = e.target.type === "checkbox" ? e.target.checked : e.target.value;

@@ -204,6 +204,15 @@
     return pool.slice(0, 10);
   }
   function dailyChallenge(day) { return DAILY[hashStr("motorauto-day-" + day) % DAILY.length]; }
+  /** défis « voiture de la semaine » : mêmes 3 défis chaque semaine, sur la voiture mise en avant (auto ou choisie par l'admin) */
+  const FEATURED = [
+    { id: "f-react", icon: "🔥", label: (n) => "Réagis à « " + n + " » (j'aime ou 🔥 🏁 😍)", goal: 1, src: "feat:react", reward: { dust: 35 } },
+    { id: "f-comment", icon: "✍️", label: (n) => "Donne ton avis sur « " + n + " » (commentaire)", goal: 1, src: "feat:comment", reward: { dust: 45 } },
+    { id: "f-view", icon: "🔎", label: (n) => "Découvre la fiche de « " + n + " »", goal: 1, src: "feat:view", reward: { dust: 25 } }
+  ];
+  const featuredItems = (name) => FEATURED.map((f) => Object.assign({}, f, { label: f.label(name) }));
+  /** voiture mise en avant par défaut : tirage déterministe sur la liste triée du catalogue */
+  const autoFeatured = (wk, ids) => { const l = ids.slice().sort(); return l.length ? l[hashStr("motorauto-feat-" + wk) % l.length] : ""; };
   const PERFECT_WEEK_BONUS = 1;
   const THEMES = ["Ma voiture au lever du soleil", "Détail mécanique", "Mon garage", "Route de rêve", "Voiture en mouvement", "Noir & blanc", "Mon plus beau reflet", "Sortie entre pilotes", "Voiture sous la pluie", "Intérieur et cockpit", "Avant / après", "Ma voiture de collection"];
 
@@ -211,6 +220,6 @@
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     RAR, ORDER, SHOP_PACK, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount,
-    SHINY, CHALLENGES, DAILY, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
+    SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

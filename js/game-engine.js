@@ -33,7 +33,7 @@
 
     // ---------------------------------------------------------------- petits utilitaires
     const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0 });
-    /** historique de poussière (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
+    /** historique des cristaux (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
     function dustMove(d, n, why) {
       if (!n) return;
       d.dust = Math.max(0, Math.min(1000000, d.dust + n));
@@ -111,7 +111,7 @@
         if (kind === "daily" && d.lastPack === today) fail("failed-precondition", "Ton pack du jour est déjà ouvert : reviens demain !");
         if (kind === "bonus" && d.bonus < 1) fail("failed-precondition", "Aucun pack bonus disponible.");
         if (kind === "shop") {
-          if (d.dust < core.SHOP_PACK.cost) fail("failed-precondition", "Il te faut " + core.SHOP_PACK.cost + " poussière pour ce pack (tu en as " + d.dust + ").");
+          if (d.dust < core.SHOP_PACK.cost) fail("failed-precondition", "Il te faut " + core.SHOP_PACK.cost + " cristaux pour ce pack (tu en as " + d.dust + ").");
           dustMove(d, -core.SHOP_PACK.cost, "Pack acheté");
         }
         const ids = kind === "shop" ? core.drawShopPack(pool.rar, pool.ids, rng) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % 10 === 0);
@@ -139,7 +139,7 @@
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid);
         if ((d.owned[id] || 0) > 0) fail("failed-precondition", "Tu possèdes déjà cette carte.");
-        if (d.dust < cost) fail("failed-precondition", "Il te faut " + cost + " poussière (tu en as " + d.dust + ").");
+        if (d.dust < cost) fail("failed-precondition", "Il te faut " + cost + " cristaux (tu en as " + d.dust + ").");
         dustMove(d, -cost, "Carte fabriquée"); d.owned[id] = 1;
         writeCol(tx, uid, d);
         return { id, doc: view(d) };
@@ -159,10 +159,11 @@
     }
 
     // ---------------------------------------------------------------- défis de la semaine
-    const LOGS = ["duel", "share"];
+    const LOGS = ["duel", "share", "featview"];
     async function logAction(caller, data) {
       const type = data && data.type, uid = caller.uid, today = core.dayKey(now()), wk = core.weekKey(now());
       if (LOGS.indexOf(type) < 0) fail("invalid-argument", "Action inconnue.");
+      if (type === "featview" && str(data.carId, 90) !== (await featuredCarId(wk))) return { counted: false };   // seule la fiche mise en avant compte
       return db.runTransaction(async (tx) => {
         const w = await readWeekly(tx, uid, wk), cur = w.logDay[type] || { day: "", n: 0 };
         const n = cur.day === today ? cur.n : 0;
@@ -171,6 +172,23 @@
         writeWeekly(tx, uid, w);
         return { counted: true };
       });
+    }
+    /** voiture mise en avant d'une semaine : choix de l'admin (site_settings/featured.weeks[semaine]) sinon tirage automatique */
+    async function featuredCarId(wk) {
+      const pool = await getPool();
+      try { const s = await col("site_settings").doc("featured").get(); const id = s.exists && s.data().weeks && s.data().weeks[wk]; if (id && pool.byId.has(id)) return id; } catch (_) { /* tirage automatique */ }
+      return core.autoFeatured(wk, pool.ids);
+    }
+    async function featuredInfo(wk) {
+      const pool = await getPool(), id = await featuredCarId(wk), c = pool.byId.get(id) || {};
+      return { id, name: str(c.name || [c.brand, c.model].filter(Boolean).join(" ") || id, 80), image: str(c.image || c.img || "", 400) };
+    }
+    /** valeurs des 3 défis « voiture de la semaine » */
+    async function featValues(uid, carId, w, start) {
+      const exists = (name) => col(name).doc("cat_" + carId + "_" + uid).get().then((x) => x.exists && tsMs(x.data().createdAt) >= start).catch(() => false);
+      const [lk, rc, cm] = await Promise.all([exists("likes"), exists("reactions"),
+        col("comments").where("uid", "==", uid).limit(500).get().then((r) => r.docs.some((d) => d.data().target === carId && d.data().kind === "cat" && tsMs(d.data().createdAt) >= start)).catch(() => false)]);
+      return { "f-react": lk || rc ? 1 : 0, "f-comment": cm ? 1 : 0, "f-view": (w.logs && w.logs.featview) ? 1 : 0 };
     }
     async function countSince(name, field, uid, start, tsField) {
       let r; try { r = await col(name).where(field, "==", uid).limit(500).get(); } catch (_) { return 0; }
@@ -212,23 +230,28 @@
     const dayStartMs = () => core.parisMidnight(core.dayKey(now()));
     async function weeklyStatus(caller) {
       const uid = caller.uid, wk = core.weekKey(now()), items = core.weekChallenges(wk), today = core.dayKey(now()), dch = core.dailyChallenge(today);
-      const [w, qv, dqv] = await Promise.all([col("weekly").doc(uid).get().then((s) => normWeekly(s, wk)), queryValues(uid, items), queryValues(uid, [dch], dayStartMs())]);
+      const nextWk = core.weekKey(now() + 7 * 86400000);
+      const [w, qv, dqv, feat, nextFeat] = await Promise.all([col("weekly").doc(uid).get().then((s) => normWeekly(s, wk)), queryValues(uid, items), queryValues(uid, [dch], dayStartMs()), featuredInfo(wk), featuredInfo(nextWk)]);
+      const fv = await featValues(uid, feat.id, w, core.weekStart(now()));
+      const fitems = core.featuredItems(feat.name).map((ch) => { const v = Math.min(ch.goal, fv[ch.id] || 0); return { id: ch.id, icon: ch.icon, label: ch.label, goal: ch.goal, value: v, done: v >= ch.goal, claimed: w.claimed.indexOf(ch.id) >= 0, reward: ch.reward }; });
       const list = items.map((ch) => { const v = Math.min(ch.goal, valueOf(ch, w, qv)); return { id: ch.id, icon: ch.icon, label: ch.label, goal: ch.goal, value: v, done: v >= ch.goal, claimed: w.claimed.indexOf(ch.id) >= 0, reward: ch.reward }; });
       const dv = Math.min(dch.goal, valueOf(dch, w, dqv, true));
       const daily = { id: dch.id, icon: dch.icon, label: dch.label, goal: dch.goal, value: dv, done: dv >= dch.goal, claimed: (w.claimedDaily || []).indexOf(today + ":" + dch.id) >= 0, reward: dch.reward, day: today };
-      return { week: wk, endsAt: core.weekEnd(now()), items: list, daily, perfectBonus: core.PERFECT_WEEK_BONUS, allClaimed: list.every((x) => x.claimed) };
+      return { week: wk, endsAt: core.weekEnd(now()), items: list, daily, featured: { car: feat, next: { id: nextFeat.id, name: nextFeat.name }, items: fitems }, perfectBonus: core.PERFECT_WEEK_BONUS, allClaimed: list.every((x) => x.claimed) };
     }
     async function claimChallenge(caller, data) {
       const uid = caller.uid, wk = core.weekKey(now()), items = core.weekChallenges(wk), id = str(data && data.id, 40), today = core.dayKey(now());
       const isDaily = id.indexOf("d-") === 0, dch = core.dailyChallenge(today);
-      const ch = isDaily ? (dch.id === id ? dch : null) : items.find((c) => c.id === id);
+      const isFeat = id.indexOf("f-") === 0, feat = isFeat ? await featuredInfo(wk) : null;
+      const ch = isDaily ? (dch.id === id ? dch : null) : isFeat ? core.featuredItems(feat.name).find((c) => c.id === id) : items.find((c) => c.id === id);
       if (!ch) fail("not-found", isDaily ? "Ce n'est pas le défi du jour." : "Ce défi ne fait pas partie de la semaine en cours.");
-      const qv = await queryValues(uid, [ch], isDaily ? dayStartMs() : null);
+      const qv = isFeat ? {} : await queryValues(uid, [ch], isDaily ? dayStartMs() : null);
+      const fvals = isFeat ? await featValues(uid, feat.id, await col("weekly").doc(uid).get().then((s) => normWeekly(s, wk)), core.weekStart(now())) : null;
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid), w = await readWeekly(tx, uid, wk);
         const key = today + ":" + id;
         if (isDaily ? (w.claimedDaily || []).indexOf(key) >= 0 : w.claimed.indexOf(id) >= 0) fail("failed-precondition", "Récompense déjà récupérée.");
-        if (valueOf(ch, w, qv, isDaily) < ch.goal) fail("failed-precondition", "Défi pas encore accompli.");
+        if ((isFeat ? (fvals[ch.id] || 0) : valueOf(ch, w, qv, isDaily)) < ch.goal) fail("failed-precondition", "Défi pas encore accompli.");
         const r = ch.reward; let perfect = false;
         if (r.dust) dustMove(d, r.dust, "Défi validé");
         if (r.bonus) d.bonus += r.bonus;
@@ -471,7 +494,7 @@
         const dustTo = [null, 150, 80];
         for (let i = 1; i < results.length; i++) {
           await db.runTransaction(async (tx) => { const d = await readCol(tx, results[i].uid); d.dust += dustTo[i]; writeCol(tx, results[i].uid, d); });
-          await notify(results[i].uid, { name: "MOTORAUTO" }, "📸 " + (i + 1) + "e du concours photo de " + label + " : +" + dustTo[i] + " poussière", "#/jouer/concours");
+          await notify(results[i].uid, { name: "MOTORAUTO" }, "📸 " + (i + 1) + "e du concours photo de " + label + " : +" + dustTo[i] + " cristaux", "#/jouer/concours");
         }
         await notify(win.uid, { name: "MOTORAUTO" }, "🏆 Tu remportes le concours photo de " + label + " !", "#/jouer/concours");
       }

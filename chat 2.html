@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="onyx-carbon">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#09090b">
+  <title>Salon des pilotes | MOTORAUTO</title>
+  <meta name="description" content="Le salon des pilotes MOTORAUTO : discussions générales, canaux thématiques et messages privés.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111'/%3E%3Cpath d='M12 46 26 18h8L20 46zm18 0 14-28h8L38 46z' fill='%23ef4444'/%3E%3C/svg%3E">
+  <script>try{var t=localStorage.getItem('motorauto_theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/chat.css">
+  <link rel="stylesheet" href="css/season.css">
+</head>
+<body class="chat-page">
+
+  <div class="chat-app" id="chat-app" data-view="list">
+
+    <!-- ===== Colonne gauche : conversations ===== -->
+    <aside class="chat-side" id="chat-side" aria-label="Conversations">
+      <header class="side-head">
+        <a href="index.html" class="back-home" aria-label="Retour au catalogue" title="Retour au catalogue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18 9 12l6-6"/></svg>
+        </a>
+        <div class="side-title">
+          <span class="side-brand"><span>MOTOR</span><b>AUTO</b></span>
+          <h1>Salon des pilotes</h1>
+        </div>
+        <button type="button" class="icon-btn notif-btn" id="notif-btn" aria-label="Notifications" title="Notifications" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="notif-badge" hidden>0</span>
+        </button>
+        <button type="button" class="icon-btn" id="theme-btn" aria-label="Changer d'ambiance" title="Ambiance">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1.5 12h3M19.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+        </button>
+      </header>
+
+      <div class="side-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" id="side-filter" placeholder="Chercher un canal ou un pilote" autocomplete="off" aria-label="Filtrer les conversations">
+      </div>
+
+      <div class="side-scroll">
+        <div class="side-section">
+          <span>Canaux</span>
+          <button type="button" class="mini-add" id="admin-add-channel-btn" title="Créer un canal" aria-label="Créer un canal" hidden>+</button>
+        </div>
+        <div class="conv-list" id="chat-channels-list"></div>
+
+        <div class="side-section"><span>Messages privés</span>
+          <button type="button" class="new-dm-btn" id="new-dm-btn" aria-expanded="false">✉ Nouveau</button>
+        </div>
+        <div class="conv-list dm-list" id="chat-convs-list"></div>
+        <div class="dm-picker" id="dm-picker" hidden>
+          <div class="side-section sub"><span>Écrire à un pilote</span></div>
+          <div class="conv-list" id="chat-private-pilots-list"></div>
+        </div>
+      </div>
+
+      <footer class="side-me" id="side-me" hidden>
+        <img id="me-avatar" class="avatar" src="" alt="" data-fallback="avatar">
+        <div class="me-text"><b id="me-name">Pilote</b><small id="me-role">Connecté</small></div>
+      </footer>
+    </aside>
+
+    <!-- ===== Colonne droite : conversation ===== -->
+    <section class="chat-main" id="chat-main" aria-label="Conversation">
+      <header class="conv-head">
+        <button type="button" class="back-list" id="back-to-list" aria-label="Retour aux conversations">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18 9 12l6-6"/></svg>
+        </button>
+        <div class="conv-badge" id="conv-badge" aria-hidden="true">#</div>
+        <div class="conv-titles">
+          <h2 id="chat-header-title">Salon général</h2>
+          <p id="chat-header-sub">Canal public de la communauté</p>
+        </div>
+      </header>
+
+      <div class="conv-stage">
+        <div class="msg-scroll" id="chat-messages-container" role="log" aria-live="polite" aria-label="Messages"></div>
+        <button type="button" class="jump-latest" id="jump-latest" hidden aria-label="Aller au dernier message">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          <span id="jump-count"></span>
+        </button>
+      </div>
+
+      <div class="compose-wrap">
+        <div class="compose-bar" id="chat-reply-preview" hidden>
+          <div class="bar-text"><small>Réponse à <b id="reply-author-name">Pilote</b></small><span id="reply-text-preview"></span></div>
+          <button type="button" class="bar-close" id="cancel-reply-btn" aria-label="Annuler la réponse">&times;</button>
+        </div>
+        <div class="compose-bar" id="chat-photo-preview-bar" hidden>
+          <img id="chat-photo-thumb" src="" alt="Aperçu de la photo">
+          <div class="bar-text"><small>Photo prête à l'envoi</small><span>Photo envoyée en pleine qualité (20 Mo max)</span></div>
+          <button type="button" class="bar-close" id="cancel-photo-btn" aria-label="Retirer la photo">&times;</button>
+        </div>
+
+        <div class="compose-bar voice-bar" id="voice-bar" hidden>
+          <span class="rec-dot" aria-hidden="true"></span>
+          <div class="bar-text"><small id="voice-label">Enregistrement…</small><span id="voice-time">0:00</span></div>
+          <button type="button" class="bar-close" id="voice-cancel" aria-label="Annuler l'enregistrement">&times;</button>
+          <button type="button" class="send-btn" id="voice-send" aria-label="Envoyer le message vocal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+        </div>
+
+        <form class="composer" id="chat-send-form" autocomplete="off">
+          <label class="comp-btn" for="chat-media-input" title="Envoyer une photo" aria-label="Joindre une photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+          </label>
+          <input type="file" id="chat-media-input" accept="image/*" hidden>
+          <button type="button" class="comp-btn" id="emoji-toggle" title="Emojis" aria-label="Insérer un emoji" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+          </button>
+          <button type="button" class="comp-btn" id="voice-btn" title="Message vocal" aria-label="Enregistrer un message vocal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
+          </button>
+          <div class="mention-pop" id="mention-pop" hidden role="listbox" aria-label="Pilotes à mentionner"></div>
+          <textarea id="chat-input-message" rows="1" maxlength="1000" placeholder="Écris un message…" aria-label="Message" enterkeyhint="send"></textarea>
+          <button type="submit" class="send-btn" id="send-btn" aria-label="Envoyer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
+          </button>
+          <div class="emoji-panel" id="emoji-panel" hidden></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== Écran : connexion requise ===== -->
+    <section class="chat-gate" id="chat-gate" hidden>
+      <div class="gate-card">
+        <svg viewBox="0 0 64 64" class="gate-ico" aria-hidden="true"><path d="M12 46 26 18h8L20 46zm18 0 14-28h8L38 46z"/></svg>
+        <h2>Le salon est réservé aux pilotes</h2>
+        <p>Connecte-toi pour discuter avec la communauté, partager des photos et envoyer des messages privés.</p>
+        <div class="gate-actions">
+          <a class="cta-btn fill-btn" href="index.html?login=1">Se connecter</a>
+          <a class="cta-btn btn-ghost" href="index.html">Retour au catalogue</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="chat-loading" id="chat-loading" aria-live="polite"><span class="spinner"></span><span>Connexion au salon…</span></section>
+  </div>
+
+  <!-- ===== Création d'un canal (admin) ===== -->
+  <div class="mini-modal" id="channel-modal" hidden role="dialog" aria-modal="true" aria-labelledby="channel-modal-title">
+    <form class="mini-card" id="channel-form">
+      <h3 id="channel-modal-title">Nouveau canal</h3>
+      <div class="input-stack"><label for="channel-name">Nom du canal</label><input type="text" id="channel-name" maxlength="30" placeholder="sorties-piste" required></div>
+      <div class="form-feedback error-txt" id="channel-error" role="alert"></div>
+      <div class="mini-actions">
+        <button type="button" class="cta-btn btn-ghost" id="channel-cancel">Annuler</button>
+        <button type="submit" class="cta-btn fill-btn">Créer le canal</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== Signalement d'un message ===== -->
+  <div class="mini-modal" id="report-modal" hidden role="dialog" aria-modal="true" aria-labelledby="report-title">
+    <form class="mini-card" id="report-form">
+      <h3 id="report-title">Signaler ce message</h3>
+      <blockquote class="report-quote" id="report-quote"></blockquote>
+      <div class="input-stack"><label for="report-reason">Motif</label>
+        <select id="report-reason" class="custom-select">
+          <option value="insulte">Insultes / harcèlement</option>
+          <option value="spam">Spam / publicité</option>
+          <option value="illegal">Contenu choquant ou illégal</option>
+          <option value="perso">Informations personnelles</option>
+          <option value="autre">Autre</option>
+        </select></div>
+      <div class="input-stack"><label for="report-details">Précisions <small>(facultatif)</small></label><textarea id="report-details" rows="3" maxlength="200" placeholder="Ce qui pose problème…"></textarea></div>
+      <div class="form-feedback error-txt" id="report-error" role="alert"></div>
+      <div class="mini-actions">
+        <button type="button" class="cta-btn btn-ghost" id="report-cancel">Annuler</button>
+        <button type="submit" class="cta-btn fill-btn" id="report-send">Envoyer le signalement</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== Thèmes ===== -->
+  <div class="mini-modal" id="theme-sheet" hidden role="dialog" aria-modal="true" aria-label="Choisir une ambiance">
+    <div class="mini-card theme-card">
+      <h3>Ambiance</h3>
+      <div class="theme-grid" id="theme-grid"></div>
+      <button type="button" class="cta-btn btn-ghost w-100" id="theme-close">Fermer</button>
+    </div>
+  </div>
+
+  <!-- ===== Visionneuse photo ===== -->
+  <div class="lightbox" id="photo-lightbox-modal" hidden role="dialog" aria-modal="true" aria-label="Photo en grand">
+    <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Fermer">&times;</button>
+    <img id="lightbox-img-src" src="" alt="Photo partagée dans le salon">
+    <a id="lightbox-download-btn" class="cta-btn fill-btn" href="" download="motorauto-photo.jpg" target="_blank" rel="noopener">Télécharger</a>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
+  <script src="js/firebase-init.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/push-config.js"></script>
+  <script src="js/push.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/seasonal.js" defer></script>
+  <script src="js/game-api.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>

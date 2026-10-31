@@ -1,0 +1,908 @@
+rules_version = '2';
+
+// MOTORAUTO — règles Firestore
+// L'admin est soit un utilisateur dont le jeton porte le claim { admin: true }
+// (voir scripts/set-admin.js), soit le compte admin@motorauto.fr (compte créé à l'avance
+// dans Firebase Authentication : personne d'autre ne peut s'inscrire avec cette adresse).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    // Admin principal : claim { admin: true } ou compte admin@motorauto.fr. Seul lui nomme / retire les autres admins.
+    function isSuper()  { return signedIn() && (request.auth.token.admin == true || request.auth.token.email == 'admin@motorauto.fr'); }
+    // Admin = admin principal OU pilote promu (document admins/{uid} créé par l'admin principal).
+    function isAdmin()  { return isSuper() || (signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // Réseaux sociaux du profil : pseudos seulement (le lien est reconstruit par le site)
+    function validSocials() {
+      return request.resource.data.get('instagram', '') is string && request.resource.data.get('instagram', '').size() <= 30
+        && request.resource.data.get('snapchat', '') is string && request.resource.data.get('snapchat', '').size() <= 30
+        && request.resource.data.get('tiktok', '') is string && request.resource.data.get('tiktok', '').size() <= 30;
+    }
+
+    // --- Profils publics -------------------------------------------------
+    // Champs publics uniquement : pseudo, projet, avatar, bio, garage public ou non.
+    match /users/{uid} {
+      allow read: if true;
+
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'hideFollowing', 'hideFollowers', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok'])
+        && request.resource.data.username is string
+        && request.resource.data.username.size() >= 2
+        && request.resource.data.username.size() <= 24
+        && request.resource.data.get('currentCar', '') is string
+        && request.resource.data.get('currentCar', '').size() <= 80
+        && request.resource.data.get('avatar', '') is string
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.get('bio', '') is string
+        && request.resource.data.get('bio', '').size() <= 300
+        && request.resource.data.get('carPhoto', '') is string
+        && request.resource.data.get('carPhoto', '').size() <= 500
+        && request.resource.data.get('mods', '') is string
+        && request.resource.data.get('mods', '').size() <= 500
+        && request.resource.data.get('isPublicGarage', true) is bool
+        && request.resource.data.get('hideFollowing', false) is bool
+        && request.resource.data.get('hideFollowers', false) is bool
+        && request.resource.data.get('emailNotifs', true) is bool
+        && validSocials();
+
+      allow update: if isOwner(uid)
+        // Le document final ne doit contenir que les champs publics : cela permet
+        // de SUPPRIMER les anciens champs (favorites, telemetry, email...) lors de la migration.
+        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'hideFollowing', 'hideFollowers', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok'])
+        && request.resource.data.username is string
+        && request.resource.data.username.size() >= 2
+        && request.resource.data.username.size() <= 24
+        && request.resource.data.get('currentCar', '').size() <= 80
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.get('bio', '').size() <= 300
+        && request.resource.data.get('carPhoto', '').size() <= 500
+        && request.resource.data.get('mods', '').size() <= 500
+        && request.resource.data.get('emailNotifs', true) is bool
+        && request.resource.data.get('hideFollowing', false) is bool
+        && request.resource.data.get('hideFollowers', false) is bool
+        && validSocials();
+
+      allow delete: if isOwner(uid) || isAdmin();
+
+      // --- Garage (favoris + chronos perso) : visible seulement si le garage est public
+      match /garage/{docId} {
+        allow read: if isOwner(uid)
+          || isAdmin()
+          || get(/databases/$(database)/documents/users/$(uid)).data.get('isPublicGarage', true) == true;
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['favorites', 'telemetry'])
+          && request.resource.data.get('favorites', []) is list
+          && request.resource.data.get('favorites', []).size() <= 300
+          && request.resource.data.get('telemetry', []) is list
+          && request.resource.data.get('telemetry', []).size() <= 200;
+        allow delete: if isOwner(uid) || isAdmin();
+      }
+
+      // --- Abonnements : following = écrit par uid ; followers = écrit par le pilote qui s'abonne (id = son uid)
+      // Masquage : la liste complète n'est lisible que par son propriétaire/admin si hideFollowing / hideFollowers = true ; un document seul reste lisible (bouton « Suivre »).
+      match /following/{targetUid} {
+        allow get: if true;
+        allow list: if isOwner(uid) || isAdmin() || get(/databases/$(database)/documents/users/$(uid)).data.get('hideFollowing', false) != true;
+        allow create, update: if isOwner(uid) && targetUid != uid
+          && request.resource.data.keys().hasOnly(['username', 'avatar', 'createdAt'])
+          && request.resource.data.username is string && request.resource.data.username.size() <= 24
+          && request.resource.data.get('avatar', '').size() <= 500;
+        allow delete: if isOwner(uid) || isAdmin();
+      }
+      match /followers/{followerUid} {
+        allow get: if true;
+        allow list: if isOwner(uid) || isAdmin() || get(/databases/$(database)/documents/users/$(uid)).data.get('hideFollowers', false) != true;
+        allow create, update: if signedIn() && request.auth.uid == followerUid && followerUid != uid
+          && request.resource.data.keys().hasOnly(['username', 'avatar', 'createdAt'])
+          && request.resource.data.username is string && request.resource.data.username.size() <= 24
+          && request.resource.data.get('avatar', '').size() <= 500;
+        allow delete: if (signedIn() && request.auth.uid == followerUid) || isOwner(uid) || isAdmin();
+      }
+
+      // --- Carnet d'entretien : strictement privé
+      match /maintenance/{mid} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['carName', 'type', 'dateMs', 'km', 'note', 'nextDateMs', 'nextKm', 'createdAt'])
+          && request.resource.data.carName is string && request.resource.data.carName.size() <= 80
+          && request.resource.data.type is string && request.resource.data.type.size() <= 60
+          && request.resource.data.dateMs is number
+          && request.resource.data.get('km', 0) is number && request.resource.data.get('nextKm', 0) is number
+          && request.resource.data.get('note', '').size() <= 160;
+      }
+
+      // --- Budget (dépenses, pleins) : strictement privé
+      match /costs/{cid} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['carName', 'kind', 'label', 'amount', 'dateMs', 'liters', 'km', 'createdAt'])
+          && request.resource.data.carName is string && request.resource.data.carName.size() <= 80
+          && request.resource.data.kind in ['fuel', 'insurance', 'repair', 'parts', 'tax', 'other']
+          && request.resource.data.get('label', '').size() <= 100
+          && request.resource.data.amount is number && request.resource.data.amount > 0 && request.resource.data.amount <= 1000000
+          && request.resource.data.dateMs is number
+          && request.resource.data.get('liters', 0) is number && request.resource.data.get('liters', 0) <= 300
+          && request.resource.data.get('km', 0) is number && request.resource.data.get('km', 0) <= 2000000;
+      }
+
+      // --- Journal photo « avant / après » d'un projet : privé
+      match /journal/{jid} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['carName', 'stage', 'title', 'note', 'photo', 'dateMs', 'createdAt'])
+          && request.resource.data.carName is string && request.resource.data.carName.size() <= 80
+          && request.resource.data.stage in ['before', 'during', 'after']
+          && request.resource.data.get('title', '').size() <= 80
+          && request.resource.data.get('note', '').size() <= 160
+          && request.resource.data.photo is string && request.resource.data.photo.size() <= 600
+          && request.resource.data.dateMs is number;
+      }
+
+      // --- Notifications (réponses, mentions, messages privés, abonnements, décisions admin)
+      match /notifications/{nid} {
+        allow read, delete: if isOwner(uid);
+        allow create: if validNotif(uid);
+        allow update: if (isOwner(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']))
+          || (validNotif(uid) && resource.data.fromUid == request.auth.uid);
+      }
+    }
+
+    // --- Configuration publique : l'admin y publie son uid pour recevoir les demandes en message privé
+    match /config/{docId} {
+      allow read: if true;
+      allow create, update: if docId == 'admin' && isSuper()
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // --- Admins délégués : lecture publique (pour afficher le tag « admin »), écriture réservée à l'admin principal
+    match /admins/{adminUid} {
+      allow read: if true;
+      allow create, update: if isSuper()
+        && request.resource.data.keys().hasOnly(['username', 'grantedBy', 'grantedAt'])
+        && request.resource.data.username is string && request.resource.data.username.size() <= 40
+        && request.resource.data.grantedBy == request.auth.uid
+        && request.resource.data.grantedAt == request.time;
+      allow delete: if isSuper();
+    }
+
+    // --- Voitures de la communauté : un pilote en publie autant qu'il veut ; lecture publique
+    match /community_cars/{carId} {
+      allow read: if true;
+      allow create: if validCommunityCar() && request.resource.data.createdAt == request.time;
+      allow update: if validCommunityCar() && (resource.data.uid == request.auth.uid || isAdmin())
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // --- Ping de connexion : déclenche l'e-mail de bienvenue / de bon retour (Cloud Function). Personne ne le relit.
+    match /login_events/{evUid} {
+      allow create, update: if isOwner(evUid)
+        && request.resource.data.keys().hasOnly(['at'])
+        && request.resource.data.at == request.time;
+      allow read, delete: if false;
+    }
+
+    // --- Signalements de messages : un par pilote et par message ; seul l'admin lit et traite
+    match /reports/{rid} {
+      allow create: if signedIn()
+        && rid == request.auth.uid + '_' + request.resource.data.msgId
+        && request.resource.data.keys().hasOnly(
+             ['msgPath', 'msgId', 'msgUid', 'msgPilot', 'msgText', 'reporterUid', 'reporter', 'reason', 'details', 'status', 'createdAt'])
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.reason in ['insulte', 'spam', 'illegal', 'perso', 'autre']
+        && request.resource.data.status == 'open'
+        && request.resource.data.msgPath is string && request.resource.data.msgPath.size() <= 200
+        && request.resource.data.msgId is string && request.resource.data.msgId.size() <= 60
+        && request.resource.data.msgText.size() <= 300
+        && request.resource.data.msgPilot.size() <= 40
+        && request.resource.data.reporter.size() <= 40
+        && request.resource.data.details.size() <= 200
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // --- Catalogue public : lecture libre, écriture admin ----------------
+    match /motorauto_catalog/{carId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- Classement mondial ---------------------------------------------
+    match /global_laps/{lapId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.pilotUid == request.auth.uid
+        && request.resource.data.keys().hasOnly(
+             ['pilot', 'pilotUid', 'carName', 'carId', 'track', 'trackKey', 'chrono', 'chronoMs', 'note', 'createdAt'])
+        && request.resource.data.chronoMs is number
+        && request.resource.data.chronoMs >= 10000        // 10 s
+        && request.resource.data.chronoMs <= 3600000      // 1 h
+        && request.resource.data.chrono is string
+        && request.resource.data.chrono.matches('^[0-9]{1,2}:[0-5][0-9]\\.[0-9]{1,3}$')
+        && request.resource.data.track is string
+        && request.resource.data.track.size() >= 2 && request.resource.data.track.size() <= 60
+        && request.resource.data.get('note', '').size() <= 80
+        && request.resource.data.carName.size() <= 100
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if isAdmin() || (signedIn() && resource.data.pilotUid == request.auth.uid);
+    }
+
+    // --- Formulaire de contact : tout le monde peut écrire, seul l'admin lit -----
+    match /contact_messages/{msgId} {
+      allow create: if request.resource.data.keys().hasOnly(
+             ['type', 'pilot', 'email', 'message', 'brand', 'model', 'years', 'engine', 'uid', 'page', 'mailed', 'mailInfo', 'createdAt'])
+        && request.resource.data.type in ['vehicle', 'bug', 'data', 'idea', 'other']
+        && request.resource.data.pilot is string
+        && request.resource.data.pilot.size() >= 1 && request.resource.data.pilot.size() <= 40
+        && request.resource.data.email is string
+        && request.resource.data.email.size() >= 5 && request.resource.data.email.size() <= 120
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 10 && request.resource.data.message.size() <= 2000
+        && request.resource.data.get('brand', '').size() <= 60
+        && request.resource.data.get('model', '').size() <= 80
+        && request.resource.data.get('years', '').size() <= 30
+        && request.resource.data.get('engine', '').size() <= 80
+        && request.resource.data.get('page', '').size() <= 300
+        && (request.resource.data.get('uid', '') == '' || (signedIn() && request.resource.data.uid == request.auth.uid))
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // --- Propositions de la communauté (corrections, photos) : l'admin valide
+    match /suggestions/{sid} {
+      allow read: if isAdmin()
+        || resource.data.status == 'approved'
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(
+             ['carId', 'carName', 'kind', 'uid', 'pilot', 'status', 'field', 'text', 'source', 'photoUrl', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.kind in ['correction', 'photo']
+        && request.resource.data.carId is string && request.resource.data.carId.size() <= 80
+        && request.resource.data.carName is string && request.resource.data.carName.size() <= 120
+        && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
+        && request.resource.data.get('field', '').size() <= 40
+        && request.resource.data.get('text', '').size() <= 1000
+        && request.resource.data.get('source', '').size() <= 300
+        && request.resource.data.get('photoUrl', '').size() <= 600
+        && (request.resource.data.kind == 'photo'
+              ? request.resource.data.get('photoUrl', '').size() > 8
+              : request.resource.data.get('text', '').size() >= 8)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid && resource.data.status == 'pending');
+    }
+
+    // --- Salon général ---------------------------------------------------
+    match /global_chat/{msgId} {
+      allow read: if signedIn();
+      allow create: if validMessage();
+      allow update: if onlyReactionsChanged();
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // --- « Vu par » du salon général
+    match /global_seen/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['at', 'name']) && request.resource.data.at == request.time;
+    }
+
+    // --- Canaux thématiques (création/suppression réservées à l'admin) ---
+    match /custom_channels/{chanId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+
+      match /seen/{uid} {
+        allow read: if signedIn();
+        allow write: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['at', 'name']) && request.resource.data.at == request.time;
+      }
+
+      match /messages/{msgId} {
+        allow read: if signedIn();
+        allow create: if validMessage();
+        allow update: if onlyReactionsChanged();
+        allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      }
+    }
+
+    // --- Résumé de conversation privée (liste « messagerie ») : dernier message, auteur, date
+    match /private_chats/{convId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.uids;
+      allow create, update: if signedIn() && request.auth.uid in convId.split('_')
+        && request.resource.data.keys().hasOnly(['uids', 'lastUid', 'lastName', 'lastText', 'lastAt'])
+        && request.resource.data.uids is list && request.resource.data.uids.size() == 2
+        && request.auth.uid in request.resource.data.uids
+        && request.resource.data.lastUid in request.resource.data.uids
+        && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 160
+        && request.resource.data.lastName is string && request.resource.data.lastName.size() <= 60
+        && request.resource.data.lastAt == request.time;
+      allow delete: if false;
+    }
+
+    // --- Messages privés : l'identifiant de conversation est "uidA_uidB" (triés)
+    match /private_chats/{convId}/messages/{msgId} {
+      allow read: if signedIn() && request.auth.uid in convId.split('_');
+      allow create: if validMessage() && request.auth.uid in convId.split('_');
+      allow update: if signedIn() && request.auth.uid in convId.split('_') && onlyReactionsChanged();
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+
+    // --- Sourdine : un pilote muté peut lire mais plus publier (messages, commentaires, sorties, fil)
+    function notMuted() {
+      return !signedIn()
+        || !exists(/databases/$(database)/documents/mutes/$(request.auth.uid))
+        || (get(/databases/$(database)/documents/mutes/$(request.auth.uid)).data.get('perma', false) != true
+            && get(/databases/$(database)/documents/mutes/$(request.auth.uid)).data.untilMs <= request.time.toMillis());
+    }
+    function isMember(convId) { return signedIn() && request.auth.uid in convId.split('_'); }
+
+    match /mutes/{muteUid} {
+      allow read: if isOwner(muteUid) || isAdmin();
+      allow create, update: if isAdmin() && muteUid != request.auth.uid
+        && request.resource.data.keys().hasOnly(['untilMs', 'perma', 'reason', 'by', 'byName', 'createdAt'])
+        && request.resource.data.untilMs is number
+        && request.resource.data.get('reason', '').size() <= 140
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // --- Journal des actions d'administration : écriture seule (jamais modifié)
+    match /admin_log/{lid} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['by', 'byName', 'action', 'target', 'targetName', 'detail', 'createdAt'])
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.action is string && request.resource.data.action.size() <= 40
+        && request.resource.data.get('target', '').size() <= 120
+        && request.resource.data.get('targetName', '').size() <= 80
+        && request.resource.data.get('detail', '').size() <= 200
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // --- « Vu » des messages privés : chaque pilote écrit son propre horodatage
+    match /private_chats/{convId}/seen/{seenUid} {
+      allow read: if isMember(convId);
+      allow create, update: if isMember(convId) && request.auth.uid == seenUid
+        && request.resource.data.keys().hasOnly(['at'])
+        && request.resource.data.at == request.time;
+      allow delete: if false;
+    }
+
+    // --- J'aime : un par pilote et par fiche (id = type_cible_uid)
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && likeId == request.resource.data.kind + '_' + request.resource.data.target + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'createdAt'])
+        && request.resource.data.kind in ['cat', 'com']
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.target is string && request.resource.data.target.size() <= 80
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // --- Notes (plaisir, fiabilité, entretien : 0 à 5)
+    match /votes/{voteId} {
+      allow read: if true;
+      allow create, update: if signedIn() && notMuted()
+        && voteId == request.resource.data.kind + '_' + request.resource.data.target + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'fun', 'reliability', 'cost', 'updatedAt'])
+        && request.resource.data.kind in ['cat', 'com']
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.target is string && request.resource.data.target.size() <= 80
+        && request.resource.data.fun is int && request.resource.data.fun >= 0 && request.resource.data.fun <= 5
+        && request.resource.data.reliability is int && request.resource.data.reliability >= 0 && request.resource.data.reliability <= 5
+        && request.resource.data.cost is int && request.resource.data.cost >= 0 && request.resource.data.cost <= 5
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // --- Commentaires sur les fiches et les voitures de pilotes
+    match /comments/{cid} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'pilot', 'avatar', 'text', 'createdAt'])
+        && request.resource.data.kind in ['cat', 'com']
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.target is string && request.resource.data.target.size() <= 80
+        && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // --- Fil d'actualité (nouveaux membres, voitures, records, fiches, sorties)
+    match /feed/{fid} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && request.resource.data.keys().hasOnly(['type', 'uid', 'pilot', 'avatar', 'text', 'link', 'createdAt'])
+        && request.resource.data.type in ['member', 'car', 'record', 'catalog', 'event']
+        && (request.resource.data.uid == request.auth.uid || (isAdmin() && resource != null && request.resource.data.uid == resource.data.uid))
+        && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.text is string && request.resource.data.text.size() <= 160
+        && request.resource.data.get('link', '').size() <= 160
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // --- Sorties / événements et réponses « j'y vais »
+    // --- Notifications push : un document par appareil (écrit par le pilote, lu par le serveur) + préférences par catégorie
+    match /push_tokens/{tid} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create, update: if signedIn() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'token', 'ua', 'createdAt'])
+        && request.resource.data.token is string && request.resource.data.token.size() < 400
+        && request.resource.data.get('ua', '').size() <= 200
+        && request.resource.data.createdAt == request.time;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+    match /notif_prefs/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['dm', 'mention', 'reply', 'follow', 'like', 'comment', 'event', 'game', 'maint', 'dnd', 'dndFrom', 'dndTo', 'updatedAt'])
+        && request.resource.data.get('dm', true) is bool && request.resource.data.get('mention', true) is bool
+        && request.resource.data.get('reply', true) is bool && request.resource.data.get('follow', true) is bool
+        && request.resource.data.get('like', true) is bool && request.resource.data.get('comment', true) is bool
+        && request.resource.data.get('event', true) is bool && request.resource.data.get('game', true) is bool
+        && request.resource.data.get('maint', true) is bool
+        && request.resource.data.get('dnd', false) is bool
+        && request.resource.data.get('dndFrom', '22:00') is string && request.resource.data.get('dndFrom', '22:00').size() == 5
+        && request.resource.data.get('dndTo', '08:00') is string && request.resource.data.get('dndTo', '08:00').size() == 5
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // --- Position approximative d'un pilote sur la carte : opt-in, ville seulement (coordonnées arrondies et décalées par le site)
+    match /pilot_locations/{uid} {
+      allow read: if true;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'avatar', 'city', 'lat', 'lng', 'updatedAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.city is string && request.resource.data.city.size() >= 2 && request.resource.data.city.size() <= 80
+        && request.resource.data.lat is number && request.resource.data.lat >= -90 && request.resource.data.lat <= 90
+        && request.resource.data.lng is number && request.resource.data.lng >= -180 && request.resource.data.lng <= 180
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin() || (signedIn() && request.auth.uid == uid);
+    }
+
+    match /events/{eid} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && request.resource.data.keys().hasOnly(['title', 'kind', 'place', 'city', 'address', 'dateMs', 'description', 'uid', 'pilot', 'avatar', 'lat', 'lng', 'createdAt'])
+        && request.resource.data.get('lat', 0) is number && request.resource.data.get('lng', 0) is number
+        && request.resource.data.get('lat', 0) >= -90 && request.resource.data.get('lat', 0) <= 90
+        && request.resource.data.get('lng', 0) >= -180 && request.resource.data.get('lng', 0) <= 180
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 80
+        && request.resource.data.kind in ['circuit', 'rassemblement', 'balade', 'autre']
+        && request.resource.data.place is string && request.resource.data.place.size() >= 2 && request.resource.data.place.size() <= 120
+        && request.resource.data.dateMs is number
+        && request.resource.data.get('description', '').size() <= 600
+        && request.resource.data.get('city', '').size() <= 80 && request.resource.data.get('address', '').size() <= 160
+        && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+    match /rsvps/{rid} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && rid == request.resource.data.event + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['event', 'uid', 'pilot', 'avatar', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // --- Statistiques du site : compteurs +1 (visites, inscriptions) ; lecture admin
+    match /stats/{day} {
+      allow read: if isAdmin();
+      allow create: if day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.keys().hasOnly(['visits', 'signups'])
+        && request.resource.data.get('visits', 0) <= 1 && request.resource.data.get('signups', 0) <= 1;
+      allow update: if request.resource.data.keys().hasOnly(['visits', 'signups'])
+        && request.resource.data.get('visits', 0) - resource.data.get('visits', 0) >= 0
+        && request.resource.data.get('visits', 0) - resource.data.get('visits', 0) <= 1
+        && request.resource.data.get('signups', 0) - resource.data.get('signups', 0) >= 0
+        && request.resource.data.get('signups', 0) - resource.data.get('signups', 0) <= 1;
+      allow delete: if false;
+    }
+    match /car_views/{carId} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == 1;
+      allow update: if request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == resource.data.n + 1;
+      allow delete: if false;
+    }
+
+    function validNotif(target) {
+      return signedIn()
+        && request.auth.uid != target
+        && request.resource.data.keys().hasOnly(['type', 'fromUid', 'from', 'text', 'link', 'read', 'createdAt'])
+        && request.resource.data.type in ['reply', 'mention', 'dm', 'suggestion', 'follow', 'role', 'like', 'comment', 'event', 'mute', 'game']
+        && (request.resource.data.type != 'suggestion' || isAdmin())
+        && (request.resource.data.type != 'role' || isSuper())
+        && (request.resource.data.type != 'mute' || isAdmin())
+        && notMuted()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.from is string && request.resource.data.from.size() <= 40
+        && request.resource.data.text is string && request.resource.data.text.size() <= 120
+        && request.resource.data.link is string && request.resource.data.link.size() <= 200
+        && request.resource.data.read == false
+        && request.resource.data.createdAt == request.time;
+    }
+
+    // =====================================================================================
+    //  JEU : cartes, packs, défis, série de visites, concours.
+    //  Le moteur (functions/game.js) tourne sur le serveur si les Cloud Functions sont déployées ; sinon il tourne
+    //  dans le navigateur (js/game-engine.js) avec les droits du pilote : ces règles bornent alors ce qu'il peut écrire.
+    //  Les échanges (trades) ne sont écrits que par le serveur.
+    // =====================================================================================
+
+    // --- Série de visites : lecture publique (profil, classement), +1 jour maximum par écriture
+    match /streaks/{sid} {
+      allow read: if true;
+      allow create: if isOwner(sid)
+        && request.resource.data.keys().hasOnly(['days', 'best', 'last', 'updatedAt'])
+        && request.resource.data.days == 1 && request.resource.data.best == 1
+        && request.resource.data.last is string && request.resource.data.last.size() == 10
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isOwner(sid)
+        && request.resource.data.keys().hasOnly(['days', 'best', 'last', 'updatedAt'])
+        && request.resource.data.days is number && request.resource.data.days >= 1 && request.resource.data.days <= resource.data.days + 1
+        && request.resource.data.best is number && request.resource.data.best >= request.resource.data.days
+        && request.resource.data.best <= resource.data.best + 1
+        && request.resource.data.last is string && request.resource.data.last.size() == 10
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // --- Collection de cartes de chaque pilote : lecture publique (profils).
+    // Le pilote (mode navigateur) ne peut progresser que d'un pack par écriture ; l'admin peut tout écrire (cartes spéciales, concours).
+    match /collections/{cid} {
+      allow read: if true;
+      allow create: if isOwner(cid) && validCollection()
+        && request.resource.data.opened == 0 && request.resource.data.count == 0 && request.resource.data.dust == 0
+        && request.resource.data.bonus <= 40;
+      allow update: if (isOwner(cid) && validCollection()
+          && request.resource.data.opened <= resource.data.opened + 1
+          && request.resource.data.bonus <= resource.data.bonus + 40
+          && request.resource.data.count <= resource.data.count + 3
+          && request.resource.data.dust <= resource.data.dust + 2500)
+        || (isAdmin() && request.resource.data.updatedAt == request.time);
+      allow delete: if false;
+    }
+    function validCollection() {
+      return request.resource.data.keys().hasOnly(['owned', 'count', 'specials', 'dust', 'lastPack', 'bonus', 'claimed', 'opened', 'trades', 'chal', 'dustLog', 'updatedAt'])
+        && request.resource.data.get('dustLog', []) is list && request.resource.data.get('dustLog', []).size() <= 40
+        && request.resource.data.owned is map
+        && request.resource.data.count is number && request.resource.data.count >= 0 && request.resource.data.count <= 1000
+        && request.resource.data.dust is number && request.resource.data.dust >= 0 && request.resource.data.dust <= 1000000
+        && request.resource.data.lastPack is string && request.resource.data.lastPack.size() <= 10
+        && request.resource.data.bonus is number && request.resource.data.bonus >= 0 && request.resource.data.bonus <= 1000
+        && request.resource.data.claimed is list && request.resource.data.claimed.size() <= 200
+        && request.resource.data.opened is number && request.resource.data.opened >= 0
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // --- Wishlist : les cartes que je cherche (visible sur mon profil, prépare les échanges)
+    match /wishlists/{wid} {
+      allow read: if true;
+      allow create, update: if isOwner(wid) && notMuted()
+        && request.resource.data.keys().hasOnly(['ids', 'updatedAt'])
+        && request.resource.data.ids is list && request.resource.data.ids.size() <= 40
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isOwner(wid);
+    }
+
+    // --- Propositions d'échange : visibles par les deux pilotes et l'admin ; créées / traitées par le serveur (Cloud Functions)
+    match /trades/{tid} {
+      allow read: if signedIn() && (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // --- Parrainages : écrits par le serveur ; lisibles par le parrain et le filleul
+    match /referrals/{rid} {
+      allow read: if signedIn() && (resource.data.referrerUid == request.auth.uid || resource.data.uid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // --- Défis de la semaine : progression de chaque pilote (lecture par lui seul)
+    match /weekly/{wid} {
+      allow read: if isOwner(wid) || isAdmin();
+      allow create, update: if isOwner(wid)
+        && request.resource.data.keys().hasOnly(['week', 'packs', 'dailyDays', 'trades', 'logs', 'logDay', 'claimed', 'updatedAt'])
+        && request.resource.data.week is string && request.resource.data.week.size() <= 10
+        && request.resource.data.claimed is list && request.resource.data.claimed.size() <= 10
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // --- Cartes spéciales à édition limitée : lecture publique, écriture réservée à l'admin
+    match /special_cards/{cid} {
+      allow read: if true;
+      allow create: if isAdmin() && cid.matches('sp-[a-z0-9-]{1,60}')
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 60
+        && request.resource.data.granted is number;
+      allow update: if isAdmin()
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 60
+        && request.resource.data.granted is number && request.resource.data.granted >= resource.data.granted
+        && (request.resource.data.supply == 0 || request.resource.data.supply >= request.resource.data.granted);
+      allow delete: if isAdmin() && resource.data.granted == 0;
+    }
+
+    // --- Exemplaires numérotés des cartes spéciales : lecture publique, écriture admin (ou serveur)
+    match /special_grants/{gid} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- Concours photo mensuel : thème, ouverture, clôture et gagnant (admin ou serveur)
+    match /contests/{cid} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- Photos du concours : le pilote publie directement (pas de validation préalable) ; l'admin peut modérer (retirer)
+    match /contest_entries/{eid} {
+      allow read: if resource.data.status == 'approved' || isOwner(resource.data.uid) || isAdmin();
+      allow create: if signedIn() && notMuted()
+        && eid == request.resource.data.contest + '_' + request.auth.uid
+        && get(/databases/$(database)/documents/contests/$(request.resource.data.contest)).data.status == 'open'
+        && request.resource.data.keys().hasOnly(['contest', 'uid', 'name', 'avatar', 'photo', 'carName', 'caption', 'status', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'approved'
+        && request.resource.data.name is string && request.resource.data.name.size() <= 40
+        && request.resource.data.avatar is string && request.resource.data.avatar.size() <= 600
+        && request.resource.data.photo is string && request.resource.data.photo.size() <= 600
+        && request.resource.data.photo.matches('https://firebasestorage.googleapis.com/.*')
+        && request.resource.data.carName is string && request.resource.data.carName.size() >= 2 && request.resource.data.carName.size() <= 80
+        && request.resource.data.caption is string && request.resource.data.caption.size() <= 100
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['pending', 'approved', 'rejected'];
+      // une photo refusée reste en place : impossible de la supprimer pour déposer une nouvelle version
+      allow delete: if isAdmin() || (isOwner(resource.data.uid) && resource.data.status != 'rejected');
+    }
+
+    // --- Votes : un par pilote et par mois (id = mois_uid), jamais pour sa propre photo, modifiable tant que le concours est ouvert
+    match /contest_votes/{vid} {
+      allow read: if true;
+      allow create, update: if signedIn() && notMuted()
+        && vid == request.resource.data.contest + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['contest', 'uid', 'entry', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.entry is string
+        && get(/databases/$(database)/documents/contests/$(request.resource.data.contest)).data.status == 'open'
+        && get(/databases/$(database)/documents/contest_entries/$(request.resource.data.entry)).data.status == 'approved'
+        && get(/databases/$(database)/documents/contest_entries/$(request.resource.data.entry)).data.contest == request.resource.data.contest
+        && get(/databases/$(database)/documents/contest_entries/$(request.resource.data.entry)).data.uid != request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/contests/$(resource.data.contest)).data.status == 'open';
+    }
+
+    // --- Réactions rapides (🔥 🏁 😍) : une par pilote et par cible, modifiable
+    match /reactions/{rid} {
+      allow read: if true;
+      allow create, update: if signedIn() && notMuted()
+        && rid == request.resource.data.kind + '_' + request.resource.data.target + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'emoji', 'createdAt'])
+        && request.resource.data.kind in ['cat', 'com']
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.emoji in ['fire', 'flag', 'love']
+        && request.resource.data.target is string && request.resource.data.target.size() <= 80
+        && request.resource.data.createdAt == request.time;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // --- Clubs (un seul par marque / région : l'identifiant est « brand-… » ou « region-… ») ---
+    match /clubs/{clubId} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && clubId.matches('^(brand|region)-[a-z0-9-]{1,40}$')
+        && request.resource.data.keys().hasOnly(['kind', 'key', 'name', 'desc', 'ownerUid', 'createdAt'])
+        && request.resource.data.kind in ['brand', 'region']
+        && clubId.matches('^' + request.resource.data.kind + '-.*')
+        && request.resource.data.key is string && request.resource.data.key.size() <= 60
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 80
+        && request.resource.data.get('desc', '').size() <= 160
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      // le président active le canal de discussion et nomme un vice-président (rien d'autre ne change)
+      allow update: if signedIn() && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['chatEnabled', 'chatName', 'viceUid', 'viceName'])
+        && request.resource.data.get('chatName', '').size() <= 60
+        && request.resource.data.get('viceName', '').size() <= 40
+        && request.resource.data.get('viceUid', '').size() <= 60;
+      allow delete: if isAdmin() || (signedIn() && resource.data.ownerUid == request.auth.uid);
+
+      // canal de discussion du club : membres + admins (modération)
+      match /chat/{msgId} {
+        allow read: if signedIn() && (isAdmin() || isClubMember(clubId));
+        allow create: if validMessage() && isClubMember(clubId)
+          && get(/databases/$(database)/documents/clubs/$(clubId)).data.get('chatEnabled', false) == true;
+        allow update: if signedIn() && (isAdmin() || isClubMember(clubId)) && onlyReactionsChanged();
+        allow delete: if isAdmin() || (signedIn() && (resource.data.uid == request.auth.uid || isClubStaff(clubId)));
+      }
+      match /seen/{uid} {
+        allow read: if signedIn() && (isAdmin() || isClubMember(clubId));
+        allow write: if signedIn() && request.auth.uid == uid && isClubMember(clubId)
+          && request.resource.data.keys().hasOnly(['at', 'name']) && request.resource.data.at == request.time;
+      }
+    }
+    match /club_members/{mid} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && mid == request.resource.data.clubId + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['clubId', 'uid', 'name', 'avatar', 'joinedAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.joinedAt == request.time
+        && exists(/databases/$(database)/documents/clubs/$(request.resource.data.clubId));
+      allow update: if false;
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+    match /club_posts/{pid} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && request.resource.data.keys().hasOnly(['clubId', 'uid', 'name', 'avatar', 'text', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && exists(/databases/$(database)/documents/club_members/$(request.resource.data.clubId + '_' + request.auth.uid))
+        && request.resource.data.name is string && request.resource.data.name.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // --- Annonces entre pilotes (+ signalements) ---
+    match /listings/{lid} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'avatar', 'kind', 'title', 'desc', 'price', 'photos', 'status', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.kind in ['sell', 'swap', 'wanted']
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 80
+        && request.resource.data.get('desc', '').size() <= 500
+        && request.resource.data.price is number && request.resource.data.price >= 0 && request.resource.data.price <= 999999
+        && request.resource.data.photos is list && request.resource.data.photos.size() <= 3
+        && request.resource.data.name is string && request.resource.data.name.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time;
+      // le vendeur peut seulement clore l'annonce
+      allow update: if signedIn() && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['open', 'sold'];
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+    match /listing_reports/{rid} {
+      allow read: if isAdmin();
+      allow create: if signedIn()
+        && rid == request.resource.data.listingId + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['listingId', 'title', 'sellerUid', 'reporter', 'reporterUid', 'reason', 'status', 'createdAt'])
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.reason in ['scam', 'illegal', 'spam', 'other']
+        && request.resource.data.status == 'open'
+        && request.resource.data.title is string && request.resource.data.title.size() <= 80
+        && request.resource.data.reporter is string && request.resource.data.reporter.size() <= 40
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // --- Fiches circuits (contenu éditorial, admins) ---
+    match /circuit_info/{key} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['length', 'turns', 'record', 'recordBy', 'recordYear', 'photo', 'text', 'updatedAt'])
+        && request.resource.data.get('text', '').size() <= 1200
+        && request.resource.data.get('photo', '').size() <= 400
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // --- Réglages du site (ambiances de saison…) : lecture publique, écriture admin ---
+    match /site_settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['halloween', 'noel', 'nouvelan'])
+        && request.resource.data.get('halloween', true) is bool
+        && request.resource.data.get('noel', true) is bool
+        && request.resource.data.get('nouvelan', true) is bool;
+    }
+
+    // --- Réponses toutes prêtes de la messagerie (admins) ---
+    match /canned_replies/{cid} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['title', 'text', 'createdAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() <= 60
+        && request.resource.data.text is string && request.resource.data.text.size() <= 600
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    function validCommunityCar() {
+      return signedIn()
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'pilot', 'avatar', 'name', 'year', 'engine', 'power', 'zero', 'description', 'mods', 'photos', 'catalogId', 'createdAt', 'updatedAt'])
+        && request.resource.data.get('catalogId', '') is string
+        && request.resource.data.get('catalogId', '').size() <= 80
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 80
+        && request.resource.data.get('year', '').size() <= 20
+        && request.resource.data.get('engine', '').size() <= 100
+        && request.resource.data.get('power', 0) is number
+        && request.resource.data.get('power', 0) >= 0 && request.resource.data.get('power', 0) < 5000
+        && request.resource.data.get('zero', 0) is number
+        && request.resource.data.get('zero', 0) >= 0 && request.resource.data.get('zero', 0) < 60
+        && request.resource.data.get('description', '').size() <= 600
+        && request.resource.data.get('mods', '').size() <= 500
+        && request.resource.data.get('photos', []) is list
+        && request.resource.data.get('photos', []).size() <= 8
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function isClubMember(clubId) {
+      return signedIn() && exists(/databases/$(database)/documents/club_members/$(clubId + '_' + request.auth.uid));
+    }
+    function isClubStaff(clubId) {
+      return signedIn() && (get(/databases/$(database)/documents/clubs/$(clubId)).data.ownerUid == request.auth.uid
+        || get(/databases/$(database)/documents/clubs/$(clubId)).data.get('viceUid', '') == request.auth.uid);
+    }
+
+    function validMessage() {
+      return signedIn() && notMuted()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'pilot', 'avatar', 'text', 'mediaUrl', 'replyTo', 'reactions', 'timestamp', 'audioUrl', 'audioMs', 'carId', 'carName', 'carImage'])
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 1000
+        && request.resource.data.get('audioUrl', '') is string && request.resource.data.get('audioUrl', '').size() <= 1000
+        && request.resource.data.get('audioMs', 0) is number && request.resource.data.get('audioMs', 0) <= 125000
+        && request.resource.data.get('carId', '') is string && request.resource.data.get('carId', '').size() <= 90
+        && request.resource.data.get('carName', '') is string && request.resource.data.get('carName', '').size() <= 120
+        && request.resource.data.get('carImage', '') is string && request.resource.data.get('carImage', '').size() <= 600
+        && request.resource.data.get('mediaUrl', '') is string
+        && request.resource.data.get('mediaUrl', '').size() <= 1000
+        && request.resource.data.pilot is string
+        && request.resource.data.pilot.size() <= 40
+        && request.resource.data.timestamp == request.time;
+    }
+
+    function onlyReactionsChanged() {
+      return signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
+    }
+  }
+}

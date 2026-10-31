@@ -50,7 +50,7 @@
           <li><b>Compte</b> : adresse e-mail, mot de passe (géré par Firebase Authentication, jamais lisible par l'éditeur), pseudo.</li>
           <li><b>Profil (public)</b> : avatar, biographie, voiture actuelle, photo et modifications, réseaux sociaux (pseudos Instagram, TikTok, Snapchat), choix de rendre ton garage public ou privé.</li>
           <li><b>Activité</b> : chronos, voitures publiées, commentaires, likes et notes, événements et inscriptions, annonces, messages du salon et messages privés, signalements, photos envoyées.</li>
-          <li><b>Jeu</b> : collection de cartes, poussière, défis, série de visites, échanges, participations au concours photo et votes.</li>
+          <li><b>Jeu</b> : collection de cartes, cristaux, défis, série de visites, échanges, participations au concours photo et votes.</li>
           <li><b>Technique</b> : date de dernière connexion, jetons de session. Aucune publicité, aucun traceur publicitaire.</li>
         </ul>
         <h2>Pourquoi ? (bases légales)</h2>
@@ -87,9 +87,9 @@
         <h2>4. Modération</h2>
         <p>Les administrateurs peuvent masquer un contenu, couper la parole temporairement ou définitivement, ou suspendre un compte en cas de manquement. Tu peux signaler un contenu avec le bouton « Signaler » ou via la page Contact.</p>
         <h2>5. Le jeu de cartes</h2>
-        <p>Les cartes, packs, poussière et éditions limitées sont des objets <b>virtuels sans valeur monétaire</b> : ils ne peuvent être ni achetés, ni vendus, ni échangés contre de l'argent. Ils servent uniquement à jouer. Les tirages sont aléatoires et réalisés par le serveur. Les échanges se font entre pilotes volontaires, sans contrepartie financière. Toute tentative de triche (scripts, failles, comptes multiples pour gagner des cartes) peut entraîner la remise à zéro de la collection et la suspension du compte. Nous pouvons ajuster, rééquilibrer ou retirer des cartes pour le bon fonctionnement du jeu.</p>
+        <p>Les cartes, packs, cristaux et éditions limitées sont des objets <b>virtuels sans valeur monétaire</b> : ils ne peuvent être ni achetés, ni vendus, ni échangés contre de l'argent. Ils servent uniquement à jouer. Les tirages sont aléatoires et réalisés par le serveur. Les échanges se font entre pilotes volontaires, sans contrepartie financière. Toute tentative de triche (scripts, failles, comptes multiples pour gagner des cartes) peut entraîner la remise à zéro de la collection et la suspension du compte. Nous pouvons ajuster, rééquilibrer ou retirer des cartes pour le bon fonctionnement du jeu.</p>
         <h2>6. Concours photo</h2>
-        <p>Une photo par pilote et par mois, validée par la modération. Tu ne peux pas voter pour ta propre photo. La récompense (badge, carte spéciale, poussière) est purement virtuelle. Le concours est gratuit, sans obligation d'achat ; l'éditeur peut écarter une participation non conforme.</p>
+        <p>Une photo par pilote et par mois, validée par la modération. Tu ne peux pas voter pour ta propre photo. La récompense (badge, carte spéciale, cristaux) est purement virtuelle. Le concours est gratuit, sans obligation d'achat ; l'éditeur peut écarter une participation non conforme.</p>
         <h2>7. Annonces entre pilotes</h2>
         <p>${esc(LEGAL.siteName)} met en relation mais n'intervient pas dans les ventes ou échanges de pièces : vérifie l'état et l'origine des pièces, méfie-toi des paiements à l'avance, et signale toute annonce douteuse.</p>
         <h2>8. Sécurité routière et responsabilité</h2>

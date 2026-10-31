@@ -64,7 +64,7 @@
     return `<div class="contest-hero"><span class="contest-kicker">${esc(kick)}</span><h3>« ${esc(contest.theme)} »</h3>
       ${contest.desc ? `<p class="contest-desc">${esc(contest.desc)}</p>` : ""}
       <p class="lap-meta">${entries.length} participant${entries.length > 1 ? "s" : ""} · ${votes.length} vote${votes.length > 1 ? "s" : ""} · ${esc(endText(contest))}</p>
-      <p class="contest-prize">🏆 ${contest.prize ? esc(contest.prize) : "Le gagnant reçoit le badge <b>Photographe du mois</b> et une <b>carte spéciale</b> unique ; 2ᵉ et 3ᵉ gagnent de la poussière ✨."}</p></div>`;
+      <p class="contest-prize">🏆 ${contest.prize ? esc(contest.prize) : "Le gagnant reçoit le badge <b>Photographe du mois</b> et une <b>carte spéciale</b> unique ; 2ᵉ et 3ᵉ gagnent des cristaux."}</p></div>`;
   }
   function participation() {
     const esc = C.esc;

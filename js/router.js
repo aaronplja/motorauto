@@ -57,6 +57,7 @@
 
   const handlers = {};
   let current = null, previous = null, internalMoves = 0, started = false;
+  let backNav = false; const scrollAt = {};   // retour arrière : on restaure le défilement et on évite l'animation d'entrée
 
   function parse(hash) {
     let path = String(hash || "").replace(/^#/, "");
@@ -151,6 +152,9 @@
     const route = parse(location.hash);
     const pageChanged = !current || current.name !== route.name || ((route.name === "car" || route.name === "commcar") && current.params.id !== route.params.id) ||
       (route.name === "pilot" && current.params.uid !== route.params.uid) || (route.name === "circuit" && current.params.key !== route.params.key);
+    if (current) scrollAt[current.path] = window.scrollY;
+    const wasBack = backNav; backNav = false;
+    document.documentElement.classList.toggle("nav-back", wasBack);
     previous = current;
     current = route;
     const pageEl = document.getElementById(PAGE_ID[route.name]);
@@ -167,7 +171,7 @@
     if (route.params.tab !== undefined) showTab(pageEl, route.params.tab);
     setActiveNav(route.name);
     document.title = TITLES[route.name] || TITLES.home;
-    if (pageChanged) window.scrollTo(0, 0);
+    if (pageChanged) { const y = wasBack ? scrollAt[route.path] : 0; window.scrollTo(0, y || 0); if (wasBack && y) requestAnimationFrame(() => window.scrollTo(0, y)); }
     document.dispatchEvent(new CustomEvent("ma:route", { detail: route }));
     for (const h of list) {
       if (!h.enter) continue;
@@ -205,6 +209,7 @@
     refresh() { if (started) dispatch(); },
     start() {
       started = true;
+      window.addEventListener("popstate", () => { backNav = true; setTimeout(() => { backNav = false; }, 600); });
       window.addEventListener("hashchange", dispatch);
       dispatch();
     }

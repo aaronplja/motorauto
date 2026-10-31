@@ -7,12 +7,13 @@
   const enabled = () => store.get(KEY) !== "0";
 
   // ---- haptique : vibration (Android) ou petit interrupteur invisible (iOS 17.4+)
-  let sw = null;
+  // iOS 17.4+ : un interrupteur natif (input switch) déclenche le retour haptique quand on le « clique » pendant un geste de l'utilisateur.
   function iosTick() {
     try {
-      if (!sw) { sw = document.createElement("label"); sw.setAttribute("aria-hidden", "true"); sw.style.cssText = "position:fixed;left:-99px;top:-99px;opacity:0;pointer-events:none";
-        const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", ""); sw.appendChild(i); document.body.appendChild(sw); }
-      sw.click();
+      const label = document.createElement("label"); label.setAttribute("aria-hidden", "true"); label.style.display = "none";
+      const input = document.createElement("input"); input.type = "checkbox"; input.setAttribute("switch", "");
+      label.appendChild(input); document.head.appendChild(label);
+      label.click(); setTimeout(() => label.remove(), 60);
     } catch (_) { /* ignoré */ }
   }
   const H = {
@@ -21,7 +22,7 @@
     enabled
   };
   window.MAHaptic = H;
-  document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest(".touch-bar-item, .theme-tile, .seg-btn, .cta-btn, .set-toggle, [data-pack]")) H.tap(); }, true);
+  document.addEventListener("click", (e) => { if (e.isTrusted && e.target.closest && e.target.closest(".touch-bar-item, .theme-tile, .seg-btn, .cta-btn, .set-toggle, .page-tab, .conv-item, .me-row, [data-pack], [data-action]")) H.tap(); }, true);
 
   // ---- réglage (dans la fenêtre des ambiances)
   function mountSetting() {
@@ -42,8 +43,20 @@
     el.dataset.skel = "1"; el.setAttribute("aria-busy", "true"); el.setAttribute("aria-label", "Chargement");
     el.innerHTML = '<div class="skel-wrap"><i class="skel skel-line w60"></i><i class="skel skel-block"></i><i class="skel skel-line w80"></i><i class="skel skel-line w40"></i></div>';
   }
-  const scan = (root) => { (root.querySelectorAll ? root.querySelectorAll(".empty-note") : []).forEach(skel); if (root.classList && root.classList.contains("empty-note")) skel(root); };
-  new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1) scan(n); }))).observe(document.documentElement, { childList: true, subtree: true });
+  // observation légère : on regroupe les ajouts du DOM et on ne traite qu'une fois par image, sans parcourir de gros blocs
+  let pending = [], queued = false;
+  function flush() {
+    queued = false; const list = pending; pending = [];
+    for (const n of list) {
+      if (!n.isConnected) continue;
+      if (n.classList && n.classList.contains("empty-note")) { skel(n); continue; }
+      if (n.childElementCount && n.childElementCount < 60) n.querySelectorAll(".empty-note").forEach(skel);
+    }
+  }
+  new MutationObserver((ms) => {
+    for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1 && n.tagName !== "CANVAS" && n.tagName !== "SCRIPT") pending.push(n);
+    if (pending.length && !queued) { queued = true; (window.requestIdleCallback || requestAnimationFrame)(flush); }
+  }).observe(document.body || document.documentElement, { childList: true, subtree: true });
 
   // ---- tirer pour actualiser (mobile, en haut de page)
   if (coarse && !location.pathname.endsWith("chat.html")) {

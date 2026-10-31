@@ -1043,6 +1043,7 @@
       input.addEventListener("blur", () => setTimeout(fit, 150));
       fit();
     }
+    window.addEventListener("popstate", () => { app.classList.add("instant"); clearTimeout(app._t); app._t = setTimeout(() => app.classList.remove("instant"), 450); });
     window.addEventListener("hashchange", route);
     window.addEventListener("resize", () => { if (state.user && desktop() && !parseHash()) location.replace("#global"); });
     document.addEventListener("visibilitychange", renderLists);

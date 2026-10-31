@@ -125,8 +125,8 @@
   function showDustLog() {
     if (!doc) return;
     const log = (doc.dustLog || []).slice().reverse(), fmt = (t) => new Date(t).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-    const lo = mountOverlay("dustlog", "Historique de poussière", `<div class="tcg-stage"><div class="dustlog"><h2>${window.MA.dustIcon(24)} Ta poussière</h2><p class="dustlog-bal"><b>${doc.dust}</b> en réserve</p>
-      ${log.length ? `<ul>${log.map((l) => `<li class="${l.n > 0 ? "gain" : "spend"}"><span>${C.esc(l.w || "")}<small>${fmt(l.t)}</small></span><b>${l.n > 0 ? "+" : "−"}${Math.abs(l.n)} ${window.MA.dustIcon(14)}</b></li>`).join("")}</ul>` : `<p class="tcg-hint">Rien pour l'instant : la poussière vient des doublons et des défis.</p>`}
+    const lo = mountOverlay("dustlog", "Historique des cristaux", `<div class="tcg-stage"><div class="dustlog"><h2>${window.MA.dustIcon(24)} Tes cristaux</h2><p class="dustlog-bal"><b>${doc.dust}</b> en réserve</p>
+      ${log.length ? `<ul>${log.map((l) => `<li class="${l.n > 0 ? "gain" : "spend"}"><span>${C.esc(l.w || "")}<small>${fmt(l.t)}</small></span><b>${l.n > 0 ? "+" : "−"}${Math.abs(l.n)} ${window.MA.dustIcon(14)}</b></li>`).join("")}</ul>` : `<p class="tcg-hint">Rien pour l'instant : les cristaux viennent des doublons et des défis.</p>`}
       <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div></div>`);
     lo.addEventListener("click", (e) => { if (e.target === lo || e.target.closest("[data-close]")) closeOverlay(); });
   }
@@ -134,7 +134,7 @@
     if (busy || !C.requireLogin()) return;
     const car = cardObj(id); if (!car) return;
     const cost = RAR[rarityOf(car)].craft;
-    if (!confirm(`Fabriquer « ${car.brand} ${car.model} » pour ${cost} poussière ?`)) return;
+    if (!confirm(`Fabriquer « ${car.brand} ${car.model} » pour ${cost} cristaux ?`)) return;
     busy = true;
     try {
       const r = await API("craftCard", { id });
@@ -235,7 +235,7 @@
       const finish = () => {
         const news = results.filter((r) => r.fresh).length, dups = results.length - news;
         const sum = o.querySelector("#tcg-sum");
-        sum.innerHTML = `<span>${news} nouvelle${news > 1 ? "s" : ""}</span><span>${dups} doublon${dups > 1 ? "s" : ""}</span>${dust ? `<span>+${dust} ${window.MA.dustIcon(15)} poussière</span>` : ""}`;
+        sum.innerHTML = `<span>${news} nouvelle${news > 1 ? "s" : ""}</span><span>${dups} doublon${dups > 1 ? "s" : ""}</span>${dust ? `<span>+${dust} ${window.MA.dustIcon(15)} cristaux</span>` : ""}`;
         if (rank(rarityOf(best.car)) > 1) sum.insertAdjacentHTML("afterend", `<p class="pk3-best">Meilleure carte : ${C.esc(best.car.brand + " " + String(best.car.model).replace(/\s*\(.*$/, ""))} · ${RAR[rarityOf(best.car)].label}</p>`);
         sum.hidden = false; o.querySelector("#tcg-end").hidden = false; o.querySelector("#tcg-all").parentNode.hidden = true; o.querySelector("#tcg-hint").textContent = "";
         const again = doc && (doc.lastPack !== day() ? "daily" : doc.bonus > 0 ? "bonus" : "");
@@ -254,7 +254,7 @@
   let navIds = [];
   function backHtml(car, id) {
     const n = countOf(id), R = RAR[rarityOf(car)], sp = car.special, e = C.esc;
-    if (n === 0) return `<h3>Carte à débloquer</h3><p>Ouvre des packs pour la trouver${sp ? "." : " ou fabrique-la avec de la poussière."}</p><dl><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0")}</dd></dl>`;
+    if (n === 0) return `<h3>Carte à débloquer</h3><p>Ouvre des packs pour la trouver${sp ? "." : " ou fabrique-la avec des cristaux."}</p><dl><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0")}</dd></dl>`;
     if (sp) return `<h3>${e(car.model)}</h3><p>${e(sp.text || "")}</p><dl><dt>Édition</dt><dd>${e(car.brand)}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
     const all = C.cars.filter((c) => c.brand === car.brand), have = all.filter((c) => countOf(c.id) > 0).length, st = car.stats;
     const desc = String(car.description || "").replace(/\s+/g, " ");
@@ -374,10 +374,10 @@
     el.innerHTML = `<div class="tcg-progress"><div class="tcg-pg-top"><span><b>${owned}</b> / ${total} cartes</span><em>${pct} %</em></div><div class="xp-bar"><i style="width:${pct}%"></i></div><div class="tcg-rar-row">${byR}${doc.specials ? `<span class="tcg-rar-chip special">✦ Éditions <b>${doc.specials}</b></span>` : ""}</div></div>
       <div class="tcg-packs">
         <button type="button" class="tcg-pack ${canDaily ? "ready" : "done"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="pk-logo">MOTOR<i>AUTO</i></span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
-        <button type="button" class="tcg-pack shop ${doc.dust >= G.SHOP_PACK.cost ? "ready" : "done"}" data-pack="shop" ${doc.dust >= G.SHOP_PACK.cost && !busy ? "" : "disabled"} aria-label="Pack cristal : ${G.SHOP_PACK.cost} poussière"><span class="pk-logo">${window.MA.dustIcon(34)}</span><b>Pack cristal</b><small>${G.SHOP_PACK.cards} voitures dont 1 rare+ · ${G.SHOP_PACK.cost} ${window.MA.dustIcon(13)}</small></button>
+        <button type="button" class="tcg-pack shop ${doc.dust >= G.SHOP_PACK.cost ? "ready" : "done"}" data-pack="shop" ${doc.dust >= G.SHOP_PACK.cost && !busy ? "" : "disabled"} aria-label="Pack cristal : ${G.SHOP_PACK.cost} cristaux"><span class="pk-logo">${window.MA.dustIcon(34)}</span><b>Pack cristal</b><small>${G.SHOP_PACK.cards} voitures dont 1 rare+ · ${G.SHOP_PACK.cost} ${window.MA.dustIcon(13)}</small></button>
         <button type="button" class="tcg-pack bonus ${doc.bonus ? "ready" : "done"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="pk-logo">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
         <button type="button" class="tcg-pack battle ${canBattle ? "ready" : "done"}" data-battle ${canBattle ? "" : "disabled"} aria-label="Bataille de cartes"><span class="pk-logo">⚔</span><b>Bataille</b><small>${canBattle ? "entraînement, sans récompense" : "3 cartes minimum"}</small></button>
-        <button type="button" class="tcg-dust" data-dust-log title="Poussière issue des doublons et des défis : fabrique des cartes ou achète un pack. Touche pour voir l'historique"><b>${window.MA.dustIcon(20)} ${doc.dust}</b><small>poussière${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></button>
+        <button type="button" class="tcg-dust" data-dust-log title="Cristaux issus des doublons et des défis : fabrique des cartes ou achète un pack. Touche pour voir l'historique"><b>${window.MA.dustIcon(20)} ${doc.dust}</b><small>cristaux${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></button>
       </div>${notice ? `<p class="tcg-alert" role="status">⚠ ${C.esc(notice)}</p>` : ""}`;
   }
 

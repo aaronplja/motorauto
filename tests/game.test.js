@@ -121,6 +121,17 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   r = await G.logAction(U2, { type: "duel" }); ok(!r.counted, "plafond de 3 actions par jour (anti-triche)");
   await rejects(G.logAction(U2, { type: "gagner" }), "invalid-argument", "action inconnue refusée");
   r = await G.claimChallenge(U2, { id: "duel1" }); ok(r.reward.dust === 25, "défi « fais un duel » récompensé");
+  // ---- voiture de la semaine : 3 défis dédiés
+  ws = await G.weeklyStatus(U2);
+  ok(ws.featured && ws.featured.car.id && ws.featured.items.length === 3 && ws.featured.next.id, "voiture de la semaine + aperçu de la suivante");
+  const fid = ws.featured.car.id;
+  await rejects(G.claimChallenge(U2, { id: "f-view" }), "failed-precondition", "défi « découvre la fiche » refusé avant d'avoir vu la fiche");
+  r = await G.logAction(U2, { type: "featview", carId: "autre-voiture" }); ok(!r.counted, "une autre fiche ne valide pas le défi");
+  r = await G.logAction(U2, { type: "featview", carId: fid }); ok(r.counted, "fiche de la semaine consultée");
+  r = await G.claimChallenge(U2, { id: "f-view" }); ok(r.reward.dust === 25, "défi « découvre la fiche » récompensé");
+  await rejects(G.claimChallenge(U2, { id: "f-view" }), "failed-precondition", "pas de double récompense");
+  db.seed("site_settings", "featured", { weeks: { [core.weekKey(NOW)]: pool[3].id } });
+  ws = await G.weeklyStatus(U2); ok(ws.featured.car.id === pool[3].id, "voiture choisie par l'admin prioritaire");
   // changement de semaine : compteurs remis à zéro
   NOW += 7 * 86400000; ws = await G.weeklyStatus(U2); ok(ws.items.every((x) => !x.claimed), "nouvelle semaine : défis remis à zéro");
 

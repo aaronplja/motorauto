@@ -282,3 +282,6 @@ body.chat-page { position: fixed; left: 0; right: 0; top: 0; width: 100%; height
 
 #chat-messages-container { overflow-anchor: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 .avatar { background-color: var(--bg-elevated, #2a2e38); }
+
+/* retour par geste (iOS) : le navigateur anime déjà, on ne double pas l'animation */
+.chat-app.instant, .chat-app.instant * { transition: none !important; animation: none !important; }

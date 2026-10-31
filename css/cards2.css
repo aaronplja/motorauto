@@ -204,3 +204,14 @@ button.tcg-dust b { display: inline-flex; align-items: center; gap: .3rem; }
 .dustlog li.gain b { color: #16a34a; } .dustlog li.spend b { color: #dc2626; }
 .dustlog li b { display: inline-flex; align-items: center; gap: .25rem; }
 @media (prefers-reduced-motion: reduce) { .pk3-wait { animation: none; } }
+
+/* ---- voiture de la semaine (défis) ---- */
+.chal-feat { margin: 0 0 1.6rem; padding: 1rem; border: 1px solid var(--stroke-line); border-radius: 20px; background: var(--bg-surface); }
+.feat-head { display: flex; gap: 1rem; align-items: center; margin-bottom: .9rem; }
+.feat-img { width: 96px; height: 64px; object-fit: cover; border-radius: 12px; flex: none; }
+.feat-head h3 { margin: .25rem 0 .15rem; }
+@media (max-width: 520px) { .feat-img { width: 76px; height: 52px; } }
+.feat-row { display: grid; grid-template-columns: minmax(120px, 1fr) minmax(0, 2fr) auto; gap: .6rem; align-items: center; padding: .5rem 0; border-bottom: 1px solid var(--stroke-line); }
+.feat-wk small { display: block; color: var(--color-muted); }
+.feat-row input { padding: .55rem .8rem; border-radius: 12px; border: 1px solid var(--stroke-line); background: var(--bg-core); color: var(--color-ink); font: inherit; min-width: 0; }
+@media (max-width: 640px) { .feat-row { grid-template-columns: 1fr; } }

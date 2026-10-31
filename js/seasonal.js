@@ -25,7 +25,7 @@
 
   function startParticles(k) {
     stopParticles();
-    if (reduced() || document.hidden) return;
+    if (reduced() || document.hidden || (navigator.hardwareConcurrency || 8) <= 4) return;   // appareils modestes : pas de particules
     const s = T.SEASONS[k], bg = bgNow();
     const cols = [T.ensure(T.hex2rgb(s.color), bg, 3), T.ensure(T.hex2rgb(s.color2), bg, 3)].map((c) => T.rgb2hex(c));
     const cv = document.createElement("canvas");
@@ -35,11 +35,14 @@
     let w = 0, h = 0;
     const fit = () => { w = innerWidth; h = innerHeight; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
     fit(); addEventListener("resize", fit);
-    const N = Math.min(26, Math.round(w / 45));
+    const N = Math.min(14, Math.round(w / 70));
     const mk = (init) => ({ x: Math.random() * w, y: init ? Math.random() * h : -10, r: 1.5 + Math.random() * 2.6, v: .25 + Math.random() * .7, dx: (Math.random() - .5) * .4, c: cols[Math.random() < .6 ? 0 : 1], ph: Math.random() * 6 });
     state.parts = Array.from({ length: N }, () => mk(true));
+    let last = 0;
     (function loop(t) {
       if (!state.canvas) return;
+      state.raf = requestAnimationFrame(loop);
+      if (t - last < 33) return; last = t;   // 30 images/s suffisent pour de petites particules
       ctx.clearRect(0, 0, w, h);
       for (const p of state.parts) {
         p.y += p.v; p.x += p.dx + Math.sin(t / 1400 + p.ph) * .25;
@@ -51,7 +54,6 @@
         else ctx.arc(p.x, p.y, p.r, 0, 6.3);                               // flocons
         ctx.fill();
       }
-      state.raf = requestAnimationFrame(loop);
     })(0);
   }
 

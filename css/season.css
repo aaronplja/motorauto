@@ -1,6 +1,6 @@
 /* Ambiances de saison : par-dessus le thème de chacun, via --season / --season-2 (contraste garanti en JS). */
 html[data-season]::before { content: ""; position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 9999; pointer-events: none;
-  background: linear-gradient(90deg, var(--season), var(--season-2), var(--season)); background-size: 200% 100%; animation: seasonLine 8s linear infinite; }
+  background: linear-gradient(90deg, var(--season), var(--season-2), var(--season)); }
 @keyframes seasonLine { to { background-position: 200% 0; } }
 .season-fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 html[data-season] .status-tag-verified { color: var(--season); }

@@ -233,3 +233,10 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - Tirer pour actualiser : seulement sur les pages de listes (catalogue, communauté, classement, jouer, annonces, clubs), jamais dans le menu « Moi » ni dans une fenêtre.
 - Chats : bouton « Nouveau » redessiné ; plus de saut de défilement quand une image finit de charger ; le bouton retour ne crée plus de boucle d'historique.
 - Pastille des messages : se met à jour au retour sur la page et ne reste plus allumée si l'horloge de l'appareil retarde.
+
+## Tour 20.2 — Fluidité, cristaux, voiture de la semaine
+- « Poussière » devient « cristal / cristaux » dans toute l'interface, les notifications, l'historique, l'admin et les mentions légales.
+- **Voiture de la semaine** : 3 défis dédiés (réagir, donner son avis, découvrir la fiche), voiture tirée au sort ou choisie par l'admin (Admin → Jeu → « Voitures mises en avant », 6 semaines à l'avance). Aperçu de la semaine suivante sur la page Défis. Nouveau document Firestore `site_settings/featured` (règles à republier) et fonctions à redéployer.
+- Retour arrière : plus de double animation avec le geste iOS, plus de flash entre pages, défilement restauré.
+- Barre réduite : un tap sur une icône navigue directement. Vibrations iPhone : technique de l'interrupteur natif (iOS 17.4+ requis).
+- Fluidité : flou de la barre allégé, particules de saison limitées (30 images/s, désactivées sur appareils modestes), observateur de squelettes allégé.

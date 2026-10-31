@@ -40,7 +40,6 @@
   bar.addEventListener("pointerdown", (e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     drag = { x: e.clientX, id: e.pointerId, moved: false, idx: indexAt(e.clientX) };
-    bar.classList.remove("mini");
   });
   bar.addEventListener("pointermove", (e) => {
     if (!drag || e.pointerId !== drag.id) return;
@@ -76,5 +75,4 @@
       clearTimeout(idle); idle = setTimeout(() => { if (window.scrollY < 120) bar.classList.remove("mini"); }, 600);
     });
   }, { passive: true });
-  bar.addEventListener("click", () => { if (bar.classList.contains("mini")) bar.classList.remove("mini"); }, true);
 })();

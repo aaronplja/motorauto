@@ -229,3 +229,17 @@ input, select, textarea { font: inherit; color: inherit; }
 .notif-ico .ic-svg, .notif-ico svg { width: 18px; height: 18px; }
 .notif-undo { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .7rem 1rem; background: var(--color-ink); color: var(--bg-core); font-size: .85rem; position: sticky; bottom: 0; }
 .notif-undo-btn { background: none; border: 0; color: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; padding: .3rem .2rem; }
+
+/* ---- Squelettes + tirer pour actualiser ---- */
+.skel-wrap { display: grid; gap: .7rem; padding: .4rem 0; }
+.skel { display: block; border-radius: 10px; background: linear-gradient(100deg, var(--bg-elevated) 30%, color-mix(in srgb, var(--color-ink) 12%, var(--bg-elevated)) 50%, var(--bg-elevated) 70%); background-size: 220% 100%; animation: skelMove 1.3s linear infinite; }
+.skel-line { height: 14px; } .skel-block { height: 84px; border-radius: 16px; }
+.skel.w60 { width: 60%; } .skel.w80 { width: 80%; } .skel.w40 { width: 40%; }
+@keyframes skelMove { to { background-position: -220% 0; } }
+.ptr { position: fixed; top: env(safe-area-inset-top, 0); left: 50%; transform: translate(-50%, -30px); z-index: 9000; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-elevated); border: 1px solid var(--stroke-line); box-shadow: 0 8px 24px rgba(0,0,0,.25); pointer-events: none; }
+.ptr span { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--color-muted); border-top-color: var(--accent); transition: transform .2s; }
+.ptr.ready span { border-color: var(--accent); transform: rotate(180deg); }
+.ptr.spin span { animation: ptrSpin .7s linear infinite; }
+@keyframes ptrSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
+

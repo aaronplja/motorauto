@@ -827,14 +827,22 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
     }
 
-    // --- Réglages du site (ambiances de saison…) : lecture publique, écriture admin ---
-    match /site_settings/{id} {
+    // --- Réglages du site : lecture publique, écriture admin ---
+    match /site_settings/seasons {
       allow read: if true;
       allow write: if isAdmin()
         && request.resource.data.keys().hasOnly(['halloween', 'noel', 'nouvelan'])
         && request.resource.data.get('halloween', true) is bool
         && request.resource.data.get('noel', true) is bool
         && request.resource.data.get('nouvelan', true) is bool;
+    }
+    // voitures mises en avant par semaine : { weeks: { "2026-W45": "id-de-la-voiture" } }
+    match /site_settings/featured {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['weeks'])
+        && request.resource.data.weeks is map
+        && request.resource.data.weeks.size() <= 60;
     }
 
     // --- Réponses toutes prêtes de la messagerie (admins) ---
