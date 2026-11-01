@@ -458,3 +458,8 @@ body:not([data-admin-todo="0"])[data-admin-todo] .page-tab[data-tab="tableau"]::
 .stat-cols ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; }
 .stat-cols li { display: flex; justify-content: space-between; gap: .6rem; padding: .35rem .6rem; border-radius: 10px; background: var(--bg-elevated); }
 .stat-cols h4 { margin: .2rem 0 .5rem; }
+
+/* Tour 22.4 — concours : la légende ne recouvre plus le nom de la voiture */
+.photo-card .photo-cap { position: static; background: none; color: var(--color-secondary); padding: 0 .9rem .7rem; font-size: .8rem; }
+.photo-meta { flex-wrap: wrap; }
+.photo-meta small { white-space: normal; }
