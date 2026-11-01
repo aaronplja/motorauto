@@ -276,3 +276,6 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - `tests/brands.test.js` : ids uniques, liens « voir aussi » valides, aucun moteur vide.
 - Après ajout d'un fichier de données : `node scripts/sync-functions.js && node scripts/build-seo.js`.
 - Ajout rapide de photo (admin) : boutons « + Photo » / « + Lien » sur les cartes du catalogue et les fiches ; l'image générique est remplacée.
+
+### Une fiche par voiture (js/data-split.js)
+Les fiches qui regroupaient plusieurs modèles (ex. 106 Maxi / AX Sport / Visa) sont scindées au chargement, une fiche par voiture ; les Renault restent groupées. La première fiche garde son id (cartes déjà obtenues conservées). Pour scinder une autre fiche, ajouter une entrée dans `S` de ce fichier. Après modification : `node scripts/sync-functions.js` puis redéployer les functions.

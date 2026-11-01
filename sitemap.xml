@@ -55,6 +55,8 @@
   <url><loc>https://motorauto.fr/marque/hyundai.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/marque/skoda.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/marque/seat.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/marque/suzuki.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/marque/abarth.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/marque/dacia.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/marque/prodrive.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/marque/datsun.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
@@ -218,6 +220,7 @@
   <url><loc>https://motorauto.fr/voiture/alpine-a610.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/alpine-a110-2017.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/alpine-a290.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/alpine-a390.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/alpine-a220.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/auto-union-type-c.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/auto-union-type-d.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
@@ -322,8 +325,10 @@
   <url><loc>https://motorauto.fr/voiture/bmw-m3-e92.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-3-f30.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-m3-f80.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/bmw-m4-f82.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-3-g20.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-m3-g80.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/bmw-m4-g82.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-4-f32.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-5-e12.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-5-e28.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
@@ -356,16 +361,21 @@
   <url><loc>https://motorauto.fr/voiture/bmw-x3.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-x4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-x1-x2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/bmw-ix1.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/bmw-ix2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-x7.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-i3.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-i8.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-i4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/bmw-ix3.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-ix.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-3-csl-2023.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/bmw-3-csl-hommage.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-m3-e30-dtm.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-m3-gtr-e46.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-m3-gt2-e92.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-m6-gt3.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/bmw-m4-gt3.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-m8-gte.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/bmw-320-e21-groupe5.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/lm-chenard-sport.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
@@ -472,12 +482,17 @@
   <url><loc>https://motorauto.fr/voiture/mb-e-w214.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-clk-c208.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-clk-gtr.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-clk-dtm.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-cls.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-cl.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-ssk.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-540k.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-w125.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-w196.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-300-slr.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-170v.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-220-ponton.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-300-adenauer.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-600.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-300-sel-63.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-450-sel-69.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
@@ -495,14 +510,20 @@
   <url><loc>https://motorauto.fr/voiture/mb-b.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-cla.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-gla-glb.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-glb.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-eqa.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-eqb.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-g-w460.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-glk.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-glk-glc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-ml.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-gle.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-gls.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-v-vito.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-sprinter.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-x-class.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-r-class.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/mb-maybach-57-62.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-maybach.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-eqc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/mb-eqe.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
@@ -517,18 +538,22 @@
   <url><loc>https://motorauto.fr/voiture/rally-lancia-fulvia.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-lancia-stratos.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-fiat-124-abarth.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-fiat-131-abarth.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-ford-escort-rs1800.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-opel-ascona-400.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-opel-manta-400.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-lancia-037.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-lancia-delta-s4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-peugeot-205-t16-e2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-peugeot-405-t16.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-peugeot-205-t16-gr.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-metro-6r4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-citroen-bx-4tc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-renault-5-maxi-turbo.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-mazda-rx7-gpb.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-toyota-celica-tct.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-porsche-959-dakar.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-porsche-953-dakar.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-lancia-integrale.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-celica-st165.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-nissan-pulsar-gtir.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
@@ -538,39 +563,85 @@
   <url><loc>https://motorauto.fr/voiture/rally-subaru-impreza-gr.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-evo.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-galant-vr4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-mitsubishi-lancer-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-mitsubishi-pajero-dakar.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-corolla-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-yaris-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-gr-yaris-rally1.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-gr-yaris.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-gr-yaris-rally2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-gr-corolla.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-focus-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-fiesta-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-fiesta-wrc-2017.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-puma-rally1.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-accent-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-i20-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-i20-n-rally1.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-fabia-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-fabia-r5.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-c4-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-ds3-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-c3-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-307-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-208-r2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-208-rally4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-208-r5.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-208-t16-pikes-peak.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-208-rally2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-ibiza-kit-car.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-cordoba-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-polo-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-polo-gti-r5.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-mini-wrc.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-mini-all4-racing.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-hilux.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-gr-dkr-hilux.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-c2-s1600.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-c2-r2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-ds3-r5.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-c3-rally2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-fiesta-r2t.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-fiesta-rally4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-fiesta-rally3.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-fiesta-r5.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-fiesta-rally2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-i20-r5.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-i20-n-rally2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-opel-adam-r2.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-opel-corsa-rally4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-opel-corsa-rally-e.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-clio-r3.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-kit-car-106-maxi.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-citroen-ax-sport.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-citroen-visa-mille-pistes.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-puma-s1600.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-punto-s1600.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-corsa-s1600.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-swift-s1600.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-s2000-punto.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-abarth-124-rally.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-lancer-evo-r4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-lancer-evo-x-r4.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-2008-dkr.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-3008-dkr.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-audi-rs-q-etron.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-dacia-sandrider.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-xraid-hunter.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-ford-raptor-t1.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-race-touareg.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-citroen-id-19.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-citroen-ds-monte.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-citroen-ds-23.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-citroen-sm.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-datsun-240z-safari.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-datsun-violet-160j.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-porsche-911-s-rallye.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-porsche-911-rs.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-porsche-911-sc-safari.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-saab-96.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-volvo-544.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://motorauto.fr/voiture/rally-volvo-amazon.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/rally-lancia-beta-monte-carlo.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/renault-4cv.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
   <url><loc>https://motorauto.fr/voiture/renault-dauphine.html</loc><lastmod>2026-11-01</lastmod><priority>0.7</priority></url>
