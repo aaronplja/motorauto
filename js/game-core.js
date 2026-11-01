@@ -216,8 +216,21 @@
   const PERFECT_WEEK_BONUS = 1;
   const THEMES = ["Ma voiture au lever du soleil", "Détail mécanique", "Mon garage", "Route de rêve", "Voiture en mouvement", "Noir & blanc", "Mon plus beau reflet", "Sortie entre pilotes", "Voiture sous la pluie", "Intérieur et cockpit", "Avant / après", "Ma voiture de collection"];
 
+  /** familles de cartes : une par marque (3 à 30 cartes) et une par carrosserie ; récompense = cristaux selon la taille */
+  function setReward(n) { return Math.min(600, 20 + n * 10); }
+  function setsOf(list) {
+    const out = [], group = (key, prefix, kind, min, max) => {
+      const m = new Map();
+      (list || []).forEach((c) => { const v = String(c[key] || "").trim(); if (!v) return; if (!m.has(v)) m.set(v, []); m.get(v).push(c.id); });
+      m.forEach((ids, name) => { if (ids.length >= min && ids.length <= max) out.push({ id: prefix + ":" + name, name: kind === "category" ? "Famille " + name : name, kind, ids, reward: setReward(ids.length) }); });
+    };
+    group("brand", "brand", "brand", 3, 30); group("category", "cat", "category", 3, 80);
+    return out.sort((a, b) => a.ids.length - b.ids.length || (a.name < b.name ? -1 : 1));
+  }
+
   return {
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
+    setsOf, setReward,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     RAR, ORDER, SHOP_PACK, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount,
     SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES

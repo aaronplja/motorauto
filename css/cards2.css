@@ -231,3 +231,12 @@ button.tcg-dust b { display: inline-flex; align-items: center; gap: .3rem; }
 .contest-box .contest-thumb{width:56px;height:56px;object-fit:cover;border-radius:8px;margin-right:4px}
 .lightbox.multi{overflow-y:auto;flex-direction:column;justify-content:flex-start;gap:10px;padding:56px 12px 24px}
 .lightbox.multi img{max-height:none;max-width:min(100%,900px)}
+
+/* Tour 22 — sets de cartes */
+.tcg-sets { margin: 1rem 0; padding: .9rem 1rem; border-radius: 18px; background: color-mix(in srgb, var(--bg-surface) 70%, transparent); border: 1px solid var(--glass-line, var(--line)); display: grid; gap: .6rem; }
+.sets-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.sets-head .cta-btn { margin-left: auto; }
+.set-row { display: grid; gap: .3rem; }
+.set-row span { display: flex; justify-content: space-between; gap: .6rem; }
+.set-row small { color: var(--color-secondary); }
+.set-row.full .xp-bar i { background: linear-gradient(90deg, #f5b301, #ffd95a); }

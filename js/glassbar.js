@@ -71,7 +71,10 @@
   bar.addEventListener("click", () => { if (bar.classList.contains("mini")) expand(); }, true);
   window.addEventListener("hashchange", expand);
   window.addEventListener("popstate", expand);
+  let scTimer = 0;
   window.addEventListener("scroll", () => {
+    const de = document.documentElement; if (!de.classList.contains("scrolling")) de.classList.add("scrolling");
+    clearTimeout(scTimer); scTimer = setTimeout(() => de.classList.remove("scrolling"), 160);
     if (ticking) return; ticking = true;
     requestAnimationFrame(() => {
       ticking = false;

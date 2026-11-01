@@ -146,6 +146,24 @@
       });
     }
 
+    // ---------------------------------------------------------------- sets de cartes complétés → cristaux + badge de set
+    async function claimSets(caller) {
+      const uid = caller.uid, pool = await getPool(), sets = core.setsOf(pool.list);
+      return db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid), ref = col("set_claims").doc(uid), cs = await tx.get(ref), done = cs.exists ? Object.assign({}, cs.data().done || {}) : {};
+        const won = [];
+        sets.forEach((st) => {
+          if (done[st.id] || !st.ids.every((id) => (d.owned[id] || 0) > 0)) return;
+          done[st.id] = now(); won.push({ id: st.id, name: st.name, reward: st.reward });
+        });
+        if (!won.length) return { claimed: [], doc: view(d), done };
+        const total = won.reduce((t, w) => t + w.reward, 0);
+        dustMove(d, total, "Set complété"); writeCol(tx, uid, d);
+        tx.set(ref, { done, updatedAt: ts() });
+        return { claimed: won, total, doc: view(d), done };
+      });
+    }
+
     // ---------------------------------------------------------------- série de visites
     async function touchStreak(caller) {
       const uid = caller.uid, today = core.dayKey(now()), yesterday = core.dayKey(now() - 86400000);
@@ -527,7 +545,7 @@
       return out;
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, touchStreak, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, _getPool: getPool };
+    return { closeDueContests, syncCollection, openPack, craftCard, claimSets, touchStreak, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, _getPool: getPool };
   }
   return { createGame, GameError };
 });

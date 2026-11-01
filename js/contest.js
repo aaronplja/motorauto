@@ -90,7 +90,7 @@
       const n = t.get(e.id) || 0, own = C.user && e.uid === C.user.uid, voted = mv === e.id;
       return `<article class="photo-card ${voted ? "voted" : ""}"><button type="button" class="photo-open" data-photo="${esc(photosOf(e).join("|"))}" data-cap="${esc(e.caption || e.carName || "")}" aria-label="Agrandir la photo de ${esc(e.name)}"><img src="${esc(C.safeUrl(photosOf(e)[0]) || "")}" alt="${esc(e.caption || "Photo de " + e.name)}" loading="lazy" data-fallback="car">${photosOf(e).length > 1 ? `<span class="photo-count">📷 ${photosOf(e).length}</span>` : ""}</button>
         <div class="photo-meta"><div><a href="#/pilote/${encodeURIComponent(e.uid)}"><b>${esc(e.name)}</b></a><small>${esc(e.carName || "")}</small></div>
-        ${open ? (own ? `<span class="vote-pill own">${n} ♥</span>` : `<button type="button" class="vote-btn ${voted ? "on" : ""}" data-vote="${esc(e.id)}" aria-pressed="${voted}" aria-label="${voted ? "Retirer mon vote" : "Voter pour cette photo"}">♥ <b>${n}</b></button>`) : `<span class="vote-pill">${n} ♥</span>`}</div>${e.caption ? `<p class="photo-cap">${esc(e.caption)}</p>` : ""}</article>`;
+        ${open ? (own ? `<span class="vote-pill own">${n} ♥</span>` : `<button type="button" class="vote-btn ${voted ? "on" : ""}" data-vote="${esc(e.id)}" aria-pressed="${voted}" aria-label="${voted ? "Retirer mon vote" : "Voter pour cette photo"}">♥ <b>${n}</b></button>`) : `<span class="vote-pill">${n} ♥</span>`}</div>${e.caption ? `<p class="photo-cap">${esc(e.caption)}</p>` : ""}${C.user && !own ? `<button type="button" class="photo-flag" data-report="${esc(e.id)}" aria-label="Signaler cette participation" title="Signaler">⚑</button>` : ""}</article>`;
     }).join("")}</div>`;
   }
   function hall() {
@@ -136,6 +136,15 @@
     } catch (ex) { C.toast("Vote impossible : " + ex.message, "err"); }
     busy = false; render();
   }
+  async function reportEntry(id) {
+    if (!C.requireLogin()) return;
+    const en = entries.find((x) => x.id === id); if (!en) return;
+    const reason = window.MAReport ? await window.MAReport.ask("cette participation") : "other"; if (!reason) return;
+    try {
+      await C.db.collection("contest_reports").doc(id + "_" + C.user.uid).set({ entryId: id, title: String(en.carName || en.caption || "Participation").slice(0, 80), ownerUid: en.uid, reporter: (C.pilotName ? C.pilotName() : "Pilote").slice(0, 40), reporterUid: C.user.uid, reason, status: "open", createdAt: C.FieldValue.serverTimestamp() });
+      C.toast("Merci, la participation a été signalée à la modération.", "ok");
+    } catch (ex) { C.toast("Signalement impossible : " + ex.message, "err"); }
+  }
   function lightbox(src, cap) {
     const o = document.createElement("div"); o.className = "lightbox"; o.setAttribute("role", "dialog"); o.setAttribute("aria-modal", "true"); o.setAttribute("aria-label", "Photo");
     o.innerHTML = `<button type="button" class="lightbox-x" aria-label="Fermer">×</button>${String(src).split("|").map((u) => `<img src="${C.esc(C.safeUrl(u) || "")}" alt="${C.esc(cap || "")}">`).join("")}${cap ? `<p>${C.esc(cap)}</p>` : ""}`;
@@ -175,6 +184,8 @@
       if (t.closest("[data-contest-form]")) { if (C.requireLogin()) { formOpen = true; render(); const el = document.getElementById("ct-photo"); if (el) el.focus(); } return; }
       if (t.closest("[data-contest-cancel]")) { formOpen = false; render(); return; }
       const v = t.closest("[data-vote]"); if (v) { vote(v.dataset.vote); return; }
+      const rb = t.closest("[data-report]");
+      if (rb && rb.closest("#contest-root")) { reportEntry(rb.dataset.report); return; }
       const ph = t.closest("[data-photo]"); if (ph && ph.closest("#contest-root")) { lightbox(ph.dataset.photo, ph.dataset.cap); return; }
       if (t.closest("[data-contest-del]") && mine && confirm("Retirer ta photo du concours ?")) { try { await C.db.collection("contest_entries").doc(mine.id).delete(); mine = null; await load(true); render(); } catch (ex) { C.toast("Suppression impossible : " + ex.message, "err"); } return; }
       if (t.closest("[data-contest-open]")) { try { await window.MAGameAPI.call("adminContest", { action: "open" }); C.toast("Concours lancé.", "ok"); await load(true); render(); } catch (ex) { C.toast(ex.message, "err"); } }

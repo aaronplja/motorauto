@@ -427,7 +427,7 @@
     if (!m.carId) return "";
     const img = safeUrl(m.carImage);
     const isCard = !!m.cardRarity, href = isCard ? (/^sp-/.test(m.carId) ? "index.html#/jouer/cartes" : "index.html#/voiture/" + encodeURIComponent(m.carId)) : "index.html#/voiture/" + encodeURIComponent(m.carId);
-    return `<a class="car-share${isCard ? " card-share" : ""}" href="${href}" target="_blank" rel="noopener">${img ? `<img src="${esc(img)}" alt="" loading="lazy" data-fallback="car">` : ""}<span><small>${isCard ? "🃏 Carte · " + esc(m.cardRarity) : "Fiche véhicule"}</small><b>${esc(m.carName || m.carId)}</b></span></a>`;
+    return `<a class="car-share${isCard ? " card-share" : ""}" href="${href}" target="_blank" rel="noopener">${img ? `<img src="${esc(img)}" alt="" loading="lazy" data-fallback="car">` : ""}<span><small>${isCard ? "🃏 Carte · " + esc(m.cardRarity) : "Fiche véhicule"}</small><b>${esc(m.carName || m.carId)}</b></span></a>${isCard ? `<div class="card-react" role="group" aria-label="Réagir à la carte">${EMOJIS.slice(0, 5).map((e) => `<button type="button" data-action="react" data-id="${esc(m.id)}" data-emoji="${e}" aria-label="Réagir ${e}">${e}</button>`).join("")}</div>` : ""}`;
   }
   const TRADE_LABEL = { open: "En attente de réponse", accepted: "Échange réalisé 🎉", declined: "Refusé", cancelled: "Annulé" };
   function tradeCardHtml(m) {

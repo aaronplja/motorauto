@@ -62,22 +62,26 @@
 /* ==========================================================================
    Tour 21 — « verre liquide » partout : barre du haut, menus, fenêtres, onglets, cartes
    ========================================================================== */
-:root { --glass-bg: color-mix(in srgb, var(--bg-surface) 52%, transparent); --glass-line: color-mix(in srgb, #fff 30%, transparent);
+:root { --ma-ease: cubic-bezier(.34,1.18,.5,1); --ma-ease-out: cubic-bezier(.22,.9,.3,1); --blur: 16px; --glass-bg: color-mix(in srgb, var(--bg-surface) 52%, transparent); --glass-line: color-mix(in srgb, #fff 30%, transparent);
   --glass-shadow: inset 0 1.5px 0 rgba(255,255,255,.5), inset 0 0 18px rgba(255,255,255,.08), 0 10px 30px -10px rgba(0,0,0,.32); }
 :root[data-tone="dark"] { --glass-bg: color-mix(in srgb, var(--bg-surface) 58%, transparent); --glass-line: rgba(255,255,255,.1);
   --glass-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 16px rgba(255,255,255,.02), 0 12px 32px -10px rgba(0,0,0,.6); }
 
-.app-header, .modal-dialog, .notif-panel, .page-tabs, .toolbar-cluster, .command-search-wrapper, .search-suggestions-dropdown, .menu-panel, .user-menu, .profile-menu, .settings-panel, .to-top, .toast,
-.contest-box, .contest-hero, .pilot-trade, .chal-card, .hub-tile, .hall-card, .photo-card, .hub-card, .profile-card, .mini-card, .gate-card, .page-box, .feed-item, .event-card, .dash-card, .chart-box {
+.app-header, .modal-dialog, .notif-panel, .page-tabs, .toolbar-cluster, .command-search-wrapper, .search-suggestions-dropdown, .menu-panel, .user-menu, .profile-menu, .settings-panel, .to-top, .toast {
   background: var(--glass-bg) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(1.6) !important; backdrop-filter: blur(16px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(var(--blur, 16px)) saturate(1.5) !important; backdrop-filter: blur(var(--blur, 16px)) saturate(1.5) !important;
+  border-color: var(--glass-line) !important; box-shadow: var(--glass-shadow) !important;
+}
+.contest-box, .contest-hero, .pilot-trade, .chal-card, .hub-tile, .hall-card, .photo-card, .hub-card, .profile-card, .mini-card, .gate-card, .page-box, .feed-item, .event-card, .dash-card, .chart-box {
+  background: color-mix(in srgb, var(--bg-surface) 70%, transparent) !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
   border-color: var(--glass-line) !important; box-shadow: var(--glass-shadow) !important;
 }
 .app-header { border-bottom: 1px solid var(--glass-line) !important; box-shadow: 0 8px 26px -14px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.12) !important; }
 .app-header::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 140% at 15% -60%, rgba(255,255,255,.28), transparent 55%); }
 :root[data-tone="dark"] .app-header::before { background: radial-gradient(120% 140% at 15% -60%, rgba(255,255,255,.08), transparent 55%); }
 .app-header > * { position: relative; }
-.app-header { transition: transform .32s cubic-bezier(.3,.7,.3,1) !important; will-change: transform; }
+.app-header { transition: transform .34s var(--ma-ease) !important; will-change: transform; contain: layout paint; }
 .app-header.hide-up { transform: translateY(-110%); }
 .page-tabs { border-radius: 18px; padding-inline: .35rem !important; border-bottom: 1px solid var(--glass-line) !important; position: sticky; top: calc(var(--safe-top) + 4px); z-index: 20; }
 .modal-layer { background: rgba(10,12,18,.38) !important; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
@@ -110,3 +114,41 @@
 .page-tabs { top: calc(var(--hdr-h, 76px) + 6px) !important; transition: top .32s cubic-bezier(.3,.7,.3,1); }
 .hdr-hidden .toolbar-cluster, .hdr-hidden .page-tabs { top: calc(var(--safe-top, 0px) + 8px) !important; }
 @media (prefers-reduced-motion: reduce) { .toolbar-cluster, .page-tabs { transition: none; } }
+
+
+/* ==========================================================================
+   Tour 22 — fluidité : barre du bas en capsule (transform seulement), modes d'animation
+   ========================================================================== */
+@media (max-width: 999px) {
+  .mobile-touch-bar { transform-origin: 50% 100%; will-change: transform; contain: layout paint;
+    transition: transform .34s var(--ma-ease), opacity .22s linear !important; }
+  /* capsule = même barre, réduite par un simple zoom GPU : plus aucun recalcul de mise en page, la bulle ne se décale plus */
+  .mobile-touch-bar.mini { width: min(calc(100vw - 28px), 430px) !important; height: 66px !important; border-radius: 34px !important; transform: translateX(-50%) translateY(6px) scale(.66); }
+  .mobile-touch-bar.mini .touch-bar-item { font-size: .5rem !important; gap: 3px !important; }
+  .mobile-touch-bar.mini .touch-bar-item span { display: block !important; opacity: 0; transition: opacity .15s; }
+  .mobile-touch-bar .touch-bar-item span { transition: opacity .2s .08s; }
+  .mobile-touch-bar.mini .touch-bar-item svg { width: 24px !important; height: 24px !important; }
+  .mobile-touch-bar.mini .glass-bubble { top: 5px; bottom: 5px; border-radius: 28px; }
+  .glass-bubble { transition: transform .34s var(--ma-ease) !important; }
+  /* la proposition de notifications passe au-dessus de la barre */
+  #push-ask { bottom: calc(var(--bar-h, 76px) + var(--safe-bottom, 0px) + 22px) !important; z-index: 700 !important; }
+}
+/* menu « Moi » : verre plus dense, toujours lisible */
+.me-sheet { background: color-mix(in srgb, var(--bg-surface) 92%, transparent) !important; -webkit-backdrop-filter: blur(24px) saturate(1.4) !important; backdrop-filter: blur(24px) saturate(1.4) !important; }
+.me-backdrop { background: rgba(8,10,16,.45); }
+
+/* pendant le défilement le flou est remplacé par un fond plus plein : même rendu, nettement moins de calcul */
+html.scrolling[data-anim="smooth"] .app-header, html.scrolling[data-anim="smooth"] .mobile-touch-bar, html.scrolling[data-anim="smooth"] .page-tabs, html.scrolling[data-anim="smooth"] .toolbar-cluster
+{ -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: color-mix(in srgb, var(--bg-surface) 88%, transparent) !important; }
+html[data-anim="smooth"] { --blur: 10px; }
+html[data-anim="reduced"] *, html[data-anim="reduced"] *::before, html[data-anim="reduced"] *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+html[data-anim="reduced"] .app-header, html[data-anim="reduced"] .mobile-touch-bar, html[data-anim="reduced"] .modal-dialog, html[data-anim="reduced"] .notif-panel, html[data-anim="reduced"] .page-tabs, html[data-anim="reduced"] .toolbar-cluster, html[data-anim="reduced"] .me-sheet
+{ -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: var(--bg-surface) !important; }
+/* accessibilité : contraste renforcé */
+html[data-contrast="high"] { --glass-line: color-mix(in srgb, var(--color-ink) 55%, transparent); --line: color-mix(in srgb, var(--color-ink) 45%, transparent); --stroke-line: color-mix(in srgb, var(--color-ink) 45%, transparent); }
+html[data-contrast="high"] .lap-meta, html[data-contrast="high"] small { color: var(--color-ink) !important; opacity: .9; }
+html[data-contrast="high"] :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.a11y-card .a11y-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+.a11y-card .a11y-row button { min-height: 44px; padding: .4rem .9rem; border-radius: 12px; border: 1px solid var(--glass-line); background: transparent; color: inherit; font-weight: 700; }
+.a11y-card .a11y-row button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent, #fff); border-color: var(--accent); }

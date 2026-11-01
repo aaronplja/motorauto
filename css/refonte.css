@@ -377,3 +377,84 @@ body:not([data-admin-todo="0"])[data-admin-todo] .page-tab[data-tab="tableau"]::
 /* ---- brouillon retrouvé ---- */
 .draft-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; margin: 0 0 1rem; padding: .7rem .9rem; border-radius: 14px; border: 1px dashed var(--accent); background: var(--glow-soft); color: var(--color-ink); font-size: .9rem; }
 .draft-banner small { color: var(--color-muted); } .draft-banner > span:last-child { display: flex; gap: .4rem; }
+
+/* Tour 22 — éditeur de véhicule en 3 étapes */
+.adm-steps [data-step]:not(.step-on) { display: none !important; }
+.adm-stepbar { display: flex; gap: .4rem; margin: 0 0 1rem; position: sticky; top: 0; z-index: 3; padding: .3rem 0; background: var(--bg-surface); }
+.adm-stepbar button { flex: 1; display: flex; align-items: center; justify-content: center; gap: .45rem; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--color-secondary); font-weight: 700; font-size: .84rem; }
+.adm-stepbar button b { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-elevated); font-size: .75rem; }
+.adm-stepbar button.on { color: var(--on-accent, #fff); background: var(--accent); border-color: var(--accent); }
+.adm-stepbar button.on b { background: rgba(255,255,255,.25); }
+@media (max-width: 520px) { .adm-stepbar button span { font-size: .72rem; } }
+.adm-stepnav { display: flex; gap: .6rem; margin-top: 1rem; }
+.adm-stepnav .cta-btn { flex: 1; }
+
+/* Tour 22 — recherche globale */
+#spotlight { position: fixed; inset: 0; z-index: 3000; display: flex; justify-content: center; align-items: flex-start; padding: calc(var(--safe-top, 0px) + 9vh) 12px 12px; background: rgba(8,10,16,.42); opacity: 0; transition: opacity .22s var(--ma-ease-out, ease); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+#spotlight.on { opacity: 1; }
+.spot-box { width: min(640px, 100%); max-height: 78dvh; display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: color-mix(in srgb, var(--bg-surface) 90%, transparent); border: 1px solid var(--glass-line, var(--line)); box-shadow: 0 30px 70px -20px rgba(0,0,0,.6); transform: translateY(-10px) scale(.98); transition: transform .3s var(--ma-ease, ease); }
+#spotlight.on .spot-box { transform: none; }
+.spot-field { display: flex; align-items: center; gap: .6rem; padding: .85rem 1rem; border-bottom: 1px solid var(--line); }
+.spot-field input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--color-ink); font-size: 1rem; }
+.spot-x { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--bg-elevated); color: inherit; font-size: 1.2rem; }
+.spot-list { overflow-y: auto; overscroll-behavior: contain; padding: .3rem .4rem .6rem; }
+.spot-grp { padding: .6rem .7rem .2rem; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--color-muted); }
+.spot-item { display: flex; align-items: center; gap: .75rem; padding: .55rem .7rem; border-radius: 14px; color: inherit; text-decoration: none; }
+.spot-item.on, .spot-item:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.spot-item img, .spot-noimg { width: 52px; height: 36px; object-fit: cover; border-radius: 8px; flex: none; background: var(--bg-elevated); }
+.spot-item img.round { width: 38px; height: 38px; border-radius: 50%; }
+.spot-item span { display: flex; flex-direction: column; min-width: 0; }
+.spot-item small { color: var(--color-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spot-hint { padding: 1.2rem 1rem; text-align: center; color: var(--color-secondary); }
+.cmp-cell.txt b { font-size: .82rem; line-height: 1.25; }
+
+/* Tour 22 — fiche voiture en onglets */
+.sheet-tabbed [data-tab]:not(.tab-on) { display: none !important; }
+.sheet-tabs { display: flex; gap: .3rem; padding: .3rem; margin: .4rem 0 1rem; border-radius: 16px; background: var(--bg-elevated); position: sticky; top: calc(var(--safe-top, 0px) + 4px); z-index: 4; overflow-x: auto; scrollbar-width: none; }
+.sheet-tabs::-webkit-scrollbar { display: none; }
+.sheet-tabs button { flex: 1 0 auto; min-height: 42px; padding: 0 1rem; border: 0; border-radius: 12px; background: transparent; color: var(--color-secondary); font-weight: 700; transition: background .25s var(--ma-ease, ease), color .25s; }
+.sheet-tabs button[aria-selected="true"] { background: var(--accent); color: var(--on-accent, #fff); }
+.sheet-tabbed .tab-on { animation: sheetTabIn .28s var(--ma-ease-out, ease) both; }
+@keyframes sheetTabIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Tour 22 — fenêtre de signalement */
+#report-sheet { position: fixed; inset: 0; z-index: 3200; display: flex; align-items: flex-end; justify-content: center; padding: 12px; background: rgba(8,10,16,.45); opacity: 0; transition: opacity .2s; }
+#report-sheet.on { opacity: 1; }
+.rp-box { width: min(420px, 100%); display: grid; gap: .5rem; padding: 1rem; border-radius: 22px; background: color-mix(in srgb, var(--bg-surface) 92%, transparent); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid var(--glass-line, var(--line)); transform: translateY(24px); transition: transform .3s var(--ma-ease, ease); padding-bottom: calc(1rem + var(--safe-bottom, 0px)); }
+#report-sheet.on .rp-box { transform: none; }
+.rp-box p { margin: 0 0 .3rem; color: var(--color-secondary); font-size: .88rem; }
+.rp-box button { display: flex; align-items: center; gap: .7rem; min-height: 48px; padding: 0 1rem; border-radius: 14px; border: 1px solid var(--line); background: var(--bg-elevated); color: inherit; font-weight: 700; text-align: left; }
+.rp-box .rp-cancel { justify-content: center; background: transparent; color: var(--color-secondary); }
+@media (min-width: 700px) { #report-sheet { align-items: center; } }
+.photo-card { position: relative; }
+.photo-flag { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(0,0,0,.5); color: #fff; opacity: .8; }
+.pub-challenge { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .8rem 0; }
+
+/* Tour 22 — clubs : calendrier, classement, annonces épinglées */
+.club-plus { margin: 1rem 0; padding: 1rem; border-radius: 18px; background: color-mix(in srgb, var(--bg-surface) 70%, transparent); border: 1px solid var(--glass-line, var(--line)); }
+.cev { display: flex; gap: .8rem; align-items: center; padding: .6rem 0; border-bottom: 1px solid var(--line); }
+.cev-date { flex: none; width: 52px; text-align: center; padding: .35rem 0; border-radius: 12px; background: var(--bg-elevated); display: grid; }
+.cev-date b { font-size: 1.2rem; line-height: 1; }
+.cev-main { flex: 1; min-width: 0; display: grid; gap: .1rem; }
+.cev-main small { color: var(--color-secondary); }
+.cev-act { display: flex; gap: .4rem; align-items: center; }
+.cev-form { display: grid; gap: .5rem; margin-top: .8rem; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.cev-form input { min-height: 44px; padding: 0 .8rem; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-elevated); color: inherit; }
+.club-rank { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .3rem; }
+.club-rank li { display: grid; grid-template-columns: 28px 1fr auto auto; gap: .6rem; align-items: center; padding: .45rem .6rem; border-radius: 12px; background: var(--bg-elevated); }
+.club-rank .rk { font-weight: 800; color: var(--accent); }
+.club-rank small { color: var(--color-muted); }
+.seg-mini { margin-top: .4rem; }
+.seg-mini button { min-height: 38px; padding: 0 .9rem; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: inherit; font-weight: 700; }
+.seg-mini button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent, #fff); border-color: var(--accent); }
+.feed-item.pinned { border-color: var(--accent) !important; }
+.pin-tag { font-style: normal; font-size: .72rem; font-weight: 800; color: var(--accent); }
+
+/* Tour 22 — statistiques admin */
+.admin-stats { margin-top: 1.5rem; }
+.stat-bars { display: flex; align-items: flex-end; gap: 4px; height: 90px; margin: .8rem 0; }
+.stat-bars i { flex: 1; height: var(--h); min-height: 3px; border-radius: 4px 4px 0 0; background: var(--accent); opacity: .85; }
+.stat-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+.stat-cols ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; }
+.stat-cols li { display: flex; justify-content: space-between; gap: .6rem; padding: .35rem .6rem; border-radius: 10px; background: var(--bg-elevated); }
+.stat-cols h4 { margin: .2rem 0 .5rem; }

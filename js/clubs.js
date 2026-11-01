@@ -71,13 +71,13 @@
     if (title) title.textContent = club.name; if (sub) sub.textContent = club.desc || (club.kind === "brand" ? "Club de marque" : "Club régional");
     const ms = membersOf(id), mem = isMember(id), xp = await xpMap();
     let posts = [];
-    try { const s = await C.db.collection("club_posts").where("clubId", "==", id).limit(80).get(); posts = s.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt)); } catch (_) { /* règles */ }
+    try { const s = await C.db.collection("club_posts").where("clubId", "==", id).limit(80).get(); posts = s.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || tsMs(b.createdAt) - tsMs(a.createdAt)); } catch (_) { /* règles */ }
     const total = ms.reduce((s, m) => s + xp(m.uid), 0), cars = C.cars.filter((c) => club.kind === "brand" && c.brand === club.key);
     root.innerHTML = `<div class="club-head"><div class="stats-ribbon"><div class="ribbon-card"><span class="ribbon-value">${ms.length}</span><span class="ribbon-key">Membres</span></div><div class="ribbon-card"><span class="ribbon-value">${nf(total)}</span><span class="ribbon-key">XP cumulée</span></div>${club.kind === "brand" ? `<div class="ribbon-card"><span class="ribbon-value">${cars.length}</span><span class="ribbon-key">Fiches</span></div>` : ""}</div>
       <button type="button" class="cta-btn ${mem ? "btn-ghost" : "fill-btn"}" data-club-join="${C.esc(id)}">${mem ? "Quitter le club" : "Rejoindre le club"}</button>${C.isAdmin || (C.user && club.ownerUid === C.user.uid) ? `<button type="button" class="secondary-destructive-btn" data-club-del="${C.esc(id)}">Supprimer le club</button>` : ""}</div>
       <div class="club-cols"><div>
         ${mem ? `<form id="club-post-form" class="club-post-form"><textarea id="club-post-text" maxlength="500" rows="2" placeholder="Un message pour le club…" aria-label="Message au club"></textarea><button type="submit" class="cta-btn fill-btn compact-btn">Publier</button></form>` : `<p class="lap-meta">Rejoins le club pour publier dans son fil.</p>`}
-        <div class="feed-list">${posts.length ? posts.map((p) => `<div class="feed-item">${C.avatarImg(p.avatar, "feed-avatar")}<span class="feed-text"><a href="#/pilote/${encodeURIComponent(p.uid)}"><b>${C.esc(p.name || "Pilote")}</b></a> ${C.esc(p.text)}<span class="feed-when">${window.MACommunity ? window.MACommunity.ago(tsMs(p.createdAt)) : ""}${C.user && (C.user.uid === p.uid || C.isAdmin) ? ` · <button type="button" class="cmt-del" data-club-post-del="${C.esc(p.id)}" aria-label="Supprimer">🗑</button>` : ""}</span></span></div>`).join("") : `<div class="empty-note">Le fil du club est vide.</div>`}</div></div>
+        <div class="feed-list">${posts.length ? posts.map((p) => `<div class="feed-item${p.pinned ? " pinned" : ""}">${C.avatarImg(p.avatar, "feed-avatar")}<span class="feed-text">${p.pinned ? `<em class="pin-tag">📌 Épinglé</em> ` : ""}<a href="#/pilote/${encodeURIComponent(p.uid)}"><b>${C.esc(p.name || "Pilote")}</b></a> ${C.esc(p.text)}<span class="feed-when">${window.MACommunity ? window.MACommunity.ago(tsMs(p.createdAt)) : ""}${C.user && (C.isAdmin || club.ownerUid === C.user.uid || club.viceUid === C.user.uid) ? ` · <button type="button" class="cmt-del" data-club-pin="${C.esc(p.id)}" data-pinned="${p.pinned ? 1 : 0}" aria-label="${p.pinned ? "Désépingler" : "Épingler"}">${p.pinned ? "📍" : "📌"}</button>` : ""}${C.user && (C.user.uid === p.uid || C.isAdmin) ? ` · <button type="button" class="cmt-del" data-club-post-del="${C.esc(p.id)}" aria-label="Supprimer">🗑</button>` : ""}</span></span></div>`).join("") : `<div class="empty-note">Le fil du club est vide.</div>`}</div></div>
         <aside>${chatControls(club, ms)}<h3 class="panel-section-title">Membres</h3><div class="club-members">${ms.slice().sort((a, b) => xp(b.uid) - xp(a.uid)).map((m) => `<a class="mini-row" href="#/pilote/${encodeURIComponent(m.uid)}">${C.avatarImg(m.avatar, "pilot-row-avatar")}<span class="mini-main"><b>${C.esc(m.name || "Pilote")}</b><small>${nf(xp(m.uid))} XP</small></span></a>`).join("") || `<div class="empty-note small">Personne pour l'instant.</div>`}</div>
         ${cars.length ? `<h3 class="panel-section-title">Fiches ${C.esc(club.key)}</h3><div class="club-cars">${cars.slice(0, 12).map((c) => `<a href="#/voiture/${encodeURIComponent(c.id)}" class="chip">${C.esc(String(c.model).replace(/\s*\(.*$/, ""))}</a>`).join("")}</div>` : ""}</aside></div>`;
     const f = document.getElementById("club-post-form");
@@ -124,7 +124,7 @@
     try { await C.db.collection("clubs").doc(id).delete(); if (window.MALog && C.isAdmin) window.MALog.log("club-delete", { target: id, detail: "club supprimé" }); C.Router.go("/clubs"); } catch (e) { C.toast("Suppression impossible : " + e.message, "err"); }
   }
 
-  window.MAClubs = { membersOf: (id) => membersOf(id), load: loadAll, myClubs: () => clubs.filter((c) => isMember(c.id)) };
+  window.MAClubs = { current: () => cur, club: (id) => clubs.find((c) => c.id === id), isMemberOf: (id) => isMember(id), xpMap, membersOf: (id) => membersOf(id), load: loadAll, myClubs: () => clubs.filter((c) => isMember(c.id)) };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
@@ -136,6 +136,12 @@
       const j = e.target.closest("[data-club-join]"); if (j) { join(j.dataset.clubJoin); return; }
       const cc = e.target.closest("[data-club-chat-create]"); if (cc) { updateClub(cc.dataset.clubChatCreate, { chatEnabled: true, chatName: String((clubs.find((x) => x.id === cc.dataset.clubChatCreate) || {}).name || "Club").slice(0, 60) }); return; }
       const d = e.target.closest("[data-club-del]"); if (d) { delClub(d.dataset.clubDel); return; }
+      const pn = e.target.closest("[data-club-pin]");
+      if (pn) {
+        const on = pn.dataset.pinned !== "1", pinned = document.querySelectorAll("#club-root .feed-item.pinned").length;
+        if (on && pinned >= 3) { C.toast("3 annonces épinglées au maximum.", "err"); return; }
+        C.db.collection("club_posts").doc(pn.dataset.clubPin).update({ pinned: on }).then(() => renderClub(cur)).catch((x) => C.toast("Action impossible : " + x.message, "err")); return;
+      }
       const pd = e.target.closest("[data-club-post-del]");
       if (pd && confirm("Supprimer ce message ?")) C.db.collection("club_posts").doc(pd.dataset.clubPostDel).delete().then(() => renderClub(cur)).catch((x) => C.toast("Suppression impossible : " + x.message, "err"));
     });

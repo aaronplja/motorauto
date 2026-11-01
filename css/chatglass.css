@@ -17,3 +17,10 @@ html, body.chat-page { background: var(--bg-core); }
 .msg-actions, .mention-pop, .emoji-pop { background: var(--glass-bg) !important; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-color: var(--glass-line) !important; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .conv-head, .side-head, .composer { background: var(--bg-surface) !important; } }
 @media (prefers-reduced-transparency: reduce) { .conv-head, .side-head, .composer, .bubble { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--bg-surface) !important; } }
+
+/* saisie toujours collée en bas de l'écran (mobile), qui suit le clavier via --vvh */
+.chat-app { height: 100%; min-height: 0; }
+.chat-main { height: 100%; min-height: 0; }
+.chat-main > .conv-stage { flex: 1 1 auto; min-height: 0; }
+.compose-wrap { flex: none; margin-top: auto; padding-bottom: calc(.5rem + var(--safe-bottom, 0px)); background: linear-gradient(to top, color-mix(in srgb, var(--bg-core) 85%, transparent), transparent); }
+body.kb-open .compose-wrap, .chat-page:focus-within .compose-wrap { padding-bottom: .5rem; }

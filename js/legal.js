@@ -71,6 +71,7 @@
         <p>Accès, rectification, effacement, limitation, opposition, portabilité, retrait du consentement. Tu peux <b>modifier ton profil</b> et <b>supprimer ton compte</b> toi-même dans <a href="#/garage/parametres">Mon garage → Réglages</a>. Pour toute autre demande (ex. copie de tes données), écris à ${mail()} ; réponse sous un mois. Tu peux aussi saisir la CNIL (cnil.fr).</p>
         <h2>Stockage dans ton navigateur</h2>
         <p>Le site enregistre dans ton navigateur uniquement des préférences techniques (thème, filtres, brouillons) et la session de connexion. Pas de cookie publicitaire ni de suivi inter-sites.</p>
+        <p><b>Statistiques de fréquentation :</b> le site compte, jour par jour, le nombre de pages vues et de visiteurs, ainsi que les pages et fiches les plus consultées. Ces compteurs sont anonymes : ils ne contiennent aucun identifiant, aucune adresse IP et aucune donnée personnelle, et ne reposent sur aucun cookie.</p>
         <h2>Mineurs</h2>
         <p>Le site s'adresse aux personnes d'au moins 15 ans. En dessous, l'accord d'un parent est nécessaire.</p>
         <h2>Sécurité</h2>

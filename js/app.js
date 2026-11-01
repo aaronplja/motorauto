@@ -36,7 +36,7 @@
   let cloudIds = new Set();
   let cloudCars = [];
 
-  const filters = { category: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", turbo: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
+  const filters = { category: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", verdict: "all", turbo: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
 
   let modalStack = [];
   let allLaps = [];
@@ -177,7 +177,8 @@
     if (filters.query.trim()) result = result.filter((c) => matchesQuery(c, filters.query));
     if (filters.category !== "all") result = result.filter((c) => c.category === filters.category);
     if (filters.brand !== "all") result = result.filter((c) => c.group === filters.brand);
-    if (filters.drive !== "all") result = result.filter((c) => MA.inCategory(c, filters.drive));
+    if (filters.drive !== "all") result = result.filter((c) => (c.drives || []).includes(filters.drive));
+    if (filters.verdict !== "all") result = result.filter((c) => c.track && c.track.verdict === filters.verdict);
     if (filters.turbo !== "all") result = result.filter((c) => MA.inCategory(c, filters.turbo));
     if (filters.pmin != null) result = result.filter((c) => c.stats.power >= filters.pmin);
     if (filters.pmax != null) result = result.filter((c) => c.stats.power > 0 && c.stats.power <= filters.pmax);
@@ -1183,7 +1184,7 @@
     const adminEdit = isAdmin && currentUser && c.uid !== currentUser.uid && !opts.manage; if (adminEdit) adminCars.set(c.id, c);
     const photos = (c.photos || []).filter((u) => safeUrl(u));
     const fake = { images: photos, image: photos[0] || "", model: c.name || "Voiture" };
-    const meta = [c.year, c.engine, c.power ? c.power + " ch" : "", c.zero ? "0-100 : " + c.zero + " s" : ""].filter(Boolean).map(esc).join(" · ");
+    const meta = [c.year, c.engine, c.power ? c.power + " ch" : "", c.zero ? "0-100 : " + c.zero + " s" : "", c.drive && window.MATrack && window.MATrack.DRIVES[c.drive] ? window.MATrack.DRIVES[c.drive][0] : ""].filter(Boolean).map(esc).join(" · ");
     const mods = String(c.mods || "").split("\n").map((x) => x.trim()).filter(Boolean).slice(0, 8);
     return `
       <article class="comm-car">
@@ -1298,7 +1299,7 @@
     const c = mcEditing || {};
     $("mc-title").textContent = mcEditing ? (mcEditing.uid !== currentUser.uid ? "Modifier la voiture de " + (mcEditing.pilot || "ce pilote") + " (admin)" : "Modifier ma voiture") : "Ajouter une voiture";
     $("mc-name").value = c.name || ""; $("mc-year").value = c.year || ""; $("mc-engine").value = c.engine || "";
-    $("mc-power").value = c.power || ""; $("mc-zero").value = c.zero || ""; $("mc-desc").value = c.description || ""; $("mc-mods").value = c.mods || ""; if ($("mc-legal")) $("mc-legal").checked = false;
+    $("mc-power").value = c.power || ""; $("mc-zero").value = c.zero || ""; $("mc-desc").value = c.description || ""; $("mc-mods").value = c.mods || ""; $("mc-drive").value = c.drive || ""; if ($("mc-legal")) $("mc-legal").checked = false;
     fillCatalogList();
     { const b = c.catalogId ? carsById.get(c.catalogId) : null; $("mc-cat").value = b ? catLabel(b) : ""; onCatalogPick(); }
     $("mc-url").value = ""; $("mc-error").textContent = ""; $("mc-upload-status").textContent = "";
@@ -1322,6 +1323,7 @@
       catalogId: cat.id,
       uid: mcEditing ? mcEditing.uid : currentUser.uid, pilot: mcEditing ? mcEditing.pilot : profile.username, avatar: mcEditing ? (mcEditing.avatar || "") : (profile.avatar || ""),
       name: name.slice(0, 80), year: $("mc-year").value.trim().slice(0, 20), engine: $("mc-engine").value.trim().slice(0, 100),
+      drive: ($("mc-drive").value || "").slice(0, 2),
       power: power > 0 && power < 5000 ? Math.round(power) : 0,
       zero: (() => { const z = Number($("mc-zero").value.replace(",", ".")); return z > 0 && z < 60 ? Math.round(z * 10) / 10 : 0; })(),
       description: $("mc-desc").value.trim().slice(0, 600), mods: $("mc-mods").value.trim().slice(0, 500),
@@ -1916,6 +1918,19 @@
         { label: "Puissance / tonne", unit: "ch/t", get: (c) => Math.round((X.powerToWeight(c) || {}).hpPerTon || 0), better: "high" },
         { label: "Poids / puissance", unit: "kg/ch", get: (c) => Math.round(((X.powerToWeight(c) || {}).kgPerHp || 0) * 10) / 10, better: "low" });
     }
+    if (window.MATrack) {
+      const T = window.MATrack, tk = (c, k) => (c.track && c.track.verdict !== "race" ? Number(c.track[k]) || 0 : 0);
+      rows.push(
+        { label: "Fiabilité circuit", unit: "/5", get: (c) => (c.track && c.track.verdict !== "race" ? T.overall(c.track) : 0), better: "high" },
+        { label: "Chauffe", unit: "/5", get: (c) => tk(c, "heat"), better: "high" },
+        { label: "Freins", unit: "/5", get: (c) => tk(c, "brakes"), better: "high" },
+        { label: "Transmission (solidité)", unit: "/5", get: (c) => tk(c, "trans"), better: "high" });
+    }
+    const textRows = window.MATrack ? [
+      ["Transmission", (c) => (c.drives || []).map((d) => window.MATrack.DRIVES[d] ? window.MATrack.DRIVES[d][0] : "").filter(Boolean).join(", ") || "—"],
+      ["Boîtes de vitesses", (c) => Array.from(new Set(eng(c).flatMap((e) => window.MATrack.gearboxes(e.transmission || "")))).slice(0, 4).join(" · ") || "—"],
+      ["Verdict circuit", (c) => (c.track && window.MATrack.VERDICTS[c.track.verdict] ? window.MATrack.VERDICTS[c.track.verdict][0] : "—")]
+    ] : [];
     const head = cars.map((c) => `
       <div class="cmp-col-head">
         <img src="${esc(safeUrl(c.image) || FALLBACK_CAR)}" alt="" data-fallback="car">
@@ -1935,7 +1950,7 @@
         return `<div class="cmp-cell${win ? " win" : ""}"><b>${v > 0 ? v : "—"}${v > 0 && r.unit ? `<small> ${r.unit}</small>` : ""}</b><i style="--w:${pct}%"></i></div>`;
       }).join("");
       return `<div class="cmp-label">${r.label}</div>${cells}`;
-    }).join("");
+    }).join("") + textRows.map(([l, f]) => `<div class="cmp-label">${l}</div>${cars.map((c) => `<div class="cmp-cell txt"><b>${esc(String(f(c)))}</b></div>`).join("")}`).join("");
     $("compare-content").innerHTML = `<div class="cmp-grid" style="--cols:${cars.length}"><div></div>${head}${body}</div><div id="cmp-extra"></div>${compareCharts(cars)}`;
     openModal($("compare-modal"));
     document.dispatchEvent(new CustomEvent("ma:compare-opened", { detail: { cars } }));
@@ -2733,7 +2748,7 @@
     // filtres avancés
     const numOrNull = (v) => { const n = parseFloat(String(v).replace(",", ".")); return Number.isFinite(n) ? n : null; };
     const advMap = { "adv-pmin": "pmin", "adv-pmax": "pmax", "adv-zero": "zero", "adv-vmax": "vmax", "adv-yfrom": "yfrom", "adv-yto": "yto" };
-    const advActive = () => ["drive", "turbo"].filter((k) => filters[k] !== "all").length + Object.values(advMap).filter((k) => filters[k] != null).length;
+    const advActive = () => ["drive", "verdict", "turbo"].filter((k) => filters[k] !== "all").length + Object.values(advMap).filter((k) => filters[k] != null).length;
     const advRefresh = () => {
       const n = advActive();
       $("adv-count").hidden = !n; $("adv-count").textContent = n;
@@ -2747,9 +2762,10 @@
     Object.entries(advMap).forEach(([id, key]) => $(id).addEventListener("input", (e) => { filters[key] = numOrNull(e.target.value); advRefresh(); }));
     $("adv-drive").addEventListener("change", (e) => { filters.drive = e.target.value; advRefresh(); });
     $("adv-turbo").addEventListener("change", (e) => { filters.turbo = e.target.value; advRefresh(); });
+    $("adv-verdict").addEventListener("change", (e) => { filters.verdict = e.target.value; advRefresh(); });
     $("adv-reset").addEventListener("click", () => {
       Object.entries(advMap).forEach(([id, key]) => { $(id).value = ""; filters[key] = null; });
-      $("adv-drive").value = "all"; $("adv-turbo").value = "all"; filters.drive = "all"; filters.turbo = "all";
+      $("adv-drive").value = "all"; $("adv-turbo").value = "all"; $("adv-verdict").value = "all"; filters.drive = "all"; filters.turbo = "all"; filters.verdict = "all";
       advRefresh();
     });
 

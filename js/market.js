@@ -83,9 +83,8 @@
       else if (a === "del") { if (!confirm("Supprimer cette annonce ?")) return; await C.db.collection("listings").doc(id).delete(); if (C.isAdmin && l.uid !== (C.user && C.user.uid) && window.MALog) window.MALog.log("listing-delete", { target: id, detail: "annonce retirée : " + String(l.title || "").slice(0, 60) }); }
       else if (a === "report") {
         if (!C.requireLogin()) return;
-        const key = (window.prompt("Motif du signalement : arnaque, illegal, spam ou autre ?", "arnaque") || "").toLowerCase();
-        if (!key) return;
-        const reason = /arnaq|faux/.test(key) ? "scam" : /ill/.test(key) ? "illegal" : /spam|pub/.test(key) ? "spam" : "other";
+        const reason = window.MAReport ? await window.MAReport.ask("cette annonce") : "other";
+        if (!reason) return;
         await C.db.collection("listing_reports").doc(id + "_" + C.user.uid).set({ listingId: id, title: String(l.title || "").slice(0, 80), sellerUid: l.uid || "", reporter: C.pilotName().slice(0, 40), reporterUid: C.user.uid, reason, status: "open", createdAt: C.FieldValue.serverTimestamp() });
         C.toast("Merci, l'annonce a été signalée à la modération.", "ok"); return;
       }

@@ -253,3 +253,13 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - Règles : un admin peut modifier la voiture d'un autre pilote (community_cars) ; messages de chat avec `cardRarity` (carte partagée).
 - Éditions limitées non possédées masquées chez les autres (sauf événements récupérables).
 - Partage d'une carte dans un chat (bouton « Dans un chat »), verre liquide dans le chat, iPhone plein écran (barre d'état translucide), barre de tri qui suit l'en-tête, barre du bas réduite qui se rouvre au clic.
+
+## Tour 22
+- Fluidité : barre du bas en capsule (zoom GPU, bulle alignée), flou retiré des cartes, mode d'animation Auto/Complet/Fluide/Réduit, texte plus grand, contraste renforcé (`js/a11y.js`, Réglages › Ambiance).
+- Menu « Moi » plus dense ; proposition de notifications au-dessus de la barre ; saisie du chat collée en bas.
+- Éditeur de véhicule admin en 3 étapes ; transmission dans « Mes voitures ».
+- Recherche globale (Ctrl/Cmd+K), filtres transmission + verdict circuit, comparateur complété, fiche voiture en onglets.
+- Signalement simplifié pour annonces et photos de concours, file dans Administration › Tableau.
+- Sets de cartes (`claimSets`), clubs (calendrier, annonces épinglées, classement), réactions sur cartes partagées, défis depuis un profil.
+- Statistiques anonymes (`site_stats`).
+- À redéployer : règles Firestore + fonctions (`claimSets`) + site.

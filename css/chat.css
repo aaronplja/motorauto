@@ -287,3 +287,6 @@ body.chat-page { position: fixed; left: 0; right: 0; top: 0; width: 100%; height
 .chat-app.instant, .chat-app.instant * { transition: none !important; animation: none !important; }
 .car-share.card-share{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 16%,transparent),color-mix(in srgb,var(--bg-core) 55%,transparent))}
 .car-share.card-share img{width:60px;height:84px;object-fit:cover;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.card-react{display:flex;gap:.25rem;margin-top:.35rem}
+.card-react button{min-width:38px;height:34px;border-radius:999px;border:1px solid var(--stroke-line);background:var(--bg-elevated);font-size:1rem;transition:transform .2s var(--ease-spring)}
+.card-react button:active{transform:scale(1.25)}

@@ -22,12 +22,12 @@ const ADMIN_MAIL = "admin@motorauto.fr";
 
 /** voitures tirables : catalogue local (catalog-static.json) + voitures ajoutées dans l'administration (Firestore) */
 async function loadPool() {
-  const map = new Map(STATIC_CATALOG.map((c) => [c.id, { id: c.id, power: c.power, name: c.name }]));
+  const map = new Map(STATIC_CATALOG.map((c) => [c.id, { id: c.id, power: c.power, name: c.name, brand: c.brand || "", category: c.category || "" }]));
   try {
     const snap = await db.collection("motorauto_catalog").limit(1000).get();
     snap.forEach((d) => {
       const x = d.data(), engines = (x.phases || []).flatMap((p) => p.engines || []);
-      map.set(d.id, { id: d.id, power: engines.length ? Math.max(...engines.map((e) => Number(e.power) || 0)) : 0, name: ((x.brand || "") + " " + (x.model || "")).trim() });
+      map.set(d.id, { id: d.id, power: engines.length ? Math.max(...engines.map((e) => Number(e.power) || 0)) : 0, name: ((x.brand || "") + " " + (x.model || "")).trim(), brand: x.brand || "", category: x.category || "" });
     });
   } catch (e) { logger.warn("Catalogue Firestore illisible, catalogue local utilisé", e); }
   return Array.from(map.values());
@@ -57,7 +57,7 @@ function callable(name) {
   });
 }
 ["syncCollection", "openPack", "craftCard", "touchStreak", "logAction", "weeklyStatus", "claimChallenge",
-  "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest"].forEach((n) => { exports[n] = callable(n); });
+  "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "claimSets", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest"].forEach((n) => { exports[n] = callable(n); });
 
 // suppression de compte demandée par le pilote (Mon garage → Réglages) : efface ses données puis son compte de connexion
 exports.deleteAccount = onCall({ region: REGION, maxInstances: 5, timeoutSeconds: 300 }, async (req) => {
