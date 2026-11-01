@@ -53,5 +53,21 @@ const MAKIT = (function () {
       if (x.ap) c.approx = true;
     });
   }
-  return { E, P, C, push, enrich };
+  /**
+   * Saisie compacte (marques complètes : BMW, Mercedes, Renault, Alpine, rallye).
+   *   X(id, marque, modèle, catégorie, années, "transmission:verdict", description, phases, { h, a, r, rel })
+   *   phases = [[nom, détails, ["moteur|ch|Nm|vmax|0-100|boîte|code|note", …], [éditions]], …]
+   *   transmission : P T A E X M R (voir data-track.js) ; verdict : I C S D R (idéale, correcte, à surveiller, déconseillée, course)
+   */
+  const NUM = (v) => { const n = parseFloat(String(v || "").replace(",", ".")); return isFinite(n) ? n : 0; };
+  function X(id, brand, model, category, years, tv, description, phases, x) {
+    const eng = (s) => { const f = String(s).split("|"); return E(f[0], NUM(f[1]), NUM(f[2]), NUM(f[3]), NUM(f[4]), f[5] || "—", f[6] || "", f[7] || ""); };
+    const car = C(id, brand, model, category, years, description, (phases || []).map((p) => P(p[0], p[1], (p[2] || []).map(eng), p[3] || [])), Object.assign({ approx: true }, x || {}));
+    const t = String(tv || "").split(":"), V = { I: "ideal", C: "correct", S: "watch", D: "avoid", R: "race" }[t[1]] || "correct";
+    car.drives = (t[0] || "").split("").filter(Boolean);
+    car.track = V === "race" ? { heat: 5, brakes: 5, trans: 4, verdict: "race", note: "Conçue pour la piste : aucune évaluation d'achat." }
+      : { heat: 3, brakes: 3, trans: 3, verdict: V, note: V === "ideal" ? "Bon choix pour rouler souvent en piste, avec un entretien suivi." : V === "avoid" ? "Peu adaptée à un usage intensif en circuit." : V === "watch" ? "Possible en piste, mais prévois du budget pour les points faibles." : "Convient à la piste avec un entretien rigoureux et quelques renforts." };
+    return car;
+  }
+  return { E, P, C, X, push, enrich };
 })();

@@ -267,3 +267,11 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 ## Tour 22.1 — dock et animations
 - Barre du bas réécrite (`css/dock.css`, `js/glassbar.js`) : coque fixe centrée + dock animé en transform/opacity, bulle à ressort, hystérésis au défilement.
 - Langage d'animation unique (`css/motion.css`) ; les `transition: all` sont remplacés par des propriétés précises.
+
+## Tour 22.3 — BMW, Mercedes-Benz / AMG, Renault, Alpine et rallye
+
+- Nouvelles fiches (≈ 260) dans `js/data-bmw-*.js`, `data-mercedes-*.js`, `data-renault-*.js`, `data-alpine-1.js`, `data-rally-*.js`, écrites avec le format compact `MAKIT.X` (voir `js/data-kit.js`) : une fiche par génération, avec phases, tous les moteurs connus (puissance, couple, vitesse, 0-100, boîte, code moteur), description et histoire.
+- Les voitures déjà présentes (Clio / Mégane RS, Clio V6, Spider, A442B, A424, 205 T16, 206 WRC, Xsara, RS200, quattro, Celica GT-Four ST185/205, Escort Cosworth…) ne sont pas dupliquées.
+- Chiffres INDICATIFS (`approx: true`) : à relire fiche par fiche depuis l'administration.
+- `tests/brands.test.js` : ids uniques, liens « voir aussi » valides, aucun moteur vide.
+- Après ajout d'un fichier de données : `node scripts/sync-functions.js && node scripts/build-seo.js`.

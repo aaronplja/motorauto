@@ -16,7 +16,7 @@ fs.copyFileSync(path.join(root, "js/game-core.js"), path.join(root, "functions/g
 fs.copyFileSync(path.join(root, "functions/game.js"), path.join(root, "js/game-engine.js"));
 const src = fs.readFileSync(path.join(root, "js/data.js"), "utf8").replace(/^const MOTORAUTO_DATABASE/m, "var MOTORAUTO_DATABASE")
   + "\n" + fs.readFileSync(path.join(root, "js/data2.js"), "utf8")
-  + "\n" + fs.readdirSync(path.join(root, "js")).filter((f) => /^data-(alfa|audi|lemans|enrich.*)\.js$/.test(f)).map((f) => f.replace(/\.js$/, "")).sort((a, b) => (/enrich/.test(a) - /enrich/.test(b)) || (a < b ? -1 : 1)).concat([]).reduce((a, f) => a.concat(f), ["data-kit"]).map((f) => fs.readFileSync(path.join(root, "js/" + f + ".js"), "utf8")).join("\n");
+  + "\n" + fs.readdirSync(path.join(root, "js")).filter((f) => /^data-(alfa|audi|lemans|bmw.*|mercedes.*|renault.*|alpine.*|rally.*|enrich.*)\.js$/.test(f)).map((f) => f.replace(/\.js$/, "")).sort((a, b) => (/enrich/.test(a) - /enrich/.test(b)) || (a < b ? -1 : 1)).concat([]).reduce((a, f) => a.concat(f), ["data-kit"]).map((f) => fs.readFileSync(path.join(root, "js/" + f + ".js"), "utf8")).join("\n");
 const cars = new Function(src + ";return MOTORAUTO_DATABASE;")();
 const list = cars.map((c) => MA.normalizeCar(c)).map((c) => ({ id: c.id, power: c.stats.power, name: (c.brand + " " + c.model).trim(), brand: c.brand, category: c.category }));
 fs.writeFileSync(path.join(root, "functions/catalog-static.json"), JSON.stringify(list));
