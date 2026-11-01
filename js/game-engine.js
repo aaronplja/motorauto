@@ -484,11 +484,11 @@
       const tally = new Map(); entries.forEach((e) => tally.set(e.id, 0));
       vr.docs.forEach((d) => { const v = d.data(); const e = entries.find((x) => x.id === v.entry); if (e && v.uid !== e.uid) tally.set(e.id, tally.get(e.id) + 1); });
       const ranked = entries.map((e) => ({ e, votes: tally.get(e.id) })).sort((a, b) => b.votes - a.votes || tsMs(a.e.createdAt) - tsMs(b.e.createdAt));
-      const results = ranked.slice(0, 3).map((r) => ({ entry: r.e.id, uid: r.e.uid, name: str(r.e.name, 40), photo: str(r.e.photo, 500), votes: r.votes }));
+      const results = ranked.slice(0, 3).map((r) => ({ entry: r.e.id, uid: r.e.uid, name: str(r.e.name, 40), photo: str(r.e.photo, 500), photos: (Array.isArray(r.e.photos) ? r.e.photos : []).slice(0, 12).map((u) => str(u, 500)), votes: r.votes }));
       const custom = !/^\d{4}-\d{2}$/.test(month), win = ranked[0] ? ranked[0].e : null, label = custom ? str(cs.data().theme, 40) : core.monthLabel(month);
       if (win) {
         const sid = "sp-photo-" + month;
-        await col("special_cards").doc(sid).set({ name: custom ? "Gagnant du concours" : "Photographe du mois", edition: "Concours photo · " + label, image: str(win.photo, 500), color: "gold", power: 0, speed: 0, zero: 0,
+        await col("special_cards").doc(sid).set({ name: custom ? "Gagnant du concours" : "Photographe du mois", edition: "Concours photo · " + label, image: str(win.photo, 500), images: (win.photos && win.photos.length ? win.photos : [win.photo]).slice(0, 4).map((u) => str(u, 500)), color: "gold", power: 0, speed: 0, zero: 0,
           text: "« " + str(win.caption || cs.data().theme, 100) + " » — photo de " + str(win.name, 40), supply: 1, granted: 0, active: true, kind: "contest", createdAt: ts() });
         await adminGrantCard({ uid: "system", system: true }, { uid: win.uid, cardId: sid, qty: 1 });
         const dustTo = [null, 150, 80];

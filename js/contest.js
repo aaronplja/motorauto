@@ -66,20 +66,21 @@
       <p class="lap-meta">${entries.length} participant${entries.length > 1 ? "s" : ""} · ${votes.length} vote${votes.length > 1 ? "s" : ""} · ${esc(endText(contest))}</p>
       <p class="contest-prize">🏆 ${contest.prize ? esc(contest.prize) : "Le gagnant reçoit le badge <b>Photographe du mois</b> et une <b>carte spéciale</b> unique ; 2ᵉ et 3ᵉ gagnent des cristaux."}</p></div>`;
   }
+  const photosOf = (e) => (Array.isArray(e.photos) && e.photos.length ? e.photos : e.photo ? [e.photo] : []).slice(0, 12);
   function participation() {
     const esc = C.esc;
     if (!contest || contest.status !== "open") return "";
     if (!C.user) return `<div class="contest-box"><b>Participe !</b> <button type="button" class="cta-btn fill-btn compact-btn" data-action="open-auth">Me connecter</button></div>`;
     if (mine) {
       const st = { pending: ["⏳ Ta photo est en attente de validation par la modération.", "pending"], approved: ["✅ Ta photo participe au concours. Bonne chance !", "approved"], rejected: ["❌ Ta photo n'a pas été retenue. Tu peux en envoyer une autre.", "rejected"] }[mine.status] || ["", ""];
-      return `<div class="contest-box ${st[1]}"><span>${st[0]}</span>${mine.photo ? `<img class="contest-thumb" src="${esc(C.safeUrl(mine.photo) || "")}" alt="Ta photo">` : ""}<button type="button" class="cta-btn btn-ghost compact-btn" data-contest-del>Retirer ma photo</button></div>`;
+      return `<div class="contest-box ${st[1]}"><span>${st[0]}</span>${photosOf(mine).map((u) => `<img class="contest-thumb" src="${esc(C.safeUrl(u) || "")}" alt="Ta photo">`).join("")}<button type="button" class="cta-btn btn-ghost compact-btn" data-contest-del>Retirer ma photo</button></div>`;
     }
     if (!formOpen) return `<div class="contest-box"><span><b>Envoie ta plus belle photo</b> sur le thème du concours.</span><button type="button" class="cta-btn fill-btn compact-btn" data-contest-form>📸 Participer</button></div>`;
-    return `<form class="contest-box contest-form" id="contest-form" novalidate><div class="input-stack"><label for="ct-photo">Photo (JPG, PNG…)</label><input type="file" id="ct-photo" accept="image/*" required></div>
+    return `<form class="contest-box contest-form" id="contest-form" novalidate><div class="input-stack"><label for="ct-photo">Photos (autant que tu veux, jusqu'à 12)</label><input type="file" id="ct-photo" accept="image/*" multiple required></div>
       <div class="input-stack"><label for="ct-car">Voiture</label><input type="text" id="ct-car" maxlength="80" placeholder="Ex. Peugeot 106 S16" required></div>
       <div class="input-stack"><label for="ct-cap">Légende (facultatif)</label><input type="text" id="ct-cap" maxlength="100" placeholder="Une phrase sur ta photo"></div>
-      <p class="form-error" id="ct-err" role="alert"></p><div class="contest-actions"><button type="submit" class="cta-btn fill-btn" id="ct-send">Envoyer ma photo</button><button type="button" class="cta-btn btn-ghost" data-contest-cancel>Annuler</button></div>
-      <small class="lap-meta">Ta photo est publiée tout de suite. Une seule photo par concours.</small></form>`;
+      <p class="form-error" id="ct-err" role="alert"></p><div class="contest-actions"><button type="submit" class="cta-btn fill-btn" id="ct-send">Envoyer mes photos</button><button type="button" class="cta-btn btn-ghost" data-contest-cancel>Annuler</button></div>
+      <small class="lap-meta">Tes photos sont publiées tout de suite. Une participation = plusieurs photos, un seul vote par participation.</small></form>`;
   }
   function gallery() {
     const esc = C.esc, t = tally(), mv = myVote(), open = contest && contest.status === "open";
@@ -87,7 +88,7 @@
     if (!list.length) return contest ? `<div class="empty-note">Aucune photo validée pour l'instant : sois le premier !</div>` : "";
     return `<h3 class="sec-title">Les photos en lice</h3><div class="contest-grid">${list.map((e) => {
       const n = t.get(e.id) || 0, own = C.user && e.uid === C.user.uid, voted = mv === e.id;
-      return `<article class="photo-card ${voted ? "voted" : ""}"><button type="button" class="photo-open" data-photo="${esc(e.photo)}" data-cap="${esc(e.caption || e.carName || "")}" aria-label="Agrandir la photo de ${esc(e.name)}"><img src="${esc(C.safeUrl(e.photo) || "")}" alt="${esc(e.caption || "Photo de " + e.name)}" loading="lazy" data-fallback="car"></button>
+      return `<article class="photo-card ${voted ? "voted" : ""}"><button type="button" class="photo-open" data-photo="${esc(photosOf(e).join("|"))}" data-cap="${esc(e.caption || e.carName || "")}" aria-label="Agrandir la photo de ${esc(e.name)}"><img src="${esc(C.safeUrl(photosOf(e)[0]) || "")}" alt="${esc(e.caption || "Photo de " + e.name)}" loading="lazy" data-fallback="car">${photosOf(e).length > 1 ? `<span class="photo-count">📷 ${photosOf(e).length}</span>` : ""}</button>
         <div class="photo-meta"><div><a href="#/pilote/${encodeURIComponent(e.uid)}"><b>${esc(e.name)}</b></a><small>${esc(e.carName || "")}</small></div>
         ${open ? (own ? `<span class="vote-pill own">${n} ♥</span>` : `<button type="button" class="vote-btn ${voted ? "on" : ""}" data-vote="${esc(e.id)}" aria-pressed="${voted}" aria-label="${voted ? "Retirer mon vote" : "Voter pour cette photo"}">♥ <b>${n}</b></button>`) : `<span class="vote-pill">${n} ♥</span>`}</div>${e.caption ? `<p class="photo-cap">${esc(e.caption)}</p>` : ""}</article>`;
     }).join("")}</div>`;
@@ -106,18 +107,23 @@
   async function submit(e) {
     e.preventDefault();
     if (busy || !C.requireLogin()) return;
-    const f = document.getElementById("ct-photo").files[0], car = document.getElementById("ct-car").value.trim().slice(0, 80), cap = document.getElementById("ct-cap").value.trim().slice(0, 100), errEl = document.getElementById("ct-err");
-    if (!f || !/^image\//.test(f.type)) { errEl.textContent = "Choisis une photo."; return; }
+    const fl = Array.from(document.getElementById("ct-photo").files || []).filter((x) => /^image\//.test(x.type)).slice(0, 12), car = document.getElementById("ct-car").value.trim().slice(0, 80), cap = document.getElementById("ct-cap").value.trim().slice(0, 100), errEl = document.getElementById("ct-err");
+    if (!fl.length) { errEl.textContent = "Choisis une photo."; return; }
     if (!car) { errEl.textContent = "Indique la voiture."; return; }
     busy = true; const btn = document.getElementById("ct-send"); btn.disabled = true; btn.textContent = "Envoi…";
     try {
-      const blob = await C.MA.resizeImage(f, 1600, 0.85), ref = C.storage.ref(`car_photos/${C.user.uid}/contest_${month}_${Date.now()}.jpg`);
-      await ref.put(blob, { contentType: "image/jpeg" });
-      const photo = await ref.getDownloadURL(), p = C.profile || {};
-      await C.db.collection("contest_entries").doc(month + "_" + C.user.uid).set({ contest: month, uid: C.user.uid, name: C.pilotName ? C.pilotName() : p.username || "Pilote", avatar: p.avatar || "", photo, carName: car, caption: cap, status: "approved", createdAt: C.FieldValue.serverTimestamp() });
-      formOpen = false; C.toast("Photo publiée dans le concours 📸", "ok");
+      const photos = [];
+      for (let i = 0; i < fl.length; i++) {
+        btn.textContent = "Envoi " + (i + 1) + "/" + fl.length + "…";
+        const blob = await C.MA.resizeImage(fl[i], 1600, 0.85), ref = C.storage.ref(`car_photos/${C.user.uid}/contest_${month}_${Date.now()}_${i}.jpg`);
+        await ref.put(blob, { contentType: "image/jpeg" });
+        photos.push(await ref.getDownloadURL());
+      }
+      const photo = photos[0], p = C.profile || {};
+      await C.db.collection("contest_entries").doc(month + "_" + C.user.uid).set({ contest: month, uid: C.user.uid, name: C.pilotName ? C.pilotName() : p.username || "Pilote", avatar: p.avatar || "", photo, photos, carName: car, caption: cap, status: "approved", createdAt: C.FieldValue.serverTimestamp() });
+      formOpen = false; C.toast("Participation publiée dans le concours 📸", "ok");
       await load(true);
-    } catch (ex) { errEl.textContent = "Envoi impossible : " + (ex.code === "storage/unauthorized" ? "photo refusée par les règles Storage." : ex.message); busy = false; btn.disabled = false; btn.textContent = "Envoyer ma photo"; return; }
+    } catch (ex) { errEl.textContent = "Envoi impossible : " + (ex.code === "storage/unauthorized" ? "photo refusée par les règles Storage." : ex.message); busy = false; btn.disabled = false; btn.textContent = "Envoyer mes photos"; return; }
     busy = false; render();
   }
   async function vote(entryId) {
@@ -132,7 +138,8 @@
   }
   function lightbox(src, cap) {
     const o = document.createElement("div"); o.className = "lightbox"; o.setAttribute("role", "dialog"); o.setAttribute("aria-modal", "true"); o.setAttribute("aria-label", "Photo");
-    o.innerHTML = `<button type="button" class="lightbox-x" aria-label="Fermer">×</button><img src="${C.esc(C.safeUrl(src) || "")}" alt="${C.esc(cap || "")}">${cap ? `<p>${C.esc(cap)}</p>` : ""}`;
+    o.innerHTML = `<button type="button" class="lightbox-x" aria-label="Fermer">×</button>${String(src).split("|").map((u) => `<img src="${C.esc(C.safeUrl(u) || "")}" alt="${C.esc(cap || "")}">`).join("")}${cap ? `<p>${C.esc(cap)}</p>` : ""}`;
+    if (String(src).includes("|")) o.classList.add("multi");
     const close = () => { o.remove(); document.removeEventListener("keydown", key); };
     const key = (e) => { if (e.key === "Escape") close(); };
     o.addEventListener("click", close); document.addEventListener("keydown", key); document.body.appendChild(o); o.querySelector("button").focus();

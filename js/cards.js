@@ -29,7 +29,7 @@
   /** une carte, qu'elle vienne du catalogue ou d'une édition limitée */
   function cardObj(id) {
     const sp = specials.get(id);
-    if (sp) return { id, brand: sp.edition || "Édition limitée", model: sp.name || id, image: sp.image || "", category: "", years: "", stats: { power: Number(sp.power) || 0, speed: Number(sp.speed) || 0, zero: Number(sp.zero) || null }, special: sp };
+    if (sp) return { id, brand: sp.edition || "Édition limitée", model: sp.name || id, image: sp.image || "", images: Array.isArray(sp.images) ? sp.images.slice(0, 12) : [], category: "", years: "", stats: { power: Number(sp.power) || 0, speed: Number(sp.speed) || 0, zero: Number(sp.zero) || null }, special: sp };
     return C.carsById.get(id) || null;
   }
   const isOwned = (id) => !!(doc && (doc.owned[id] || 0) > 0);
@@ -39,6 +39,7 @@
     o = o || {};
     const esc = C.esc, r = rarityOf(car), R = RAR[r], owned = o.owned !== false, sp = car.special;
     const img = car.image && C.safeUrl(car.image) ? `<img class="${owned ? "" : "tcg-ghost"}" src="${esc(C.safeUrl(car.image))}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">${owned ? "" : `<span class="tcg-q tcg-q-over" aria-hidden="true">?</span>`}` : `<span class="tcg-q" aria-hidden="true">${owned && sp ? "✦" : "?"}</span>`;
+    const mosaic = owned && sp && Array.isArray(car.images) && car.images.length > 1 ? car.images.map((u) => C.safeUrl(u)).filter(Boolean).slice(0, 4) : null;
     const model = String(car.model || "").replace(/\s*\(.*$/, "");
     const hasStats = !sp || car.stats.power > 0;
     const bar = (v) => `<i style="--v:${Math.max(0, Math.min(1, v)).toFixed(2)}"></i>`;
@@ -49,7 +50,7 @@
     const no = sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0");
     const color = sp && sp.color ? " tcg-c-" + esc(sp.color) : "";
     return `<div class="tcg tcg-${r}${color} ${owned ? "" : "locked"} ${o.cls || ""}" data-card="${esc(car.id)}" role="button" tabindex="0" aria-label="${owned ? esc(car.brand + " " + model) : "Carte non débloquée " + no}, ${R.label}">
-      <div class="tcg-art">${img}<i class="tcg-foil" aria-hidden="true"></i></div><i class="tcg-holo" aria-hidden="true"></i>
+      <div class="tcg-art ${mosaic ? "tcg-mosaic m" + mosaic.length : ""}">${mosaic ? mosaic.map((u) => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">`).join("") : img}<i class="tcg-foil" aria-hidden="true"></i>${owned && !sp && car.drives && car.drives[0] && window.MATrack ? `<span class="tcg-drv" title="${esc(window.MATrack.DRIVES[car.drives[0]][0])}">${window.MATrack.driveIcon(car.drives[0], 14)}</span>` : ""}</div><i class="tcg-holo" aria-hidden="true"></i>
       <div class="tcg-body"><span class="tcg-brand">${owned || sp ? esc(car.brand) : "—"}</span><b class="tcg-name">${owned || sp ? esc(model) : "Carte à débloquer"}</b>${stats}</div>
       <span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span><span class="tcg-no">${no}</span>
       ${o.count > 1 ? `<span class="tcg-dup">×${o.count}</span>` : ""}${o.isNew ? `<span class="tcg-new-pill">NEW</span>` : ""}${o.wish ? `<span class="tcg-wish" title="Dans ta wishlist" aria-label="Dans ta wishlist">★</span>` : ""}

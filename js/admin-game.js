@@ -118,7 +118,7 @@
       if (text.length < 3) { err.textContent = "Écris le message à envoyer."; return; }
       if (!confirm("Envoyer cette annonce à tous les pilotes ?\n\n« " + text + " »")) return;
       busy = true;
-      try { const r = await window.MAGameAPI.call("adminBroadcast", { text, link: "#/jouer" }); if (window.MALog) window.MALog.log("broadcast", { detail: text }); C.toast("Annonce envoyée à " + r.sent + " pilote(s).", "ok"); document.getElementById("tl-msg").value = ""; }
+      try { const r = await window.MAGameAPI.call("adminBroadcast", { text, link: "#/jouer" }); if (window.MALog) window.MALog.log("broadcast", { detail: text }); C.toast("Annonce envoyée à " + r.sent + " pilote(s).", "ok"); document.getElementById("tl-msg").value = ""; if (window.MADraft) MADraft.clear("announce"); }
       catch (ex) { err.textContent = ex.message; }
       busy = false; return;
     }
@@ -148,6 +148,7 @@
       <div class="admin-cards">${cards.length ? cards.map(cardRow).join("") : `<div class="empty-note">Aucune carte spéciale pour l'instant.</div>`}</div>
       <hr class="admin-sep">${contestHtml()}`;
     renderFeatPlan();
+    if (window.MADraft) { const f = document.getElementById("sp-form"); if (f) MADraft.watch({ key: "sp:" + (editing || "new"), root: f }); const tm = document.getElementById("tl-msg"); if (tm && tm.parentElement) MADraft.watch({ key: "announce", root: tm.parentElement.parentElement || tm.parentElement }); const c = document.getElementById("ct-new-form"); if (c) MADraft.watch({ key: "contest:new", root: c }); }
   }
 
   // ---- voitures mises en avant (défis « voiture de la semaine ») : planning des prochaines semaines
@@ -199,6 +200,7 @@
       const old = cards.find((c) => c.id === id);
       if (old && body.supply && body.supply < (old.granted || 0)) { err.textContent = `Le tirage ne peut pas être inférieur aux ${old.granted} exemplaires déjà attribués.`; busy = false; return; }
       await C.db.collection("special_cards").doc(id).set(Object.assign(body, { granted: old ? old.granted || 0 : 0, kind: old && old.kind ? old.kind : "event", createdAt: old ? old.createdAt : C.FieldValue.serverTimestamp() }));
+      if (window.MADraft) MADraft.clear("sp:" + (editing || "new"));
       if (window.MALog) window.MALog.log("special-card", { target: id, detail: (old ? "carte modifiée : " : "carte créée : ") + body.name });
       draft = null; editing = null; C.toast(old ? "Carte modifiée." : "Carte créée : tu peux l'attribuer.", "ok");
       await load();
@@ -235,7 +237,7 @@
     if (theme.length < 2) { C.toast("Donne un thème au concours.", "err"); return; }
     try {
       await C.db.collection("contests").doc("c-" + Date.now().toString(36)).set({ theme: theme.slice(0, 80), desc: val("ctn-desc").slice(0, 200), prize: val("ctn-prize").slice(0, 200), endsAt: val("ctn-end"), status: "open", custom: true, createdAt: C.FieldValue.serverTimestamp() });
-      ctForm = false; C.toast("Concours lancé : il apparaît sur l'accueil.", "ok"); await load(); render();
+      ctForm = false; if (window.MADraft) MADraft.clear("contest:new"); C.toast("Concours lancé : il apparaît sur l'accueil.", "ok"); await load(); render();
     } catch (ex) { C.toast("Création impossible : " + ex.message, "err"); }
   }
   async function contestAction(action, extra) {

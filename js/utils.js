@@ -168,6 +168,12 @@
     car.anecdotes = (Array.isArray(car.anecdotes) ? car.anecdotes : []).map((a) => (typeof a === "string" ? { title: "", text: a } : { title: String((a && a.title) || ""), text: String((a && a.text) || "") })).filter((a) => a.text).slice(0, 40);
     car.archives = (Array.isArray(car.archives) ? car.archives : []).map((a) => ({ title: String((a && a.title) || "").slice(0, 120), url: String((a && a.url) || "").trim(), kind: String((a && a.kind) || "autre").slice(0, 20), year: String((a && a.year) || "").slice(0, 12) })).filter((a) => a.title && safeUrl(a.url)).slice(0, 60);
     car.related = (Array.isArray(car.related) ? car.related : []).map((x) => String(x || "").trim()).filter(Boolean).slice(0, 12);
+    car.drives = (Array.isArray(car.drives) ? car.drives : []).map((d) => String(d)).filter((d) => /^[PTAEXMR]$/.test(d)).slice(0, 3);
+    {
+      const t = car.track, k = (v) => Math.max(1, Math.min(5, Math.round(Number(v) || 3)));
+      car.track = t && typeof t === "object" && ["ideal", "correct", "watch", "avoid", "race"].indexOf(t.verdict) >= 0
+        ? { heat: k(t.heat), brakes: k(t.brakes), trans: k(t.trans), verdict: t.verdict, note: String(t.note || "").slice(0, 400) } : null;
+    }
     car.group = brandGroup(car.brand);
 
     const engines = car.phases.flatMap((p) => p.engines);
@@ -182,7 +188,7 @@
 
     // Texte de recherche précalculé (marque, modèle, années, moteurs, éditions…)
     car.searchBlob = normalize([
-      car.brand, car.model, car.years, car.description, car.category,
+      car.brand, car.model, car.years, car.description, car.category, car.drives.map((d) => ({ P: "propulsion", T: "traction", A: "4x4 quatre roues motrices", E: "4x4 enclenchable", X: "propulsion transaxle", M: "moteur central", R: "moteur arriere" }[d] || "")).join(" "),
       ...car.phases.flatMap((p) => [p.phaseName, p.details, ...p.notableEditions, ...p.engines.map((e) => e.name)]),
       ...car.records.map((r) => (r.type || "") + " " + (r.description || ""))
     ].join(" "));

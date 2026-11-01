@@ -240,3 +240,11 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - Retour arrière : plus de double animation avec le geste iOS, plus de flash entre pages, défilement restauré.
 - Barre réduite : un tap sur une icône navigue directement. Vibrations iPhone : technique de l'interrupteur natif (iOS 17.4+ requis).
 - Fluidité : flou de la barre allégé, particules de saison limitées (30 images/s, désactivées sur appareils modestes), observateur de squelettes allégé.
+
+## Tour 21
+- Fiches : plusieurs boîtes par moteur, transmission détaillée (`car.drives`), fiabilité circuit + verdict (`js/data-track.js`, 292 voitures préremplies — estimations indicatives, modifiables dans l'admin).
+- Mentions : clause de responsabilité (mentions légales, fiche circuit, modifications d'un pilote, case à cocher à l'ajout).
+- Admin : brouillons locaux (`js/draft.js`) + file d'envoi qui repart au retour du réseau.
+- Concours : une participation = jusqu'à 12 photos ; la carte récompense affiche une mosaïque de 3–4 photos.
+- Verre liquide sur barre du haut (masquée en descendant), menus, fenêtres, onglets, cartes.
+- Notifications : cartes avec avatar, groupées par jour ; push : titre « MOTORAUTO », texte « pseudo a envoyé : … ».

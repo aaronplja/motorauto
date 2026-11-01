@@ -362,17 +362,41 @@
       location.href = n.link;
     }
 
+    // phrase lisible : « pseudo a envoyé : « message » »
+    const VERB = { reply: "t'a répondu", mention: "t'a mentionné", dm: "a envoyé", follow: "s'est abonné à toi", like: "aime ta voiture", comment: "a commenté", event: "participe à ta sortie" };
+    function headline(n) {
+      const who = MA.esc(n.from || "Un pilote");
+      if (VERB[n.type]) return `<b>${who}</b> ${VERB[n.type]}${n.type === "dm" && n.text ? " :" : ""}`;
+      return `<b>${MA.esc(typeLabel(n))}</b>`;
+    }
+    const hueOf = (str) => { let h = 0; for (const c of String(str || "?")) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+    function avatarOf(n) {
+      const sys = !n.fromUid || ["maint", "role", "mute", "game"].includes(n.type);
+      const ini = sys ? "M" : MA.esc(String(n.from || "?").trim().charAt(0).toUpperCase() || "?");
+      return `<span class="notif-av ${sys ? "sys" : ""}" ${sys ? "" : `style="--h:${hueOf(n.from)}"`}>${ini}<i class="notif-badge-ico">${icon(n.type)}</i></span>`;
+    }
+    function dayLabel(ms) {
+      const d = new Date(ms), t = new Date(); t.setHours(0, 0, 0, 0);
+      const diff = Math.round((t - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000);
+      if (diff <= 0) return "Aujourd'hui";
+      if (diff === 1) return "Hier";
+      return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+    }
     function renderPanel() {
       const trash = window.MAIcons ? window.MAIcons.svg("trash", 17) : "×";
-      const list = items.length ? items.map((n) => `
-        <div class="notif-row ${n.read ? "" : "unread"}">
+      let lastDay = "";
+      const list = items.length ? items.map((n) => {
+        const ms = n.createdAt && n.createdAt.toMillis ? n.createdAt.toMillis() : Date.now();
+        const day = dayLabel(ms), head = day !== lastDay ? `<div class="notif-day">${MA.esc(day)}</div>` : ""; lastDay = day;
+        return `${head}<div class="notif-row ${n.read ? "" : "unread"}">
           <button type="button" class="notif-item ${n.read ? "" : "unread"}" data-nid="${MA.esc(n.id)}">
-            <span class="notif-ico">${icon(n.type)}</span>
-            <span class="notif-body"><b>${MA.esc(typeLabel(n))}</b>${n.text ? `<span>${MA.esc(n.text)}</span>` : ""}
-              <time>${n.createdAt && n.createdAt.toMillis ? ago(n.createdAt.toMillis()) : ""}</time></span>
+            ${avatarOf(n)}
+            <span class="notif-body"><small class="notif-app">MOTORAUTO</small><span class="notif-line">${headline(n)}</span>${n.text ? `<span class="notif-text">« ${MA.esc(n.text)} »</span>` : ""}
+              <time>${n.createdAt && n.createdAt.toMillis ? ago(ms) : ""}</time></span>
           </button>
           <button type="button" class="notif-del" data-del="${MA.esc(n.id)}" aria-label="Supprimer cette notification" title="Supprimer">${trash}</button>
-        </div>`).join("") : `<div class="notif-empty">Rien pour l'instant.<br><small>Tu seras prévenu ici quand quelqu'un te répond, te mentionne ou t'écrit.</small></div>`;
+        </div>`;
+      }).join("") : `<div class="notif-empty">Rien pour l'instant.<br><small>Tu seras prévenu ici quand quelqu'un te répond, te mentionne ou t'écrit.</small></div>`;
       panel.innerHTML = `<div class="notif-head"><b>Notifications</b><span class="notif-actions"><button type="button" class="notif-all" ${unreadCount() ? "" : "disabled"}>Tout lire</button><button type="button" class="notif-clear" ${items.length ? "" : "disabled"} aria-label="Tout effacer" title="Tout effacer">${trash}</button></span></div><div class="notif-list">${list}</div>${undoBuf ? `<div class="notif-undo" role="status"><span>${undoBuf.length > 1 ? undoBuf.length + " notifications supprimées" : "Notification supprimée"}</span><button type="button" class="notif-undo-btn">Annuler</button></div>` : ""}`;
     }
     function placePanel() {

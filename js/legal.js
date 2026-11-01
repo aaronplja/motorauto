@@ -36,6 +36,8 @@
         <p>Le code, la charte graphique, les textes rédigés par l'éditeur et le logo ${esc(LEGAL.siteName)} sont protégés. Les marques et noms de constructeurs ou de modèles cités appartiennent à leurs propriétaires respectifs et ne sont utilisés qu'à titre informatif ; ${esc(LEGAL.siteName)} n'est affilié à aucun constructeur. Les photos et textes publiés par les pilotes restent leur propriété (voir les conditions d'utilisation).</p>
         <h2>Responsabilité</h2>
         <p>Les fiches techniques sont fournies à titre indicatif et peuvent contenir des erreurs : vérifie toujours auprès du constructeur ou d'un professionnel avant toute modification de ton véhicule. Les contenus publiés par les pilotes n'engagent que leurs auteurs ; un contenu illicite peut être signalé via la page Contact ou le bouton « Signaler ».</p>
+        <h2>Pièces, modifications et conseils circuit</h2>
+        <p>Les conseils de pièces, de modifications, les notes de fiabilité sur circuit et les verdicts « caisse de piste » sont <b>indicatifs</b> : ils résument des retours généraux et ne remplacent pas l'avis d'un professionnel. <b>En cas de problème lié à des pièces conseillées ou à une modification, la responsabilité incombe au garagiste ou au professionnel qui a réalisé le montage, et non à ${esc(LEGAL.siteName)} ni à son équipe.</b> Fais contrôler ton véhicule avant tout usage intensif en piste.</p>
         <h2>Données personnelles</h2>
         <p>Le traitement de tes données est décrit dans la <a href="#/legal/confidentialite">politique de confidentialité</a>.</p>`
     },
@@ -89,7 +91,7 @@
         <h2>5. Le jeu de cartes</h2>
         <p>Les cartes, packs, cristaux et éditions limitées sont des objets <b>virtuels sans valeur monétaire</b> : ils ne peuvent être ni achetés, ni vendus, ni échangés contre de l'argent. Ils servent uniquement à jouer. Les tirages sont aléatoires et réalisés par le serveur. Les échanges se font entre pilotes volontaires, sans contrepartie financière. Toute tentative de triche (scripts, failles, comptes multiples pour gagner des cartes) peut entraîner la remise à zéro de la collection et la suspension du compte. Nous pouvons ajuster, rééquilibrer ou retirer des cartes pour le bon fonctionnement du jeu.</p>
         <h2>6. Concours photo</h2>
-        <p>Une photo par pilote et par mois, validée par la modération. Tu ne peux pas voter pour ta propre photo. La récompense (badge, carte spéciale, cristaux) est purement virtuelle. Le concours est gratuit, sans obligation d'achat ; l'éditeur peut écarter une participation non conforme.</p>
+        <p>Une participation par pilote et par mois, composée de plusieurs photos, validée par la modération. Tu ne peux pas voter pour ta propre photo. La récompense (badge, carte spéciale, cristaux) est purement virtuelle. Le concours est gratuit, sans obligation d'achat ; l'éditeur peut écarter une participation non conforme.</p>
         <h2>7. Annonces entre pilotes</h2>
         <p>${esc(LEGAL.siteName)} met en relation mais n'intervient pas dans les ventes ou échanges de pièces : vérifie l'état et l'origine des pièces, méfie-toi des paiements à l'avance, et signale toute annonce douteuse.</p>
         <h2>8. Sécurité routière et responsabilité</h2>

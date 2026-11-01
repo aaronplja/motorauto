@@ -42,6 +42,20 @@ function titleOf(n) {
     default: return n.from || "MOTORAUTO";
   }
 }
+/** Texte unique de la notification push : titre fixe « MOTORAUTO », tout le reste dans le corps. */
+function bodyOf(n) {
+  const who = n.from || "Un pilote", t = String(n.text || "").trim();
+  switch (n.type) {
+    case "dm": return who + " a envoyé : " + (t || "un message");
+    case "reply": return who + " t'a répondu" + (t ? " : " + t : "");
+    case "mention": return who + " t'a mentionné" + (t ? " : " + t : "");
+    case "comment": return who + " a commenté" + (t ? " : " + t : "");
+    case "follow": return who + " s'est abonné à toi";
+    case "like": return who + " aime ta voiture";
+    case "event": return who + " participe à ta sortie";
+    default: return t ? titleOf(n) + " : " + t : titleOf(n);
+  }
+}
 const absolute = (link) => { link = String(link || ""); if (/^https?:/.test(link)) return link; if (link.startsWith("#")) return SITE + "/" + link; return SITE + "/" + link.replace(/^\//, ""); };
 
 function createPush({ db, messaging, region }) {
@@ -70,7 +84,7 @@ function createPush({ db, messaging, region }) {
     const toks = await db.collection("push_tokens").where("uid", "==", uid).limit(10).get();
     if (toks.empty) return;
     const tokens = toks.docs.map((d) => d.data().token).filter(Boolean);
-    const data = { title: titleOf(n).slice(0, 80), body: String(n.text || "").slice(0, 140), link: absolute(n.link), tag: String(n.type || "n") + ":" + String(n.fromUid || "") };
+    const data = { title: "MOTORAUTO", body: bodyOf(n).slice(0, 160), link: absolute(n.link), tag: String(n.type || "n") + ":" + String(n.fromUid || "") };
     const res = await messaging.sendEachForMulticast({ tokens, data, webpush: { headers: { Urgency: "high", TTL: "86400" } }, android: { priority: "high" } });
     const bad = [];
     res.responses.forEach((r, i) => { if (!r.success && r.error && /registration-token-not-registered|invalid-registration-token/.test(r.error.code || "")) bad.push(toks.docs[i].ref); });
@@ -78,4 +92,4 @@ function createPush({ db, messaging, region }) {
     if (res.failureCount) logger.info("Push : " + res.successCount + " envoyés, " + res.failureCount + " échecs (" + bad.length + " jetons supprimés)");
   });
 }
-module.exports = { createPush, titleOf, absolute, inQuietHours };
+module.exports = { createPush, titleOf, bodyOf, absolute, inQuietHours };

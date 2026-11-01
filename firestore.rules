@@ -671,13 +671,14 @@ service cloud.firestore {
       allow create: if signedIn() && notMuted()
         && eid == request.resource.data.contest + '_' + request.auth.uid
         && get(/databases/$(database)/documents/contests/$(request.resource.data.contest)).data.status == 'open'
-        && request.resource.data.keys().hasOnly(['contest', 'uid', 'name', 'avatar', 'photo', 'carName', 'caption', 'status', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['contest', 'uid', 'name', 'avatar', 'photo', 'photos', 'carName', 'caption', 'status', 'createdAt'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.status == 'approved'
         && request.resource.data.name is string && request.resource.data.name.size() <= 40
         && request.resource.data.avatar is string && request.resource.data.avatar.size() <= 600
         && request.resource.data.photo is string && request.resource.data.photo.size() <= 600
         && request.resource.data.photo.matches('https://firebasestorage.googleapis.com/.*')
+        && (!('photos' in request.resource.data) || (request.resource.data.photos is list && request.resource.data.photos.size() >= 1 && request.resource.data.photos.size() <= 12 && request.resource.data.photos[0] == request.resource.data.photo))
         && request.resource.data.carName is string && request.resource.data.carName.size() >= 2 && request.resource.data.carName.size() <= 80
         && request.resource.data.caption is string && request.resource.data.caption.size() <= 100
         && request.resource.data.createdAt == request.time;

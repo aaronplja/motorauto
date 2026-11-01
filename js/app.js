@@ -450,7 +450,7 @@
             ${bar("Couple", e.torque, " Nm", pct(e.torque, SCALE.torque))}
             ${bar("V-Max", e.speed, " km/h", pct(e.speed, SCALE.speed))}
             ${bar("0-100 km/h", e.zeroToHundred || "—", e.zeroToHundred ? " s" : "", e.zeroToHundred ? pct(Math.max(0.5, 16 - e.zeroToHundred), 14) : 4)}
-            <div class="eng-trans">Transmission : <b>${esc(e.transmission)}</b></div>
+            <div class="eng-trans"><span class="eng-trans-l">Boîte${window.MATrack && window.MATrack.gearboxes(e.transmission).length > 1 ? "s" : ""}</span><span class="gear-chips">${window.MATrack ? window.MATrack.gearHtml(e.transmission) : `<b>${esc(e.transmission)}</b>`}</span></div>
           </div>`).join("") : `<div class="empty-note">Aucune motorisation renseignée pour cette phase.</div>`}
       </div>`;
   }
@@ -494,6 +494,7 @@
         <div class="sheet-brandline">${esc(car.brand)} <span>${esc(car.years)}</span></div>
         <h2 class="sheet-big-title">${esc(car.model)}</h2>
         <p class="sheet-blurb">${esc(car.description)}</p>
+        ${window.MATrack && car.drives.length ? `<div class="drive-chips" aria-label="Transmission">${window.MATrack.driveChips(car)}</div>` : ""}
         <div class="sheet-actions">
           <button type="button" class="cta-btn fill-btn compact-btn" id="sheet-fav-btn" data-action="sheet-fav" data-id="${esc(car.id)}">${sheetFavLabel(car.id)}</button>
           <button type="button" class="cta-btn btn-ghost compact-btn" id="sheet-compare-btn" data-action="toggle-compare" data-id="${esc(car.id)}">${compareIds.includes(car.id) ? "✓ Dans le comparateur" : "⇄ Comparer"}</button>
@@ -512,6 +513,7 @@
 
         ${car.approx ? `<p class="sheet-approx">Chiffres de référence arrondis (indicatifs) : ils varient selon l'année, le marché et le règlement.</p>` : ""}
         ${car.history ? `<div class="sheet-section-head">Histoire</div><div class="history-prose">${car.history.split(/\n{2,}|\n/).filter(Boolean).map((p) => `<p>${esc(p)}</p>`).join("")}</div>` : ""}
+        ${window.MATrack ? window.MATrack.trackHtml(car) : ""}
         <div class="sheet-section-head">Motorisations</div>
         <div class="phases-strip" role="tablist">
           ${car.phases.map((p, idx) => `<button type="button" role="tab" class="phase-pill-btn ${idx === 0 ? "active" : ""}" data-action="switch-phase" data-car="${esc(car.id)}" data-idx="${idx}">${esc(p.phaseName)}</button>`).join("")}
@@ -1162,6 +1164,7 @@
         <span class="car-showcase-kicker">Sa voiture</span>
         <h3>${esc(name || "Projet en cours")}</h3>
         ${mods.length ? `<ul class="mods-list">${mods.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : `<p class="lap-meta">Aucune modification renseignée.</p>`}
+        ${mods.length ? `<p class="track-legal">Pièces et modifications : en cas de problème, la responsabilité incombe au garagiste ayant réalisé le montage, pas à l'équipe MOTORAUTO.</p>` : ""}
       </div>`;
     box.hidden = false;
   }
@@ -1295,7 +1298,7 @@
     const c = mcEditing || {};
     $("mc-title").textContent = mcEditing ? (mcEditing.uid !== currentUser.uid ? "Modifier la voiture de " + (mcEditing.pilot || "ce pilote") + " (admin)" : "Modifier ma voiture") : "Ajouter une voiture";
     $("mc-name").value = c.name || ""; $("mc-year").value = c.year || ""; $("mc-engine").value = c.engine || "";
-    $("mc-power").value = c.power || ""; $("mc-zero").value = c.zero || ""; $("mc-desc").value = c.description || ""; $("mc-mods").value = c.mods || "";
+    $("mc-power").value = c.power || ""; $("mc-zero").value = c.zero || ""; $("mc-desc").value = c.description || ""; $("mc-mods").value = c.mods || ""; if ($("mc-legal")) $("mc-legal").checked = false;
     fillCatalogList();
     { const b = c.catalogId ? carsById.get(c.catalogId) : null; $("mc-cat").value = b ? catLabel(b) : ""; onCatalogPick(); }
     $("mc-url").value = ""; $("mc-error").textContent = ""; $("mc-upload-status").textContent = "";
@@ -1311,6 +1314,7 @@
     if (pending) { if (!safeUrl(pending)) { err.textContent = "L'URL de l'image doit commencer par https://"; return; } if (!mcImages.includes(pending)) mcImages.push(pending); $("mc-url").value = ""; }
     const name = $("mc-name").value.trim();
     if (name.length < 2) { err.textContent = "Donne un nom à ta voiture (ex. Peugeot 106 S16)."; return; }
+    if ($("mc-mods").value.trim() && !$("mc-legal").checked) { err.textContent = "Coche la case de responsabilité (pièces et modifications) pour enregistrer."; $("mc-legal").focus(); return; }
     const power = Number($("mc-power").value);
     const cat = catalogFromInput();
     if (cat.bad) { err.textContent = "Fiche du catalogue inconnue : choisis-la dans la liste ou vide le champ."; return; }
@@ -1558,7 +1562,7 @@
           <div class="input-stack"><label>0-100 (s)</label><input type="text" inputmode="decimal" class="adm-eng-zero" value="${val(v.zeroToHundred)}" placeholder="8.2"></div>
         </div>
         <div class="admin-engine-grid">
-          <div class="input-stack"><label>Transmission</label><input type="text" class="adm-eng-trans" value="${val(v.transmission)}" placeholder="Manuelle 5"></div>
+          <div class="input-stack"><label>Transmission</label><input type="text" class="adm-eng-trans" value="${val(v.transmission)}" placeholder="Manuelle 6 / Auto 8"><div class="gear-quick">${["Manuelle 5", "Manuelle 6", "Auto 6", "Auto 8", "Double embrayage", "Séquentielle", "CVT"].map((g) => `<button type="button" class="gear-quick-btn" data-gear-add="${g}">+ ${g}</button>`).join("")}</div><small class="hint-line">Plusieurs boîtes possibles : elles s'affichent toutes sur la fiche de ce moteur.</small></div>
           <div class="input-stack"><label>Code moteur <small>(partagé entre voitures)</small></label><input type="text" class="adm-eng-code" value="${val(v.code)}" maxlength="40" placeholder="Ex : TU5JP4"></div>
         </div>
         <div class="input-stack"><label>Note sur le moteur <small>(facultatif)</small></label><input type="text" class="adm-eng-info" value="${val(v.info)}" maxlength="300" placeholder="Architecture, particularités, fiabilité…"></div>
@@ -1577,6 +1581,22 @@
     const idEl = $("adm-id"); if (idEl.dataset.touched === "1") return;
     idEl.value = slugId($("adm-brand").value + " " + $("adm-model").value);
   }
+  let admDraftKey = "";
+  function fillTrackFields(car) {
+    document.querySelectorAll("#adm-drives input").forEach((i) => { i.checked = !!(car && (car.drives || []).includes(i.value)); });
+    const t = car && car.track;
+    $("adm-tk-verdict").value = t ? t.verdict : ""; $("adm-tk-heat").value = String(t ? t.heat : 3); $("adm-tk-brakes").value = String(t ? t.brakes : 3); $("adm-tk-trans").value = String(t ? t.trans : 3); $("adm-tk-note").value = t ? t.note : "";
+  }
+  function readTrackFields() {
+    const drives = Array.from(document.querySelectorAll("#adm-drives input:checked")).map((i) => i.value).slice(0, 3), verdict = $("adm-tk-verdict").value;
+    return { drives, track: verdict ? { heat: Number($("adm-tk-heat").value), brakes: Number($("adm-tk-brakes").value), trans: Number($("adm-tk-trans").value), verdict, note: $("adm-tk-note").value.trim().slice(0, 400) } : null };
+  }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest && e.target.closest("[data-gear-add]"); if (!b) return;
+    const inp = b.closest(".input-stack").querySelector(".adm-eng-trans"), cur = inp.value.trim(), g = b.dataset.gearAdd;
+    if (cur.split(/\s+\/\s+/).includes(g)) return;
+    inp.value = cur && cur !== "—" ? cur + " / " + g : g;
+  });
   function engineBlockValues(block) {
     const q = (c) => (block.querySelector(c) ? block.querySelector(c).value : "");
     return { phaseName: q(".adm-phase-name"), name: q(".adm-eng-name"), power: q(".adm-eng-power"), torque: q(".adm-eng-torque"), speed: q(".adm-eng-speed"), zeroToHundred: q(".adm-eng-zero"), transmission: q(".adm-eng-trans"), code: q(".adm-eng-code"), info: q(".adm-eng-info") };
@@ -1653,6 +1673,7 @@
     $("admin-engines-container").innerHTML = "";
     $("adm-id").readOnly = !!editingCar; $("adm-id").dataset.touched = editingCar ? "1" : "";
     $("admin-form-error").textContent = ""; $("admin-form-error").style.color = "";
+    fillTrackFields(null);
     if (car) {
       $("adm-id").value = car.id;
       $("adm-brand").value = car.brand;
@@ -1661,6 +1682,7 @@
       $("adm-category").value = CATEGORIES_OK.includes(car.category) ? car.category : "Berline";
       admImages = (car.images && car.images.length ? car.images : [car.image]).filter(Boolean).slice();
       $("adm-desc").value = car.description || "";
+      fillTrackFields(car);
       $("adm-related").value = (car.related || []).join(", ");
       $("adm-records").value = car.records.map((r) => `${r.type} | ${r.description}`).join("\n");
       $("adm-history").value = car.history || "";
@@ -1675,6 +1697,11 @@
     renderAdmImages();
     if (!$("admin-engines-container").children.length) addEngineBlock();
     openModal($("admin-modal"));
+    admDraftKey = "car:" + (editingCar ? editingCar.id : "new");
+    if (window.MADraft) MADraft.watch({ key: admDraftKey, root: $("admin-car-form"),
+      count: () => document.querySelectorAll(".admin-engine-block").length,
+      rebuild: (n) => { $("admin-engines-container").innerHTML = ""; for (let i = 0; i < n; i++) addEngineBlock(); },
+      extra: { get: () => ({ images: admImages.slice() }), set: (x) => { admImages = (x.images || []).slice(); renderAdmImages(); } } });
   }
 
   async function publishCar() {
@@ -1734,6 +1761,8 @@
       image,
       images: admImages.slice(0, 12),
       description: $("adm-desc").value.trim(),
+      drives: readTrackFields().drives,
+      track: readTrackFields().track,
       history: $("adm-history").value.trim().slice(0, 12000),
       anecdotes: $("adm-anecdotes").value.split("\n").map((l) => l.trim()).filter(Boolean).map((line) => { const i = line.indexOf("|"); return i < 0 ? { title: "", text: line } : { title: line.slice(0, i).trim(), text: line.slice(i + 1).trim() }; }).filter((a) => a.text).slice(0, 40),
       archives: $("adm-archives").value.split("\n").map((l) => l.trim()).filter(Boolean).map((line) => { const [title, url, kind, year] = line.split("|").map((x) => (x || "").trim()); return { title, url, kind: kind || "autre", year: year || "" }; }).filter((a) => a.title && safeUrl(a.url)).slice(0, 60),
@@ -1746,12 +1775,13 @@
     if (!editingCar && carsById.has(id) && !confirm(`Un véhicule « ${id} » existe déjà. Le remplacer ?`)) return;
 
     try {
-      await db.collection("motorauto_catalog").doc(id).set(carData);
+      if (window.MAOutbox) await MAOutbox.set(db, "motorauto_catalog/" + id, carData); else await db.collection("motorauto_catalog").doc(id).set(carData);
+      if (window.MADraft) { MADraft.clear(admDraftKey); MADraft.clear("car:new"); }
       if (!editingCar) document.dispatchEvent(new CustomEvent("ma:feed", { detail: { type: "catalog", text: `a ajouté la fiche ${carData.brand} ${carData.model}`, link: "#/voiture/" + encodeURIComponent(id) } }));
       closeModal($("admin-modal"));
       await loadPublicCatalog();
     } catch (err) {
-      errBox.textContent = "Erreur : " + err.message;
+      errBox.textContent = err.queued ? "Réseau indisponible : ta fiche est gardée sur cet appareil et sera envoyée automatiquement au retour de la connexion." : "Erreur : " + err.message;
     }
   }
 

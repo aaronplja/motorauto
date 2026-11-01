@@ -75,4 +75,22 @@
       clearTimeout(idle); idle = setTimeout(() => { if (window.scrollY < 120) bar.classList.remove("mini"); }, 600);
     });
   }, { passive: true });
+
+  // ---- barre du haut : se cache en descendant, revient en remontant
+  (function () {
+    const head = document.querySelector(".app-header"); if (!head) return;
+    let ly = window.scrollY, tk = false;
+    window.addEventListener("scroll", () => {
+      if (tk) return; tk = true;
+      requestAnimationFrame(() => {
+        tk = false; const y = window.scrollY, dy = y - ly;
+        if (Math.abs(dy) < 8) return;
+        const menuOpen = document.querySelector(".modal-layer:not([hidden]).open, .notif-panel:not([hidden])");
+        head.classList.toggle("hide-up", dy > 0 && y > 140 && !menuOpen);
+        ly = y;
+        if (y < 80) head.classList.remove("hide-up");
+      });
+    }, { passive: true });
+    head.addEventListener("focusin", () => head.classList.remove("hide-up"));
+  })();
 })();

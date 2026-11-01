@@ -339,3 +339,41 @@ body:not([data-admin-todo="0"])[data-admin-todo] .page-tab[data-tab="tableau"]::
 .ptr.spin span { animation: ptrSpin .7s linear infinite; }
 @keyframes ptrSpin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
+
+/* ---- transmission, boîtes, fiabilité circuit ---- */
+.drive-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin: .8rem 0 0; }
+.drive-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .75rem .3rem .6rem; border-radius: 999px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-ink); font-size: .8rem; font-weight: 700; }
+.drive-ic .body { fill: none; stroke: currentColor; stroke-width: 1.6; opacity: .55; }
+.drive-ic rect:not(.body):not(.eng) { fill: none; stroke: currentColor; stroke-width: 1.3; opacity: .55; }
+.drive-ic rect.on { fill: var(--accent); stroke: var(--accent); opacity: 1; }
+.drive-ic .eng { fill: var(--accent); opacity: .5; }
+.eng-trans { display: flex; flex-wrap: wrap; gap: .35rem .5rem; align-items: center; margin-top: .6rem; }
+.eng-trans-l { color: var(--color-muted); font-size: .78rem; margin-right: .2rem; }
+.gear-chips { display: flex; flex-wrap: wrap; gap: .3rem; }
+.gear-chip { padding: .15rem .6rem; border-radius: 999px; background: var(--glow-soft); color: var(--color-ink); font-size: .78rem; font-weight: 700; border: 1px solid var(--stroke-line); }
+.track-box { padding: 1rem 1.1rem; border-radius: 18px; border: 1px solid var(--stroke-line); background: var(--bg-surface); border-left: 5px solid var(--tv, var(--accent)); }
+.track-box.verdict-ideal { --tv: #22c55e; } .track-box.verdict-correct { --tv: #eab308; } .track-box.verdict-watch { --tv: #f97316; } .track-box.verdict-avoid { --tv: #ef4444; } .track-box.verdict-race { --tv: var(--accent); }
+.track-head { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; }
+.track-badge { padding: .3rem .8rem; border-radius: 999px; font-weight: 800; font-size: .85rem; background: color-mix(in srgb, var(--tv) 22%, transparent); color: var(--color-ink); border: 1px solid var(--tv); }
+.track-score { color: var(--color-secondary); font-size: .85rem; } .track-score b { color: var(--color-ink); font-size: 1.1rem; }
+.track-sub { margin: .5rem 0; color: var(--color-secondary); font-size: .9rem; }
+.track-rates { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin: .7rem 0; }
+.track-rates > div { display: grid; gap: .2rem; font-size: .78rem; color: var(--color-muted); }
+.rate { color: var(--tv, var(--accent)); letter-spacing: 2px; font-size: .8rem; } .rate i { font-style: normal; opacity: .22; }
+.track-note { margin: .4rem 0; color: var(--color-ink); font-size: .92rem; }
+.track-legal { margin: .8rem 0 0; font-size: .74rem; line-height: 1.4; color: var(--color-muted); }
+@media (max-width: 520px) { .track-rates { grid-template-columns: 1fr; } }
+.adm-track { padding: .9rem 1rem; border: 1px dashed var(--stroke-line); border-radius: 16px; }
+.adm-drives { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chk-pill { position: relative; cursor: pointer; }
+.chk-pill input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.chk-pill span { display: inline-block; padding: .4rem .85rem; border-radius: 999px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-ink); font-size: .85rem; font-weight: 700; transition: background .2s, border-color .2s; }
+.chk-pill input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.chk-pill input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gear-quick { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
+.gear-quick-btn { padding: .2rem .6rem; border-radius: 999px; border: 1px dashed var(--stroke-line); background: none; color: var(--color-secondary); font: inherit; font-size: .75rem; cursor: pointer; }
+.gear-quick-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---- brouillon retrouvé ---- */
+.draft-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; margin: 0 0 1rem; padding: .7rem .9rem; border-radius: 14px; border: 1px dashed var(--accent); background: var(--glow-soft); color: var(--color-ink); font-size: .9rem; }
+.draft-banner small { color: var(--color-muted); } .draft-banner > span:last-child { display: flex; gap: .4rem; }

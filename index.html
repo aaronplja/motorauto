@@ -1153,6 +1153,17 @@
             <span id="adm-upload-status" class="hint-line" aria-live="polite"></span>
           </div>
           <div class="input-stack mt"><label for="adm-related">Voir aussi — déclinaisons <small>(identifiants séparés par des virgules)</small></label><input type="text" id="adm-related" maxlength="300" placeholder="nissan-silvia-ps13, nissan-onevia, nissan-sileighty"></div>
+          <div class="adm-track mt"><div class="panel-section-title">Transmission &amp; circuit</div>
+            <p class="hint-line">Coche la ou les transmissions de la voiture (propulsion, traction, 4x4…).</p>
+            <div class="adm-drives" id="adm-drives"><label class="chk-pill"><input type="checkbox" value="P"><span>Propulsion</span></label><label class="chk-pill"><input type="checkbox" value="T"><span>Traction</span></label><label class="chk-pill"><input type="checkbox" value="A"><span>4x4 permanent</span></label><label class="chk-pill"><input type="checkbox" value="E"><span>4x4 enclenchable</span></label><label class="chk-pill"><input type="checkbox" value="X"><span>Propulsion transaxle</span></label><label class="chk-pill"><input type="checkbox" value="M"><span>Moteur central</span></label><label class="chk-pill"><input type="checkbox" value="R"><span>Moteur arrière</span></label></div>
+            <div class="admin-engine-grid mt">
+              <div class="input-stack"><label for="adm-tk-verdict">Verdict piste</label><select id="adm-tk-verdict"><option value="">Non renseigné</option><option value="ideal">Idéale</option><option value="correct">Correcte</option><option value="watch">À surveiller</option><option value="avoid">Déconseillée</option><option value="race">Voiture de course</option></select></div>
+              <div class="input-stack"><label for="adm-tk-heat">Chauffe (1-5)</label><select id="adm-tk-heat"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+              <div class="input-stack"><label for="adm-tk-brakes">Freins (1-5)</label><select id="adm-tk-brakes"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+              <div class="input-stack"><label for="adm-tk-trans">Transmission (1-5)</label><select id="adm-tk-trans"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+            </div>
+            <div class="input-stack mt"><label for="adm-tk-note">Conseil pour la piste <small>(points faibles, renforts conseillés…)</small></label><input type="text" id="adm-tk-note" maxlength="400" placeholder="Ex : boîte fragile, freins à renforcer avant un usage intensif"></div>
+          </div>
           <div class="input-stack mt"><label for="adm-desc">Description</label><textarea id="adm-desc" rows="3" placeholder="Résumé du châssis et de son histoire…"></textarea></div>
           <div class="input-stack mt"><label for="adm-history">Histoire / biographie de la voiture <small>(plusieurs paragraphes possibles)</small></label><textarea id="adm-history" rows="6" placeholder="Genèse du projet, designers, évolution, carrière en compétition, héritage…"></textarea></div>
           <div class="input-stack mt"><label for="adm-anecdotes">Anecdotes (une ligne = « Titre | Texte »)</label><textarea id="adm-anecdotes" rows="4" placeholder="Nom de code | Le projet s'appelait en interne…"></textarea></div>
@@ -1231,6 +1242,7 @@
         </div>
         <div class="input-stack mt"><label for="mc-desc">Description</label><textarea id="mc-desc" rows="3" maxlength="600" placeholder="Son histoire, ton projet…"></textarea></div>
         <div class="input-stack mt"><label for="mc-mods">Modifications</label><textarea id="mc-mods" rows="3" maxlength="500" placeholder="Une par ligne : échappement, combinés filetés…"></textarea></div>
+        <label class="check-row mc-legal" id="mc-legal-row"><input type="checkbox" id="mc-legal"><span>Je comprends que les pièces et modifications mentionnées ou conseillées ici n'engagent pas l'équipe MOTORAUTO : en cas de problème, la responsabilité incombe au garagiste ou professionnel qui a réalisé le montage.</span></label>
         <div class="input-stack mt adm-photos">
           <label for="mc-url">Photos (8 maximum, la première est la principale)</label>
           <div id="mc-gallery" class="adm-gallery"></div>
@@ -1252,6 +1264,7 @@
   <script src="js/utils.js"></script>
   <script src="js/themes.js"></script>
   <script src="js/common.js"></script>
+  <script src="js/draft.js"></script>
   <script src="js/data.js"></script>
   <script src="js/data2.js"></script>
   <script src="js/data-kit.js"></script>
@@ -1269,6 +1282,7 @@
   <script src="js/data-enrich-more2.js"></script>
   <script src="js/data-enrich-auto.js"></script>
   <script src="js/data-extra.js"></script>
+  <script src="js/data-track.js"></script>
   <script src="js/wiki-import.js"></script>
   <script src="js/import-any.js"></script>
   <script src="js/icons.js"></script>
