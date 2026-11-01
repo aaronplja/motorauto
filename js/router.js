@@ -54,7 +54,6 @@
     admin: { page: "admin", items: [["tableau", "Tableau de bord"], ["moderation", "Modération"], ["catalogue", "Catalogue"], ["jeu", "Jeu"], ["journal", "Journal"]] }
   };
   // pictogrammes et libellés courts : toutes les barres tiennent sur l'écran d'un téléphone, sans défilement
-  const TAB_ICON = { fil: "📰", pilotes: "👥", voitures: "🚗", evenements: "📍", clubs: "🛡️", annonces: "🏷️", classement: "🏆", chronos: "⏱️", circuits: "🏁", collection: "🃏", apercu: "🏠", suivi: "🔧", profil: "👤", ambiance: "🎨", notifications: "🔔", carte: "🔒", tableau: "📊", moderation: "🚩", catalogue: "📚", jeu: "🎮", journal: "📜" };
   const TAB_SHORT = { classement: "Rang", evenements: "Sorties", "Mes voitures": "Voitures", "Tableau de bord": "Bord", "Carte & vie privée": "Privé", notifications: "Notifs", moderation: "Modér." };
   const PREFIX = { settings: "/reglages", play: "/jouer", community: "/communaute", leaderboard: "/classement", garage: "/garage", admin: "/admin" };
 
@@ -139,7 +138,7 @@
       nav.innerHTML = sec.items.map((it) => {
         const custom = !!it[2], href = "#" + (custom ? it[2] : PREFIX[nav.dataset.section] + "/" + it[0]);
         const on = custom ? it[3].indexOf(route.name) >= 0 : route.name === sec.page && route.params.tab === it[0];
-        return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${href}"${custom ? "" : ` data-tab="${it[0]}"`}${on ? ' aria-selected="true" aria-current="page"' : ' aria-selected="false"'}><i class="ti" aria-hidden="true">${TAB_ICON[it[0]] || ""}</i><span class="tl" data-s="${TAB_SHORT[it[0]] || TAB_SHORT[it[1]] || it[1]}">${it[1]}</span></a>`;
+        return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${href}"${custom ? "" : ` data-tab="${it[0]}"`}${on ? ' aria-selected="true" aria-current="page"' : ' aria-selected="false"'}><span class="tl" data-s="${TAB_SHORT[it[0]] || TAB_SHORT[it[1]] || it[1]}">${it[1]}</span></a>`;
       }).join("");
     });
     const act = pageEl.querySelector(".page-tab.active");

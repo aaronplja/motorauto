@@ -294,9 +294,8 @@ button.pro-stat{cursor:pointer}button.pro-stat:hover{border-color:var(--accent)}
 
 /* ===== Barres d'onglets « fit » : toutes les entrées visibles, sans défilement ===== */
 .page-tabs.fit{display:grid;grid-template-columns:repeat(var(--n,5),minmax(0,1fr));gap:2px;overflow:visible;-webkit-mask-image:none;mask-image:none;border-bottom:0}
-.page-tabs.fit .page-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:auto;min-height:52px;padding:6px 2px;text-align:center;line-height:1.1;border-radius:12px;border-bottom:0;white-space:nowrap}
-.page-tabs.fit .page-tab .ti{font-style:normal;font-size:1.15rem;line-height:1}
-.page-tabs.fit .page-tab .tl{font-size:.7rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.page-tabs.fit .page-tab{display:flex;align-items:center;justify-content:center;height:auto;min-height:44px;padding:6px 2px;text-align:center;line-height:1.1;border-radius:12px;border-bottom:0;white-space:nowrap}
+.page-tabs.fit .page-tab .tl{font-size:.74rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .page-tabs.fit .page-tab.active{background:var(--glow-soft);color:var(--accent)}
 @media (max-width:480px){
   .page-tabs.fit .page-tab .tl{font-size:0}
@@ -305,7 +304,7 @@ button.pro-stat{cursor:pointer}button.pro-stat:hover{border-color:var(--accent)}
 }
 @media (min-width:700px){
   .page-tabs.fit{display:flex;gap:.25rem}
-  .page-tabs.fit .page-tab{flex-direction:row;gap:.45rem;min-height:44px;padding:0 .9rem}
+  .page-tabs.fit .page-tab{padding:0 .9rem}
   .page-tabs.fit .page-tab .tl{font-size:.92rem}
 }
 

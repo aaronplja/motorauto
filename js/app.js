@@ -946,9 +946,9 @@
   }
   function badgesHtml(list) {
     const pill = (b) => `<span class="badge-pill ${esc(b.tier)}" title="${esc(b.hint)}"><i>${b.icon}</i>${esc(b.label)}</span>`;
-    const lock = (b) => `<span class="badge-pill locked" title="${esc(b.hint)}"><i>🔒</i>${esc(b.label)}${b.goal > 1 ? ` <small>${b.val}/${b.goal}</small>` : ""}</span>`;
+    const lock = (b) => `<span class="badge-pill locked" title="${esc(b.hint)}">${esc(b.label)}${b.goal > 1 ? ` <small>${b.val}/${b.goal}</small>` : ""}</span>`;
     const got = list.filter((b) => b.unlocked), todo = list.filter((b) => !b.unlocked);
-    return got.map(pill).join("") + (todo.length ? `<details class="badge-todo"><summary>🔒 ${todo.length} badge${todo.length > 1 ? "s" : ""} à débloquer</summary><div class="badge-row">${todo.map(lock).join("")}</div></details>` : "");
+    return got.map(pill).join("") + (todo.length ? `<details class="badge-todo"><summary>${todo.length} badge${todo.length > 1 ? "s" : ""} à débloquer</summary><div class="badge-row">${todo.map(lock).join("")}</div></details>` : "");
   }
 
   // ------------------------------------------------------------- classement
