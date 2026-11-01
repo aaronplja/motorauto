@@ -4,7 +4,7 @@
  */
 (function () {
   "use strict";
-  let C = null, car = null, dests = new Map(), pilots = null, channels = null;
+  let C = null, car = null, cardMode = null, dests = new Map(), pilots = null, channels = null;
   const $ = (id) => document.getElementById(id);
 
   async function loadDest() {
@@ -30,9 +30,10 @@
     $("sharecar-send").disabled = !dests.size;
     $("sharecar-send").textContent = dests.size > 1 ? "Envoyer à " + dests.size + " destinations" : "Envoyer dans le chat";
   }
-  async function open(carId) {
+  async function open(carId, opts) {
     if (!C.requireLogin()) return;
-    car = C.carsById.get(carId); if (!car) return;
+    cardMode = opts && opts.card ? opts : null;
+    car = cardMode ? cardMode.card : C.carsById.get(carId); if (!car) return;
     dests = new Map(); $("sharecar-q").value = ""; $("sharecar-err").textContent = "";
     $("sharecar-sub").innerHTML = `<span class="sharecar-prev"><img src="${C.esc(C.safeUrl(car.image) || "")}" alt="" data-fallback="car"><b>${C.esc(car.brand + " " + car.model)}</b><small>${car.stats && car.stats.power ? car.stats.power + " ch" : ""}${car.years ? " · " + C.esc(car.years) : ""}</small></span>`; $("sharecar-note").value = "";
     $("sharecar-list").innerHTML = `<div class="empty-note">Chargement…</div>`;
@@ -57,13 +58,14 @@
           uid: C.user.uid, pilot: String(me).slice(0, 40), avatar: String((C.profile && C.profile.avatar) || "").slice(0, 400),
           text: note, mediaUrl: "", replyTo: null, reactions: {},
           carId: car.id, carName: (car.brand + " " + car.model).slice(0, 120), carImage: String(car.image || "").slice(0, 500),
+          ...(cardMode ? { cardRarity: String(cardMode.rarity || "Carte").slice(0, 30) } : {}),
           timestamp: C.FieldValue.serverTimestamp()
         });
         ok++;
         if (dest.type === "private") {
           const ids = [C.user.uid, dest.id].sort();
-          C.db.collection("private_chats").doc(ids.join("_")).set({ uids: ids, lastUid: C.user.uid, lastName: String(me).slice(0, 40), lastText: ("🚗 " + car.brand + " " + car.model + (note ? " · " + note : "")).slice(0, 120), lastAt: C.FieldValue.serverTimestamp() }, { merge: true }).catch(() => {});
-          C.MA.notif.send(dest.id, { type: "dm", from: me, text: "Fiche : " + car.brand + " " + car.model, link: "chat.html#dm/" + encodeURIComponent(C.user.uid) }, "dm_" + C.user.uid);
+          C.db.collection("private_chats").doc(ids.join("_")).set({ uids: ids, lastUid: C.user.uid, lastName: String(me).slice(0, 40), lastText: ((cardMode ? "🃏 " : "🚗 ") + car.brand + " " + car.model + (note ? " · " + note : "")).slice(0, 120), lastAt: C.FieldValue.serverTimestamp() }, { merge: true }).catch(() => {});
+          C.MA.notif.send(dest.id, { type: "dm", from: me, text: (cardMode ? "Carte : " : "Fiche : ") + car.brand + " " + car.model, link: "chat.html#dm/" + encodeURIComponent(C.user.uid) }, "dm_" + C.user.uid);
         }
       } catch (e) { last = e; }
     }
@@ -79,5 +81,6 @@
     if (t.id === "close-sharecar-modal") C.closeModal($("sharecar-modal"));
   });
   document.addEventListener("input", (e) => { if (e.target.id === "sharecar-q") draw(); });
+  window.MAShareCar = { open };
   (window.MAModules = window.MAModules || []).push(function (ctx) { C = ctx; });
 })();

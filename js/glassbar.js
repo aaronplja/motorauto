@@ -25,6 +25,7 @@
     const m = /^#?([0-9a-f]{6})$/i.exec(c); if (!m) return;
     const v = parseInt(m[1], 16), ch = [v >> 16, (v >> 8) & 255, v & 255].map((x) => { x /= 255; return x <= .03928 ? x / 12.92 : Math.pow((x + .055) / 1.055, 2.4); });
     document.documentElement.setAttribute("data-tone", .2126 * ch[0] + .7152 * ch[1] + .0722 * ch[2] < .25 ? "dark" : "light");
+    const mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.setAttribute("content", "#" + m[1]);
   }
   tone();
   new MutationObserver(() => requestAnimationFrame(tone)).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "style"] });
@@ -64,11 +65,17 @@
   bar.addEventListener("click", (e) => { if (swallow && e.isTrusted) { e.preventDefault(); e.stopPropagation(); } }, true);
 
   // ---- réduction pendant le défilement
-  let lastY = window.scrollY, ticking = false, idle = 0;
+  let lastY = window.scrollY, ticking = false, idle = 0, hold = 0;
+  const expand = () => { bar.classList.remove("mini"); hold = Date.now() + 900; lastY = window.scrollY; setTimeout(sync, 60); setTimeout(sync, 380); };
+  // un appui sur la barre réduite la rouvre tout de suite (et reste ouverte le temps de la navigation)
+  bar.addEventListener("click", () => { if (bar.classList.contains("mini")) expand(); }, true);
+  window.addEventListener("hashchange", expand);
+  window.addEventListener("popstate", expand);
   window.addEventListener("scroll", () => {
     if (ticking) return; ticking = true;
     requestAnimationFrame(() => {
       ticking = false;
+      if (Date.now() < hold) { lastY = window.scrollY; return; }
       const y = window.scrollY, dy = y - lastY;
       if (Math.abs(dy) > 6) { bar.classList.toggle("mini", dy > 0 && y > 120); lastY = y; }
       if (y < 60) bar.classList.remove("mini");
@@ -89,8 +96,11 @@
         head.classList.toggle("hide-up", dy > 0 && y > 140 && !menuOpen);
         ly = y;
         if (y < 80) head.classList.remove("hide-up");
+        document.documentElement.classList.toggle("hdr-hidden", head.classList.contains("hide-up"));
       });
     }, { passive: true });
-    head.addEventListener("focusin", () => head.classList.remove("hide-up"));
+    head.addEventListener("focusin", () => { head.classList.remove("hide-up"); document.documentElement.classList.remove("hdr-hidden"); });
+    const setH = () => document.documentElement.style.setProperty("--hdr-h", head.offsetHeight + "px");
+    setH(); if (window.ResizeObserver) new ResizeObserver(setH).observe(head);
   })();
 })();

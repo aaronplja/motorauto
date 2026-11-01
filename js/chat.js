@@ -426,7 +426,8 @@
   function carCardHtml(m) {
     if (!m.carId) return "";
     const img = safeUrl(m.carImage);
-    return `<a class="car-share" href="index.html#/voiture/${encodeURIComponent(m.carId)}" target="_blank" rel="noopener">${img ? `<img src="${esc(img)}" alt="" loading="lazy" data-fallback="car">` : ""}<span><small>Fiche véhicule</small><b>${esc(m.carName || m.carId)}</b></span></a>`;
+    const isCard = !!m.cardRarity, href = isCard ? (/^sp-/.test(m.carId) ? "index.html#/jouer/cartes" : "index.html#/voiture/" + encodeURIComponent(m.carId)) : "index.html#/voiture/" + encodeURIComponent(m.carId);
+    return `<a class="car-share${isCard ? " card-share" : ""}" href="${href}" target="_blank" rel="noopener">${img ? `<img src="${esc(img)}" alt="" loading="lazy" data-fallback="car">` : ""}<span><small>${isCard ? "🃏 Carte · " + esc(m.cardRarity) : "Fiche véhicule"}</small><b>${esc(m.carName || m.carId)}</b></span></a>`;
   }
   const TRADE_LABEL = { open: "En attente de réponse", accepted: "Échange réalisé 🎉", declined: "Refusé", cancelled: "Annulé" };
   function tradeCardHtml(m) {

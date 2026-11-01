@@ -272,6 +272,7 @@
     if (n > 0 && !sp) actions.push(`<a class="cta-btn btn-ghost" href="#/voiture/${encodeURIComponent(id)}" data-close>Voir la fiche</a>`);
     if (n > 1) actions.push(`<button type="button" class="cta-btn fill-btn" data-swap>🔄 Proposer à l'échange</button>`);
     if (n > 0) actions.push(`<button type="button" class="cta-btn btn-ghost" data-share>↗ Partager</button>`);
+    if (n > 0) actions.push(`<button type="button" class="cta-btn btn-ghost" data-chatshare>💬 Dans un chat</button>`);
     if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn fill-btn" data-craft ${doc && doc.dust >= R.craft ? "" : "disabled"}>Fabriquer (${R.craft} ${window.MA.dustIcon(14)})</button>`);
     if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-wish aria-pressed="${inWish}">${inWish ? "★ Dans ma wishlist" : "☆ Wishlist"}</button>`);
     actions.push(`<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button>`);
@@ -291,6 +292,7 @@
       else if (e.target.closest("[data-flipcard]") || e.target.closest(".tcg-3d")) { const t = o.querySelector("#tcg-3d"); if (t) t.classList.toggle("back"); }
       else if (e.target.closest("[data-nav]")) stepDetail(Number(e.target.closest("[data-nav]").dataset.nav));
       else if (e.target.closest("[data-swap]")) { closeOverlay(); if (window.MATrades) window.MATrades.prefill(id); C.Router.go("/jouer/echanges"); }
+      else if (e.target.closest("[data-chatshare]") && window.MAShareCar) { closeOverlay(); window.MAShareCar.open(id, { card: car, rarity: RAR[rarityOf(car)].label }); }
       else if (e.target.closest("[data-share]") && window.MAShare) window.MAShare.shareCard(car, RAR[rarityOf(car)].label, numberOf(car));
     });
     const first = o.querySelector(".cta-btn"); if (first) first.focus({ preventScroll: true });
@@ -421,7 +423,7 @@
     const cnt = document.getElementById("tcg-count"); if (cnt) cnt.textContent = curList.length + " carte" + (curList.length > 1 ? "s" : "");
     el.className = view === "albums" ? "tcg-albums" : "tcg-grid" + (view === "compact" ? " compact" : "");
     if (view === "albums") { renderAlbums(el); return; }
-    const sp = Array.from(specials.values()).filter((s) => (filter === "all" ? true : filter === "owned" ? countOf(s.id) > 0 : false) && rarFilter === "all" && sortBy === "num");
+    const sp = Array.from(specials.values()).filter((s) => (filter === "all" ? (countOf(s.id) > 0 || (s.claimable && s.active !== false)) : filter === "owned" ? countOf(s.id) > 0 : false) && rarFilter === "all" && sortBy === "num");
     const sn = seenSet();
     el.innerHTML = sp.length && !query ? `<div class="tcg-sec">✦ Éditions limitées</div>${sp.map((s) => cardHtml(cardObj(s.id), { owned: countOf(s.id) > 0, count: countOf(s.id), isNew: countOf(s.id) > 0 && !sn.has(s.id) })).join("")}<div class="tcg-sec">Catalogue</div>` : "";
     if (!curList.length) { el.insertAdjacentHTML("beforeend", `<div class="empty-note tcg-empty">Aucune carte pour ce filtre.</div>`); return; }

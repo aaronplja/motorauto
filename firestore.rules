@@ -173,8 +173,9 @@ service cloud.firestore {
     // --- Voitures de la communauté : un pilote en publie autant qu'il veut ; lecture publique
     match /community_cars/{carId} {
       allow read: if true;
-      allow create: if validCommunityCar() && request.resource.data.createdAt == request.time;
+      allow create: if validCommunityCar() && request.resource.data.uid == request.auth.uid && request.resource.data.createdAt == request.time;
       allow update: if validCommunityCar() && (resource.data.uid == request.auth.uid || isAdmin())
+        && request.resource.data.uid == resource.data.uid
         && request.resource.data.createdAt == resource.data.createdAt;
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
@@ -509,7 +510,6 @@ service cloud.firestore {
       allow create: if signedIn() && notMuted()
         && rid == request.resource.data.event + '_' + request.auth.uid
         && request.resource.data.keys().hasOnly(['event', 'uid', 'pilot', 'avatar', 'createdAt'])
-        && request.resource.data.uid == request.auth.uid
         && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
         && request.resource.data.get('avatar', '').size() <= 500
         && request.resource.data.createdAt == request.time;
@@ -894,7 +894,7 @@ service cloud.firestore {
       return signedIn() && notMuted()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.keys().hasOnly(
-             ['uid', 'pilot', 'avatar', 'text', 'mediaUrl', 'replyTo', 'reactions', 'timestamp', 'audioUrl', 'audioMs', 'carId', 'carName', 'carImage'])
+             ['uid', 'pilot', 'avatar', 'text', 'mediaUrl', 'replyTo', 'reactions', 'timestamp', 'audioUrl', 'audioMs', 'carId', 'carName', 'carImage', 'cardRarity'])
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 1000
         && request.resource.data.get('audioUrl', '') is string && request.resource.data.get('audioUrl', '').size() <= 1000
@@ -902,6 +902,7 @@ service cloud.firestore {
         && request.resource.data.get('carId', '') is string && request.resource.data.get('carId', '').size() <= 90
         && request.resource.data.get('carName', '') is string && request.resource.data.get('carName', '').size() <= 120
         && request.resource.data.get('carImage', '') is string && request.resource.data.get('carImage', '').size() <= 600
+        && request.resource.data.get('cardRarity', '') is string && request.resource.data.get('cardRarity', '').size() <= 30
         && request.resource.data.get('mediaUrl', '') is string
         && request.resource.data.get('mediaUrl', '').size() <= 1000
         && request.resource.data.pilot is string

@@ -104,3 +104,9 @@
 .notif-app { font-size: .62rem; font-weight: 800; letter-spacing: .1em; color: var(--accent); }
 .notif-line { color: var(--color-ink) !important; font-size: .88rem; }
 .notif-text { color: var(--color-secondary); font-size: .84rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* barre de tri / onglets collants : suivent l'en-tête, et montent tout en haut quand il se masque */
+.toolbar-cluster { top: calc(var(--hdr-h, 76px) + 6px) !important; transition: top .32s cubic-bezier(.3,.7,.3,1); }
+.page-tabs { top: calc(var(--hdr-h, 76px) + 6px) !important; transition: top .32s cubic-bezier(.3,.7,.3,1); }
+.hdr-hidden .toolbar-cluster, .hdr-hidden .page-tabs { top: calc(var(--safe-top, 0px) + 8px) !important; }
+@media (prefers-reduced-motion: reduce) { .toolbar-cluster, .page-tabs { transition: none; } }

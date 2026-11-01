@@ -285,3 +285,5 @@ body.chat-page { position: fixed; left: 0; right: 0; top: 0; width: 100%; height
 
 /* retour par geste (iOS) : le navigateur anime déjà, on ne double pas l'animation */
 .chat-app.instant, .chat-app.instant * { transition: none !important; animation: none !important; }
+.car-share.card-share{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 16%,transparent),color-mix(in srgb,var(--bg-core) 55%,transparent))}
+.car-share.card-share img{width:60px;height:84px;object-fit:cover;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.35)}

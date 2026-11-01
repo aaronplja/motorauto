@@ -248,3 +248,8 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - Concours : une participation = jusqu'à 12 photos ; la carte récompense affiche une mosaïque de 3–4 photos.
 - Verre liquide sur barre du haut (masquée en descendant), menus, fenêtres, onglets, cartes.
 - Notifications : cartes avec avatar, groupées par jour ; push : titre « MOTORAUTO », texte « pseudo a envoyé : … ».
+
+## Tour 21.1
+- Règles : un admin peut modifier la voiture d'un autre pilote (community_cars) ; messages de chat avec `cardRarity` (carte partagée).
+- Éditions limitées non possédées masquées chez les autres (sauf événements récupérables).
+- Partage d'une carte dans un chat (bouton « Dans un chat »), verre liquide dans le chat, iPhone plein écran (barre d'état translucide), barre de tri qui suit l'en-tête, barre du bas réduite qui se rouvre au clic.
