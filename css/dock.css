@@ -24,7 +24,7 @@
   /* compact : la même barre, rapetissée depuis le centre-bas (jamais décentrée), puis qui regonfle avec un ressort */
   #mobile-touch-bar .dock.compact { transform: translate3d(0, 4px, 0) scale(.68); transition-duration: .45s; }
   #mobile-touch-bar .dock.compact .touch-bar-item span { opacity: 0; transform: translateY(-4px); transition-delay: 0s; }
-  #mobile-touch-bar .dock.compact .touch-bar-item svg { transform: scale(1.12); }
+  #mobile-touch-bar .dock.compact .touch-bar-item svg { transform: translate3d(0, 6px, 0) scale(1.12); }
   /* pendant le mouvement : on retire le flou (le plus coûteux) et on durcit le fond, puis on le rend */
   #mobile-touch-bar .dock.moving { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--bg-surface) 72%, transparent); }
   /* clavier ouvert : le dock descend */
