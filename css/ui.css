@@ -291,3 +291,68 @@ button.pro-stat{cursor:pointer}button.pro-stat:hover{border-color:var(--accent)}
 .combo-opt small{opacity:.55;font-size:.75rem;white-space:nowrap}
 .combo-opt.none{opacity:.75}
 .combo-more{padding:10px 12px;opacity:.6;font-size:.85rem}
+
+/* ===== Barres d'onglets « fit » : toutes les entrées visibles, sans défilement ===== */
+.page-tabs.fit{display:grid;grid-template-columns:repeat(var(--n,5),minmax(0,1fr));gap:2px;overflow:visible;-webkit-mask-image:none;mask-image:none;border-bottom:0}
+.page-tabs.fit .page-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:auto;min-height:52px;padding:6px 2px;text-align:center;line-height:1.1;border-radius:12px;border-bottom:0;white-space:nowrap}
+.page-tabs.fit .page-tab .ti{font-style:normal;font-size:1.15rem;line-height:1}
+.page-tabs.fit .page-tab .tl{font-size:.7rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.page-tabs.fit .page-tab.active{background:var(--glow-soft);color:var(--accent)}
+@media (max-width:480px){
+  .page-tabs.fit .page-tab .tl{font-size:0}
+  .page-tabs.fit .page-tab .tl{overflow:visible}
+  .page-tabs.fit .page-tab .tl::after{content:attr(data-s);font-size:.62rem;letter-spacing:-.01em}
+}
+@media (min-width:700px){
+  .page-tabs.fit{display:flex;gap:.25rem}
+  .page-tabs.fit .page-tab{flex-direction:row;gap:.45rem;min-height:44px;padding:0 .9rem}
+  .page-tabs.fit .page-tab .tl{font-size:.92rem}
+}
+
+/* badges à débloquer */
+.badge-pill.locked{opacity:.6;filter:grayscale(1);cursor:help;background:transparent;border-style:dashed}
+.badge-pill.locked small{opacity:.8;font-weight:700;margin-left:2px}
+.badge-todo{flex-basis:100%;margin-top:6px}
+.badge-todo>summary{cursor:pointer;display:inline-block;padding:6px 12px;border-radius:999px;font-size:.78rem;font-weight:700;border:1px dashed var(--glass-line,rgba(255,255,255,.2));list-style:none}
+.badge-todo>summary::-webkit-details-marker{display:none}
+.badge-todo[open]>summary{border-color:var(--accent);color:var(--accent)}
+.badge-todo .badge-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+
+/* ===== Administration : sections repliables, cartes homogènes ===== */
+.adm-sec{margin:0 0 .9rem;border-radius:16px;background:var(--bg-surface);border:1px solid var(--stroke-line);overflow:hidden}
+.adm-sec>summary{display:flex;align-items:center;gap:.6rem;padding:.85rem 1rem;cursor:pointer;list-style:none;font-weight:800;min-height:48px}
+.adm-sec>summary::-webkit-details-marker{display:none}
+.adm-sec>summary::after{content:"▾";margin-left:auto;opacity:.6;transition:transform .25s}
+.adm-sec:not([open])>summary::after{transform:rotate(-90deg)}
+.adm-sec>summary small{opacity:.6;font-weight:600}
+.adm-ic{font-size:1.2rem}
+.adm-body{padding:0 1rem 1rem;display:grid;gap:.7rem}
+.adm-body .admin-list{display:grid;gap:.6rem}
+.admin-msg{padding:.8rem .9rem;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--stroke-line);display:grid;gap:.5rem}
+.admin-msg-head{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem .7rem}
+.admin-msg-body{margin:0;overflow-wrap:anywhere}
+.admin-quick{display:flex;flex-wrap:wrap;gap:.5rem}
+.admin-quick>*{flex:1 1 180px;justify-content:center;text-align:center}
+.admin-h3{font-size:1rem;margin:1.2rem 0 .6rem}
+.stats-ribbon{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.6rem;margin:0 0 1rem}
+@media (max-width:480px){.stats-ribbon{grid-template-columns:repeat(3,1fr)}.adm-sec>summary{padding:.75rem .85rem}.adm-body{padding:0 .85rem .85rem}}
+
+/* ===== Formulaires d'ajout de véhicule (admin + Mes voitures) ===== */
+.form-modal{max-width:min(820px,100%)!important}
+.form-modal .dialog-header{position:sticky;top:0;z-index:5;background:var(--bg-surface);border-bottom:1px solid var(--stroke-line)}
+.fsec{margin:0 0 1rem;padding:1rem;border:1px solid var(--stroke-line);border-radius:16px;background:rgba(255,255,255,.03);min-width:0}
+.fsec>legend{display:flex;align-items:center;gap:.5rem;padding:0 .5rem;font-weight:800;font-size:.95rem}
+.fsec>legend span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--on-accent,#fff);font-size:.75rem}
+.form-modal .form-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}
+.form-modal .form-grid .wide,.form-modal .form-grid .input-stack.wide{grid-column:1/-1}
+.form-modal input:not([type=checkbox]):not([type=file]),.form-modal select,.form-modal textarea{width:100%;box-sizing:border-box;min-height:44px;border-radius:12px;font:inherit}
+.form-modal textarea{resize:vertical}
+.form-modal .input-stack>label{font-size:.82rem;font-weight:700;margin-bottom:.3rem;display:block}
+.sticky-save{position:sticky;bottom:0;z-index:4;padding:.8rem 0 calc(.2rem + var(--safe-bottom,0px));background:linear-gradient(to top,var(--bg-surface) 70%,transparent)}
+.form-modal .adm-stepbar{top:0;border-radius:14px}
+.form-modal .adm-stepnav{position:sticky;bottom:0;z-index:4;padding:.8rem 0 calc(.2rem + var(--safe-bottom,0px));background:linear-gradient(to top,var(--bg-surface) 70%,transparent)}
+.form-modal .adm-photo-add{display:flex;flex-wrap:wrap;gap:.5rem}
+.form-modal .adm-photo-add input[type=url]{flex:1 1 220px}
+.form-modal .adm-drives{display:flex;flex-wrap:wrap;gap:.4rem}
+@media (max-width:760px){.form-modal .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.form-modal .form-grid{grid-template-columns:1fr}.fsec{padding:.85rem .8rem}}

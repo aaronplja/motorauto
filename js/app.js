@@ -925,19 +925,30 @@
     });
     const tracks = new Set(mine.map(lapKey));
     const out = [];
-    const add = (icon, label, hint, tier) => out.push({ icon, label, hint, tier: tier || "" });
-    if (mine.length >= 1) add("🏁", "Premier chrono", "A enregistré son premier chrono");
-    if (mine.length >= 10) add("⏱️", "10 chronos", `${mine.length} chronos au classement`, "silver");
-    if (mine.length >= 50) add("🔥", "50 chronos", "Pilote infatigable", "gold");
-    if (firsts.length) add("🥇", "Premier du circuit", "Meilleur temps sur : " + firsts.slice(0, 3).join(", "), "gold");
-    if (podiums.length) add("🥉", "Sur le podium", "Top 3 sur : " + podiums.slice(0, 3).join(", "), "silver");
-    if (tracks.size >= 5) add("🗺️", "Globe-trotter", `${tracks.size} circuits différents`, "silver");
-    if (favCount >= 10) add("⭐", "Collectionneur", `${favCount} voitures dans l'écurie`);
-    if (data && data.carPhoto && data.mods) add("🔧", "Projet documenté", "Voiture, photo et modifications renseignées");
+    // add(icône, nom, indice, palier, valeur, objectif) : débloqué si valeur ≥ objectif ; sinon affiché « à débloquer » avec sa progression
+    const add = (icon, label, hint, tier, val, goal) => out.push({ icon, label, hint, tier: tier || "", val: Math.min(val, goal), goal, unlocked: val >= goal });
+    add("🏁", "Premier chrono", "Enregistrer son premier chrono", "", mine.length, 1);
+    add("⏱️", "10 chronos", "Enregistrer 10 chronos", "silver", mine.length, 10);
+    add("🔥", "50 chronos", "Enregistrer 50 chronos : pilote infatigable", "gold", mine.length, 50);
+    add("💯", "100 chronos", "Enregistrer 100 chronos", "gold", mine.length, 100);
+    add("🗺️", "Globe-trotter", "Chronométrer 5 circuits différents", "silver", tracks.size, 5);
+    add("🌍", "Grand voyageur", "Chronométrer 15 circuits différents", "gold", tracks.size, 15);
+    add("🥉", "Sur le podium", firsts.concat(podiums).length ? "Top 3 sur : " + podiums.concat(firsts).slice(0, 3).join(", ") : "Finir dans le top 3 d'un circuit (2 pilotes minimum)", "silver", firsts.length + podiums.length, 1);
+    add("🥇", "Premier du circuit", firsts.length ? "Meilleur temps sur : " + firsts.slice(0, 3).join(", ") : "Signer le meilleur temps d'un circuit (2 pilotes minimum)", "gold", firsts.length, 1);
+    add("👑", "Roi des circuits", "Être premier sur 3 circuits", "gold", firsts.length, 3);
+    if (favCount != null) {
+      add("⭐", "Collectionneur", "Avoir 10 voitures dans l'écurie", "", favCount, 10);
+      add("🏛️", "Conservateur", "Avoir 30 voitures dans l'écurie", "silver", favCount, 30);
+    }
+    add("🔧", "Projet documenté", "Renseigner sa voiture, sa photo et ses modifications", "", data && data.carPhoto && data.mods ? 1 : 0, 1);
+    add("✍️", "Présenté", "Rédiger sa biographie de pilote", "", data && data.bio && String(data.bio).trim().length >= 10 ? 1 : 0, 1);
     return out;
   }
   function badgesHtml(list) {
-    return list.map((b) => `<span class="badge-pill ${esc(b.tier)}" title="${esc(b.hint)}"><i>${b.icon}</i>${esc(b.label)}</span>`).join("");
+    const pill = (b) => `<span class="badge-pill ${esc(b.tier)}" title="${esc(b.hint)}"><i>${b.icon}</i>${esc(b.label)}</span>`;
+    const lock = (b) => `<span class="badge-pill locked" title="${esc(b.hint)}"><i>🔒</i>${esc(b.label)}${b.goal > 1 ? ` <small>${b.val}/${b.goal}</small>` : ""}</span>`;
+    const got = list.filter((b) => b.unlocked), todo = list.filter((b) => !b.unlocked);
+    return got.map(pill).join("") + (todo.length ? `<details class="badge-todo"><summary>🔒 ${todo.length} badge${todo.length > 1 ? "s" : ""} à débloquer</summary><div class="badge-row">${todo.map(lock).join("")}</div></details>` : "");
   }
 
   // ------------------------------------------------------------- classement
@@ -1512,7 +1523,7 @@
       $("pub-profile-badges").innerHTML = "";
       fetchAllLaps().then(() => {
         if (pubUid === userId) {
-          $("pub-profile-badges").innerHTML = badgesHtml(computeBadges(userId, data, 0));
+          $("pub-profile-badges").innerHTML = badgesHtml(computeBadges(userId, data, null));
         }
       }).catch(() => {});
 
