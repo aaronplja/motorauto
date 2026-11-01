@@ -532,7 +532,7 @@
 
         <div class="sheet-section-head">Enregistrer un chrono</div>
         <div class="telemetry-input-matrix">
-          <div class="input-stack"><label for="telemetry-track">Circuit</label><input type="text" id="telemetry-track" maxlength="60" placeholder="Ex : Nürburgring Nordschleife"></div>
+          <div class="input-stack"><label for="telemetry-track">Circuit</label><input type="text" id="telemetry-track" maxlength="60" list="circuit-names" autocomplete="off" placeholder="Rechercher ou saisir un circuit"></div>
           <div class="input-stack"><label for="telemetry-time">Chrono (M:SS.cc)</label><input type="text" id="telemetry-time" maxlength="10" inputmode="decimal" placeholder="Ex : 7:44.88"></div>
           <div class="input-stack"><label for="telemetry-note">Configuration</label><input type="text" id="telemetry-note" maxlength="80" placeholder="Ex : semi-slicks, stage 1"></div>
         </div>
@@ -847,6 +847,12 @@
     }
   }
 
+  // Circuits : les anciens noms libres sont rapprochés (à l'affichage) des noms de la liste mondiale.
+  const MC = () => window.MACircuits || null;
+  function canonKeyOf(name) { const m = MC(); return m ? m.canonKey(name) : trackKey(name); }
+  function lapKey(l) { const m = MC(); return m && l.track ? m.canonKey(l.track) : (l.trackKey || trackKey(l.track || "")); }
+  function displayTrack(raw, key) { const m = MC(); const c = m && m.canon(raw || ""); return c ? c.name : raw; }
+
   async function submitTelemetry(carId) {
     if (!requireLogin()) return;
     const errBox = $("telemetry-error");
@@ -864,8 +870,8 @@
     }
 
     try { await fetchAllLaps(); } catch (_) { /* hors-ligne : pas de détection de record */ }
-    const tk = trackKey(track);
-    const isRecord = !allLaps.some((l) => (l.trackKey || trackKey(l.track || "")) === tk && l.chronoMs <= ms);
+    const tk = canonKeyOf(track);
+    const isRecord = !allLaps.some((l) => lapKey(l) === tk && l.chronoMs <= ms);
     const lapId = db.collection("global_laps").doc().id;
     const chrono = formatLapTime(ms);
     const carName = `${car.brand} ${car.model}`.slice(0, 100);
@@ -873,7 +879,7 @@
     try {
       await db.collection("global_laps").doc(lapId).set({
         pilot: pilotName(), pilotUid: currentUser.uid, carName, carId,
-        track: track.slice(0, 60), trackKey: trackKey(track), chrono, chronoMs: ms,
+        track: track.slice(0, 60), trackKey: canonKeyOf(track), chrono, chronoMs: ms,
         note: note || "Stock", createdAt: FieldValue.serverTimestamp()
       });
     } catch (err) {
@@ -898,7 +904,7 @@
     const mine = allLaps.filter((l) => l.pilotUid === uid);
     const byTrack = new Map();
     allLaps.forEach((l) => {
-      const k = l.trackKey || trackKey(l.track || "");
+      const k = lapKey(l);
       if (!k) return;
       if (!byTrack.has(k)) byTrack.set(k, { name: l.track, laps: [] });
       byTrack.get(k).laps.push(l);
@@ -917,7 +923,7 @@
       if (pos === 0) firsts.push(t.name);
       else if (pos > 0 && pos < 3) podiums.push(t.name);
     });
-    const tracks = new Set(mine.map((l) => l.trackKey || trackKey(l.track || "")));
+    const tracks = new Set(mine.map(lapKey));
     const out = [];
     const add = (icon, label, hint, tier) => out.push({ icon, label, hint, tier: tier || "" });
     if (mine.length >= 1) add("🏁", "Premier chrono", "A enregistré son premier chrono");
@@ -990,18 +996,22 @@
     const select = $("leaderboard-track-select");
     const counts = new Map();
     filteredLaps().forEach((l) => {
-      const key = l.trackKey || trackKey(l.track || "");
+      const key = lapKey(l);
       if (!key) return;
-      const entry = counts.get(key) || { name: l.track, n: 0 };
+      const entry = counts.get(key) || { name: displayTrack(l.track, key), n: 0 };
       entry.n++;
       counts.set(key, entry);
     });
-    const tracks = Array.from(counts.entries()).sort((a, b) => b[1].n - a[1].n);
+    const m = MC();
+    const withLaps = Array.from(counts.entries()).sort((a, b) => b[1].n - a[1].n);
+    const empty = m ? m.list.filter((c) => !counts.has(c.key)).sort((a, b) => a.name.localeCompare(b.name, "fr")) : [];
     const previous = select.value;
-    select.innerHTML = tracks.length
-      ? tracks.map(([key, v]) => `<option value="${esc(key)}">${esc(v.name)} (${v.n})</option>`).join("")
+    const opt = (k, label, cls) => `<option value="${esc(k)}"${cls ? ` data-none="1"` : ""}>${esc(label)}</option>`;
+    select.innerHTML = withLaps.length || empty.length
+      ? withLaps.map(([k, v]) => opt(k, `${v.name} (${v.n})`)).join("") + empty.map((c) => opt(c.key, `${c.name} — aucun chrono`, 1)).join("")
       : `<option value="">Aucun circuit</option>`;
-    if (tracks.some(([k]) => k === previous)) select.value = previous;
+    if (withLaps.some(([k]) => k === previous) || empty.some((c) => c.key === previous)) select.value = previous;
+    if (window.MAComboSelect) window.MAComboSelect.refresh(select);
   }
 
   function lapChips(lap) {
@@ -1021,7 +1031,7 @@
       list.innerHTML = `<div class="empty-note">Aucun chrono ne correspond à ces filtres. Essaie une autre catégorie ou une période plus large.</div>`;
       return;
     }
-    const laps = sortLaps(filteredLaps().filter((l) => (l.trackKey || trackKey(l.track || "")) === key)).slice(0, 50);
+    const laps = sortLaps(filteredLaps().filter((l) => lapKey(l) === key)).slice(0, 50);
     list.innerHTML = laps.map((lap, idx) => {
       const pilotLink = lap.pilotUid
         ? `<span class="pilot-link" data-action="open-profile" data-uid="${esc(lap.pilotUid)}">${esc(lap.pilot || "Pilote Anonyme")}</span>`

@@ -48,10 +48,7 @@
         <button type="button" class="me-close" data-me="close" aria-label="Fermer">&times;</button>
         ${head}
         ${mine}
-        <div class="me-group"><h3>Découvrir</h3>
-          ${row("#/classement", "bar", "Classement")}
-          ${user ? "" : row("chat.html", "chat", "Salon des pilotes")}
-        </div>
+        ${user ? "" : `<div class="me-group"><h3>Découvrir</h3>${row("chat.html", "chat", "Salon des pilotes")}</div>`}
         <div class="me-group"><h3>Préférences &amp; aide</h3>
           ${user ? row("#/reglages/profil", "cog", "Réglages", "", 'data-me-link') : ""}
           ${btnRow("theme", "sun", "Ambiance visuelle")}

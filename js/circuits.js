@@ -10,13 +10,14 @@
   const fmtDate = (ms) => (ms ? new Date(ms).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "—");
 
   async function laps() { return (await C.app.getLaps()).slice(); }
-  const keyOf = (l) => l.trackKey || C.MA.trackKey(l.track || "");
+  const keyOf = (l) => (window.MACircuits && l.track ? window.MACircuits.canonKey(l.track) : (l.trackKey || C.MA.trackKey(l.track || "")));
+  const nameOf = (l, k) => { const c = window.MACircuits && l.track ? window.MACircuits.canon(l.track) : null; return c ? c.name : (l.track || k); };
 
   function groupTracks(all) {
     const m = new Map();
     all.forEach((l) => {
       const k = keyOf(l); if (!k || !(l.chronoMs > 0)) return;
-      if (!m.has(k)) m.set(k, { key: k, name: l.track || k, laps: [] });
+      if (!m.has(k)) m.set(k, { key: k, name: nameOf(l, k), laps: [] });
       m.get(k).laps.push(l);
     });
     return Array.from(m.values()).map((t) => { t.laps.sort((a, b) => a.chronoMs - b.chronoMs); t.best = t.laps[0]; t.pilots = new Set(t.laps.map((l) => l.pilotUid)).size; return t; })

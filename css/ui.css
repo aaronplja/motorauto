@@ -277,3 +277,17 @@ button.pro-stat{cursor:pointer}button.pro-stat:hover{border-color:var(--accent)}
 .referral-card span{font-size:.85rem;opacity:.75}
 .referral-actions{display:flex;gap:.5rem;flex:1 1 320px;max-width:520px}
 .referral-actions input{flex:1;min-width:0;padding:.55rem .8rem;border-radius:12px;border:1px solid var(--stroke-line);background:var(--bg-elevated);color:inherit;font-size:.85rem}
+
+/* Retour « ← Jouer » sur les sous-pages du jeu */
+.play-back{display:inline-flex;align-items:center;gap:6px;margin:4px 0 10px;padding:8px 14px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--text);background:var(--glass-bg,rgba(255,255,255,.06));border:1px solid var(--glass-line,rgba(255,255,255,.12))}
+.play-back:hover{border-color:var(--accent)}
+/* Liste déroulante avec recherche (circuits) */
+.combo{position:relative;width:100%}
+.combo-input{width:100%;box-sizing:border-box;padding:11px 14px;border-radius:12px;font:inherit;color:inherit;background:var(--glass-bg,rgba(255,255,255,.06));border:1px solid var(--glass-line,rgba(255,255,255,.12))}
+.combo-input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.combo-pop{position:absolute;z-index:60;left:0;right:0;top:calc(100% + 6px);max-height:min(50vh,340px);overflow:auto;padding:6px;border-radius:14px;background:var(--bg-2,#15171c);border:1px solid var(--glass-line,rgba(255,255,255,.14));box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.combo-opt{display:flex;justify-content:space-between;gap:10px;align-items:center;width:100%;text-align:left;padding:10px 12px;border:0;border-radius:10px;background:none;color:inherit;font:inherit;cursor:pointer}
+.combo-opt.on,.combo-opt:hover{background:rgba(255,255,255,.08)}
+.combo-opt small{opacity:.55;font-size:.75rem;white-space:nowrap}
+.combo-opt.none{opacity:.75}
+.combo-more{padding:10px 12px;opacity:.6;font-size:.85rem}

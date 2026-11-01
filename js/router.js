@@ -35,7 +35,7 @@
     duel: "page-duel", club: "page-club", clubs: "page-clubs", market: "page-market", play: "page-play"
   };
   // entrée de menu mise en avant pour chaque page
-  const NAV_OF = { home: "home", catalog: "catalog", car: "catalog", engine: "catalog", commcar: "community", community: "community", pilot: "community", leaderboard: "me", circuit: "me", garage: "me", settings: "me", admin: "me", contact: "me", legal: "me", duel: "play", quiz: "play", play: "play", club: "community", clubs: "community", market: "community" };
+  const NAV_OF = { home: "home", catalog: "catalog", car: "catalog", engine: "catalog", commcar: "community", community: "community", pilot: "community", leaderboard: "community", circuit: "community", garage: "me", settings: "me", admin: "me", contact: "me", legal: "me", duel: "play", quiz: "play", play: "play", club: "community", clubs: "community", market: "community" };
   const TITLES = {
     home: "MOTORAUTO | Archive automobile & communauté de pilotes", catalog: "Catalogue | MOTORAUTO", community: "Communauté | MOTORAUTO",
     play: "Jouer | MOTORAUTO", leaderboard: "Classements | MOTORAUTO", circuit: "Circuit | MOTORAUTO", pilot: "Pilote | MOTORAUTO", garage: "Mon garage | MOTORAUTO", settings: "Réglages | MOTORAUTO",
@@ -47,7 +47,7 @@
   // barres d'onglets : une seule définition, dessinée dans chaque page de la section (nav[data-section])
   const SECTIONS = {
     play: { page: "play", items: [["apercu", "Jouer"], ["cartes", "Cartes"], ["echanges", "Échanges"], ["defis", "Défis"], ["concours", "Concours"]] },
-    community: { page: "community", items: [["fil", "Fil"], ["pilotes", "Pilotes"], ["voitures", "Voitures"], ["evenements", "Sorties"], ["clubs", "Clubs", "/clubs", ["clubs", "club"]], ["annonces", "Annonces", "/annonces", ["market"]]] },
+    community: { page: "community", items: [["fil", "Fil"], ["pilotes", "Pilotes"], ["voitures", "Voitures"], ["evenements", "Sorties"], ["clubs", "Clubs", "/clubs", ["clubs", "club"]], ["annonces", "Annonces", "/annonces", ["market"]], ["classement", "Classement", "/classement", ["leaderboard", "circuit"]]] },
     leaderboard: { page: "leaderboard", items: [["chronos", "Chronos"], ["circuits", "Circuits"], ["voitures", "Voitures"], ["pilotes", "Pilotes"], ["collection", "Cartes"]] },
     garage: { page: "garage", items: [["apercu", "Aperçu"], ["voitures", "Mes voitures"], ["suivi", "Suivi"]] },
     settings: { page: "settings", items: [["profil", "Profil"], ["ambiance", "Ambiance"], ["notifications", "Notifications"], ["carte", "Carte & vie privée"]] },
@@ -127,6 +127,11 @@
     if (!pageEl) return;
     pageEl.querySelectorAll("nav[data-section]").forEach((nav) => {
       const sec = SECTIONS[nav.dataset.section]; if (!sec) return;
+      if (nav.dataset.section === "play") {   // Jouer : plus d'onglets, les jeux s'ouvrent depuis les tuiles ; un retour sur les sous-pages
+        nav.classList.remove("page-tabs"); nav.removeAttribute("role"); nav.removeAttribute("aria-label");
+        nav.innerHTML = route.params.tab && route.params.tab !== "apercu" ? `<a class="back-link play-back" href="#/jouer">← Jouer</a>` : "";
+        return;
+      }
       nav.setAttribute("role", "tablist"); nav.classList.add("page-tabs"); nav.setAttribute("aria-label", "Sections");
       nav.innerHTML = sec.items.map((it) => {
         const custom = !!it[2], href = "#" + (custom ? it[2] : PREFIX[nav.dataset.section] + "/" + it[0]);
