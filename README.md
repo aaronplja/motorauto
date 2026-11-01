@@ -279,3 +279,9 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 
 ### Une fiche par voiture (js/data-split.js)
 Les fiches qui regroupaient plusieurs modèles (ex. 106 Maxi / AX Sport / Visa) sont scindées au chargement, une fiche par voiture ; les Renault restent groupées. La première fiche garde son id (cartes déjà obtenues conservées). Pour scinder une autre fiche, ajouter une entrée dans `S` de ce fichier. Après modification : `node scripts/sync-functions.js` puis redéployer les functions.
+
+### Cartes à plusieurs images
+Une voiture avec plusieurs photos https (galerie admin) = une carte à plusieurs images. Quand le joueur obtient à nouveau la carte, une image qu'il n'a pas encore se débloque au hasard (pas un doublon, pas de cristaux). Palier 50 % (si 4 images ou plus) : cristaux = 4 x valeur doublon ; 100 % : cristaux = coût de fabrication. Une fois tout débloqué, les copies suivantes sont de vrais doublons. Données : champs `pics` et `picClaims` du document `collections/{uid}` (règles Firestore mises à jour). Code : `js/game-core.js` (picKey, picsHave, picReward), `functions/game.js` (openPack), `js/cards.js` (pastille, galerie).
+
+### Compléments de fiches (lots)
+`js/data-enrich-bmw.js`, `data-enrich-mercedes.js` et `data-enrich-renault.js` (Renault + Alpine) complètent 0-100, couple, histoire et anecdotes via `MAKIT.enrich` (sans jamais écraser une valeur existante). Valeurs constructeur arrondies : fiches marquées « indicatif ». Reste à faire : rallye, anciennes fiches (couples / V-Max).

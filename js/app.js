@@ -1335,24 +1335,28 @@
   async function saveMyCar() {
     if (!currentUser) return;
     const err = $("mc-error"); err.textContent = "";
+    const fail = (m) => { err.textContent = m; try { err.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_) { /* ancien navigateur */ } MA.toast(m, "err"); };
     const pending = $("mc-url").value.trim();
-    if (pending) { if (!safeUrl(pending)) { err.textContent = "L'URL de l'image doit commencer par https://"; return; } if (!mcImages.includes(pending)) mcImages.push(pending); $("mc-url").value = ""; }
+    if (pending) { if (!safeUrl(pending)) { fail("L'URL de l'image doit commencer par https://"); return; } if (!mcImages.includes(pending)) mcImages.push(pending); $("mc-url").value = ""; }
     const name = $("mc-name").value.trim();
-    if (name.length < 2) { err.textContent = "Donne un nom à ta voiture (ex. Peugeot 106 S16)."; return; }
-    if ($("mc-mods").value.trim() && !$("mc-legal").checked) { err.textContent = "Coche la case de responsabilité (pièces et modifications) pour enregistrer."; $("mc-legal").focus(); return; }
+    if (name.length < 2) { fail("Donne un nom à ta voiture (ex. Peugeot 106 S16)."); return; }
+    if ($("mc-mods").value.trim() && !$("mc-legal").checked) { fail("Coche la case de responsabilité (pièces et modifications) pour enregistrer."); return; }
     const power = Number($("mc-power").value);
     const cat = catalogFromInput();
-    if (cat.bad) { err.textContent = "Fiche du catalogue inconnue : choisis-la dans la liste ou vide le champ."; return; }
-    const data = {
-      catalogId: cat.id,
-      uid: mcEditing ? mcEditing.uid : currentUser.uid, pilot: mcEditing ? mcEditing.pilot : profile.username, avatar: mcEditing ? (mcEditing.avatar || "") : (profile.avatar || ""),
+    if (cat.bad) { fail("Fiche du catalogue inconnue : choisis-la dans la liste ou vide le champ."); return; }
+    let data;
+    try { data = {
+      catalogId: cat.id || "",
+      uid: mcEditing ? mcEditing.uid : currentUser.uid,
+      pilot: String(mcEditing ? mcEditing.pilot : ((profile && profile.username) || currentUser.displayName || "Pilote")).slice(0, 40),
+      avatar: (() => { const a = String(mcEditing ? (mcEditing.avatar || "") : ((profile && profile.avatar) || "")); return a.length <= 500 ? a : ""; })(),
       name: name.slice(0, 80), year: $("mc-year").value.trim().slice(0, 20), engine: $("mc-engine").value.trim().slice(0, 100),
       drive: ($("mc-drive").value || "").slice(0, 2),
       power: power > 0 && power < 5000 ? Math.round(power) : 0,
       zero: (() => { const z = Number($("mc-zero").value.replace(",", ".")); return z > 0 && z < 60 ? Math.round(z * 10) / 10 : 0; })(),
       description: $("mc-desc").value.trim().slice(0, 600), mods: $("mc-mods").value.trim().slice(0, 500),
       photos: mcImages.filter((u) => safeUrl(u)).slice(0, 8)
-    };
+    }; } catch (e) { fail("Enregistrement impossible : " + e.message); return; }
     const btn = $("mc-save"); btn.disabled = true;
     try {
       if (mcEditing) {
@@ -1371,7 +1375,7 @@
       await loadMyCars();
       if (pubUid) renderUserCars(pubUid);
     } catch (e) {
-      err.textContent = "Enregistrement impossible : " + e.message;
+      fail(e.queued ? "Réseau indisponible : réessaie dans un instant." : "Enregistrement impossible : " + (e.message || e));
     } finally { btn.disabled = false; }
   }
 
@@ -1582,9 +1586,9 @@
         <div class="admin-engine-grid">
           <div class="input-stack"><label>Nom de la Phase</label><input type="text" class="adm-phase-name" list="adm-phase-list" value="${val(v.phaseName)}" placeholder="Ex: Phase 1"></div>
           <div class="input-stack"><label>Moteur</label><input type="text" class="adm-eng-name" value="${val(v.name)}" placeholder="Ex: 2.0L 16V"></div>
-          <div class="input-stack"><label>Puissance (Ch)</label><input type="number" min="1" class="adm-eng-power" value="${val(v.power)}" placeholder="138"></div>
+          <div class="input-stack"><label>Puissance (Ch)</label><input type="number" min="0" class="adm-eng-power" value="${val(v.power)}" placeholder="138"></div>
           <div class="input-stack"><label>Couple (Nm)</label><input type="number" min="0" class="adm-eng-torque" value="${val(v.torque)}" placeholder="190"></div>
-          <div class="input-stack"><label>V-Max (km/h)</label><input type="number" min="1" class="adm-eng-speed" value="${val(v.speed)}" placeholder="210"></div>
+          <div class="input-stack"><label>V-Max (km/h)</label><input type="number" min="0" class="adm-eng-speed" value="${val(v.speed)}" placeholder="210"></div>
           <div class="input-stack"><label>0-100 (s)</label><input type="text" inputmode="decimal" class="adm-eng-zero" value="${val(v.zeroToHundred)}" placeholder="8.2"></div>
         </div>
         <div class="admin-engine-grid">
@@ -1741,10 +1745,10 @@
     const errBox = $("admin-form-error");
     errBox.textContent = "";
     const id = $("adm-id").value.trim();
-    if (!/^[a-z0-9][a-z0-9-]{2,60}$/.test(id)) { errBox.textContent = "ID invalide : minuscules, chiffres et tirets (3 à 61 caractères)."; return; }
+    if (!/^[a-z0-9][a-z0-9-]{2,60}$/.test(id)) { errBox.textContent = "ID invalide : minuscules, chiffres et tirets (3 à 61 caractères)."; if (window.MAAdminStep) MAAdminStep(1); return; }
     const pending = $("adm-image").value.trim();
-    if (pending) { if (!safeUrl(pending)) { errBox.textContent = "L'URL de l'image doit commencer par https://"; return; } if (!admImages.includes(pending)) admImages.push(pending); }
-    if (!admImages.length) { errBox.textContent = "Ajoute au moins une photo (URL ou galerie)."; return; }
+    if (pending) { if (!safeUrl(pending)) { errBox.textContent = "L'URL de l'image doit commencer par https://"; if (window.MAAdminStep) MAAdminStep(1); return; } if (!admImages.includes(pending)) admImages.push(pending); }
+    if (!admImages.length) { errBox.textContent = "Ajoute au moins une photo (URL ou galerie)."; if (window.MAAdminStep) MAAdminStep(1); return; }
     const image = admImages[0];
 
     const phasesMap = new Map();
@@ -1762,8 +1766,10 @@
         code: block.querySelector(".adm-eng-code") ? q(".adm-eng-code") : "",
         info: block.querySelector(".adm-eng-info") ? q(".adm-eng-info") : ""
       };
-      if (!engine.name || !(engine.power > 0) || !(engine.speed > 0) || !(engine.zeroToHundred > 0)) {
-        errBox.textContent = `Moteur n°${i + 1} : nom, puissance, V-Max et 0-100 sont obligatoires (nombres > 0).`;
+      engine.power = engine.power || 0; engine.speed = engine.speed || 0; engine.zeroToHundred = engine.zeroToHundred || 0;
+      if (!engine.name) {
+        errBox.textContent = `Moteur n°${i + 1} : le nom est obligatoire. (Puissance, V-Max et 0-100 peuvent rester vides : mets 0 si tu ne sais pas.)`;
+        if (window.MAAdminStep) MAAdminStep(2);
         return;
       }
       if (!phasesMap.has(phaseName)) {
@@ -1777,7 +1783,7 @@
       }
       phasesMap.get(phaseName).engines.push(engine);
     }
-    if (phasesMap.size === 0) { errBox.textContent = "Ajoutez au moins un moteur."; return; }
+    if (phasesMap.size === 0) { errBox.textContent = "Ajoutez au moins un moteur."; if (window.MAAdminStep) MAAdminStep(2); return; }
 
     const records = $("adm-records").value.split("\n").map((l) => l.trim()).filter(Boolean).map((line) => {
       const [type, ...rest] = line.split("|");

@@ -155,7 +155,30 @@
     out.push(second);
     return out;
   }
-  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [] });
+  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [], pics: {}, picClaims: {} });
+
+  // ------------------------------------------------------------------ cartes à plusieurs images
+  /** clé courte et stable d'une image (ne change pas si l'administrateur réordonne la galerie) */
+  const picKey = (u) => { let h = 5381; const t = String(u); for (let i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return h.toString(36); };
+  /** images réelles d'une voiture (adresses https, sans doublon, 12 maximum) ; les images génériques locales ne comptent pas */
+  const picUrls = (car) => {
+    const out = []; [car && car.image].concat((car && car.images) || []).forEach((u) => { if (typeof u === "string" && /^https:\/\//i.test(u) && out.indexOf(u) < 0) out.push(u); });
+    return out.slice(0, 12);
+  };
+  const picKeys = (car) => picUrls(car).map(picKey);
+  /** clés des images débloquées pour une carte possédée (la première image est acquise dès la 1re carte) */
+  function picsHave(d, id, keys) {
+    const set = (d.pics && d.pics[id]) || [], out = keys.filter((k) => set.indexOf(k) >= 0);
+    if (!out.length && keys.length && (d.owned && d.owned[id] > 0)) out.push(keys[0]);
+    return out;
+  }
+  /** récompenses de la courbe de progression : palier 50 % (si 4 images ou plus) puis 100 %. mask : paliers déjà encaissés (1 = 50 %, 2 = 100 %) */
+  function picReward(rar, n, total, mask) {
+    let gain = 0, m = mask || 0, R = RAR[rar] || RAR.common;
+    if (total >= 4 && n >= Math.ceil(total / 2) && !(m & 1)) { gain += R.dust * 4; m |= 1; }
+    if (total >= 2 && n >= total && !(m & 2)) { gain += R.craft; m |= 2; }
+    return { gain, mask: m };
+  }
   /** recompte cartes distinctes (hors éditions spéciales) et éditions spéciales */
   function recount(doc) {
     let c = 0, s = 0;
@@ -232,7 +255,7 @@
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     setsOf, setReward,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    RAR, ORDER, SHOP_PACK, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount,
+    RAR, ORDER, SHOP_PACK, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

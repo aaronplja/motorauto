@@ -32,7 +32,7 @@
     async function isKnownCard(pool, id) { return pool.byId.has(id) || (core.isSpecial(id) && !!(await specialCard(id))); }
 
     // ---------------------------------------------------------------- petits utilitaires
-    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0 });
+    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {} });
     /** historique des cristaux (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
     function dustMove(d, n, why) {
       if (!n) return;
@@ -115,20 +115,34 @@
           dustMove(d, -core.SHOP_PACK.cost, "Pack acheté");
         }
         const ids = kind === "shop" ? core.drawShopPack(pool.rar, pool.ids, rng) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % 10 === 0);
-        let dust = 0;
+        let dust = 0, bonus = 0;
+        d.pics = d.pics || {}; d.picClaims = d.picClaims || {};
         const cards = ids.map((id) => {
-          const had = d.owned[id] || 0; d.owned[id] = had + 1;
-          const rar = pool.rar.get(id);
+          const had = d.owned[id] || 0, rar = pool.rar.get(id), keys = (pool.byId.get(id) || {}).pics || [];
+          if (had > 0 && keys.length > 1) {
+            // carte déjà possédée à plusieurs images : on débloque une image qu'elle n'a pas encore (ce n'est pas un doublon)
+            const have = core.picsHave(d, id, keys), missing = keys.filter((k) => have.indexOf(k) < 0);
+            if (missing.length) {
+              const pick = missing[Math.floor(rng() * missing.length)];
+              d.pics[id] = have.concat(pick);
+              const rw = core.picReward(rar, d.pics[id].length, keys.length, d.picClaims[id]);
+              d.picClaims[id] = rw.mask; bonus += rw.gain;
+              return { id, fresh: false, rarity: rar, newPic: pick, picN: d.pics[id].length, picTotal: keys.length, reward: rw.gain };
+            }
+          }
+          d.owned[id] = had + 1;
+          if (had === 0 && keys.length) d.pics[id] = [keys[0]];
           if (had > 0) dust += core.RAR[rar].dust;
-          return { id, fresh: had === 0, rarity: rar };
+          return { id, fresh: had === 0, rarity: rar, picTotal: keys.length };
         });
+        if (bonus) dustMove(d, bonus, "Collection d'images");
         if (dust) dustMove(d, dust, kind === "shop" ? "Doublons du pack acheté" : "Doublons");
-        if (kind === "shop") { writeCol(tx, uid, d); return { cards, dust, doc: view(d) }; }   // n'entre ni dans les packs ouverts, ni dans les défis
-        if (kind === "test") { core.recount(d); writeCol(tx, uid, d); return { cards, dust, doc: view(d), test: true }; }
+        if (kind === "shop") { writeCol(tx, uid, d); return { cards, dust, bonus, doc: view(d) }; }   // n'entre ni dans les packs ouverts, ni dans les défis
+        if (kind === "test") { core.recount(d); writeCol(tx, uid, d); return { cards, dust, bonus, doc: view(d), test: true }; }
         if (kind === "daily") { d.lastPack = today; if (w.dailyDays.indexOf(today) < 0) w.dailyDays.push(today); } else d.bonus--;
         d.opened++; w.packs++;
         writeCol(tx, uid, d); writeWeekly(tx, uid, w);
-        return { cards, dust, doc: view(d) };
+        return { cards, dust, bonus, doc: view(d) };
       });
     }
 

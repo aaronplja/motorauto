@@ -35,10 +35,24 @@
   const isOwned = (id) => !!(doc && (doc.owned[id] || 0) > 0);
   const countOf = (id) => (doc && doc.owned[id]) || 0;
 
+  // ----- cartes à plusieurs images : une image se débloque à chaque nouvelle copie obtenue (pas un doublon)
+  function picInfo(car) {
+    if (!car || car.special || !G.picUrls) return null;
+    const urls = G.picUrls(car).filter((u) => C.safeUrl(u)); if (urls.length < 2) return null;
+    const keys = urls.map(G.picKey), have = doc ? G.picsHave(doc, car.id, keys) : [];
+    return { urls, keys, have };
+  }
+  const picPrefKey = (id) => "ma_pic_" + id;
+  function shownUrl(car, pi) {
+    let k = ""; try { k = localStorage.getItem(picPrefKey(car.id)) || ""; } catch (_) { /* stockage indisponible */ }
+    const key = k && pi.have.indexOf(k) >= 0 ? k : pi.have[0], i = pi.keys.indexOf(key);
+    return pi.urls[i >= 0 ? i : 0];
+  }
   function cardHtml(car, o) {
     o = o || {};
     const esc = C.esc, r = rarityOf(car), R = RAR[r], owned = o.owned !== false, sp = car.special;
-    const img = car.image && C.safeUrl(car.image) ? `<img class="${owned ? "" : "tcg-ghost"}" src="${esc(C.safeUrl(car.image))}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">${owned ? "" : `<span class="tcg-q tcg-q-over" aria-hidden="true">?</span>`}` : `<span class="tcg-q" aria-hidden="true">${owned && sp ? "✦" : "?"}</span>`;
+    const pi = owned && !sp ? picInfo(car) : null, cardImage = o.image || (pi && pi.have.length ? shownUrl(car, pi) : car.image);
+    const img = cardImage && C.safeUrl(cardImage) ? `<img class="${owned ? "" : "tcg-ghost"}" src="${esc(C.safeUrl(cardImage))}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">${owned ? "" : `<span class="tcg-q tcg-q-over" aria-hidden="true">?</span>`}` : `<span class="tcg-q" aria-hidden="true">${owned && sp ? "✦" : "?"}</span>`;
     const mosaic = owned && sp && Array.isArray(car.images) && car.images.length > 1 ? car.images.map((u) => C.safeUrl(u)).filter(Boolean).slice(0, 4) : null;
     const model = String(car.model || "").replace(/\s*\(.*$/, "");
     const hasStats = !sp || car.stats.power > 0;
@@ -53,6 +67,7 @@
       <div class="tcg-art ${mosaic ? "tcg-mosaic m" + mosaic.length : ""}">${mosaic ? mosaic.map((u) => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">`).join("") : img}<i class="tcg-foil" aria-hidden="true"></i>${owned && !sp && car.drives && car.drives[0] && window.MATrack ? `<span class="tcg-drv" title="${esc(window.MATrack.DRIVES[car.drives[0]][0])}">${window.MATrack.driveIcon(car.drives[0], 14)}</span>` : ""}</div><i class="tcg-holo" aria-hidden="true"></i>
       <div class="tcg-body"><span class="tcg-brand">${owned || sp ? esc(car.brand) : "—"}</span><b class="tcg-name">${owned || sp ? esc(model) : "Carte à débloquer"}</b>${stats}</div>
       <span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span><span class="tcg-no">${no}</span>
+      ${pi ? `<span class="tcg-pics" title="Images débloquées : ${pi.have.length} sur ${pi.keys.length}"><i></i>${pi.have.length}/${pi.keys.length}</span>` : ""}
       ${o.count > 1 ? `<span class="tcg-dup">×${o.count}</span>` : ""}${o.isNew ? `<span class="tcg-new-pill">NEW</span>` : ""}${o.wish ? `<span class="tcg-wish" title="Dans ta wishlist" aria-label="Dans ta wishlist">★</span>` : ""}
     </div>`;
   }
@@ -118,7 +133,7 @@
       if (!doc) await load();
       const r = await API("openPack", { kind });
       applyDoc(r.doc);
-      showPack(r.cards.map((c) => ({ car: cardObj(c.id), fresh: c.fresh })).filter((x) => x.car), r.dust, kind);
+      showPack(r.cards.map((c) => { const car = cardObj(c.id), pi = picInfo(car), at = c.newPic && pi ? pi.keys.indexOf(c.newPic) : -1; return { car, fresh: c.fresh, newPic: at >= 0, image: at >= 0 ? pi.urls[at] : "", picN: c.picN, picTotal: c.picTotal, reward: c.reward || 0 }; }).filter((x) => x.car), r.dust, kind, r.bonus || 0);
     } catch (e) { closeOverlay(); C.toast(e.message, "err"); await load(true).catch(() => {}); }
     finally { busy = false; renderHero(); }
   }
@@ -203,7 +218,7 @@
       el.appendChild(s); setTimeout(() => s.remove(), 1000);
     }
   }
-  function showPack(results, dust, kind) {
+  function showPack(results, dust, kind, bonus) {
     const rank = (r) => (r === "special" ? ORDER.length + 2 : ORDER.length - ORDER.indexOf(r));
     const best = results.reduce((b, r) => (rank(rarityOf(r.car)) > rank(rarityOf(b.car)) ? r : b), results[0]);
     const o = mountOverlay("pack", "Ouverture de pack", `<div class="pk3" id="pk3"><h2>Ton pack</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}" id="pk3-open" aria-label="Ouvrir le pack"><b>MOTOR<span>AUTO</span></b></button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`);
@@ -218,7 +233,7 @@
     function stage() {
       const box = o.querySelector("#pk3"); if (!box || overlay !== o) return;
       box.innerHTML = `<h2>Ton pack</h2><p class="tcg-hint" id="tcg-hint">Touche chaque carte pour la révéler</p>
-        <div class="tcg-flips">${results.map((r, i) => `<div class="flip deal" style="--i:${i}" data-i="${i}" data-r="${rarityOf(r.car)}" role="button" tabindex="0" aria-label="Révéler la carte ${i + 1}"><div class="flip-in"><div class="flip-face flip-back"><b>MOTOR<span>AUTO</span></b><small>CARTE</small></div><div class="flip-face flip-front">${cardHtml(r.car)}<span class="tcg-tag ${r.fresh ? "new" : "dup"}">${r.fresh ? "NOUVELLE" : "DOUBLON +" + RAR[rarityOf(r.car)].dust}</span></div></div><i class="flip-ring" aria-hidden="true"></i></div>`).join("")}</div>
+        <div class="tcg-flips">${results.map((r, i) => `<div class="flip deal" style="--i:${i}" data-i="${i}" data-r="${rarityOf(r.car)}" role="button" tabindex="0" aria-label="Révéler la carte ${i + 1}"><div class="flip-in"><div class="flip-face flip-back"><b>MOTOR<span>AUTO</span></b><small>CARTE</small></div><div class="flip-face flip-front">${cardHtml(r.car, r.newPic ? { image: r.image } : null)}<span class="tcg-tag ${r.fresh || r.newPic ? "new" : "dup"}">${r.fresh ? "NOUVELLE" : r.newPic ? "NOUVELLE IMAGE " + r.picN + "/" + r.picTotal + (r.reward ? " · +" + r.reward : "") : "DOUBLON +" + RAR[rarityOf(r.car)].dust}</span></div></div><i class="flip-ring" aria-hidden="true"></i></div>`).join("")}</div>
         <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" id="tcg-all">Tout révéler</button></div>
         <div class="pk3-sum" id="tcg-sum" hidden></div>
         <div class="tcg-actions" id="tcg-end" hidden><button type="button" class="cta-btn fill-btn" id="tcg-done">Terminer</button></div>`;
@@ -234,9 +249,9 @@
         if (shown === results.length) finish();
       };
       const finish = () => {
-        const news = results.filter((r) => r.fresh).length, dups = results.length - news;
+        const news = results.filter((r) => r.fresh).length, pics = results.filter((r) => r.newPic).length, dups = results.length - news - pics;
         const sum = o.querySelector("#tcg-sum");
-        sum.innerHTML = `<span>${news} nouvelle${news > 1 ? "s" : ""}</span><span>${dups} doublon${dups > 1 ? "s" : ""}</span>${dust ? `<span>+${dust} ${window.MA.dustIcon(15)} cristaux</span>` : ""}`;
+        sum.innerHTML = `<span>${news} nouvelle${news > 1 ? "s" : ""}</span>${pics ? `<span>${pics} nouvelle${pics > 1 ? "s" : ""} image${pics > 1 ? "s" : ""}</span>` : ""}<span>${dups} doublon${dups > 1 ? "s" : ""}</span>${bonus ? `<span>+${bonus} ${window.MA.dustIcon(15)} collection d'images</span>` : ""}${dust ? `<span>+${dust} ${window.MA.dustIcon(15)} cristaux</span>` : ""}`;
         if (rank(rarityOf(best.car)) > 1) sum.insertAdjacentHTML("afterend", `<p class="pk3-best">Meilleure carte : ${C.esc(best.car.brand + " " + String(best.car.model).replace(/\s*\(.*$/, ""))} · ${RAR[rarityOf(best.car)].label}</p>`);
         sum.hidden = false; o.querySelector("#tcg-end").hidden = false; o.querySelector("#tcg-all").parentNode.hidden = true; o.querySelector("#tcg-hint").textContent = "";
         const again = doc && (doc.lastPack !== day() ? "daily" : doc.bonus > 0 ? "bonus" : "");
@@ -263,6 +278,18 @@
       <dl><dt>Années</dt><dd>${e(car.years || "—")}</dd><dt>Catégorie</dt><dd>${e(car.category)}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>#${String(numberOf(car)).padStart(3, "0")}</dd><dt>Puissance</dt><dd>${st.power} ch</dd><dt>Vitesse</dt><dd>${st.speed} km/h</dd><dt>0-100</dt><dd>${st.zero ? st.zero + " s" : "—"}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>
       <div><small>Album ${e(car.brand)} : ${have} / ${all.length}</small><div class="ab-bar"><i style="width:${Math.round((have / all.length) * 100)}%"></i></div></div>${desc ? `<p>${e(desc.slice(0, 150))}${desc.length > 150 ? "…" : ""}</p>` : ""}`;
   }
+  /** courbe de progression des images d'une carte : images débloquées (choisis celle qui s'affiche) et silhouettes verrouillées */
+  function picGallery(car, n) {
+    const pi = n > 0 ? picInfo(car) : null; if (!pi) return "";
+    const e = C.esc, N = pi.keys.length, have = pi.have.length, pct = Math.round((have / N) * 100), shown = shownUrl(car, pi), claims = (doc && doc.picClaims && doc.picClaims[car.id]) || 0;
+    const R = RAR[rarityOf(car)], half = N >= 4 ? Math.ceil(N / 2) : 0;
+    const marks = (half ? `<i class="pg-mark" style="left:${Math.round((half / N) * 100)}%" title="Palier ${half}/${N} : +${R.dust * 4} cristaux${claims & 1 ? " (obtenu)" : ""}"></i>` : "");
+    const thumbs = pi.urls.map((u, i) => pi.have.indexOf(pi.keys[i]) >= 0
+      ? `<button type="button" class="pg-th${u === shown ? " on" : ""}" data-pic="${e(pi.keys[i])}" aria-label="Afficher l'image ${i + 1}"><img src="${e(C.safeUrl(u))}" alt="" loading="lazy" data-fallback="car"></button>`
+      : `<span class="pg-th lock" aria-label="Image ${i + 1} verrouillée"><b>?</b></span>`).join("");
+    const rewards = have >= N ? "Collection d'images complète !" : `Obtiens la carte à nouveau pour débloquer une image au hasard${half && !(claims & 1) ? ` · palier ${half}/${N} : +${R.dust * 4}` : ""} · complète : +${R.craft}`;
+    return `<div class="pic-gal"><div class="pg-head"><b>Images ${have}/${N}</b><span>${pct} %</span></div><div class="pg-bar"><i style="width:${pct}%"></i>${marks}</div><div class="pg-row">${thumbs}</div><small class="tcg-hint">${e(rewards)}</small></div>`;
+  }
   function detailHtml(id, back) {
     const car = cardObj(id), n = countOf(id), R = RAR[rarityOf(car)], sp = car.special, inWish = (wish || []).includes(id);
     const info = sp
@@ -277,7 +304,7 @@
     if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-wish aria-pressed="${inWish}">${inWish ? "★ Dans ma wishlist" : "☆ Wishlist"}</button>`);
     actions.push(`<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button>`);
     const i = navIds.indexOf(id), nav = i >= 0 && navIds.length > 1 ? `<div class="tcg-nav"><button type="button" data-nav="-1" aria-label="Carte précédente" ${i > 0 ? "" : "disabled"}>‹</button><span class="tcg-hint">${i + 1} / ${navIds.length}</span><button type="button" data-nav="1" aria-label="Carte suivante" ${i < navIds.length - 1 ? "" : "disabled"}>›</button></div>` : "";
-    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info)}</p>${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}<div class="tcg-actions">${actions.join("")}</div></div>`;
+    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info)}</p>${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}<div class="tcg-actions">${actions.join("")}</div></div>`;
   }
   function showDetail(id, ids) {
     const car = cardObj(id); if (!car) return;
@@ -290,6 +317,7 @@
       else if (e.target.closest("[data-craft]")) craft(id);
       else if (e.target.closest("[data-wish]")) toggleWish(id);
       else if (e.target.closest("[data-flipcard]") || e.target.closest(".tcg-3d")) { const t = o.querySelector("#tcg-3d"); if (t) t.classList.toggle("back"); }
+      else if (e.target.closest("[data-pic]")) { const k = e.target.closest("[data-pic]").dataset.pic; try { localStorage.setItem(picPrefKey(id), k); } catch (_) { /* facultatif */ } refreshDetail(id); renderGrid(); }
       else if (e.target.closest("[data-nav]")) stepDetail(Number(e.target.closest("[data-nav]").dataset.nav));
       else if (e.target.closest("[data-swap]")) { closeOverlay(); if (window.MATrades) window.MATrades.prefill(id); C.Router.go("/jouer/echanges"); }
       else if (e.target.closest("[data-chatshare]") && window.MAShareCar) { closeOverlay(); window.MAShareCar.open(id, { card: car, rarity: RAR[rarityOf(car)].label }); }

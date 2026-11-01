@@ -360,3 +360,18 @@ button.pro-stat{cursor:pointer}button.pro-stat:hover{border-color:var(--accent)}
 .sheet-hero-banner.multi::after{display:none}
 .sheet-hero-banner.multi .slide-dots{bottom:.6rem}
 .sheet-heading-box.after-gallery{margin-top:1rem}
+
+/* cartes à plusieurs images : pastille de progression, courbe et galerie */
+.tcg-pics { position: absolute; z-index: 5; left: 5cqw; top: 14cqw; display: inline-flex; align-items: center; gap: .3em; padding: .1em .55em; border-radius: 99px; background: rgba(0,0,0,.65); color: #fff; font-size: max(9px, 5.6cqw); font-weight: 800; }
+.tcg-pics i { width: .75em; height: .6em; border: 1.5px solid currentColor; border-radius: 2px; box-sizing: border-box; }
+.pic-gal { width: min(92vw, 380px); margin: .6rem auto 0; display: grid; gap: .45rem; text-align: left; }
+.pic-gal .pg-head { display: flex; justify-content: space-between; font-size: .85rem; }
+.pic-gal .pg-bar { position: relative; height: 8px; border-radius: 8px; background: rgba(255,255,255,.16); overflow: visible; }
+.pic-gal .pg-bar > i:first-child { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--accent), #fbbf24); transition: width .6s; }
+.pic-gal .pg-mark { position: absolute; top: -3px; width: 2px; height: 14px; background: #fbbf24; transform: translateX(-1px); border-radius: 2px; }
+.pic-gal .pg-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+.pic-gal .pg-th { width: 56px; height: 40px; border-radius: 8px; overflow: hidden; border: 2px solid transparent; background: rgba(255,255,255,.08); padding: 0; display: grid; place-items: center; cursor: pointer; }
+.pic-gal .pg-th img { width: 100%; height: 100%; object-fit: cover; }
+.pic-gal .pg-th.on { border-color: var(--accent); }
+.pic-gal .pg-th.lock { cursor: default; opacity: .55; background: repeating-linear-gradient(135deg, rgba(255,255,255,.06) 0 6px, rgba(255,255,255,.12) 6px 12px); }
+.pic-gal .pg-th.lock b { font-size: 1rem; opacity: .7; }

@@ -38,7 +38,8 @@
     submit.parentNode.insertBefore(nav, submit); nav.append(prev, next, submit);
     bar.addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b) show(Number(b.dataset.go)); });
     prev.addEventListener("click", () => show(cur - 1)); next.addEventListener("click", () => show(cur + 1));
-    form.addEventListener("invalid", () => show(1), true);
+    form.addEventListener("invalid", (e) => { const st = e.target && e.target.closest ? e.target.closest("[data-step]") : null; show(st ? Number(st.dataset.step) : 1); const eb = document.getElementById("admin-form-error"); if (eb && !eb.textContent) eb.textContent = "Un champ est incorrect : corrige-le (surligné) puis publie à nouveau."; }, true);
+    window.MAAdminStep = show;
     tag(); show(1);
     const modal = document.getElementById("admin-modal");
     if (modal) new MutationObserver(() => { if (modal.classList.contains("open") || modal.getAttribute("aria-hidden") === "false") { tag(); show(1); } }).observe(modal, { attributes: true, attributeFilter: ["class", "aria-hidden"] });

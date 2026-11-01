@@ -595,7 +595,7 @@ service cloud.firestore {
       allow delete: if false;
     }
     function validCollection() {
-      return request.resource.data.keys().hasOnly(['owned', 'count', 'specials', 'dust', 'lastPack', 'bonus', 'claimed', 'opened', 'trades', 'chal', 'dustLog', 'updatedAt'])
+      return request.resource.data.keys().hasOnly(['owned', 'count', 'specials', 'dust', 'lastPack', 'bonus', 'claimed', 'opened', 'trades', 'chal', 'dustLog', 'pics', 'picClaims', 'updatedAt'])
         && request.resource.data.get('dustLog', []) is list && request.resource.data.get('dustLog', []).size() <= 40
         && request.resource.data.owned is map
         && request.resource.data.count is number && request.resource.data.count >= 0 && request.resource.data.count <= 1000
