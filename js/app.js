@@ -490,10 +490,10 @@
     setSeo(car);
     const s = car.stats;
     $("vehicle-detail-content").innerHTML = `
-      <div class="sheet-hero-banner">
+      <div class="sheet-hero-banner${(car.images && car.images.length > 1) ? " multi" : ""}">
         ${slidesHtml(car, false)}
       </div>
-      <div class="sheet-heading-box">
+      <div class="sheet-heading-box${(car.images && car.images.length > 1) ? " after-gallery" : ""}">
         <div class="sheet-brandline">${esc(car.brand)} <span>${esc(car.years)}</span></div>
         <h2 class="sheet-big-title">${esc(car.model)}</h2>
         <p class="sheet-blurb">${esc(car.description)}</p>
@@ -1656,6 +1656,12 @@
         <button type="button" class="adm-thumb-del" data-action="adm-img-remove" data-i="${i}" aria-label="Retirer cette photo">&times;</button>
       </div>`).join("") : '<p class="adm-gallery-empty">Aucune photo pour l\'instant.</p>';
   }
+  // Entrée dans un champ « adresse d'image » : ajoute l'image, sans envoyer le formulaire (ce qui ramenait en haut de page)
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || !e.target || !e.target.id) return;
+    if (e.target.id === "adm-image") { e.preventDefault(); admAddImageUrl(); }
+    else if (e.target.id === "mc-url") { e.preventDefault(); mycarAddUrl(); }
+  });
   function admAddImageUrl() {
     const inp = $("adm-image");
     const v = inp.value.trim();
@@ -1827,7 +1833,10 @@
       else await db.collection("motorauto_catalog").doc(carId).set(JSON.parse(JSON.stringify(Object.assign({}, raw, { id: carId, image: images[0], images }))));
       logAdmin("car-photo", { target: carId, targetName: `${car.brand} ${car.model}`, detail: current.length ? "photo ajoutée" : "photo principale définie (image générique retirée)" });
       MA.toast(current.length ? "Photo ajoutée à la fiche." : "Photo enregistrée : l'image générique est remplacée.", "ok");
+      const y = window.scrollY;                       // on reste à la même place dans la page
       await loadPublicCatalog();
+      if (/^#\/voiture\//.test(location.hash)) { try { renderVehicle(carId); } catch (_) { /* fiche rouverte au prochain affichage */ } }
+      requestAnimationFrame(() => window.scrollTo(0, y));
     } catch (err) { MA.toast("Erreur : " + err.message, "err"); }
   }
   function quickPhotoPick(carId) {

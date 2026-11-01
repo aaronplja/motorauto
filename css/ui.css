@@ -355,3 +355,8 @@ button.pro-stat{cursor:pointer}button.pro-stat:hover{border-color:var(--accent)}
 .form-modal .adm-drives{display:flex;flex-wrap:wrap;gap:.4rem}
 @media (max-width:760px){.form-modal .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:480px){.form-modal .form-grid{grid-template-columns:1fr}.fsec{padding:.85rem .8rem}}
+
+/* Fiche voiture avec plusieurs photos : le titre passe sous la galerie, il ne la recouvre plus */
+.sheet-hero-banner.multi::after{display:none}
+.sheet-hero-banner.multi .slide-dots{bottom:.6rem}
+.sheet-heading-box.after-gallery{margin-top:1rem}
