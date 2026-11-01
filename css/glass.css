@@ -1,63 +1,4 @@
-/* ==========================================================================
-   MOTORAUTO — barre du bas « verre liquide » (mobile). Chargée en dernier.
-   ========================================================================== */
-@media (max-width: 999px) {
-  :root { --bar-h: 76px; }
-  body { padding-bottom: calc(var(--bar-h) + var(--safe-bottom) + 12px) !important; }
-  .mobile-touch-bar {
-    position: fixed !important; left: 50% !important; right: auto !important; bottom: calc(12px + var(--safe-bottom)) !important;
-    width: min(calc(100vw - 28px), 430px) !important; height: 66px !important; margin: 0 !important; padding: 5px !important;
-    transform: translateX(-50%); border-radius: 34px !important; z-index: 600; isolation: isolate; overflow: hidden;
-    display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; align-items: stretch !important; gap: 0;
-    background: color-mix(in srgb, var(--bg-surface) 42%, transparent) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(1.6) !important; backdrop-filter: blur(16px) saturate(1.6) !important;
-    border: 1px solid color-mix(in srgb, #fff 34%, transparent) !important;
-    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.55), inset 0 -1.5px 0 rgba(0,0,0,.07), inset 0 0 22px rgba(255,255,255,.10), 0 12px 32px -8px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.12) !important;
-    touch-action: pan-y;
-    transition: width .35s cubic-bezier(.3,.7,.3,1), height .35s cubic-bezier(.3,.7,.3,1), border-radius .35s, opacity .25s, transform .3s !important;
-  }
-  :root[data-tone="dark"] .mobile-touch-bar { border-color: rgba(255,255,255,.09) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 18px rgba(255,255,255,.02), 0 14px 34px -8px rgba(0,0,0,.65) !important; }
-  :root[data-tone="dark"] .mobile-touch-bar::before { background: radial-gradient(120% 90% at 20% -20%, rgba(255,255,255,.10), transparent 55%), linear-gradient(180deg, rgba(255,255,255,.04), transparent 40%); }
-  /* reflet spéculaire du verre */
-  .mobile-touch-bar::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0;
-    background: radial-gradient(120% 90% at 20% -20%, rgba(255,255,255,.38), transparent 52%), linear-gradient(180deg, rgba(255,255,255,.12), transparent 40%); }
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .mobile-touch-bar { background: var(--bg-surface) !important; } }
-
-  /* bulle de verre qui suit l'onglet actif */
-  .glass-bubble { position: absolute; z-index: 1; top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / 5); transform: translateX(calc(var(--i, 0) * 100%)); border-radius: 28px; pointer-events: none;
-    background: linear-gradient(180deg, color-mix(in srgb, #fff 40%, transparent), color-mix(in srgb, #fff 14%, transparent));
-    border: 1px solid rgba(255,255,255,.45);
-    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.7), inset 0 -2px 6px rgba(0,0,0,.08), 0 6px 16px -6px rgba(0,0,0,.3);
-    -webkit-backdrop-filter: brightness(1.1) saturate(1.4); backdrop-filter: brightness(1.1) saturate(1.4);
-    transition: transform .32s cubic-bezier(.3,.8,.3,1); will-change: transform; }
-  :root[data-tone="dark"] .glass-bubble { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05)); border-color: rgba(255,255,255,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 6px 16px -8px rgba(0,0,0,.5); }
-  .mobile-touch-bar.dragging .glass-bubble { transition: transform .1s linear; }
-
-  .mobile-touch-bar .touch-bar-item { position: relative; z-index: 2; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; gap: 3px !important; border-radius: 28px !important; background: none !important; box-shadow: none !important;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; color: color-mix(in srgb, var(--color-ink) 74%, transparent) !important; font-size: .5rem !important; overflow: visible !important; min-width: 0; max-width: 100%; white-space: nowrap; font-weight: 700 !important; letter-spacing: -.03em !important; text-transform: none !important;
-    -webkit-tap-highlight-color: transparent; transition: color .25s, transform .4s cubic-bezier(.34,1.56,.64,1); }
-  .mobile-touch-bar .touch-bar-item::before, .mobile-touch-bar .touch-bar-item::after { display: none !important; }
-  .mobile-touch-bar .touch-bar-item span { overflow: visible !important; text-overflow: clip !important; max-width: none !important; padding: 0 1px; }
-  .mobile-touch-bar .touch-bar-item svg { width: 24px !important; height: 24px !important; transform: none !important; stroke-width: 1.8; transition: transform .4s cubic-bezier(.34,1.56,.64,1); }
-  .mobile-touch-bar .touch-bar-item.active, .mobile-touch-bar .touch-bar-item.peek { color: var(--accent) !important; background: none !important; }
-  .mobile-touch-bar .touch-bar-item.active svg, .mobile-touch-bar .touch-bar-item.peek svg { transform: translateY(-1px) scale(1.12) !important; }
-  .mobile-touch-bar .touch-bar-item:active { transform: scale(.94); }
-  .mobile-touch-bar .touch-bar-highlight, .mobile-touch-bar .touch-bar-highlight.active { margin: 0 !important; background: none !important; box-shadow: none !important; color: inherit; }
-  .mobile-touch-bar .touch-bar-highlight svg { color: inherit !important; }
-  .mobile-touch-bar .touch-dot { top: 9px !important; right: calc(50% - 18px) !important; }
-
-  /* réduite pendant le défilement : petite capsule d'icônes */
-  .mobile-touch-bar.mini { width: min(230px, 62vw) !important; height: 50px !important; border-radius: 26px !important; }
-  .mobile-touch-bar.mini .glass-bubble { top: 4px; bottom: 4px; border-radius: 22px; }
-  .mobile-touch-bar.mini .touch-bar-item { font-size: 0 !important; gap: 0 !important; }
-  .mobile-touch-bar.mini .touch-bar-item span { display: none; }
-  .mobile-touch-bar.mini .touch-bar-item svg { width: 21px !important; height: 21px !important; }
-
-  body.kb-open .mobile-touch-bar { transform: translate(-50%, 200%) !important; opacity: 0; }
-  #toast-region { bottom: calc(var(--bar-h) + var(--safe-bottom) + 18px) !important; }
-  .to-top { bottom: calc(var(--bar-h) + var(--safe-bottom) + 18px) !important; }
-}
-@media (prefers-reduced-motion: reduce) { .glass-bubble, .mobile-touch-bar, .mobile-touch-bar .touch-bar-item { transition: none !important; animation: none !important; } }
+/* MOTORAUTO — verre liquide : surfaces flottantes (la barre du bas vit dans css/dock.css). */
 
 /* ==========================================================================
    Tour 21 — « verre liquide » partout : barre du haut, menus, fenêtres, onglets, cartes
@@ -81,7 +22,7 @@
 .app-header::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 140% at 15% -60%, rgba(255,255,255,.28), transparent 55%); }
 :root[data-tone="dark"] .app-header::before { background: radial-gradient(120% 140% at 15% -60%, rgba(255,255,255,.08), transparent 55%); }
 .app-header > * { position: relative; }
-.app-header { transition: transform .34s var(--ma-ease) !important; will-change: transform; contain: layout paint; }
+.app-header { transition: transform .4s cubic-bezier(.22,.9,.3,1) !important; will-change: transform; }
 .app-header.hide-up { transform: translateY(-110%); }
 .page-tabs { border-radius: 18px; padding-inline: .35rem !important; border-bottom: 1px solid var(--glass-line) !important; position: sticky; top: calc(var(--safe-top) + 4px); z-index: 20; }
 .modal-layer { background: rgba(10,12,18,.38) !important; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
@@ -120,29 +61,19 @@
    Tour 22 — fluidité : barre du bas en capsule (transform seulement), modes d'animation
    ========================================================================== */
 @media (max-width: 999px) {
-  .mobile-touch-bar { transform-origin: 50% 100%; will-change: transform; contain: layout paint;
-    transition: transform .34s var(--ma-ease), opacity .22s linear !important; }
-  /* capsule = même barre, réduite par un simple zoom GPU : plus aucun recalcul de mise en page, la bulle ne se décale plus */
-  .mobile-touch-bar.mini { width: min(calc(100vw - 28px), 430px) !important; height: 66px !important; border-radius: 34px !important; transform: translateX(-50%) translateY(6px) scale(.66); }
-  .mobile-touch-bar.mini .touch-bar-item { font-size: .5rem !important; gap: 3px !important; }
-  .mobile-touch-bar.mini .touch-bar-item span { display: block !important; opacity: 0; transition: opacity .15s; }
-  .mobile-touch-bar .touch-bar-item span { transition: opacity .2s .08s; }
-  .mobile-touch-bar.mini .touch-bar-item svg { width: 24px !important; height: 24px !important; }
-  .mobile-touch-bar.mini .glass-bubble { top: 5px; bottom: 5px; border-radius: 28px; }
-  .glass-bubble { transition: transform .34s var(--ma-ease) !important; }
   /* la proposition de notifications passe au-dessus de la barre */
-  #push-ask { bottom: calc(var(--bar-h, 76px) + var(--safe-bottom, 0px) + 22px) !important; z-index: 700 !important; }
+  #push-ask { bottom: calc(var(--bar-h, 84px) + var(--safe-bottom, 0px) + 22px) !important; z-index: 700 !important; }
 }
 /* menu « Moi » : verre plus dense, toujours lisible */
 .me-sheet { background: color-mix(in srgb, var(--bg-surface) 92%, transparent) !important; -webkit-backdrop-filter: blur(24px) saturate(1.4) !important; backdrop-filter: blur(24px) saturate(1.4) !important; }
 .me-backdrop { background: rgba(8,10,16,.45); }
 
 /* pendant le défilement le flou est remplacé par un fond plus plein : même rendu, nettement moins de calcul */
-html.scrolling[data-anim="smooth"] .app-header, html.scrolling[data-anim="smooth"] .mobile-touch-bar, html.scrolling[data-anim="smooth"] .page-tabs, html.scrolling[data-anim="smooth"] .toolbar-cluster
+html.scrolling[data-anim="smooth"] .app-header, html.scrolling[data-anim="smooth"] #mobile-touch-bar .dock, html.scrolling[data-anim="smooth"] .page-tabs, html.scrolling[data-anim="smooth"] .toolbar-cluster
 { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: color-mix(in srgb, var(--bg-surface) 88%, transparent) !important; }
 html[data-anim="smooth"] { --blur: 10px; }
 html[data-anim="reduced"] *, html[data-anim="reduced"] *::before, html[data-anim="reduced"] *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
-html[data-anim="reduced"] .app-header, html[data-anim="reduced"] .mobile-touch-bar, html[data-anim="reduced"] .modal-dialog, html[data-anim="reduced"] .notif-panel, html[data-anim="reduced"] .page-tabs, html[data-anim="reduced"] .toolbar-cluster, html[data-anim="reduced"] .me-sheet
+html[data-anim="reduced"] .app-header, html[data-anim="reduced"] #mobile-touch-bar .dock, html[data-anim="reduced"] .modal-dialog, html[data-anim="reduced"] .notif-panel, html[data-anim="reduced"] .page-tabs, html[data-anim="reduced"] .toolbar-cluster, html[data-anim="reduced"] .me-sheet
 { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: var(--bg-surface) !important; }
 /* accessibilité : contraste renforcé */
 html[data-contrast="high"] { --glass-line: color-mix(in srgb, var(--color-ink) 55%, transparent); --line: color-mix(in srgb, var(--color-ink) 45%, transparent); --stroke-line: color-mix(in srgb, var(--color-ink) 45%, transparent); }

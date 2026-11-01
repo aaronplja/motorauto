@@ -263,3 +263,7 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - Sets de cartes (`claimSets`), clubs (calendrier, annonces épinglées, classement), réactions sur cartes partagées, défis depuis un profil.
 - Statistiques anonymes (`site_stats`).
 - À redéployer : règles Firestore + fonctions (`claimSets`) + site.
+
+## Tour 22.1 — dock et animations
+- Barre du bas réécrite (`css/dock.css`, `js/glassbar.js`) : coque fixe centrée + dock animé en transform/opacity, bulle à ressort, hystérésis au défilement.
+- Langage d'animation unique (`css/motion.css`) ; les `transition: all` sont remplacés par des propriétés précises.
