@@ -275,3 +275,4 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - Chiffres INDICATIFS (`approx: true`) : à relire fiche par fiche depuis l'administration.
 - `tests/brands.test.js` : ids uniques, liens « voir aussi » valides, aucun moteur vide.
 - Après ajout d'un fichier de données : `node scripts/sync-functions.js && node scripts/build-seo.js`.
+- Ajout rapide de photo (admin) : boutons « + Photo » / « + Lien » sur les cartes du catalogue et les fiches ; l'image générique est remplacée.

@@ -233,6 +233,8 @@
     const adminActions = isAdmin ? `
       <div class="car-admin-actions">
         <button type="button" class="cta-btn fill-btn compact-btn" data-action="edit-car" data-id="${esc(car.id)}">Modifier</button>
+        <button type="button" class="cta-btn btn-ghost compact-btn" data-action="quick-photo" data-id="${esc(car.id)}" title="Ajouter une photo sans ouvrir l'éditeur">+ Photo</button>
+        <button type="button" class="cta-btn btn-ghost compact-btn" data-action="quick-photo-url" data-id="${esc(car.id)}" title="Ajouter une photo par lien">+ Lien</button>
         <button type="button" class="secondary-destructive-btn" data-action="delete-car" data-id="${esc(car.id)}">Supprimer</button>
       </div>` : "";
 
@@ -502,6 +504,7 @@
           <button type="button" class="cta-btn btn-ghost compact-btn" data-action="share-car" data-id="${esc(car.id)}">Copier le lien</button>
           <button type="button" class="cta-btn btn-ghost compact-btn" data-action="share-car-chat" data-id="${esc(car.id)}">Envoyer dans le chat</button>
           ${car.archives.length || isAdmin ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-action="open-archives" data-id="${esc(car.id)}">Archives${car.archives.length ? " (" + car.archives.length + ")" : ""}</button>` : ""}
+          ${isAdmin ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-action="quick-photo" data-id="${esc(car.id)}">+ Photo</button><button type="button" class="cta-btn btn-ghost compact-btn" data-action="quick-photo-url" data-id="${esc(car.id)}">+ Lien</button>` : ""}
           <button type="button" class="cta-btn btn-ghost compact-btn" data-action="suggest-car" data-id="${esc(car.id)}">✎ Proposer une modification</button>
         </div>
       </div>
@@ -1808,6 +1811,41 @@
     }
   }
 
+  // Ajout rapide d'une photo (admin) : sans ouvrir l'éditeur. L'image générique ou absente est remplacée ; sinon la photo est ajoutée à la galerie.
+  const isGenericImg = (u) => !u || u === MA.FALLBACK_CAR || /^img\//.test(u) || /images\.unsplash\.com\/photo-1503376780353/.test(u);
+  async function quickAddPhoto(carId, url) {
+    if (!isAdmin) return;
+    const car = carsById.get(carId); if (!car) return;
+    const clean = safeUrl(url);
+    if (!clean) { MA.toast("L'adresse de l'image doit commencer par https://", "err"); return; }
+    const raw = cloudCars.find((c) => c.id === carId) || MOTORAUTO_DATABASE.find((c) => c.id === carId) || car;
+    const current = (raw.images && raw.images.length ? raw.images : [raw.image]).filter((u) => !isGenericImg(u));
+    if (current.includes(clean)) { MA.toast("Cette photo est déjà sur la fiche.", "err"); return; }
+    const images = current.concat(clean).slice(0, 12);
+    try {
+      if (cloudIds.has(carId)) await db.collection("motorauto_catalog").doc(carId).update({ image: images[0], images });
+      else await db.collection("motorauto_catalog").doc(carId).set(JSON.parse(JSON.stringify(Object.assign({}, raw, { id: carId, image: images[0], images }))));
+      logAdmin("car-photo", { target: carId, targetName: `${car.brand} ${car.model}`, detail: current.length ? "photo ajoutée" : "photo principale définie (image générique retirée)" });
+      MA.toast(current.length ? "Photo ajoutée à la fiche." : "Photo enregistrée : l'image générique est remplacée.", "ok");
+      await loadPublicCatalog();
+    } catch (err) { MA.toast("Erreur : " + err.message, "err"); }
+  }
+  function quickPhotoPick(carId) {
+    const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.hidden = true; document.body.appendChild(inp);
+    inp.addEventListener("change", async () => {
+      const f = inp.files && inp.files[0]; inp.remove();
+      if (!f || !/^image\//.test(f.type)) return;
+      MA.toast("Envoi de la photo…", "ok");
+      try {
+        const blob = await MA.resizeImage(f, 2600, 0.9);
+        const ref = storage.ref(`catalog_images/${auth.currentUser.uid}/${Date.now()}-q.jpg`);
+        await ref.put(blob, { contentType: "image/jpeg" });
+        await quickAddPhoto(carId, await ref.getDownloadURL());
+      } catch (err) { MA.toast("Échec de l'envoi : " + err.message, "err"); }
+    });
+    inp.click();
+  }
+
   async function deleteCar(carId) {
     if (!isAdmin) return;
     const isLocal = MOTORAUTO_DATABASE.some((c) => c.id === carId);
@@ -2487,6 +2525,8 @@
     "sg-approve": (d) => reviewSuggestion(d.id, d.uid, d.car, d.kind, true),
     "sg-reject": (d) => reviewSuggestion(d.id, d.uid, d.car, "", false),
     "edit-car": (d) => openAdminEditor(carsById.get(d.id)),
+    "quick-photo": (d) => quickPhotoPick(d.id),
+    "quick-photo-url": (d) => { const u = prompt("Adresse (https://…) de la photo à ajouter :"); if (u) quickAddPhoto(d.id, u.trim()); },
     "toggle-compare": (d) => toggleCompare(d.id),
     "toggle-admin": (d) => toggleAdminGrade(d.uid, d.name),
     "mycar-new": () => openMyCarEditor(null),
