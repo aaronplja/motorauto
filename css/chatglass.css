@@ -22,5 +22,5 @@ html, body.chat-page { background: var(--bg-core); }
 .chat-app { height: 100%; min-height: 0; }
 .chat-main { height: 100%; min-height: 0; }
 .chat-main > .conv-stage { flex: 1 1 auto; min-height: 0; }
-.compose-wrap { flex: none; margin-top: auto; padding-bottom: calc(.5rem + var(--safe-bottom, 0px)); background: linear-gradient(to top, color-mix(in srgb, var(--bg-core) 85%, transparent), transparent); }
-body.kb-open .compose-wrap, .chat-page:focus-within .compose-wrap { padding-bottom: .5rem; }
+.compose-wrap { flex: none; margin-top: auto; padding-bottom: max(6px, calc(var(--safe-bottom, 0px) - 12px)); background: linear-gradient(to top, color-mix(in srgb, var(--bg-core) 85%, transparent), transparent); }
+body.kb-open .compose-wrap, .chat-page:focus-within .compose-wrap { padding-bottom: 6px; }

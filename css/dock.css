@@ -3,11 +3,11 @@
    Structure (créée par js/glassbar.js) :  #mobile-touch-bar (coque fixe, centre) › .dock (le verre, seul élément animé) › .glass-bubble + onglets
    Animations : uniquement transform / opacity (GPU), ressort unique, aucun recalcul de mise en page.
    ========================================================================== */
-:root { --dock-spring: cubic-bezier(.34, 1.45, .56, 1); --dock-smooth: cubic-bezier(.22, .9, .3, 1); --bar-h: 84px; }
+:root { --dock-spring: cubic-bezier(.34, 1.45, .56, 1); --dock-smooth: cubic-bezier(.22, .9, .3, 1); --bar-h: 72px; }
 @media (max-width: 999px) {
   body { padding-bottom: calc(var(--bar-h) + var(--safe-bottom, 0px) + 8px) !important; }
   #mobile-touch-bar { all: unset !important; position: fixed !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 600 !important;
-    display: flex !important; justify-content: center !important; box-sizing: border-box !important; padding: 0 14px calc(10px + var(--safe-bottom, 0px)) !important;
+    display: flex !important; justify-content: center !important; box-sizing: border-box !important; padding: 0 14px max(6px, calc(var(--safe-bottom, 0px) - 12px)) !important;
     pointer-events: none !important; contain: layout style; }
   #mobile-touch-bar .dock { pointer-events: auto; position: relative; isolation: isolate; box-sizing: border-box; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
     width: min(100%, 420px); height: 64px; padding: 5px; border-radius: 32px; touch-action: pan-y; -webkit-user-select: none; user-select: none;
@@ -22,7 +22,7 @@
     background: radial-gradient(120% 90% at 20% -20%, rgba(255,255,255,.34), transparent 52%), linear-gradient(180deg, rgba(255,255,255,.1), transparent 40%); }
   :root[data-tone="dark"] #mobile-touch-bar .dock::before { background: radial-gradient(120% 90% at 20% -20%, rgba(255,255,255,.09), transparent 55%); }
   /* compact : la même barre, rapetissée depuis le centre-bas (jamais décentrée), puis qui regonfle avec un ressort */
-  #mobile-touch-bar .dock.compact { transform: translate3d(0, 4px, 0) scale(.68); transition-duration: .45s; }
+  #mobile-touch-bar .dock.compact { transform: translate3d(0, 2px, 0) scale(.68); transition-duration: .45s; }
   #mobile-touch-bar .dock.compact .touch-bar-item span { opacity: 0; transform: translateY(-4px); transition-delay: 0s; }
   #mobile-touch-bar .dock.compact .touch-bar-item svg { transform: translate3d(0, 6px, 0) scale(1.12); }
   /* pendant le mouvement : on retire le flou (le plus coûteux) et on durcit le fond, puis on le rend */
