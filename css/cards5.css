@@ -78,3 +78,9 @@
 .ttl-opt { font: inherit; font-size: .8rem; font-weight: 700; padding: .35rem .8rem; min-height: 34px; border-radius: 999px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: inherit; cursor: pointer; }
 .ttl-opt[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 1px; }
 
+
+/* Légende non découverte : silhouette très floutée, nom et chiffres cachés */
+.tcg-mythic.locked .tcg-art { overflow: hidden; }
+.tcg-mythic.locked .tcg-art img, .tcg-mythic.locked .tcg-art img.tcg-ghost { filter: blur(14px) brightness(.55) saturate(.7) !important; opacity: 1 !important; transform: scale(1.18); }
+.tcg-mythic.locked .tcg-q-over { color: #f5d061; text-shadow: 0 2px 14px rgba(0,0,0,.7); }
+.tcg-mythic.locked .tcg-name { letter-spacing: .12em; }

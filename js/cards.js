@@ -524,7 +524,7 @@
     const tile = (s) => {
       const leg = s.legend && cardObj(s.legend), got = leg && countOf(leg.id) > 0;
       return `<button type="button" class="cg-album${s.done ? " done" : ""}${s.full && !s.done ? " ready" : ""}" data-album="${C.esc(s.id)}"><span class="ab-top"><b>${C.esc(s.name)}</b><small>${s.have} / ${s.ids.length}</small></span>${gauge(s.have, s.ids.length, s.done ? "full" : "")}
-        <span class="ab-foot">${s.done ? "✓ Terminé" : s.full ? "À récupérer !" : "+" + s.reward + " ◆"}${leg ? `<span class="ab-leg${got ? " got" : ""}" title="Carte Légende : ${C.esc(leg.brand + " " + leg.model)}">${got ? "Légende obtenue" : "Légende à gagner"}</span>` : ""}</span></button>`;
+        <span class="ab-foot">${s.done ? "✓ Terminé" : s.full ? "À récupérer !" : "+" + s.reward + " ◆"}${leg ? `<span class="ab-leg${got ? " got" : ""}" title="Carte Légende : ${got ? C.esc(leg.brand + " " + leg.model) : "à découvrir"}">${got ? "Légende obtenue" : "Légende à gagner"}</span>` : ""}</span></button>`;
     };
     return `<section class="cg-block cg-albums" aria-label="Albums"><header class="cg-bh"><h3>Albums</h3><span class="cg-sub">${sets.filter((s) => s.done).length} / ${sets.length} terminés · complète un album pour des cristaux (et une carte Légende)</span>${ready.length ? `<button type="button" class="cta-btn fill-btn compact-btn" data-set-claim ${busy ? "disabled" : ""}>Récupérer ${dust$(ready.reduce((t, s) => t + s.reward, 0))}</button>` : ""}</header>
       <div class="seg cg-seg" role="group" aria-label="Type d'album">${Object.keys(kindLabel).map((k) => `<button type="button" data-akind="${k}" aria-pressed="${k === albumKind}">${kindLabel[k]}</button>`).join("")}</div>
