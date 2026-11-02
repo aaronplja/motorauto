@@ -110,26 +110,14 @@ textarea:focus:where(:not(.app-header *, [class*="dock"] *)) { outline: none; bo
 .dialog-title:where(:not(.app-header *, [class*="dock"] *)) { font-weight: 800; letter-spacing: -.03em; }
 .dialog-close-btn:where(:not(.app-header *, [class*="dock"] *)) { border-radius: 50%; background: var(--st-soft); }
 /* ------------------------------------------------------------------ accueil */
-.hero-stage:where(:not(.app-header *, [class*="dock"] *)) { min-height: 0; margin-top: -56px; padding: calc(56px + clamp(2.4rem, 8vw, 5.5rem)) 0 clamp(2rem, 6vw, 4rem); background: none; text-align: center; }
-.hero-aurora:where(:not(.app-header *, [class*="dock"] *)) { opacity: .55; }
-.hero-grid-lines:where(:not(.app-header *, [class*="dock"] *)),
-.hero-streaks:where(:not(.app-header *, [class*="dock"] *)),
-.scroll-hint:where(:not(.app-header *, [class*="dock"] *)) { display: none !important; }
-.hero-inner:where(:not(.app-header *, [class*="dock"] *)) { display: grid; grid-template-columns: 1fr; gap: clamp(1.8rem, 5vw, 3.2rem); justify-items: center; }
-.hero-copy:where(:not(.app-header *, [class*="dock"] *)) { max-width: 820px; display: grid; justify-items: center; }
 .badge-hero-pill:where(:not(.app-header *, [class*="dock"] *)) { margin: 0 0 1.3rem; padding: .35rem .95rem; border-radius: 999px; background: var(--st-soft); border: 1px solid var(--st-line); font-size: .84rem; font-weight: 600; color: var(--color-secondary); -webkit-backdrop-filter: none; backdrop-filter: none; }
-.hero-heroic-title:where(:not(.app-header *, [class*="dock"] *)) { margin: 0; font-family: var(--font-display); font-size: clamp(2.7rem, 10.5vw, 6.2rem); font-weight: 800; line-height: 1; letter-spacing: -.05em; text-transform: none; }
+.hero-heroic-title:where(:not(.app-header *, [class*="dock"] *)) { margin: 0; font-family: var(--font-display); font-size: clamp(2.5rem, 6.4vw, 5rem); font-weight: 800; line-height: 1; letter-spacing: -.05em; text-transform: none; }
 .ht-line:where(:not(.app-header *, [class*="dock"] *)) { display: block; background: linear-gradient(180deg, var(--color-ink) 30%, color-mix(in srgb, var(--color-ink) 62%, var(--bg-core))); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 .ht-line.ht-outline:where(:not(.app-header *, [class*="dock"] *)) { -webkit-text-stroke: 0; background: linear-gradient(95deg, var(--accent), color-mix(in srgb, var(--accent) 50%, #fff) 85%); -webkit-background-clip: text; background-clip: text; text-shadow: none; }
 .hero-heroic-sub:where(:not(.app-header *, [class*="dock"] *)) { max-width: 640px; margin: 1.3rem 0 0; font-size: clamp(1.02rem, 2.6vw, 1.3rem); line-height: 1.45; color: var(--color-secondary); letter-spacing: -.014em; }
-.command-search-container:where(:not(.app-header *, [class*="dock"] *)) { width: min(640px, 100%); margin-top: 1.8rem; text-align: left; }
 .cmd-key-indicator:where(:not(.app-header *, [class*="dock"] *)) { border-radius: 8px; border: 1px solid var(--st-line); background: var(--st-soft); font-family: var(--font-sans); font-size: .76rem; }
-.quick-chips:where(:not(.app-header *, [class*="dock"] *)) { justify-content: center; margin-top: 1rem; }
-.hero-stats:where(:not(.app-header *, [class*="dock"] *)) { display: grid; grid-template-columns: repeat(3, auto); gap: clamp(1.4rem, 6vw, 4.5rem); justify-content: center; margin: 2.2rem 0 0; padding: 0; border: 0; }
-.hero-stats > div:where(:not(.app-header *, [class*="dock"] *)) { display: grid; gap: .1rem; text-align: center; }
 .hero-stats dd:where(:not(.app-header *, [class*="dock"] *)) { margin: 0; order: -1; font-family: var(--font-display); font-size: clamp(1.9rem, 6vw, 3.1rem); font-weight: 800; letter-spacing: -.045em; line-height: 1; color: var(--color-ink); }
 .hero-stats dt:where(:not(.app-header *, [class*="dock"] *)) { font-size: .82rem; font-weight: 500; color: var(--color-muted); letter-spacing: 0; text-transform: none; }
-.hero-visual:where(:not(.app-header *, [class*="dock"] *)) { width: min(100%, 440px); order: 2; padding: 1.2rem; border-radius: var(--st-lg); background: var(--bg-surface); border: 1px solid var(--st-line); box-shadow: var(--st-shadow-up); }
 .brand-marquee:where(:not(.app-header *, [class*="dock"] *)) { border: 0; background: none; padding: .6rem 0 1.4rem; opacity: .9; }
 .home-section:where(:not(.app-header *, [class*="dock"] *)) { padding-top: clamp(1.6rem, 5vw, 3rem); padding-bottom: clamp(.4rem, 2vw, 1rem); }
 .home-cols:where(:not(.app-header *, [class*="dock"] *)) { gap: 1.2rem; }
@@ -176,7 +164,6 @@ textarea:focus:where(:not(.app-header *, [class*="dock"] *)) { outline: none; bo
 }
 @media (max-width: 640px) {
 .page-head:where(:not(.app-header *, [class*="dock"] *)) { align-items: flex-start; }
-.hero-stats:where(:not(.app-header *, [class*="dock"] *)) { gap: 1.2rem; }
 }
 @media (prefers-reduced-motion: reduce) {
 .car-box:where(:not(.app-header *, [class*="dock"] *)),
@@ -212,3 +199,9 @@ h4:where(:not(.app-header *, [class*="dock"] *)) { text-transform: none !importa
 #pilots-registry-list .pilot-row-avatar { width: 40px; height: 40px; border: 0; }
 #pilots-registry-list .pilot-row-name { font-weight: 800; }
 #pilots-registry-list .see-profile { font-size: .78rem; font-weight: 700; color: var(--color-secondary); }
+
+/* Accueil : même agencement qu'avant (texte à gauche, compteur à droite), seulement le style change */
+.hero-heroic-sub { margin: 1.1rem 0 1.6rem; }
+.hero-stats > div { display: grid; gap: .15rem; }
+.quick-chips { margin-top: 1rem; }
+.hero-stats { margin-top: 1.6rem; }
