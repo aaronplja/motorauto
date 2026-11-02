@@ -987,7 +987,7 @@ service cloud.firestore {
     function validCommunityCar() {
       return signedIn()
         && request.resource.data.keys().hasOnly(
-             ['uid', 'pilot', 'avatar', 'name', 'year', 'engine', 'power', 'zero', 'description', 'mods', 'photos', 'catalogId', 'drive', 'createdAt', 'updatedAt'])
+             ['uid', 'pilot', 'avatar', 'name', 'year', 'engine', 'power', 'zero', 'description', 'mods', 'photos', 'catalogId', 'drive', 'speed', 'createdAt', 'updatedAt'])
         && request.resource.data.get('catalogId', '') is string
         && request.resource.data.get('catalogId', '').size() <= 80
         && request.resource.data.uid is string
@@ -1002,6 +1002,8 @@ service cloud.firestore {
         && request.resource.data.get('power', 0) >= 0 && request.resource.data.get('power', 0) < 5000
         && request.resource.data.get('zero', 0) is number
         && request.resource.data.get('zero', 0) >= 0 && request.resource.data.get('zero', 0) < 60
+        && request.resource.data.get('speed', 0) is number
+        && request.resource.data.get('speed', 0) >= 0 && request.resource.data.get('speed', 0) < 600
         && request.resource.data.get('description', '').size() <= 600
         && request.resource.data.get('mods', '').size() <= 500
         && request.resource.data.get('photos', []) is list

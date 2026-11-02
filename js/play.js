@@ -108,7 +108,7 @@
         ${tile("#/jouer/defis", "🎯", "Défis", st.chal, st.chalBadge)}
         ${tile("#/jouer/echanges", "🔄", "Échanges", st.trade, st.tradeBadge)}
         ${tile("#/jouer/concours", "📸", "Concours photo", st.contest, "")}
-        <a class="hub-tile" href="#/jouer/cartes" data-battle-tile role="button"><i class="hub-ico" aria-hidden="true">⚔</i><b>Bataille contre l'IA</b><small>Entraînement avec tes cartes, sans récompense</small></a>
+        <a class="hub-tile" href="#/jouer/cartes" data-battle-tile role="button"><i class="hub-ico hub-ico-svg" aria-hidden="true"><svg viewBox="0 0 48 48" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="9" width="21" height="30" rx="4" transform="rotate(-14 15.5 24)"/><rect x="22" y="9" width="21" height="30" rx="4" transform="rotate(14 32.5 24)" fill="var(--accent)" stroke="var(--accent)"/><path d="M26.5 14l-5 10h6l-4 10" stroke="#fff" stroke-width="2.6"/></svg></i><b>Bataille contre l'IA</b><small>Entraînement avec tes cartes, sans récompense</small></a>
         ${tile("#/duel", "🏁", "Duel", "0-100 km/h et 400 m en course", "")}
         ${tile("#/classement", "🏆", "Classements", "Chronos, circuits, pilotes", "")}
       </div>`;

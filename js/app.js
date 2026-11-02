@@ -1232,7 +1232,7 @@
     const adminEdit = isAdmin && currentUser && c.uid !== currentUser.uid && !opts.manage; if (adminEdit) adminCars.set(c.id, c);
     const photos = (c.photos || []).filter((u) => safeUrl(u));
     const fake = { images: photos, image: photos[0] || "", model: c.name || "Voiture" };
-    const meta = [c.year, c.engine, c.power ? c.power + " ch" : "", c.zero ? "0-100 : " + c.zero + " s" : "", c.drive && window.MATrack && window.MATrack.DRIVES[c.drive] ? window.MATrack.DRIVES[c.drive][0] : ""].filter(Boolean).map(esc).join(" · ");
+    const meta = [c.year, c.engine, c.power ? c.power + " ch" : "", c.zero ? "0-100 : " + c.zero + " s" : "", c.speed ? "Vmax : " + c.speed + " km/h" : "", c.drive && window.MATrack && window.MATrack.DRIVES[c.drive] ? window.MATrack.DRIVES[c.drive][0] : ""].filter(Boolean).map(esc).join(" · ");
     const mods = String(c.mods || "").split("\n").map((x) => x.trim()).filter(Boolean).slice(0, 8);
     return `
       <article class="comm-car">
@@ -1351,7 +1351,7 @@
     const c = mcEditing || {};
     $("mc-title").textContent = mcEditing ? (mcEditing.uid !== currentUser.uid ? "Modifier la voiture de " + (mcEditing.pilot || "ce pilote") + " (admin)" : "Modifier ma voiture") : "Ajouter une voiture";
     $("mc-name").value = c.name || ""; $("mc-year").value = c.year || ""; $("mc-engine").value = c.engine || "";
-    $("mc-power").value = c.power || ""; $("mc-zero").value = c.zero || ""; $("mc-desc").value = c.description || ""; $("mc-mods").value = c.mods || ""; $("mc-drive").value = c.drive || ""; if ($("mc-legal")) $("mc-legal").checked = false;
+    $("mc-power").value = c.power || ""; $("mc-zero").value = c.zero || ""; $("mc-speed").value = c.speed || ""; $("mc-desc").value = c.description || ""; $("mc-mods").value = c.mods || ""; $("mc-drive").value = c.drive || ""; if ($("mc-legal")) $("mc-legal").checked = false;
     fillCatalogList();
     { const b = c.catalogId ? carsById.get(c.catalogId) : null; $("mc-cat").value = b ? catLabel(b) : ""; mcCatShown = $("mc-cat").value; onCatalogPick(); }
     $("mc-url").value = ""; $("mc-error").textContent = ""; $("mc-upload-status").textContent = "";
@@ -1383,6 +1383,7 @@
       name: name.slice(0, 80), year: $("mc-year").value.trim().slice(0, 20), engine: $("mc-engine").value.trim().slice(0, 100),
       drive: ($("mc-drive").value || "").slice(0, 2),
       power: power > 0 && power < 5000 ? Math.round(power) : 0,
+      speed: (() => { const v = Math.round(Number($("mc-speed").value)); return v > 0 && v < 600 ? v : 0; })(),
       zero: (() => { const z = Number($("mc-zero").value.replace(",", ".")); return z > 0 && z < 60 ? Math.round(z * 10) / 10 : 0; })(),
       description: $("mc-desc").value.trim().slice(0, 600), mods: $("mc-mods").value.trim().slice(0, 500),
       photos: mcImages.filter((u) => safeUrl(u)).slice(0, 8)

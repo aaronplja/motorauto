@@ -528,7 +528,7 @@
   }
   function myCarObj(c) {
     const photos = (c.photos || []).filter((u) => C.safeUrl(u));
-    return { id: "mine-" + c.id, mine: true, brand: c.pilot || "Ma voiture", model: c.name || "Ma voiture", image: photos[0] || "", images: photos, category: "", years: c.year || "", stats: { power: Number(c.power) || 0, speed: 0, zero: Number(c.zero) || null } };
+    return { id: "mine-" + c.id, mine: true, brand: c.pilot || "Ma voiture", model: c.name || "Ma voiture", image: photos[0] || "", images: photos, category: "", years: c.year || "", stats: { power: Number(c.power) || 0, speed: Number(c.speed) || 0, zero: Number(c.zero) || null } };
   }
   function myCarsHtml() {
     const cars = ((window.MAApp && window.MAApp.getMyCars && window.MAApp.getMyCars()) || []).slice(0, 6), pub = new Set((showcase && showcase.cars) || []);

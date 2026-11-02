@@ -394,7 +394,7 @@
     if (!car) { root.innerHTML = `<div class="empty-note error">Cette voiture n'existe pas (ou plus).</div>`; return; }
     document.title = (car.name || "Voiture") + " | MOTORAUTO";
     const photos = (car.photos || []).filter((u) => C.safeUrl(u));
-    const meta = [car.year, car.engine, car.power ? car.power + " ch" : ""].filter(Boolean).map(esc).join(" · ");
+    const meta = [car.year, car.engine, car.power ? car.power + " ch" : "", car.zero ? "0-100 : " + car.zero + " s" : "", car.speed ? "Vmax : " + car.speed + " km/h" : ""].filter(Boolean).map(esc).join(" · ");
     const mods = String(car.mods || "").split("\n").map((x) => x.trim()).filter(Boolean);
     root.innerHTML = `
       <div class="sheet-hero-banner"><div class="car-slides${photos.length > 1 ? "" : " single"}" ${photos.length > 1 ? "data-slides" : ""}>${(photos.length ? photos : [""]).map((u, i) => `<img src="${esc(C.safeUrl(u) || "")}" alt="${esc(car.name || "Voiture")} (${i + 1})" data-fallback="car" draggable="false">`).join("")}</div>
