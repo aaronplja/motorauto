@@ -366,6 +366,17 @@ service cloud.firestore {
     }
 
     // --- Titres de succès affichés à côté du pseudo : un titre = un album terminé (revérifié ici)
+    // --- Messages d'aide masqués par le pilote : { off: { "play/cartes": true, … } }
+    match /guides/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['off', 'updatedAt'])
+        && request.resource.data.off is map
+        && request.resource.data.off.size() <= 80
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isOwner(uid);
+    }
+
     match /titles/{uid} {
       allow read: if true;
       allow create, update: if isOwner(uid)
