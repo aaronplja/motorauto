@@ -23,12 +23,12 @@ const ADMIN_MAIL = "admin@motorauto.fr";
 
 /** voitures tirables : catalogue local (catalog-static.json) + voitures ajoutées dans l'administration (Firestore) */
 async function loadPool() {
-  const map = new Map(STATIC_CATALOG.map((c) => [c.id, { id: c.id, power: c.power, name: c.name, brand: c.brand || "", category: c.category || "", year: c.year || 0, pics: c.pics || [] }]));
+  const map = new Map(STATIC_CATALOG.map((c) => [c.id, { id: c.id, power: c.power, speed: c.speed || 0, zero: c.zero || 0, name: c.name, brand: c.brand || "", category: c.category || "", year: c.year || 0, pics: c.pics || [] }]));
   try {
     const snap = await db.collection("motorauto_catalog").limit(1000).get();
     snap.forEach((d) => {
       const x = d.data(), engines = (x.phases || []).flatMap((p) => p.engines || []);
-      map.set(d.id, { id: d.id, power: engines.length ? Math.max(...engines.map((e) => Number(e.power) || 0)) : 0, name: ((x.brand || "") + " " + (x.model || "")).trim(), brand: x.brand || "", category: x.category || "", year: gameCore.yearOf(x), pics: gameCore.picKeys(x) });
+      map.set(d.id, { id: d.id, power: engines.length ? Math.max(...engines.map((e) => Number(e.power) || 0)) : 0, speed: engines.length ? Math.max(...engines.map((e) => Number(e.speed) || 0)) : 0, zero: Math.min(...engines.map((e) => Number(e.zero) || 0).filter((v) => v > 0), 0) || 0, name: ((x.brand || "") + " " + (x.model || "")).trim(), brand: x.brand || "", category: x.category || "", year: gameCore.yearOf(x), pics: gameCore.picKeys(x) });
     });
   } catch (e) { logger.warn("Catalogue Firestore illisible, catalogue local utilisé", e); }
   return Array.from(map.values());

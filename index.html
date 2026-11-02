@@ -34,12 +34,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
 
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/style.css">
@@ -58,6 +58,8 @@
   <link rel="stylesheet" href="css/packs.css">
   <link rel="stylesheet" href="css/cards3.css">
   <link rel="stylesheet" href="css/cards4.css">
+  <link rel="stylesheet" href="css/cards5.css">
+  <link rel="stylesheet" href="css/studio.css">
 <style id="splash-css">#splash{display:none}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;background:var(--bg-core,#09090b);animation:splashOut .38s ease .8s forwards;pointer-events:none}
 #splash .sp-logo{display:flex;align-items:baseline;font:900 clamp(2rem,9vw,2.8rem)/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.04em;animation:splashLogo .7s cubic-bezier(.34,1.45,.56,1) both}
@@ -122,7 +124,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
     <div class="stage-shell hero-inner">
       <div class="hero-copy">
-        <div class="badge-hero-pill"><span class="pulse-optic"></span><span>Archive vivante des sportives de route</span></div>
+        <div class="badge-hero-pill"><span class="pulse-optic"></span><span>L'archive vivante des sportives de route</span></div>
         <h1 class="hero-heroic-title">
           <span class="ht-line">Chaque version.</span>
           <span class="ht-line ht-outline">Chaque chiffre.</span>
@@ -197,6 +199,18 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <div class="marquee-track" id="brand-marquee"></div>
   </section>
 
+  <section class="stage-shell home-section" id="home-play-sec">
+    <div class="section-head"><div><h2 class="section-title">À explorer</h2><p class="count-stream">La voiture du jour, le jeu et la communauté</p></div></div>
+    <div id="home-daily" class="daily-wrap"></div>
+    <div class="bento" aria-label="Espaces du site">
+      <a class="bento-tile bt-wide bt-cards" href="#/jouer/cartes"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/></svg></span><b>Cartes à collectionner</b><small>Un pack gratuit chaque jour, des albums, des Légendes à gagner.</small><i class="bt-go" aria-hidden="true">›</i></a>
+      <a class="bento-tile" href="#/duel"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg></span><b>Duel</b><small>0-100 et 400 m en course</small><i class="bt-go" aria-hidden="true">›</i></a>
+      <a class="bento-tile" href="#/clubs"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6z"/></svg></span><b>Clubs</b><small>Par marque ou par région</small><i class="bt-go" aria-hidden="true">›</i></a>
+      <a class="bento-tile" href="#/annonces"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12.5V4h8.5L21 13.5 13.5 21z"/><circle cx="8" cy="8.5" r="1.3"/></svg></span><b>Annonces</b><small>Pièces entre pilotes</small><i class="bt-go" aria-hidden="true">›</i></a>
+      <a class="bento-tile" href="#/classement"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></svg></span><b>Classement</b><small>Chronos et collectionneurs</small><i class="bt-go" aria-hidden="true">›</i></a>
+    </div>
+  </section>
+
   <section class="stage-shell home-section" id="home-feed-sec">
     <div class="section-head">
       <div><h2 class="section-title">Fil d'actualité</h2><p class="count-stream">Nouveaux pilotes, nouvelles voitures et nouveaux records</p></div>
@@ -207,16 +221,6 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <section class="stage-shell home-section home-contest" id="home-contest" hidden></section>
 
-  <section class="stage-shell home-section" id="home-play-sec">
-    <div class="section-head"><div><h2 class="section-title">À essayer</h2><p class="count-stream">Voiture du jour, duels, cartes à collectionner</p></div></div>
-    <div id="home-daily" class="daily-wrap"></div>
-    <div class="play-tiles">
-      <a class="play-tile" href="#/duel"><b>🏁 Duel</b><small>0-100 et 400 m en course</small></a>
-      <a class="play-tile" href="#/jouer/cartes"><b>🃏 Cartes</b><small>Un pack gratuit par jour</small></a>
-      <a class="play-tile" href="#/clubs"><b>🛡 Clubs</b><small>Par marque ou par région</small></a>
-      <a class="play-tile" href="#/annonces"><b>🏷 Annonces</b><small>Pièces entre pilotes</small></a>
-    </div>
-  </section>
 
   <section class="stage-shell home-section">
     <div class="home-cols">
@@ -584,17 +588,10 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       </header>
     <nav data-section="admin"></nav>
     <section class="tab-panel" data-tab="tableau" hidden>
-      <details class="adm-sec" open><summary><span class="adm-t">À traiter</span></summary><div class="adm-body"><div id="admin-inbox"><div class="empty-note">Chargement…</div></div></div></details>
-      <div class="adm-block-head"><h2>Vue d'ensemble</h2><span>Données en direct de la base</span></div>
-      <div class="stats-ribbon adm-kpis" id="admin-stats">
-          <div class="ribbon-card"><span class="ribbon-key">Véhicules</span><span class="ribbon-value" id="adm-stat-cars">…</span></div>
-          <div class="ribbon-card"><span class="ribbon-key">Pilotes</span><span class="ribbon-value" id="adm-stat-users">…</span></div>
-          <div class="ribbon-card"><span class="ribbon-key">Chronos</span><span class="ribbon-value" id="adm-stat-laps">…</span></div>
-          <div class="ribbon-card"><span class="ribbon-key">Messages de contact</span><span class="ribbon-value" id="adm-stat-msgs">…</span></div>
-          <div class="ribbon-card"><span class="ribbon-key">Propositions</span><span class="ribbon-value" id="adm-stat-sg">…</span></div>
-          <div class="ribbon-card"><span class="ribbon-key">Signalements</span><span class="ribbon-value" id="adm-stat-rp">…</span></div>
-        </div>
+      <div class="adm-block-head"><h2>À traiter</h2><span>Ce qui attend une décision</span></div>
+      <div id="admin-inbox"><div class="empty-note">Chargement…</div></div>
       <div id="adm-dash"></div>
+      <div hidden aria-hidden="true"><span id="adm-stat-cars"></span><span id="adm-stat-users"></span><span id="adm-stat-laps"></span><span id="adm-stat-msgs"></span><span id="adm-stat-sg"></span><span id="adm-stat-rp"></span></div>
     </section>
     <section class="tab-panel" data-tab="moderation" hidden>
       <details class="adm-sec" open><summary><span class="adm-t">Messages signalés du salon</span></summary><div class="adm-body"><div class="admin-list" id="admin-rp-list"></div></div></details><details class="adm-sec" open><summary><span class="adm-t">Propositions de la communauté</span></summary><div class="adm-body"><div class="admin-list" id="admin-sg-list"></div></div></details><details class="adm-sec" open><summary><span class="adm-t">Messages reçus (contact)</span></summary><div class="adm-body"><div class="admin-list" id="admin-msg-list"></div></div></details><details class="adm-sec"><summary><span class="adm-t">Pilotes en sourdine</span></summary><div class="adm-body"><div class="admin-list" id="admin-mute-list"></div></div></details><details class="adm-sec"><summary><span class="adm-t">Raccourcis</span></summary><div class="adm-body"><div class="admin-quick"><a class="cta-btn btn-ghost" href="#/communaute/pilotes">Gérer les pilotes</a><a class="cta-btn btn-ghost" href="#/classement/chronos">Modérer les chronos</a><a class="cta-btn btn-ghost" href="chat.html">Modérer le salon &amp; canaux</a></div></div></details><details class="adm-sec"><summary><span class="adm-t">Réponses toutes prêtes</span></summary><div class="adm-body"><p class="lap-meta">Elles apparaissent dans le menu « Réponse rapide » de la messagerie, pour répondre en un clic aux demandes fréquentes.</p><div id="canned-root"></div></div></details>
@@ -609,6 +606,10 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     </section>
     <section class="tab-panel" data-tab="jeu" hidden>
       <div id="admin-game"><div class="empty-note">Chargement…</div></div>
+    </section>
+    <section class="tab-panel" data-tab="erreurs" hidden>
+      <div class="adm-block-head"><h2>Erreurs du navigateur</h2><span>Ce qui plante chez les pilotes, regroupé par erreur</span></div>
+      <div id="errors-root"><div class="empty-note">Chargement…</div></div>
     </section>
     <section class="tab-panel" data-tab="journal" hidden>
       <p class="admin-note">Les dernières actions des administrateurs (suppressions, grades, sourdines, décisions…).</p>
@@ -1264,113 +1265,117 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     </div>
   </div>
 
-  <script src="js/firebase-init.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/themes.js"></script>
-  <script src="js/common.js"></script>
-  <script src="js/draft.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/data2.js"></script>
-  <script src="js/data-kit.js"></script>
-  <script src="js/data-alfa.js"></script>
-  <script src="js/data-audi.js"></script>
-  <script src="js/data-lemans.js"></script>
-  <script src="js/data-bmw-1.js"></script>
-  <script src="js/data-bmw-2.js"></script>
-  <script src="js/data-bmw-3.js"></script>
-  <script src="js/data-bmw-4.js"></script>
-  <script src="js/data-mercedes-1.js"></script>
-  <script src="js/data-mercedes-2.js"></script>
-  <script src="js/data-mercedes-3.js"></script>
-  <script src="js/data-mercedes-4.js"></script>
-  <script src="js/data-mercedes-5.js"></script>
-  <script src="js/data-renault-1.js"></script>
-  <script src="js/data-renault-2.js"></script>
-  <script src="js/data-renault-3.js"></script>
-  <script src="js/data-alpine-1.js"></script>
-  <script src="js/data-rally-1.js"></script>
-  <script src="js/data-rally-2.js"></script>
-  <script src="js/data-rally-3.js"></script>
-  <script src="js/data-split.js"></script>
+  <script defer src="js/firebase-init.js"></script>
+  <script defer src="js/utils.js"></script>
+  <script defer src="js/themes.js"></script>
+  <script defer src="js/common.js"></script>
+  <script defer src="js/draft.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="js/data2.js"></script>
+  <script defer src="js/data-kit.js"></script>
+  <script defer src="js/data-alfa.js"></script>
+  <script defer src="js/data-audi.js"></script>
+  <script defer src="js/data-lemans.js"></script>
+  <script defer src="js/data-bmw-1.js"></script>
+  <script defer src="js/data-bmw-2.js"></script>
+  <script defer src="js/data-bmw-3.js"></script>
+  <script defer src="js/data-bmw-4.js"></script>
+  <script defer src="js/data-mercedes-1.js"></script>
+  <script defer src="js/data-mercedes-2.js"></script>
+  <script defer src="js/data-mercedes-3.js"></script>
+  <script defer src="js/data-mercedes-4.js"></script>
+  <script defer src="js/data-mercedes-5.js"></script>
+  <script defer src="js/data-renault-1.js"></script>
+  <script defer src="js/data-renault-2.js"></script>
+  <script defer src="js/data-renault-3.js"></script>
+  <script defer src="js/data-alpine-1.js"></script>
+  <script defer src="js/data-rally-1.js"></script>
+  <script defer src="js/data-rally-2.js"></script>
+  <script defer src="js/data-rally-3.js"></script>
+  <script defer src="js/data-split.js"></script>
   <!--MARQUES-->
-  <script src="js/data-enrich-lemans1.js"></script>
-  <script src="js/data-enrich-lemans2.js"></script>
-  <script src="js/data-enrich-audi1.js"></script>
-  <script src="js/data-enrich-audi2.js"></script>
-  <script src="js/data-enrich-alfa.js"></script>
-  <script src="js/data-enrich-fr.js"></script>
-  <script src="js/data-enrich-world.js"></script>
-  <script src="js/data-enrich-more1.js"></script>
-  <script src="js/data-enrich-more2.js"></script>
-  <script src="js/data-enrich-auto.js"></script>
-  <script src="js/data-enrich-bmw.js"></script>
-  <script src="js/data-enrich-mercedes.js"></script>
-  <script src="js/data-enrich-renault.js"></script>
-  <script src="js/data-enrich-rallye.js"></script>
-  <script src="js/data-enrich-vz.js"></script>
-  <script src="js/data-enrich-xcouple.js"></script>
-  <script src="js/data-enrich-zh1.js"></script>
-  <script src="js/data-enrich-zh2.js"></script>
-  <script src="js/data-enrich-zh3.js"></script>
-  <script src="js/data-enrich-zh4.js"></script>
-  <script src="js/data-extra.js"></script>
-  <script src="js/data-track.js"></script>
-  <script src="js/admin-steps.js"></script>
-  <script src="js/spotlight.js"></script>
-  <script src="js/sheet-tabs.js"></script>
-  <script src="js/wiki-import.js"></script>
-  <script src="js/import-any.js"></script>
-  <script src="js/a11y.js"></script>
-  <script src="js/icons.js"></script>
-  <script src="js/social-links.js"></script>
-  <script src="js/router.js"></script>
-  <script src="js/social.js"></script>
-  <script src="js/community.js"></script>
-  <script src="js/data-circuits.js"></script>
-  <script src="js/combo-select.js"></script>
-  <script src="js/circuits.js"></script>
-  <script src="js/admin-tools.js"></script>
-  <script src="js/garage-tools.js"></script>
-  <script src="js/garage-extra.js"></script>
-  <script src="js/admin-extra.js"></script>
-  <script src="js/game-core.js"></script>
-  <script src="js/game-engine.js"></script>
-  <script src="js/game-api.js"></script>
-  <script src="js/gamify.js"></script>
-  <script src="js/cards.js"></script>
-  <script src="js/pilot-challenge.js"></script>
-  <script src="js/card-battle.js"></script>
-  <script src="js/trades.js"></script>
-  <script src="js/play.js"></script>
-  <script src="js/contest.js"></script>
-  <script src="js/profile-stats.js"></script>
-  <script src="js/pilot-profile.js"></script>
-  <script src="js/legal.js"></script>
-  <script src="js/engines.js"></script>
-  <script src="js/share-car.js"></script>
-  <script src="js/referral.js"></script>
-  <script src="js/account.js"></script>
-  <script src="js/admin-game.js"></script>
-  <script src="js/share.js"></script>
-  <script src="js/push-config.js"></script>
-  <script src="js/push.js"></script>
-  <script src="js/settings.js"></script>
-  <script src="js/admin-dot.js"></script>
-  <script src="js/duel-engine.js"></script>
-  <script src="js/duel.js"></script>
-  <script src="js/map.js"></script>
-  <script src="js/clubs.js"></script>
-  <script src="js/clubs-plus.js"></script>
-  <script src="js/stats.js"></script>
-  <script src="js/report.js"></script>
-  <script src="js/market.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/polish.js"></script>
-  <script src="js/nav.js"></script>
-  <script src="js/glassbar.js"></script>
-  <script src="js/theme-ui.js"></script>
-  <script src="js/seasonal.js"></script>
-  <script src="js/feel.js"></script>
-  <script src="js/marquee.js"></script>
+  <script defer src="js/data-enrich-lemans1.js"></script>
+  <script defer src="js/data-enrich-lemans2.js"></script>
+  <script defer src="js/data-enrich-audi1.js"></script>
+  <script defer src="js/data-enrich-audi2.js"></script>
+  <script defer src="js/data-enrich-alfa.js"></script>
+  <script defer src="js/data-enrich-fr.js"></script>
+  <script defer src="js/data-enrich-world.js"></script>
+  <script defer src="js/data-enrich-more1.js"></script>
+  <script defer src="js/data-enrich-more2.js"></script>
+  <script defer src="js/data-enrich-auto.js"></script>
+  <script defer src="js/data-enrich-bmw.js"></script>
+  <script defer src="js/data-enrich-mercedes.js"></script>
+  <script defer src="js/data-enrich-renault.js"></script>
+  <script defer src="js/data-enrich-rallye.js"></script>
+  <script defer src="js/data-enrich-vz.js"></script>
+  <script defer src="js/data-enrich-xcouple.js"></script>
+  <script defer src="js/data-enrich-zh1.js"></script>
+  <script defer src="js/data-enrich-zh2.js"></script>
+  <script defer src="js/data-enrich-zh3.js"></script>
+  <script defer src="js/data-enrich-zh4.js"></script>
+  <script defer src="js/data-extra.js"></script>
+  <script defer src="js/data-track.js"></script>
+  <script defer src="js/admin-steps.js"></script>
+  <script defer src="js/spotlight.js"></script>
+  <script defer src="js/sheet-tabs.js"></script>
+  <script defer src="js/wiki-import.js"></script>
+  <script defer src="js/import-any.js"></script>
+  <script defer src="js/a11y.js"></script>
+  <script defer src="js/icons.js"></script>
+  <script defer src="js/social-links.js"></script>
+  <script defer src="js/router.js"></script>
+  <script defer src="js/social.js"></script>
+  <script defer src="js/community.js"></script>
+  <script defer src="js/data-circuits.js"></script>
+  <script defer src="js/combo-select.js"></script>
+  <script defer src="js/circuits.js"></script>
+  <script defer src="js/admin-tools.js"></script>
+  <script defer src="js/garage-tools.js"></script>
+  <script defer src="js/garage-extra.js"></script>
+  <script defer src="js/admin-extra.js"></script>
+  <script defer src="js/game-core.js"></script>
+  <script defer src="js/titles.js"></script>
+  <script defer src="js/game-engine.js"></script>
+  <script defer src="js/game-api.js"></script>
+  <script defer src="js/gamify.js"></script>
+  <script defer src="js/cards.js"></script>
+  <script defer src="js/pilot-challenge.js"></script>
+  <script defer src="js/card-battle.js"></script>
+  <script defer src="js/trades.js"></script>
+  <script defer src="js/play.js"></script>
+  <script defer src="js/contest.js"></script>
+  <script defer src="js/profile-stats.js"></script>
+  <script defer src="js/pilot-profile.js"></script>
+  <script defer src="js/legal.js"></script>
+  <script defer src="js/engines.js"></script>
+  <script defer src="js/share-car.js"></script>
+  <script defer src="js/referral.js"></script>
+  <script defer src="js/account.js"></script>
+  <script defer src="js/admin-game.js"></script>
+  <script defer src="js/share.js"></script>
+  <script defer src="js/push-config.js"></script>
+  <script defer src="js/push.js"></script>
+  <script defer src="js/settings.js"></script>
+  <script defer src="js/admin-dot.js"></script>
+  <script defer src="js/duel-engine.js"></script>
+  <script defer src="js/duel.js"></script>
+  <script defer src="js/map.js"></script>
+  <script defer src="js/clubs.js"></script>
+  <script defer src="js/clubs-plus.js"></script>
+  <script defer src="js/stats.js"></script>
+  <script defer src="js/report.js"></script>
+  <script defer src="js/market.js"></script>
+  <script defer src="js/errors.js"></script>
+  <script defer src="js/home-me.js"></script>
+  <script defer src="js/compare-share.js"></script>
+  <script defer src="js/app.js"></script>
+  <script defer src="js/polish.js"></script>
+  <script defer src="js/nav.js"></script>
+  <script defer src="js/glassbar.js"></script>
+  <script defer src="js/theme-ui.js"></script>
+  <script defer src="js/seasonal.js"></script>
+  <script defer src="js/feel.js"></script>
+  <script defer src="js/marquee.js"></script>
 </body>
 </html>

@@ -1170,7 +1170,7 @@
       if (Router.is("community", { tab: "pilotes" })) loadPilotsRegistry();
       if (pubUid === uid) refreshPubAdminBtn(uid);
       const nameEl = $("pub-profile-name");
-      if (pubUid === uid && nameEl) nameEl.innerHTML = esc(pubName) + MA.admins.tag(uid);
+      if (pubUid === uid && nameEl) { nameEl.innerHTML = esc(pubName) + MA.admins.tag(uid) + (window.MATitles ? window.MATitles.slot(uid) : ""); }
     } catch (err) {
       MA.toast("Action refusée : " + err.message + " (as-tu publié les dernières règles Firestore ?)", "err");
     }
@@ -1222,7 +1222,7 @@
   // community_cars/{id} : une voiture = un document (uid du propriétaire, photos[], motorisation, description…).
   // Un pilote peut en publier autant qu'il veut ; la page « Voitures de la communauté » les rassemble toutes.
   let myCars = [];
-  let mcEditing = null, mcImages = [];
+  let mcEditing = null, mcImages = [], mcCatShown = "";
   const communityCache = { list: [], at: 0 };
 
   const adminCars = new Map();
@@ -1340,15 +1340,19 @@
     } else hint.textContent = r.bad ? "Choisis une voiture dans la liste proposée (ou vide le champ)." : "Ta voiture affichera le lien vers la fiche et reprendra ses caractéristiques pour les duels.";
   }
 
-  function openMyCarEditor(id) {
+  async function openMyCarEditor(id) {
     if (!requireLogin()) return;
     mcEditing = id ? myCars.find((c) => c.id === id) || (isAdmin ? adminCars.get(id) : null) || null : null;
+    if (id && !mcEditing && isAdmin) {
+      try { const d = await db.collection("community_cars").doc(id).get(); if (d.exists) mcEditing = Object.assign({ id: d.id }, d.data()); } catch (_) { /* message ci-dessous */ }
+    }
+    if (id && !mcEditing) { MA.toast("Voiture introuvable : recharge la page.", "err"); return; }
     const c = mcEditing || {};
     $("mc-title").textContent = mcEditing ? (mcEditing.uid !== currentUser.uid ? "Modifier la voiture de " + (mcEditing.pilot || "ce pilote") + " (admin)" : "Modifier ma voiture") : "Ajouter une voiture";
     $("mc-name").value = c.name || ""; $("mc-year").value = c.year || ""; $("mc-engine").value = c.engine || "";
     $("mc-power").value = c.power || ""; $("mc-zero").value = c.zero || ""; $("mc-desc").value = c.description || ""; $("mc-mods").value = c.mods || ""; $("mc-drive").value = c.drive || ""; if ($("mc-legal")) $("mc-legal").checked = false;
     fillCatalogList();
-    { const b = c.catalogId ? carsById.get(c.catalogId) : null; $("mc-cat").value = b ? catLabel(b) : ""; onCatalogPick(); }
+    { const b = c.catalogId ? carsById.get(c.catalogId) : null; $("mc-cat").value = b ? catLabel(b) : ""; mcCatShown = $("mc-cat").value; onCatalogPick(); }
     $("mc-url").value = ""; $("mc-error").textContent = ""; $("mc-upload-status").textContent = "";
     mcImages = (c.photos || []).slice();
     renderMcImages();
@@ -1363,9 +1367,11 @@
     if (pending) { if (!safeUrl(pending)) { fail("L'URL de l'image doit commencer par https://"); return; } if (!mcImages.includes(pending)) mcImages.push(pending); $("mc-url").value = ""; }
     const name = $("mc-name").value.trim();
     if (name.length < 2) { fail("Donne un nom à ta voiture (ex. Peugeot 106 S16)."); return; }
-    if ($("mc-mods").value.trim() && !$("mc-legal").checked) { fail("Coche la case de responsabilité (pièces et modifications) pour enregistrer."); return; }
+    const adminOnOther = !!(mcEditing && currentUser && mcEditing.uid !== currentUser.uid && isAdmin);
+    if ($("mc-mods").value.trim() && !$("mc-legal").checked && !adminOnOther) { fail("Coche la case de responsabilité (pièces et modifications) pour enregistrer."); return; }
     const power = Number($("mc-power").value);
-    const cat = catalogFromInput();
+    let cat = catalogFromInput();
+    if (cat.bad && mcEditing && mcEditing.catalogId && normalize($("mc-cat").value) === normalize(mcCatShown)) cat = { id: mcEditing.catalogId };   // champ inchangé : on garde la fiche liée d'origine
     if (cat.bad) { fail("Fiche du catalogue inconnue : choisis-la dans la liste ou vide le champ."); return; }
     let data;
     try { data = {
@@ -1398,7 +1404,9 @@
       await loadMyCars();
       if (pubUid) renderUserCars(pubUid);
     } catch (e) {
-      fail(e.queued ? "Réseau indisponible : réessaie dans un instant." : "Enregistrement impossible : " + (e.message || e));
+      const denied = /permission|insufficient/i.test(String(e && (e.code || e.message)));
+      fail(e.queued ? "Réseau indisponible : réessaie dans un instant." : denied && isAdmin ? "Refusé par Firestore : republie le fichier firestore.rules complet (Firebase › Firestore › Règles), puis réessaie." : "Enregistrement impossible : " + (e.message || e));
+      if (window.MAErrors) window.MAErrors.report("mycar-save", e);
     } finally { btn.disabled = false; }
   }
 
@@ -1540,7 +1548,7 @@
       const data = doc.data();
       pubUid = userId; pubName = data.username || "Pilote"; pubAvatar = data.avatar || "";
       await MA.admins.load(db);
-      $("pub-profile-name").innerHTML = esc(pubName) + MA.admins.tag(userId);
+      $("pub-profile-name").innerHTML = esc(pubName) + MA.admins.tag(userId) + (window.MATitles ? window.MATitles.slot(userId) : "");
       refreshPubAdminBtn(userId);
       renderUserCars(userId);
       renderSocial("pub", userId);
@@ -3089,6 +3097,7 @@
   // pont vers les modules (social, communauté, circuits, admin, garage)
   window.MAApp = {
     moveGlider: () => moveGlider(),
+    compareWith: (list) => { compareIds = (list || []).filter((id) => carsById.has(id)).slice(0, MAX_COMPARE); saveCompare(); renderCompareTray(); if (compareIds.length >= 2) openCompare(); else MA.toast("Ce comparateur n'existe plus.", "err"); },
     ctx: () => ({
       db, auth, storage, FieldValue, MA, esc, safeUrl, Router,
       get user() { return currentUser; }, get profile() { return profile; }, get isAdmin() { return isAdmin; }, get isSuper() { return isSuper; },

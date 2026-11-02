@@ -405,7 +405,7 @@
         ${meta ? `<p class="sheet-blurb">${meta}</p>` : ""}
         ${car.description ? `<p class="sheet-blurb">${esc(car.description)}</p>` : ""}
         <button type="button" class="comm-owner" data-action="open-profile" data-uid="${esc(car.uid)}">${C.avatarImg(car.avatar, "pilot-row-avatar")}<span>${esc(car.pilot || "Pilote")}${C.MA.admins.tag(car.uid)}</span></button>
-        <div class="sheet-actions"><button type="button" class="cta-btn btn-ghost compact-btn" data-action="copy-link">Copier le lien</button></div>
+        <div class="sheet-actions"><button type="button" class="cta-btn btn-ghost compact-btn" data-action="copy-link">Copier le lien</button>${window.MAApp.ctx().isAdmin && C.user && car.uid !== C.user.uid ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-action="mycar-edit" data-id="${esc(id)}">🛠 Modifier (admin)</button>` : ""}</div>
       </div>
       <div class="sheet-core-body">
         ${mods.length ? `<div class="sheet-section-head">Modifications</div><ul class="mods-list">${mods.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}

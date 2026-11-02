@@ -19,7 +19,8 @@
     { name: "pilot", re: /^\/pilote\/([^/]+)\/?$/, keys: ["uid"] },
     { name: "garage", re: /^\/garage(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["apercu", "voitures", "suivi"] },
     { name: "settings", re: /^\/reglages(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["profil", "ambiance", "notifications", "carte"] },
-    { name: "admin", re: /^\/admin(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["tableau", "moderation", "catalogue", "jeu", "journal"] },
+    { name: "admin", re: /^\/admin(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["tableau", "moderation", "catalogue", "jeu", "journal", "erreurs"] },
+    { name: "compare", re: /^\/comparer\/([^/]+)\/?$/, keys: ["ids"] },
     { name: "duel", re: /^\/duel(?:\/([^/]+)\/([^/]+))?\/?$/, keys: ["a", "b"] },
     { name: "club", re: /^\/club\/([^/]+)\/?$/, keys: ["id"] },
     { name: "clubs", re: /^\/clubs\/?$/, keys: [] },
@@ -32,14 +33,14 @@
     home: "page-home", catalog: "page-catalog", car: "vehicle-modal", commcar: "page-commcar", community: "page-community",
     leaderboard: "leaderboard-modal", circuit: "page-circuit", pilot: "public-profile-modal",
     garage: "garage-modal", settings: "page-settings", engine: "page-engine", admin: "admin-panel-modal", contact: "page-contact", legal: "page-legal",
-    duel: "page-duel", club: "page-club", clubs: "page-clubs", market: "page-market", play: "page-play"
+    duel: "page-duel", compare: "page-catalog", club: "page-club", clubs: "page-clubs", market: "page-market", play: "page-play"
   };
   // entrée de menu mise en avant pour chaque page
-  const NAV_OF = { home: "home", catalog: "catalog", car: "catalog", engine: "catalog", commcar: "community", community: "community", pilot: "community", leaderboard: "community", circuit: "community", garage: "me", settings: "me", admin: "me", contact: "me", legal: "me", duel: "play", quiz: "play", play: "play", club: "community", clubs: "community", market: "community" };
+  const NAV_OF = { compare: "catalog", home: "home", catalog: "catalog", car: "catalog", engine: "catalog", commcar: "community", community: "community", pilot: "community", leaderboard: "community", circuit: "community", garage: "me", settings: "me", admin: "me", contact: "me", legal: "me", duel: "play", quiz: "play", play: "play", club: "community", clubs: "community", market: "community" };
   const TITLES = {
     home: "MOTORAUTO | Archive automobile & communauté de pilotes", catalog: "Catalogue | MOTORAUTO", community: "Communauté | MOTORAUTO",
     play: "Jouer | MOTORAUTO", leaderboard: "Classements | MOTORAUTO", circuit: "Circuit | MOTORAUTO", pilot: "Pilote | MOTORAUTO", garage: "Mon garage | MOTORAUTO", settings: "Réglages | MOTORAUTO",
-    admin: "Administration | MOTORAUTO", legal: "Informations légales | MOTORAUTO", engine: "Moteur | MOTORAUTO", contact: "Contact | MOTORAUTO", commcar: "Voiture de pilote | MOTORAUTO", duel: "Duel | MOTORAUTO", quiz: "Quiz | MOTORAUTO", club: "Club | MOTORAUTO", clubs: "Clubs | MOTORAUTO", market: "Annonces | MOTORAUTO", car: "Fiche véhicule | MOTORAUTO"
+    admin: "Administration | MOTORAUTO", legal: "Informations légales | MOTORAUTO", engine: "Moteur | MOTORAUTO", contact: "Contact | MOTORAUTO", commcar: "Voiture de pilote | MOTORAUTO", compare: "Comparateur | MOTORAUTO", duel: "Duel | MOTORAUTO", quiz: "Quiz | MOTORAUTO", club: "Club | MOTORAUTO", clubs: "Clubs | MOTORAUTO", market: "Annonces | MOTORAUTO", car: "Fiche véhicule | MOTORAUTO"
   };
   const DEFAULT_TAB = { settings: "profil", community: "fil", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "apercu" };
   // anciennes adresses (liens partagés, favoris) → adresse actuelle
@@ -51,7 +52,7 @@
     leaderboard: { page: "leaderboard", items: [["chronos", "Chronos"], ["circuits", "Circuits"], ["voitures", "Voitures"], ["pilotes", "Pilotes"], ["collection", "Cartes"]] },
     garage: { page: "garage", items: [["apercu", "Aperçu"], ["voitures", "Mes voitures"], ["suivi", "Suivi"]] },
     settings: { page: "settings", items: [["profil", "Profil"], ["ambiance", "Ambiance"], ["notifications", "Notifications"], ["carte", "Carte & vie privée"]] },
-    admin: { page: "admin", items: [["tableau", "Tableau de bord"], ["moderation", "Modération"], ["catalogue", "Catalogue"], ["jeu", "Jeu"], ["journal", "Journal"]] }
+    admin: { page: "admin", items: [["tableau", "Vue d'ensemble"], ["moderation", "Modération"], ["catalogue", "Catalogue"], ["jeu", "Jeu"], ["journal", "Journal"], ["erreurs", "Erreurs"]] }
   };
   // pictogrammes et libellés courts : toutes les barres tiennent sur l'écran d'un téléphone, sans défilement
   const TAB_SHORT = { classement: "Rang", evenements: "Sorties", "Mes voitures": "Voitures", "Tableau de bord": "Bord", "Carte & vie privée": "Privé", notifications: "Notifs", moderation: "Modér." };

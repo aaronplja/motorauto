@@ -1,0 +1,161 @@
+/* ==========================================================================
+   MOTORAUTO — Cartes v5 : face de carte reprise de zéro (étiquette de rareté, arrondis, niveaux, carte Légende).
+   Chargé en dernier : remplace les couches de réglages précédentes.
+   ========================================================================== */
+.tcg { --r: 16px; border-radius: var(--r); }
+.tcg-mini, .tcg.compact { --r: 11px; }
+.tcg-big { --r: 22px; }
+.tcg-art, .tcg-foil, .tcg-holo { border-radius: inherit; }
+
+/* étiquette de rareté : pastille bien centrée, jamais plus large que la carte */
+.tcg .tcg-rar {
+  display: inline-flex; align-items: center; gap: .3em; box-sizing: border-box; height: auto; max-width: 58cqw;
+  padding: .32em .8em; border-radius: 99px; line-height: 1; font-weight: 900; letter-spacing: .07em; text-transform: uppercase;
+  font-size: clamp(7px, 4.9cqw, 11px); color: #fff; background: linear-gradient(135deg, var(--rc), var(--rc2));
+  border: 1px solid rgba(255,255,255,.28); text-shadow: 0 1px 1px rgba(0,0,0,.5); box-shadow: 0 2px 8px rgba(0,0,0,.45);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tcg-common .tcg-rar { --rc: #64748b; --rc2: #334155; }
+.tcg-rare .tcg-rar { --rc: #3b82f6; --rc2: #1e40af; }
+.tcg-epic .tcg-rar { --rc: #a855f7; --rc2: #6b21a8; }
+.tcg-legendary .tcg-rar { --rc: #f59e0b; --rc2: #c2410c; }
+.tcg-shiny .tcg-rar { background: linear-gradient(100deg, #ff5f6d, #ffc371, #7bffb2, #5ac8fa, #a78bfa); color: #111; text-shadow: none; }
+.tcg-special .tcg-rar { --rc: #94a3b8; --rc2: #475569; }
+.tcg-mine .tcg-rar { --rc: #14b8a6; --rc2: #0f766e; }
+.tcg.locked .tcg-rar { background: #334155; border-color: rgba(255,255,255,.12); }
+.tcg .tcg-no { display: inline-flex; align-items: center; line-height: 1; padding: .3em .55em; border-radius: 99px; background: rgba(0,0,0,.5); font-weight: 800; }
+.tcg .tcg-dup { display: inline-flex; align-items: center; line-height: 1; padding: .3em .6em; }
+
+/* niveaux : anneau intérieur, distinct du cadre de rareté (bronze, argent, or, platine) */
+.tcg .tcg-frame { position: absolute; z-index: 6; pointer-events: none; inset: 2.4cqw; border: 0; box-shadow: none; border-radius: max(3px, calc(var(--r) - 2.4cqw)); border-image: none; }
+.tcg .tcg-frame.lv2 { box-shadow: inset 0 0 0 .7cqw #cd7f32, inset 0 0 6cqw -2cqw rgba(205,127,50,.7); }
+.tcg .tcg-frame.lv3 { box-shadow: inset 0 0 0 .8cqw #e2e8f0, inset 0 0 8cqw -2cqw rgba(226,232,240,.6); }
+.tcg .tcg-frame.lv4 { box-shadow: inset 0 0 0 1cqw #fbbf24, inset 0 0 10cqw -2cqw rgba(251,191,36,.8), 0 0 8cqw -3cqw #fbbf24; }
+.tcg .tcg-frame.lv5 { box-shadow: inset 0 0 0 1.2cqw #a5f3fc, inset 0 0 0 2.2cqw rgba(167,139,250,.55), inset 0 0 12cqw -2cqw rgba(167,139,250,.9); overflow: hidden; }
+.tcg .tcg-frame.lv5::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.55) 50%, transparent 62%); transform: translateX(-120%); }
+.tcg-grid .tcg:hover .tcg-frame.lv5::after, .tcg-big .tcg-frame.lv5::after, .tcg-3d .tcg-frame.lv5::after { animation: shine 2.6s ease-in-out infinite; }
+.tcg.lvl5 { box-shadow: 0 14px 30px -12px rgba(167,139,250,.7), 0 0 0 1px rgba(255,255,255,.1) inset; }
+
+/* LÉGENDE : noir, rouge profond et or massif. Rien à voir avec le Légendaire (orange) ni le Shiny (arc-en-ciel). */
+.tcg-mythic {
+  --rc: #f5d061; --rc2: #8a5a00; --r: 18px;
+  background: radial-gradient(120% 75% at 50% 0%, #6b1414 0%, #2a0707 48%, #070303 100%);
+  box-shadow: 0 16px 36px -14px rgba(245,208,97,.55), 0 0 0 1px rgba(245,208,97,.35) inset;
+}
+.tcg-mythic::before { padding: 3.5px; background: linear-gradient(135deg, #fff3b0 0%, #e0a800 22%, #7a4b00 45%, #ffe27a 60%, #b8860b 80%, #fff3b0 100%); }
+.tcg-mythic .tcg-holo { display: none; }
+.tcg-mythic .tcg-art::before { content: ""; position: absolute; inset: 3cqw; z-index: 3; border-radius: max(3px, calc(var(--r) - 5cqw)); box-shadow: inset 0 0 0 .5cqw rgba(245,208,97,.75), inset 0 0 14cqw -4cqw rgba(0,0,0,.65); pointer-events: none; }
+.tcg-mythic .tcg-art img { filter: contrast(1.1) saturate(1.05) sepia(.12); }
+.tcg-mythic .tcg-q { color: #f5d061; opacity: .75; }
+.tcg-mythic .tcg-foil { opacity: .8; z-index: 4; background: linear-gradient(115deg, transparent 36%, rgba(255,232,150,.75) 50%, transparent 64%); }
+.tcg-grid .tcg-mythic:hover .tcg-foil, .tcg-mythic.tcg-big .tcg-foil, .tcg-3d .tcg-mythic .tcg-foil, .flip.on .tcg-mythic .tcg-foil { animation: shine 3.2s cubic-bezier(.4,0,.2,1) infinite; }
+.tcg-mythic .tcg-body { background: linear-gradient(180deg, transparent 0%, rgba(30,6,6,.8) 38%, rgba(8,3,3,.96) 100%); }
+.tcg-mythic .tcg-body::before { content: ""; display: block; height: 1px; margin: 0 8% 1.6cqw; background: linear-gradient(90deg, transparent, #f5d061, transparent); }
+.tcg-mythic .tcg-brand { color: #e8c764; letter-spacing: .24em; }
+.tcg-mythic .tcg-name { color: #ffeeb5; text-shadow: 0 1px 0 #5a3500, 0 0 10px rgba(245,208,97,.35); letter-spacing: .02em; }
+.tcg-mythic .tcg-stats i { background: linear-gradient(90deg, #8a5a00, #f5d061); }
+.tcg-mythic .tcg-rar { background: linear-gradient(135deg, #0b0505, #2a0707); color: #f5d061; border: 1px solid #f5d061; text-shadow: none; box-shadow: 0 0 10px rgba(245,208,97,.5); }
+.tcg-mythic .tcg-rar::before { content: "♛"; font-size: 1.15em; line-height: 1; }
+.tcg-mythic .tcg-no { background: rgba(245,208,97,.16); color: #f5d061; border: 1px solid rgba(245,208,97,.5); }
+.tcg-mythic.locked { filter: none; }
+.tcg-mythic.locked .tcg-rar { background: #1a0a0a; color: #a8893a; border-color: #5a4a1a; }
+.tcg-mythic .tcg-frame.lv2, .tcg-mythic .tcg-frame.lv3 { inset: 5.2cqw; }
+.tcg-rar-chip.mythic { color: #f5d061; border-color: #f5d061; background: linear-gradient(135deg, #1a0505, #3a0a0a); font-weight: 800; }
+.flip[data-r="mythic"] .flip-back { box-shadow: 0 0 0 2px #f5d061 inset, 0 0 30px -2px #f5d061; }
+
+@media (prefers-reduced-motion: reduce) { .tcg .tcg-frame.lv5::after, .tcg-mythic .tcg-foil { animation: none !important; } }
+
+/* ---------- interface du jeu : cristaux manquants en rouge, pastilles de récupération ---------- */
+.short, b.short, .cg-price.short, .cg-price b.short { color: #ef4444 !important; }
+.cg-price.short { background: rgba(239,68,68,.14); box-shadow: 0 0 0 1px rgba(239,68,68,.4) inset; }
+.cg-pack.off .cg-price.short b, .cg-co-info .short { font-weight: 900; }
+.cg-dot { position: absolute; z-index: 8; top: -.45rem; right: -.35rem; min-width: 1.35rem; height: 1.35rem; padding: 0 .38rem; border-radius: 99px; background: #ef4444; color: #fff; font: 900 .72rem/1.35rem system-ui, sans-serif; font-style: normal; text-align: center; box-shadow: 0 0 0 2px var(--bg-surface, #0b0f19), 0 4px 12px -2px rgba(239,68,68,.8); animation: cgpulse 1.8s ease-in-out infinite; }
+.cg-tab, .cg-gift, .cg-album { position: relative; }
+.cg-tab .cg-dot { top: .25rem; right: .5rem; }
+.cg-dot-tag { top: .5rem; right: .6rem; height: auto; padding: .18rem .55rem; line-height: 1.2; font-size: .66rem; text-transform: uppercase; letter-spacing: .04em; }
+.cg-dot-in { position: static; display: inline-block; margin-left: .35rem; vertical-align: middle; min-width: 1.1rem; height: 1.1rem; line-height: 1.1rem; font-size: .66rem; box-shadow: none; animation: none; }
+.cg-gift.ready small { color: var(--accent); font-weight: 800; }
+@keyframes cgpulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .cg-dot { animation: none; } }
+
+/* ---------- albums refaits ---------- */
+.cg-albumgrid { display: grid; grid-template-columns: 1fr; gap: .6rem; }
+@media (min-width: 640px) { .cg-albumgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 980px) { .cg-albumgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.cg-album { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .85rem; padding: .8rem; border-radius: 18px; }
+.cg-album.ready { background: linear-gradient(135deg, color-mix(in srgb, #f59e0b 16%, var(--bg-elevated)), var(--bg-elevated)); }
+.ab-emb { position: relative; display: grid; place-items: center; width: 3.1rem; height: 3.1rem; border-radius: 14px; overflow: hidden; background: color-mix(in srgb, var(--accent) 20%, var(--bg-surface)); box-shadow: 0 0 0 1px rgba(255,255,255,.14) inset; container-type: inline-size; flex: 0 0 auto; }
+.ab-emb.big { width: 4.6rem; height: 4.6rem; border-radius: 20px; }
+.ab-emb.flag .pkart-flag { border-radius: 0; }
+.ab-emb.txt b { font-size: 1.05rem; font-weight: 900; letter-spacing: .02em; }
+.ab-emb.big.txt b { font-size: 1.5rem; }
+.ab-main { display: grid; gap: .2rem; min-width: 0; }
+.ab-main b { font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ab-main small { font-size: .72rem; color: var(--color-muted); }
+.ab-rw { display: flex; flex-wrap: wrap; gap: .25rem; }
+.ab-r { display: inline-flex; align-items: center; gap: .2rem; padding: .1rem .5rem; border-radius: 99px; font-size: .68rem; font-weight: 800; background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.ab-r.ok { background: rgba(34,197,94,.18); color: #22c55e; }
+.ab-leg { display: inline-flex; align-items: center; gap: .2rem; padding: .1rem .5rem; border-radius: 99px; font-size: .68rem; font-weight: 800; color: #f5d061; background: linear-gradient(135deg, #1a0505, #3a0a0a); border: 1px solid rgba(245,208,97,.6); }
+.ab-leg::before { content: "♛"; }
+.ab-leg.got { color: #22c55e; border-color: rgba(34,197,94,.6); background: rgba(34,197,94,.1); }
+.ab-ring { --pct: 0; position: relative; display: grid; place-items: center; width: 3.1rem; height: 3.1rem; border-radius: 50%; background: conic-gradient(var(--accent) calc(var(--pct) * 1%), color-mix(in srgb, var(--color-muted) 25%, transparent) 0); flex: 0 0 auto; }
+.ab-ring::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: var(--bg-elevated); }
+.ab-ring span { position: relative; font-size: .68rem; font-weight: 900; }
+.ab-ring.ok { background: conic-gradient(#22c55e 100%, #22c55e 0); }
+.cg-album.done .ab-ring span { color: #22c55e; }
+.cg-album-ov { max-width: 960px; display: grid; gap: .8rem; }
+.cg-ao-head { display: flex; align-items: center; gap: 1rem; text-align: left; }
+.cg-ao-t { flex: 1; min-width: 0; display: grid; gap: .3rem; }
+.cg-ao-t h2 { margin: 0; font-size: 1.4rem; }
+.cg-ao-t p { margin: 0; color: var(--color-muted); font-size: .85rem; }
+.cg-ao-rw { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: flex-start; }
+.cg-aslot.empty { opacity: .95; }
+.cg-aslot.empty .tcg { filter: saturate(.3) brightness(.7); }
+.cg-legend-panel { display: flex; align-items: center; gap: 1rem; padding: .9rem; border-radius: 20px; border: 1px solid rgba(245,208,97,.5); background: radial-gradient(120% 140% at 0 0, rgba(107,20,20,.55), rgba(10,4,4,.9)); text-align: left; }
+.cg-legend-panel .cg-legend-slot { width: min(34%, 130px); margin: 0; flex: 0 0 auto; }
+.cg-lp-t b { color: #f5d061; font-size: 1.05rem; }
+.cg-lp-t p { margin: .3rem 0 0; font-size: .85rem; color: #e8d9a8; }
+
+/* ---------- vitrine : sélecteur ---------- */
+.cg-pick { display: grid; gap: .7rem; max-width: 900px; }
+.cg-pick h2 { margin: 0; }
+.cg-pick input[type=search] { width: 100%; }
+.cg-pickbar { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: center; }
+.cg-pickbar button { border: 1px solid var(--stroke-line); background: var(--bg-surface); color: inherit; border-radius: 99px; padding: .3rem .8rem; font-size: .76rem; font-weight: 700; cursor: pointer; }
+.cg-pickbar button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent, #fff); border-color: transparent; }
+.cg-selrow { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .4rem; }
+.cg-selrow span { aspect-ratio: 5 / 7; border-radius: 10px; border: 2px dashed color-mix(in srgb, var(--color-muted) 45%, transparent); display: grid; place-items: center; font-size: .7rem; color: var(--color-muted); overflow: hidden; }
+.cg-selrow span.on { border: 2px solid var(--accent); }
+.cg-slot { transition: transform .2s; }
+.cg-slot:not(.empty):hover { transform: translateY(-3px); }
+.tcg-mythic .tcg-art { background: radial-gradient(90% 70% at 50% 25%, #4a0f0f 0%, #140404 70%, #050202 100%); }
+
+/* Titres de succès */
+.ttl { display: inline-block; margin-left: .45rem; padding: .08rem .55rem; border-radius: 999px; font-size: .68rem; font-weight: 800; letter-spacing: .02em; vertical-align: middle; line-height: 1.5; border: 1px solid color-mix(in srgb, currentColor 40%, transparent); }
+.ttl-silver { color: #cbd5e1; background: color-mix(in srgb, #94a3b8 14%, transparent); }
+.ttl-gold { color: #fbbf24; background: color-mix(in srgb, #fbbf24 14%, transparent); }
+.ttl-master { color: #34d399; background: color-mix(in srgb, #34d399 14%, transparent); }
+.ttl-legend { color: #1a1204; background: linear-gradient(120deg, #fde68a, #f59e0b 55%, #fcd34d); border-color: #b45309; }
+.cg-titles { margin: .2rem 0 .8rem; }
+.ttl-pick { display: flex; flex-direction: column; gap: .4rem; }
+.ttl-opts { display: flex; flex-wrap: wrap; gap: .4rem; }
+.ttl-opt { font: inherit; font-size: .8rem; font-weight: 700; padding: .35rem .8rem; min-height: 34px; border-radius: 999px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: inherit; cursor: pointer; }
+.ttl-opt[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Détail d'une carte : actions hiérarchisées */
+.tcg-actions { display: flex; flex-direction: column; gap: .6rem; align-items: stretch; width: min(100%, 460px); margin-inline: auto; }
+.cg-acts-main, .cg-acts-sub { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+.cg-acts-main .cta-btn { flex: 1 1 150px; min-height: 46px; }
+.cg-acts-sub .cta-btn { flex: 1 1 auto; min-height: 40px; font-size: .84rem; }
+.cg-cost { display: inline-flex; align-items: center; gap: .25rem; margin-left: .35rem; padding: .05rem .5rem; border-radius: 999px; background: rgba(0,0,0,.22); font-weight: 800; font-variant-numeric: tabular-nums; }
+.cg-lvbox { display: flex; align-items: center; justify-content: center; gap: .7rem; flex-wrap: wrap; padding: .7rem 1rem; margin: .4rem auto; border-radius: 16px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04); width: min(100%, 460px); }
+
+/* Historique des cristaux */
+.dustlog { width: min(100%, 460px); margin-inline: auto; padding: 1.2rem; border-radius: 22px; border: 1px solid rgba(255,255,255,.1); background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); }
+.dustlog h2 { display: flex; align-items: center; gap: .6rem; margin: 0 0 .4rem; font-size: 1.2rem; }
+.dustlog-bal { margin: 0 0 .8rem; text-align: center; color: var(--color-muted); } .dustlog-bal b { font-size: 2.2rem; color: #67e8f9; font-family: var(--font-display); }
+.dustlog ul { list-style: none; margin: 0 0 1rem; padding: 0; max-height: 46vh; overflow: auto; display: flex; flex-direction: column; }
+.dustlog li { display: flex; justify-content: space-between; align-items: center; gap: .8rem; padding: .6rem .2rem; border-top: 1px solid rgba(255,255,255,.07); font-size: .88rem; }
+.dustlog li small { display: block; font-size: .72rem; color: var(--color-muted); }
+.dustlog li b { display: inline-flex; align-items: center; gap: .25rem; font-variant-numeric: tabular-nums; }
+.dustlog li.gain b { color: #34d399; } .dustlog li.spend b { color: #f87171; }

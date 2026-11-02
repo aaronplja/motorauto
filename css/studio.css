@@ -1,0 +1,183 @@
+/* ==========================================================================
+   MOTORAUTO — STUDIO : système de design global (inspiré d'Apple), chargé en dernier.
+   Tout passe par les variables des thèmes (16 ambiances + thème personnalisé) : aucune couleur n'est écrite en dur ici.
+   Hors périmètre : la barre du bas (dock.css), les cartes à collectionner (.tcg), les circuits et le Studio de circuits.
+   ========================================================================== */
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-tech: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --corner-xs: 10px; --corner-sm: 14px; --corner-md: 22px; --st-lg: 28px;
+  --st-line: color-mix(in srgb, var(--color-ink) 9%, transparent);
+  --st-line-2: color-mix(in srgb, var(--color-ink) 15%, transparent);
+  --st-soft: color-mix(in srgb, var(--color-ink) 5%, transparent);
+  --st-shadow: 0 1px 2px rgba(0,0,0,.18), 0 14px 34px -18px rgba(0,0,0,.5);
+  --st-shadow-up: 0 2px 4px rgba(0,0,0,.2), 0 26px 50px -22px rgba(0,0,0,.6);
+  --st-ease: cubic-bezier(.22, .8, .3, 1);
+  --st-w: 1180px;
+}
+:root[data-theme="carrara-white"], :root[data-theme="silver-arrow"], :root[data-theme="ivory-dune"], :root[data-theme="nordic-frost"],
+:root[data-theme="solar-flare"], :root[data-theme="alpine-horizon"], :root[data-theme="rose-gold-gt"], :root[data-theme="mint-speedway"] {
+  --st-shadow: 0 1px 2px rgba(20,30,50,.06), 0 14px 34px -20px rgba(20,30,50,.28);
+  --st-shadow-up: 0 2px 4px rgba(20,30,50,.08), 0 26px 50px -24px rgba(20,30,50,.36);
+}
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-sans); font-size: 16px; line-height: 1.5; letter-spacing: -.011em; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  background: radial-gradient(1100px 560px at 50% -140px, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%) no-repeat, var(--bg-core); background-attachment: scroll; }
+h1, h2, h3, h4, .page-title, .section-title, .dialog-title { font-family: var(--font-display); letter-spacing: -.03em; text-transform: none; }
+.stage-shell { width: min(var(--st-w), 100% - 2rem); margin-inline: auto; }
+::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+
+/* ------------------------------------------------------------------ en-tête */
+.app-header { background: color-mix(in srgb, var(--bg-core) 72%, transparent); -webkit-backdrop-filter: saturate(180%) blur(22px); backdrop-filter: saturate(180%) blur(22px); border-bottom: 1px solid var(--st-line); box-shadow: none; }
+.app-header::before, .app-header::after { display: none !important; }
+.header-bar { min-height: 56px; width: min(var(--st-w), 100% - 2rem); margin-inline: auto; }
+.brand-link { gap: .1rem; }
+.brand-mark { width: 22px; height: 22px; margin-right: .4rem; filter: none; }
+.logo-motor, .logo-auto { font-family: var(--font-display); font-weight: 800; font-size: 1.12rem; letter-spacing: -.035em; }
+.logo-auto { color: var(--accent); }
+.desktop-navigation { gap: .15rem; padding: .25rem; border-radius: 999px; background: var(--st-soft); border: 1px solid var(--st-line); }
+.nav-link { border-radius: 999px; font-size: .86rem; font-weight: 600; letter-spacing: -.01em; color: var(--color-secondary); }
+.nav-link:hover { color: var(--color-ink); }
+.nav-link.active { color: var(--color-ink); }
+.nav-glider { border-radius: 999px; background: var(--bg-surface); box-shadow: 0 1px 3px rgba(0,0,0,.25), 0 0 0 1px var(--st-line); }
+.icon-btn { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--st-soft); color: var(--color-ink); transition: background .2s, transform .2s var(--st-ease); }
+.icon-btn:hover { background: var(--st-line); transform: none; }
+.pilot-chip { height: 38px; padding: 0 .9rem; border-radius: 999px; border: 0; background: var(--st-soft); font-size: .85rem; font-weight: 600; max-width: 170px; }
+.pilot-chip:hover { background: var(--st-line); box-shadow: none; }
+.scroll-progress { height: 2px; box-shadow: none; }
+
+/* ------------------------------------------------------------------ boutons, champs, pastilles */
+.cta-btn, .btn { min-height: 44px; padding: 0 1.3rem; border-radius: 999px; font-family: var(--font-sans); font-weight: 600; font-size: .95rem; letter-spacing: -.012em; text-transform: none; border: 0; transition: transform .2s var(--st-ease), background .2s, box-shadow .2s, opacity .2s; }
+.cta-btn:active, .btn:active { transform: scale(.97); }
+.fill-btn, .btn-primary { background: var(--accent); color: var(--on-accent); box-shadow: 0 8px 22px -12px var(--accent); }
+.fill-btn:hover, .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 28px -14px var(--accent); filter: brightness(1.06); }
+.btn-ghost { background: var(--st-soft); color: var(--color-ink); border: 1px solid var(--st-line); box-shadow: none; }
+.btn-ghost:hover { background: var(--st-line); border-color: var(--st-line-2); }
+.compact-btn { min-height: 34px; padding: 0 .95rem; font-size: .84rem; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea { font-family: var(--font-sans); font-size: 1rem; letter-spacing: -.011em; border-radius: var(--corner-sm); border: 1px solid var(--st-line); background: var(--st-soft); color: var(--color-ink); transition: border-color .2s, box-shadow .2s, background .2s; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); background: var(--bg-surface); }
+.custom-select { border-radius: var(--corner-sm); }
+.filter-pill, .quick-chip, .chip { min-height: 36px; padding: 0 1rem; border-radius: 999px; border: 1px solid var(--st-line); background: var(--st-soft); color: var(--color-secondary); font-family: var(--font-sans); font-weight: 600; font-size: .86rem; letter-spacing: -.01em; box-shadow: none; transition: background .2s, color .2s, border-color .2s, transform .15s; }
+.filter-pill:hover, .quick-chip:hover, .chip:hover { background: var(--st-line); color: var(--color-ink); }
+.filter-pill.active, .chip.active, .filter-pill[aria-pressed="true"], .chip[aria-pressed="true"] { background: var(--color-ink); color: var(--bg-core); border-color: transparent; }
+.status-tag-verified { display: inline-block; padding: 0; margin-bottom: .55rem; background: none; border: 0; border-radius: 0; font-family: var(--font-sans); font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.empty-note { border-radius: var(--corner-md); background: var(--st-soft); border: 1px dashed var(--st-line-2); color: var(--color-secondary); }
+.toast { border-radius: 16px; border: 1px solid var(--st-line); background: color-mix(in srgb, var(--bg-elevated) 88%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: var(--st-shadow-up); }
+
+/* ------------------------------------------------------------------ titres de pages et onglets */
+.page-head { margin-bottom: 1.4rem; align-items: flex-end; }
+.page-title { font-size: clamp(2.1rem, 6.4vw, 3.6rem); font-weight: 800; line-height: 1.04; letter-spacing: -.04em; margin: 0 0 .35rem; }
+.page-sub, .count-stream { font-family: var(--font-sans); font-size: 1.02rem; line-height: 1.45; letter-spacing: -.011em; color: var(--color-secondary); text-transform: none; }
+.count-stream { font-size: .92rem; }
+.section-title { font-size: clamp(1.55rem, 4.2vw, 2.3rem); font-weight: 800; line-height: 1.08; letter-spacing: -.035em; }
+.section-title.small { font-size: 1.2rem; }
+.section-head { margin-bottom: 1.1rem; align-items: flex-end; }
+.link-more { font-weight: 600; font-size: .92rem; color: var(--accent); text-decoration: none; white-space: nowrap; }
+.link-more:hover { text-decoration: underline; }
+.page-tabs, nav[data-section] { display: flex; gap: .15rem; padding: .25rem; border-radius: 999px; background: var(--st-soft); border: 1px solid var(--st-line); width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+.page-tabs::-webkit-scrollbar, nav[data-section]::-webkit-scrollbar { display: none; }
+.page-tab { min-height: 36px; padding: 0 1rem; border-radius: 999px; border: 0; background: transparent; color: var(--color-secondary); font-weight: 600; font-size: .88rem; letter-spacing: -.01em; white-space: nowrap; }
+.page-tab:hover { color: var(--color-ink); }
+.page-tab.active { background: var(--bg-surface); color: var(--color-ink); box-shadow: 0 1px 3px rgba(0,0,0,.22), 0 0 0 1px var(--st-line); }
+.page-wrap { padding-top: clamp(1.4rem, 4vw, 2.6rem); padding-bottom: 3rem; }
+.pro-tabs { border-radius: 999px; }
+
+/* ------------------------------------------------------------------ cartes de contenu */
+.car-box, .comm-card, .feed-item, .panel, .stat-card, .dash-card, .hub-card, .trade-row, .pilot-row, .event-card, .listing-card, .club-card, .contest-card {
+  border-radius: var(--corner-md); border: 1px solid var(--st-line); background: var(--bg-surface); box-shadow: var(--st-shadow); transition: transform .3s var(--st-ease), box-shadow .3s, border-color .3s; }
+.car-box:hover, .comm-card:hover, .club-card:hover, .listing-card:hover, .event-card:hover { transform: translateY(-4px); box-shadow: var(--st-shadow-up); border-color: var(--st-line-2); }
+.vehicles-dynamic-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 1.1rem; }
+.car-thumb-wrap { border-radius: 0; aspect-ratio: 16 / 10; }
+.car-thumb-wrap::after { background: linear-gradient(to top, color-mix(in srgb, var(--bg-surface) 70%, transparent), transparent 55%); }
+.car-card-body { padding: .35rem 1.15rem 1.15rem; gap: .25rem; }
+.car-brand-name { font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.car-model-name { font-family: var(--font-display); font-size: 1.22rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; }
+.car-years-label { font-family: var(--font-sans); font-size: .8rem; color: var(--color-muted); background: none; padding: 0; }
+.panel-section-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; letter-spacing: -.025em; text-transform: none; }
+.toolbar-cluster, .adv-panel { border-radius: var(--corner-md); border: 1px solid var(--st-line); background: var(--bg-surface); box-shadow: none; padding: 1rem; }
+.command-search-wrapper { border-radius: 999px; border: 1px solid var(--st-line); background: var(--st-soft); min-height: 52px; box-shadow: none; transition: border-color .2s, box-shadow .2s, background .2s; }
+.command-search-wrapper:focus-within { border-color: var(--accent); background: var(--bg-surface); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
+.command-search-wrapper input { border: 0 !important; background: transparent !important; box-shadow: none !important; }
+.search-suggestions-dropdown { border-radius: var(--corner-md); border: 1px solid var(--st-line); box-shadow: var(--st-shadow-up); }
+.modal-dialog { border-radius: var(--st-lg); border: 1px solid var(--st-line); box-shadow: var(--st-shadow-up); }
+.dialog-title { font-weight: 800; letter-spacing: -.03em; }
+.dialog-close-btn { border-radius: 50%; background: var(--st-soft); }
+
+/* ------------------------------------------------------------------ accueil */
+.hero-stage { min-height: 0; margin-top: -56px; padding: calc(56px + clamp(2.4rem, 8vw, 5.5rem)) 0 clamp(2rem, 6vw, 4rem); background: none; text-align: center; }
+.hero-aurora { opacity: .55; }
+.hero-grid-lines, .hero-streaks, .scroll-hint { display: none !important; }
+.hero-inner { display: grid; grid-template-columns: 1fr; gap: clamp(1.8rem, 5vw, 3.2rem); justify-items: center; }
+.hero-copy { max-width: 820px; display: grid; justify-items: center; }
+.badge-hero-pill { margin: 0 0 1.3rem; padding: .35rem .95rem; border-radius: 999px; background: var(--st-soft); border: 1px solid var(--st-line); font-size: .84rem; font-weight: 600; color: var(--color-secondary); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.hero-heroic-title { margin: 0; font-family: var(--font-display); font-size: clamp(2.7rem, 10.5vw, 6.2rem); font-weight: 800; line-height: 1; letter-spacing: -.05em; text-transform: none; }
+.ht-line { display: block; background: linear-gradient(180deg, var(--color-ink) 30%, color-mix(in srgb, var(--color-ink) 62%, var(--bg-core))); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.ht-line.ht-outline { -webkit-text-stroke: 0; background: linear-gradient(95deg, var(--accent), color-mix(in srgb, var(--accent) 50%, #fff) 85%); -webkit-background-clip: text; background-clip: text; text-shadow: none; }
+.hero-heroic-sub { max-width: 640px; margin: 1.3rem 0 0; font-size: clamp(1.02rem, 2.6vw, 1.3rem); line-height: 1.45; color: var(--color-secondary); letter-spacing: -.014em; }
+.command-search-container { width: min(640px, 100%); margin-top: 1.8rem; text-align: left; }
+.cmd-key-indicator { border-radius: 8px; border: 1px solid var(--st-line); background: var(--st-soft); font-family: var(--font-sans); font-size: .76rem; }
+.quick-chips { justify-content: center; margin-top: 1rem; }
+.hero-stats { display: grid; grid-template-columns: repeat(3, auto); gap: clamp(1.4rem, 6vw, 4.5rem); justify-content: center; margin: 2.2rem 0 0; padding: 0; border: 0; }
+.hero-stats > div { display: grid; gap: .1rem; text-align: center; }
+.hero-stats dd { margin: 0; order: -1; font-family: var(--font-display); font-size: clamp(1.9rem, 6vw, 3.1rem); font-weight: 800; letter-spacing: -.045em; line-height: 1; color: var(--color-ink); }
+.hero-stats dt { font-size: .82rem; font-weight: 500; color: var(--color-muted); letter-spacing: 0; text-transform: none; }
+.hero-visual { width: min(100%, 440px); order: 2; padding: 1.2rem; border-radius: var(--st-lg); background: var(--bg-surface); border: 1px solid var(--st-line); box-shadow: var(--st-shadow-up); }
+.brand-marquee { border: 0; background: none; padding: .6rem 0 1.4rem; opacity: .9; }
+.home-section { padding-top: clamp(1.6rem, 5vw, 3rem); padding-bottom: clamp(.4rem, 2vw, 1rem); }
+.home-cols { gap: 1.2rem; }
+.home-col { padding: 1.3rem; border-radius: var(--corner-md); border: 1px solid var(--st-line); background: var(--bg-surface); box-shadow: var(--st-shadow); }
+
+.bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin-top: 1rem; }
+.bento-tile { position: relative; display: grid; align-content: end; gap: .2rem; min-height: 150px; padding: 1.15rem; border-radius: var(--corner-md); border: 1px solid var(--st-line); background: var(--bg-surface); color: var(--color-ink); text-decoration: none; overflow: hidden; box-shadow: var(--st-shadow); transition: transform .3s var(--st-ease), box-shadow .3s, border-color .3s; }
+.bento-tile:hover { transform: translateY(-4px); box-shadow: var(--st-shadow-up); border-color: var(--st-line-2); }
+.bento-tile .bt-ic { position: absolute; left: 1.15rem; top: 1.1rem; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.bento-tile .bt-ic svg { width: 22px; height: 22px; }
+.bento-tile b { font-family: var(--font-display); font-size: 1.12rem; font-weight: 700; letter-spacing: -.03em; }
+.bento-tile small { font-size: .82rem; line-height: 1.35; color: var(--color-secondary); }
+.bento-tile .bt-go { position: absolute; right: 1rem; top: 1rem; font-style: normal; font-size: 1.5rem; line-height: 1; color: var(--color-muted); transition: transform .3s var(--st-ease), color .2s; }
+.bento-tile:hover .bt-go { transform: translateX(3px); color: var(--accent); }
+.bento-tile.bt-wide { grid-column: 1 / -1; min-height: 190px; background: radial-gradient(120% 140% at 100% 0, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%), var(--bg-surface); }
+.bento-tile.bt-wide b { font-size: 1.6rem; }
+@media (min-width: 880px) {
+  .bento { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .bento-tile.bt-wide { grid-column: span 2; grid-row: span 2; min-height: 300px; }
+  .bento-tile.bt-wide b { font-size: 2rem; }
+  .bento-tile.bt-wide small { font-size: 1rem; max-width: 26ch; }
+}
+.daily-wrap { margin-bottom: .8rem; }
+.cta-band { margin-top: 2rem; padding: clamp(1.6rem, 5vw, 3.2rem); border-radius: var(--st-lg); border: 1px solid var(--st-line); background: radial-gradient(90% 120% at 0 0, color-mix(in srgb, var(--accent) 28%, transparent), transparent 62%), var(--bg-surface); box-shadow: var(--st-shadow); text-align: left; }
+.cta-copy h2 { font-family: var(--font-display); font-size: clamp(1.7rem, 5vw, 2.8rem); font-weight: 800; letter-spacing: -.04em; line-height: 1.06; text-transform: none; }
+
+/* ------------------------------------------------------------------ pied de page */
+.site-footer { margin-top: 4rem; border-top: 1px solid var(--st-line); background: none; padding-top: 2.4rem; }
+.footer-inner { display: grid; gap: 1.6rem; }
+.footer-brand { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; letter-spacing: -.035em; }
+.footer-brand p { margin: .5rem 0 0; font-family: var(--font-sans); font-size: .9rem; font-weight: 400; letter-spacing: -.01em; color: var(--color-secondary); max-width: 38ch; }
+.footer-links { display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; }
+.footer-links a, .footer-links button { background: none; border: 0; padding: 0; font: inherit; font-size: .88rem; font-weight: 500; color: var(--color-secondary); text-decoration: none; cursor: pointer; }
+.footer-links a:hover, .footer-links button:hover { color: var(--color-ink); }
+.footer-legal { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; justify-content: space-between; margin-top: 1.6rem; padding: 1.2rem 0 5.5rem; border-top: 1px solid var(--st-line); font-family: var(--font-sans); font-size: .78rem; color: var(--color-muted); }
+
+/* ------------------------------------------------------------------ fiche voiture */
+.car-hero, .vehicle-hero, .car-showcase { border-radius: var(--st-lg); }
+.back-link, .page-back { font-weight: 600; color: var(--color-secondary); }
+
+@media (min-width: 880px) { .home-cols { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .page-head { align-items: flex-start; } .hero-stats { gap: 1.2rem; } }
+@media (prefers-reduced-motion: reduce) { .car-box, .comm-card, .bento-tile, .cta-btn { transition: none; } }
+.section-title::before, .section-title::after, .section-head::after, .page-title::after, .page-title::before { display: none !important; content: none !important; }
+
+/* onglets de section : barre segmentée défilante (remplace la grille compressée) */
+.page-tabs.fit { display: flex !important; grid-template-columns: none; overflow-x: auto; gap: .15rem; width: fit-content; max-width: 100%; padding: .25rem; }
+.page-tabs.fit .page-tab { flex: 0 0 auto; min-height: 36px; padding: 0 1rem; border-radius: 999px; }
+.page-tabs.fit .page-tab .tl { font-size: .88rem !important; font-weight: 600; overflow: visible; }
+.page-tabs.fit .page-tab .tl::after { content: none !important; }
+.page-tabs.fit .page-tab.active { background: var(--bg-surface); color: var(--color-ink); box-shadow: 0 1px 3px rgba(0,0,0,.22), 0 0 0 1px var(--st-line); }
+.stage-shell { padding-inline: 0 !important; }
+.status-tag-verified { color: var(--accent) !important; }
+.chip-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+.car-model-name, .car-box h3, .comm-card h3 { text-transform: none; }
+.header-bar { padding-inline: 0 !important; }
+.logo-motor { color: var(--color-ink); }
+h1, h2, h3, h4 { text-transform: none !important; }

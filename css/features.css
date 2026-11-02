@@ -161,3 +161,27 @@
 .circ-card { display: grid; grid-template-columns: minmax(0, 1fr); border-radius: 16px; overflow: hidden; background: var(--bg-surface); border: 1px solid var(--stroke-line, transparent); margin-bottom: 1rem; } .circ-card img { width: 100%; max-height: 280px; object-fit: cover; display: block; }
 .circ-card-body { padding: 1rem; display: grid; gap: .6rem; } .circ-card-body p { margin: 0; line-height: 1.55; } .circ-facts { display: flex; gap: 1.2rem; flex-wrap: wrap; } .circ-facts span { display: grid; font-size: .75rem; color: var(--color-muted); } .circ-facts b { font-size: 1.3rem; color: var(--color-ink, inherit); }
 .circ-edit { margin: 1rem 0; } .paste-import { margin: .8rem 0; } .paste-import textarea { width: 100%; margin: .5rem 0; padding: .6rem; border-radius: 10px; border: 1px solid var(--stroke-line, rgba(255,255,255,.15)); background: var(--bg-surface); color: inherit; font: .8rem monospace; }
+
+/* Clubs : annonces et règles */
+.club-info { display: grid; gap: .8rem; margin: 0 0 1rem; }
+@media (min-width: 800px) { .club-info:has(.club-ann) { grid-template-columns: 1fr 1fr; } }
+.club-ann, .club-rules { padding: .9rem 1rem; border-radius: 14px; border: 1px solid var(--stroke-line); background: var(--bg-surface); }
+.club-ann { border-color: color-mix(in srgb, var(--accent) 45%, var(--stroke-line)); }
+.club-ann p { margin: .35rem 0; font-size: .9rem; } .club-rules-t { margin: .3rem 0 0; font-size: .9rem; line-height: 1.5; }
+.club-rules-edit { margin-top: .6rem; } .club-rules-edit summary { cursor: pointer; font-size: .82rem; font-weight: 700; color: var(--accent); min-height: 32px; }
+.club-rules-edit textarea { width: 100%; margin: .4rem 0; }
+
+/* Accueil personnalisé */
+.home-me { padding-top: 1.2rem; padding-bottom: .4rem; }
+.hm-title { margin: 0 0 .7rem; font-size: 1.15rem; letter-spacing: -.01em; }
+.hm-grid { display: grid; grid-template-columns: 1fr; gap: .7rem; }
+@media (min-width: 640px) { .hm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .hm-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.hm-card { position: relative; display: flex; flex-direction: column; gap: .25rem; padding: .95rem 1rem; border-radius: 16px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: inherit; text-decoration: none; overflow: hidden; min-height: 112px; transition: border-color .15s, transform .15s; }
+.hm-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.hm-card b { font-size: 1rem; line-height: 1.25; } .hm-card small { font-size: .8rem; color: var(--color-muted); overflow-wrap: anywhere; }
+.hm-k { font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.hm-car img { width: calc(100% + 2rem); margin: .2rem -1rem .3rem; height: 110px; object-fit: cover; }
+.hm-bar { display: block; height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--color-muted) 20%, transparent); margin-top: auto; } .hm-bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+
+.cmp-share { display: flex; gap: .5rem; flex-wrap: wrap; margin: 0 0 .8rem; }

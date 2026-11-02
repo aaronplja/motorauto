@@ -474,7 +474,7 @@
       <article class="msg ${mine ? "mine" : "theirs"} ${grouped ? "grouped" : ""}" data-id="${esc(m.id)}">
         ${mine ? "" : avatar}
         <div class="msg-col">
-          ${first ? `<header class="msg-meta"><button type="button" class="msg-author" data-action="profile" data-uid="${esc(m.uid)}">${esc(mine ? "Toi" : m.pilot || "Pilote")}</button>${MA.admins.tag(m.uid)}<time>${esc(timeFmt.format(d))}</time></header>` : ""}
+          ${first ? `<header class="msg-meta"><button type="button" class="msg-author" data-action="profile" data-uid="${esc(m.uid)}">${esc(mine ? "Toi" : m.pilot || "Pilote")}</button>${MA.admins.tag(m.uid)}${window.MATitles && !mine ? window.MATitles.slot(m.uid) : ""}<time>${esc(timeFmt.format(d))}</time></header>` : ""}
           <div class="bubble" title="${esc(timeFmt.format(d))}">
             ${quote}
             ${m.text && !m.tradeId ? `<p class="txt">${linkify(m.text)}</p>` : ""}

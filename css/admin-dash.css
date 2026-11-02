@@ -60,3 +60,37 @@ a.dash-kpi:hover { border-color: var(--accent); }
 .dash-skel i { display: block; height: 84px; border-radius: 14px; background: linear-gradient(90deg, var(--bg-surface), color-mix(in srgb, var(--accent) 8%, var(--bg-surface)), var(--bg-surface)); background-size: 200% 100%; animation: dashsk 1.2s linear infinite; }
 @keyframes dashsk { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .dash-skel i { animation: none; } }
+
+/* À traiter : tuiles cliquables */
+.todo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+@media (min-width: 700px) { .todo-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.todo-tile { display: flex; flex-direction: column; gap: .2rem; padding: .95rem 1rem; border-radius: var(--r-md, 14px); border: 1px solid var(--stroke-line); background: var(--bg-surface); color: inherit; text-decoration: none; transition: border-color .15s, transform .15s; }
+.todo-tile:hover { border-color: var(--accent); transform: translateY(-1px); }
+.todo-tile b { font-family: var(--font-display); font-size: 2.1rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.todo-tile span { font-size: .78rem; font-weight: 700; color: var(--color-muted); }
+.todo-tile.zero b { color: var(--color-muted); opacity: .55; }
+.todo-tile.warm { border-color: color-mix(in srgb, #fbbf24 50%, var(--stroke-line)); } .todo-tile.warm b { color: #fbbf24; }
+.todo-tile.hot { border-color: color-mix(in srgb, #f87171 60%, var(--stroke-line)); background: color-mix(in srgb, #f87171 7%, var(--bg-surface)); } .todo-tile.hot b { color: #f87171; }
+.todo-list { margin-top: .8rem; }
+.todo-clear { text-align: center; }
+.todo-more { margin: .6rem 0 0; font-size: .85rem; }
+.dash-activity { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.dash-activity li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: .6rem; padding: .5rem 0; border-top: 1px solid var(--stroke-line); font-size: .85rem; }
+.dash-activity li:first-child { border-top: 0; }
+.dash-activity time { color: var(--color-muted); font-size: .76rem; padding-top: .1rem; }
+.dash-activity .empty { display: block; color: var(--color-muted); }
+@media (max-width: 520px) { .dash-activity li { grid-template-columns: 1fr; gap: .1rem; } }
+
+/* Erreurs du navigateur */
+.err-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: .8rem; }
+.err-count { display: flex; align-items: baseline; gap: .5rem; } .err-count b { font-family: var(--font-display); font-size: 2.2rem; line-height: 1; } .err-count span { font-size: .85rem; color: var(--color-muted); }
+.err-count.bad b { color: #f87171; } .err-count.ok b { color: #34d399; }
+.err-head .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: color-mix(in srgb, var(--color-muted) 14%, transparent); }
+.err-head .seg button { border: 0; background: transparent; color: var(--color-muted); font: inherit; font-size: .8rem; font-weight: 700; padding: .35rem .8rem; border-radius: 999px; cursor: pointer; min-height: 34px; }
+.err-head .seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent, #fff); }
+.err-list { display: flex; flex-direction: column; gap: .5rem; }
+.err-row { display: grid; grid-template-columns: 4rem minmax(0, 1fr) auto; gap: .8rem; align-items: center; padding: .7rem .85rem; border-radius: 12px; border: 1px solid var(--stroke-line); background: var(--bg-surface); }
+.err-n { text-align: center; } .err-n b { display: block; font-size: 1.15rem; font-variant-numeric: tabular-nums; } .err-n small { font-size: .68rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; }
+.err-main { min-width: 0; } .err-main b { display: block; font-size: .88rem; word-break: break-word; } .err-main small { display: block; margin-top: .15rem; font-size: .74rem; color: var(--color-muted); word-break: break-word; }
+.err-act { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 620px) { .err-row { grid-template-columns: 3rem minmax(0, 1fr); } .err-act { grid-column: 1 / -1; justify-content: flex-start; } }

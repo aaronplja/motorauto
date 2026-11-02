@@ -124,13 +124,29 @@
     "decade:1990": "mb-clk-gtr", "decade:2000": "lm-audi-r8-lmp", "decade:2010": "mb-f1-hybrid", "decade:2020": "fiat-1000tipla"
   };
   const LEGEND_IDS = Object.keys(LEGENDS).map((k) => LEGENDS[k]);
-  /** rareté de chaque voiture selon son rang de puissance (égalités départagées par l'identifiant : même résultat partout) */
+  const PRESTIGE = /ferrari|lamborghini|porsche|mclaren|bugatti|aston martin|maserati|pagani|koenigsegg|lotus|bentley|rolls|de tomaso|shelby|jaguar|alpine|lancia|abarth/i;
+  const SPORTY = /\b(gt|gti|gtr|gt-r|gto|gts|gt3|gt2|gt4|rs ?\d{0,2}|type[ -]?r|m[1-8]\d{0,2}i?|amg|cosworth|turbo|quadrifoglio|integrale|nismo|sti|evo|evolution|cup|trophy|stratos|csl|black series|competition|lightweight|clubsport|speedster|roadster|v12|v10|wrc|r5|group b|groupe b|supra|nsx|rx-7|skyline|mustang|corvette|viper|cayman|boxster|elise|exige|evora|z4|mx-5|gr ?\w*|r32|vr6|16s|s[2-8])\b/i;
+  const pct = (sortedAsc, v) => { let lo = 0, hi = sortedAsc.length; while (lo < hi) { const m = (lo + hi) >> 1; if (sortedAsc[m] < v) lo = m + 1; else hi = m; } return sortedAsc.length > 1 ? lo / (sortedAsc.length - 1) : 0; };
+  /**
+   * Score de prestige d'une voiture (0 à ~100) : performances relatives (puissance, vitesse, 0 à 100) + catégorie + marque + version sportive + âge de collection.
+   * Une Ferrari 250 GTO ou une Delta Integrale ne finit donc plus « commune » parce que sa puissance est modeste.
+   */
   function computeRarities(list) {
-    const sorted = list.slice().sort((a, b) => (rankPower(b) - rankPower(a)) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const pw = list.map(rankPower).sort((a, b) => a - b), sp = list.map((c) => Number(c.speed) || 0).filter((v) => v > 0).sort((a, b) => a - b), zr = list.map((c) => Number(c.zero) || 0).filter((v) => v > 0).sort((a, b) => b - a);
+    const score = (c) => {
+      const pp = pct(pw, rankPower(c)), ps = c.speed > 0 ? pct(sp, c.speed) : pp, pz = c.zero > 0 ? pct(zr, c.zero) : pp, id = String(c.id), name = String(c.name || ""), y = Number(c.year) || 0, cat = String(c.category || "");
+      let s = (pp * 0.5 + ps * 0.25 + pz * 0.25) * 70;
+      s += cat === "Supercar" ? 14 : cat === "Le Mans" || id.indexOf("lm-") === 0 ? 12 : id.indexOf("rally-") === 0 ? 12 : cat === "Coupé" ? 3 : cat === "Break" ? -4 : cat === "Berline" && !SPORTY.test(name) ? -6 : 0;
+      if (PRESTIGE.test(c.brand || name)) s += 10;
+      if (SPORTY.test(name)) s += 10;
+      if (y && y <= 1960) s += 16; else if (y && y <= 1975) s += 12; else if (y && y <= 1990) s += 8;
+      return s;
+    };
+    const sorted = list.map((c) => ({ id: c.id, s: score(c), p: rankPower(c) })).sort((a, b) => (b.s - a.s) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const map = new Map();
     sorted.forEach((c, i) => {
       const p = i / Math.max(1, sorted.length - 1);
-      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : SHINY.indexOf(c.id) >= 0 ? "shiny" : p < 0.06 || rankPower(c) >= 500 ? "legendary" : p < 0.2 ? "epic" : p < 0.5 ? "rare" : "common");
+      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : SHINY.indexOf(c.id) >= 0 ? "shiny" : p < 0.06 ? "legendary" : p < 0.23 ? "epic" : p < 0.55 ? "rare" : "common");
     });
     return map;
   }

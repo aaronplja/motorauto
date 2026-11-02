@@ -13,13 +13,15 @@
     const box = document.getElementById("admin-inbox"); if (!box || !C.isAdmin) return;
     box.innerHTML = `<div class="empty-note">Chargement…</div>`;
     const get = (q) => q.get().then((s) => s.docs.map((d) => Object.assign({ id: d.id }, d.data()))).catch(() => []);
-    const [sg, rp, lr, ct, cr] = await Promise.all([
+    const [sg, rp, lr, ct, cr, er] = await Promise.all([
       get(C.db.collection("suggestions").where("status", "==", "pending").limit(100)),
       get(C.db.collection("reports").where("status", "==", "open").limit(100)),
       get(C.db.collection("listing_reports").where("status", "==", "open").limit(100)),
       get(C.db.collection("contact_messages").limit(60)),
-      get(C.db.collection("contest_reports").where("status", "==", "open").limit(100))
+      get(C.db.collection("contest_reports").where("status", "==", "open").limit(100)),
+      get(C.db.collection("client_errors").orderBy("last", "desc").limit(150))
     ]);
+    const errOpen = er.filter((x) => !x.done || (x.n || 0) > (x.doneN || 0)).length;
     const esc = C.esc, items = [];
     sg.forEach((x) => items.push({ at: tsMs(x.createdAt), icon: x.kind === "photo" ? "📷" : "✎", label: x.kind === "photo" ? "Photo proposée" : "Correction proposée", text: `${x.carName || ""} — ${x.kind === "photo" ? (x.text || "photo") : (x.field || "") + " : " + String(x.text || "").slice(0, 100)}`, who: x.pilot, href: "#/admin/moderation" }));
     rp.forEach((x) => items.push({ at: tsMs(x.createdAt), icon: "🚩", label: "Message signalé", text: `« ${String(x.msgText || "").slice(0, 100)} » (${x.msgPilot || ""})`, who: x.reporter, href: "#/admin/moderation" }));
@@ -27,9 +29,11 @@
     cr.forEach((x) => items.push({ at: tsMs(x.createdAt), icon: "📸", label: "Photo de concours signalée", text: `${x.title || ""} — ${(window.MAMarket && window.MAMarket.REASONS[x.reason]) || x.reason}`, who: x.reporter, contestRep: x, listing: null }));
     ct.filter((x) => x.type === "vehicle").forEach((x) => items.push({ at: tsMs(x.createdAt), icon: "🚗", label: TYPE_LABEL.vehicle, text: [x.brand, x.model, x.years, x.engine].filter(Boolean).join(" · ") || "véhicule demandé", who: x.pilot, href: "#/admin/moderation" }));
     items.sort((a, b) => b.at - a.at);
-    box.innerHTML = `<div class="dash-grid"><div class="dash-card ${sg.length ? "alert" : ""}"><b>${sg.length}</b><span>Propositions</span></div><div class="dash-card ${rp.length ? "alert" : ""}"><b>${rp.length}</b><span>Messages signalés</span></div><div class="dash-card ${lr.length ? "alert" : ""}"><b>${lr.length}</b><span>Annonces signalées</span></div><div class="dash-card"><b>${ct.filter((x) => x.type === "vehicle").length}</b><span>Demandes de fiches</span></div></div>
-      <div class="admin-list">${items.length ? items.map((it, i) => `<div class="admin-msg"><div class="admin-msg-head"><span class="msg-type">${it.icon} ${esc(it.label)}</span><b>${esc(it.who || "")}</b><span class="lap-meta">${it.at && window.MACommunity ? window.MACommunity.ago(it.at) : ""}</span></div><p class="admin-msg-body">${esc(it.text)}</p>
-        <div class="admin-quick">${it.href ? `<a class="cta-btn btn-ghost compact-btn" href="${it.href}">Traiter</a>` : it.contestRep ? `<button type="button" class="secondary-destructive-btn" data-inbox="c-remove" data-i="${i}">Retirer la photo</button><button type="button" class="cta-btn btn-ghost compact-btn" data-inbox="c-dismiss" data-i="${i}">Ignorer</button>` : `<button type="button" class="secondary-destructive-btn" data-inbox="remove" data-i="${i}">Retirer l'annonce</button><button type="button" class="cta-btn btn-ghost compact-btn" data-inbox="dismiss" data-i="${i}">Ignorer le signalement</button>`}</div></div>`).join("") : `<div class="empty-note">Rien à traiter. 👌</div>`}</div>`;
+    const reps = rp.length + lr.length + cr.length, fiches = ct.filter((x) => x.type === "vehicle").length, msgs = ct.filter((x) => x.type !== "vehicle").length;
+    const tile = (n, label, href, hot) => `<a class="todo-tile ${n && hot ? "hot" : n ? "warm" : "zero"}" href="${href}"><b>${n}</b><span>${label}</span></a>`;
+    box.innerHTML = `<div class="todo-grid">${tile(sg.length, "Propositions", "#/admin/moderation", true)}${tile(reps, "Signalements", "#/admin/moderation", true)}${tile(fiches, "Demandes de fiches", "#/admin/moderation", false)}${tile(msgs, "Messages reçus", "#/admin/moderation", false)}${tile(errOpen, "Erreurs du site", "#/admin/erreurs", true)}</div>
+      <div class="admin-list todo-list">${items.length ? items.slice(0, 8).map((it, i) => `<div class="admin-msg"><div class="admin-msg-head"><span class="msg-type">${it.icon} ${esc(it.label)}</span><b>${esc(it.who || "")}</b><span class="lap-meta">${it.at && window.MACommunity ? window.MACommunity.ago(it.at) : ""}</span></div><p class="admin-msg-body">${esc(it.text)}</p>
+        <div class="admin-quick">${it.href ? `<a class="cta-btn btn-ghost compact-btn" href="${it.href}">Traiter</a>` : it.contestRep ? `<button type="button" class="secondary-destructive-btn" data-inbox="c-remove" data-i="${i}">Retirer la photo</button><button type="button" class="cta-btn btn-ghost compact-btn" data-inbox="c-dismiss" data-i="${i}">Ignorer</button>` : `<button type="button" class="secondary-destructive-btn" data-inbox="remove" data-i="${i}">Retirer l'annonce</button><button type="button" class="cta-btn btn-ghost compact-btn" data-inbox="dismiss" data-i="${i}">Ignorer le signalement</button>`}</div></div>`).join("") : `<div class="empty-note todo-clear">Rien à traiter pour le moment.</div>`}</div>${items.length > 8 ? `<p class="todo-more"><a href="#/admin/moderation">Voir les ${items.length - 8} autres</a></p>` : ""}`;
     box._items = items;
   }
   async function inboxAction(a, i) {

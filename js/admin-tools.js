@@ -95,12 +95,15 @@
     if (!box) return;
     box.innerHTML = `<div class="dash-skel"><i></i><i></i><i></i></div>`;
     try {
-      const [st, views, sgSnap, rpSnap] = await Promise.all([
+      const [st, views, usersS, lapsS, logS] = await Promise.all([
         window.MAAdminCache.get("stats", () => C.db.collection("stats").limit(120).get()),
         window.MAAdminCache.get("car_views", () => C.db.collection("car_views").limit(400).get()),
-        window.MAAdminCache.get("sg", () => C.db.collection("suggestions").where("status", "==", "pending").limit(100).get().catch(() => ({ size: 0 })), 30000),
-        window.MAAdminCache.get("rp", () => C.db.collection("reports").where("status", "==", "open").limit(100).get().catch(() => ({ size: 0 })), 30000)
+        window.MAAdminCache.get("users", () => C.db.collection("users").limit(500).get(), 60000).catch(() => ({ size: 0 })),
+        window.MAAdminCache.get("laps", () => C.db.collection("global_laps").limit(500).get(), 60000).catch(() => ({ size: 0 })),
+        C.db.collection("admin_log").orderBy("createdAt", "desc").limit(8).get().catch(() => ({ docs: [] }))
       ]);
+      const usersN = usersS.size, lapsN = lapsS.size;
+      const logHtml = (logS.docs || []).map((d) => { const x = d.data(), t = tsMs(x.createdAt); return `<li><time>${t ? new Date(t).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}</time><span><b>${esc(x.byName || "Admin")}</b> ${esc(ACTION_LABEL[x.action] || x.action)}${x.targetName ? " — " + esc(x.targetName) : ""}</span></li>`; }).join("");
       const days = new Map(); st.forEach((d) => days.set(d.id, d.data()));
       const series = [];
       for (let i = 89; i >= 0; i--) { const dd = new Date(Date.now() - i * 86400000), k = day(dd); series.push({ k, v: (days.get(k) || {}).visits || 0, s: (days.get(k) || {}).signups || 0 }); }
@@ -113,13 +116,14 @@
       const brands = new Map(); C.carsById.forEach((c) => { const g = c.group || c.brand || "Autres"; brands.set(g, (brands.get(g) || 0) + 1); });
       const bl = [...brands.entries()].sort((a, b) => b[1] - a[1]), bMax = Math.max(1, bl.length ? bl[0][1] : 1);
       box.innerHTML = `
-        <div class="adm-block-head"><h2>Fréquentation</h2><span>Une visite = un navigateur, une fois par jour</span></div>
+        <div class="adm-block-head"><h2>Vue d'ensemble</h2><span>Une visite = un navigateur, une fois par jour</span></div>
         <div class="dash-kpis">
           <div class="dash-kpi"><span>Visites · 7 jours</span><b>${nf(v7)}</b>${delta(v7, p7)}</div>
           <div class="dash-kpi"><span>Visites · 30 jours</span><b>${nf(v30)}</b>${delta(v30, p30)}</div>
           <div class="dash-kpi"><span>Inscriptions · 7 jours</span><b>${nf(s7)}</b>${delta(s7, sp7)}</div>
-          <a class="dash-kpi ${rpSnap.size ? "alert" : ""}" href="#/admin/moderation"><span>Signalements ouverts</span><b>${nf(rpSnap.size)}</b><em class="dd flat">Modération</em></a>
-          <a class="dash-kpi ${sgSnap.size ? "alert" : ""}" href="#/admin/moderation"><span>Propositions en attente</span><b>${nf(sgSnap.size)}</b><em class="dd flat">Modération</em></a>
+          <div class="dash-kpi"><span>Pilotes</span><b>${nf(usersN)}</b><em class="dd flat">inscrits</em></div>
+          <div class="dash-kpi"><span>Véhicules</span><b>${nf(C.carsById.size)}</b><em class="dd flat">fiches</em></div>
+          <div class="dash-kpi"><span>Chronos</span><b>${nf(lapsN)}</b><em class="dd flat">enregistrés</em></div>
         </div>
         <section class="dash-card2">
           <header><div><h3>Visites par jour</h3><small id="dash-chart-total"></small></div>
@@ -133,6 +137,8 @@
           <section class="dash-card2"><header><div><h3>Catalogue par marque</h3><small>${nf(C.carsById.size)} fiches · ${nf(bl.length)} marques</small></div></header>
             <ol class="dash-rank">${bl.slice(0, 8).map(([g, n], i) => `<li><span class="row"><span class="rk">${i + 1}</span><span class="nm">${esc(g)}</span><span class="vl">${nf(n)}</span><i style="width:${Math.max(4, Math.round((n / bMax) * 100))}%"></i></span></li>`).join("")}</ol></section>
         </div>`;
+      box.insertAdjacentHTML("beforeend", `<section class="dash-card2"><header><div><h3>Activité récente</h3><small>Dernières actions d'administration</small></div><a class="cta-btn btn-ghost compact-btn" href="#/admin/journal">Tout le journal</a></header><ul class="dash-activity">${logHtml || `<li class="empty">Aucune action enregistrée.</li>`}</ul></section>
+        <div class="adm-block-head"><h2>Raccourcis</h2></div><div class="admin-quick"><a class="cta-btn btn-ghost" href="#/admin/moderation">Modération</a><a class="cta-btn btn-ghost" href="#/admin/catalogue">Catalogue</a><a class="cta-btn btn-ghost" href="#/communaute/pilotes">Pilotes</a><a class="cta-btn btn-ghost" href="#/admin/erreurs">Erreurs</a></div>`);
       box._series = series; paintChart(box);
       box.onclick = (e) => { const b = e.target.closest("[data-dash-days]"); if (b) { dashState.days = Number(b.dataset.dashDays); paintChart(box); } };
     } catch (e) { box.innerHTML = `<div class="empty-note error">Tableau de bord indisponible (règles Firestore à republier ?) : ${esc(e.message)}</div>`; }

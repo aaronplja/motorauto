@@ -75,6 +75,7 @@
     const total = ms.reduce((s, m) => s + xp(m.uid), 0), cars = C.cars.filter((c) => club.kind === "brand" && c.brand === club.key);
     root.innerHTML = `<div class="club-head"><div class="stats-ribbon"><div class="ribbon-card"><span class="ribbon-value">${ms.length}</span><span class="ribbon-key">Membres</span></div><div class="ribbon-card"><span class="ribbon-value">${nf(total)}</span><span class="ribbon-key">XP cumulée</span></div>${club.kind === "brand" ? `<div class="ribbon-card"><span class="ribbon-value">${cars.length}</span><span class="ribbon-key">Fiches</span></div>` : ""}</div>
       <button type="button" class="cta-btn ${mem ? "btn-ghost" : "fill-btn"}" data-club-join="${C.esc(id)}">${mem ? "Quitter le club" : "Rejoindre le club"}</button>${C.isAdmin || (C.user && club.ownerUid === C.user.uid) ? `<button type="button" class="secondary-destructive-btn" data-club-del="${C.esc(id)}">Supprimer le club</button>` : ""}</div>
+      ${rulesBlock(club, posts)}
       <div class="club-cols"><div>
         ${mem ? `<form id="club-post-form" class="club-post-form"><textarea id="club-post-text" maxlength="500" rows="2" placeholder="Un message pour le club…" aria-label="Message au club"></textarea><button type="submit" class="cta-btn fill-btn compact-btn">Publier</button></form>` : `<p class="lap-meta">Rejoins le club pour publier dans son fil.</p>`}
         <div class="feed-list">${posts.length ? posts.map((p) => `<div class="feed-item${p.pinned ? " pinned" : ""}">${C.avatarImg(p.avatar, "feed-avatar")}<span class="feed-text">${p.pinned ? `<em class="pin-tag">📌 Épinglé</em> ` : ""}<a href="#/pilote/${encodeURIComponent(p.uid)}"><b>${C.esc(p.name || "Pilote")}</b></a> ${C.esc(p.text)}<span class="feed-when">${window.MACommunity ? window.MACommunity.ago(tsMs(p.createdAt)) : ""}${C.user && (C.isAdmin || club.ownerUid === C.user.uid || club.viceUid === C.user.uid) ? ` · <button type="button" class="cmt-del" data-club-pin="${C.esc(p.id)}" data-pinned="${p.pinned ? 1 : 0}" aria-label="${p.pinned ? "Désépingler" : "Épingler"}">${p.pinned ? "📍" : "📌"}</button>` : ""}${C.user && (C.user.uid === p.uid || C.isAdmin) ? ` · <button type="button" class="cmt-del" data-club-post-del="${C.esc(p.id)}" aria-label="Supprimer">🗑</button>` : ""}</span></span></div>`).join("") : `<div class="empty-note">Le fil du club est vide.</div>`}</div></div>
@@ -83,16 +84,23 @@
     const f = document.getElementById("club-post-form");
     if (f) f.addEventListener("submit", post);
   }
+  function rulesBlock(club, posts) {
+    const esc = C.esc, staff = !!C.user && (C.isAdmin || club.ownerUid === C.user.uid || club.viceUid === C.user.uid), pins = posts.filter((p) => p.pinned);
+    if (!club.rules && !pins.length && !staff) return "";
+    return `<div class="club-info">${pins.length ? `<section class="club-ann" aria-label="Annonces"><h3 class="panel-section-title">Annonces</h3>${pins.map((p) => `<p><b>${esc(p.name || "Pilote")}</b> ${esc(p.text)}</p>`).join("")}</section>` : ""}
+      <section class="club-rules" aria-label="Règles du club"><h3 class="panel-section-title">Règles du club</h3>${club.rules ? `<p class="club-rules-t">${esc(club.rules).replace(/\n/g, "<br>")}</p>` : `<p class="lap-meta">Aucune règle publiée pour le moment.</p>`}
+        ${staff ? `<details class="club-rules-edit"><summary>Modifier les règles</summary><textarea id="club-rules-text" maxlength="600" rows="4" aria-label="Règles du club" placeholder="Respect, pas de pub, sorties en convoi…">${esc(club.rules || "")}</textarea><button type="button" class="cta-btn fill-btn compact-btn" data-club-rules="${esc(club.id)}">Enregistrer</button></details>` : ""}</section></div>`;
+  }
   /** canal de discussion du club : créé par le président, vice-président au choix parmi les membres */
   function chatControls(club, ms) {
     const esc = C.esc, owner = C.user && club.ownerUid === C.user.uid, staff = owner || (C.user && club.viceUid === C.user.uid), mem = isMember(club.id);
-    const vice = club.viceUid ? `<p class="lap-meta">🛡 Vice-président : <b>${esc(club.viceName || "Pilote")}</b></p>` : "";
+    const vice = club.viceUid ? `<p class="lap-meta">🛡 Modérateur : <b>${esc(club.viceName || "Pilote")}</b></p>` : "";
     const pres = ms.find((m) => m.uid === club.ownerUid);
     let h = `<div class="club-chatbox"><h3 class="panel-section-title">Canal de discussion</h3><p class="lap-meta">👑 Président : <b>${esc((pres && pres.name) || "Pilote")}</b></p>${vice}`;
     if (club.chatEnabled) h += `<a class="cta-btn fill-btn compact-btn" href="chat.html#club/${encodeURIComponent(club.id)}">💬 ${mem || C.isAdmin ? "Ouvrir le canal" : "Réservé aux membres"}</a><p class="lap-meta">Visible par les membres du club et par les administrateurs (modération).</p>`;
     else if (owner) h += `<button type="button" class="cta-btn fill-btn compact-btn" data-club-chat-create="${esc(club.id)}">Créer le canal de discussion du club</button><p class="lap-meta">Un canal privé réservé aux membres, que tu modères.</p>`;
     else h += `<p class="lap-meta">Le président n'a pas encore créé de canal de discussion.</p>`;
-    if (owner) h += `<div class="input-stack"><label for="club-vice">Vice-président</label><select id="club-vice" class="custom-select" data-club-vice="${esc(club.id)}"><option value="">Aucun</option>${ms.filter((m) => m.uid !== club.ownerUid).map((m) => `<option value="${esc(m.uid)}" ${club.viceUid === m.uid ? "selected" : ""}>${esc(m.name || "Pilote")}</option>`).join("")}</select></div>`;
+    if (owner) h += `<div class="input-stack"><label for="club-vice">Modérateur du club</label><select id="club-vice" class="custom-select" data-club-vice="${esc(club.id)}"><option value="">Aucun</option>${ms.filter((m) => m.uid !== club.ownerUid).map((m) => `<option value="${esc(m.uid)}" ${club.viceUid === m.uid ? "selected" : ""}>${esc(m.name || "Pilote")}</option>`).join("")}</select></div>`;
     return h + "</div>";
   }
   async function updateClub(id, patch) {
@@ -134,6 +142,7 @@
     document.addEventListener("click", (e) => {
       const k = e.target.closest("[data-club-kind]"); if (k) { kindFilter = k.dataset.clubKind; renderList(); return; }
       const j = e.target.closest("[data-club-join]"); if (j) { join(j.dataset.clubJoin); return; }
+      const rl = e.target.closest("[data-club-rules]"); if (rl) { updateClub(rl.dataset.clubRules, { rules: String(document.getElementById("club-rules-text").value || "").trim().slice(0, 600) }); return; }
       const cc = e.target.closest("[data-club-chat-create]"); if (cc) { updateClub(cc.dataset.clubChatCreate, { chatEnabled: true, chatName: String((clubs.find((x) => x.id === cc.dataset.clubChatCreate) || {}).name || "Club").slice(0, 60) }); return; }
       const d = e.target.closest("[data-club-del]"); if (d) { delClub(d.dataset.clubDel); return; }
       const pn = e.target.closest("[data-club-pin]");

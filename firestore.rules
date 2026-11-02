@@ -358,6 +358,39 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // --- Titres de succès affichés à côté du pseudo : un titre = un album terminé (revérifié ici)
+    match /titles/{uid} {
+      allow read: if true;
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['title', 'updatedAt'])
+        && request.resource.data.title is string
+        && request.resource.data.updatedAt == request.time
+        && (request.resource.data.title == ''
+            || (request.resource.data.title == 'legends' && get(/databases/$(database)/documents/collections/$(uid)).data.claimed.size() >= 5)
+            || (request.resource.data.title == 'master' && get(/databases/$(database)/documents/collections/$(uid)).data.claimed.size() >= 10)
+            || request.resource.data.title in get(/databases/$(database)/documents/collections/$(uid)).data.claimed);
+      allow delete: if isOwner(uid) || isAdmin();
+    }
+
+    // --- Erreurs du navigateur : chaque visiteur peut signaler (empreinte = identifiant), seul l'admin lit / résout
+    match /client_errors/{eid} {
+      allow read, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['kind', 'msg', 'src', 'page', 'ua', 'n', 'last'])
+        && request.resource.data.n == 1
+        && request.resource.data.msg is string && request.resource.data.msg.size() <= 200
+        && request.resource.data.get('src', '').size() <= 80
+        && request.resource.data.get('page', '').size() <= 60
+        && request.resource.data.get('ua', '').size() <= 60
+        && request.resource.data.get('kind', '').size() <= 24
+        && request.resource.data.last == request.time;
+      allow update: if isAdmin()
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['n', 'last', 'page', 'ua'])
+            && request.resource.data.n == resource.data.n + 1
+            && request.resource.data.get('page', '').size() <= 60
+            && request.resource.data.get('ua', '').size() <= 60
+            && request.resource.data.last == request.time);
+    }
+
     // --- Journal des actions d'administration : écriture seule (jamais modifié)
     match /admin_log/{lid} {
       allow read: if isAdmin();
@@ -745,12 +778,16 @@ service cloud.firestore {
         && request.resource.data.get('desc', '').size() <= 160
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.createdAt == request.time;
-      // le président active le canal de discussion et nomme un vice-président (rien d'autre ne change)
-      allow update: if signedIn() && resource.data.ownerUid == request.auth.uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['chatEnabled', 'chatName', 'viceUid', 'viceName'])
+      // le président active le canal, nomme un modérateur (viceUid) et rédige les règles ; le modérateur ne peut modifier que les règles
+      allow update: if signedIn()
+        && ((resource.data.ownerUid == request.auth.uid
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['chatEnabled', 'chatName', 'viceUid', 'viceName', 'rules']))
+            || (resource.data.get('viceUid', '') == request.auth.uid
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rules'])))
         && request.resource.data.get('chatName', '').size() <= 60
         && request.resource.data.get('viceName', '').size() <= 40
-        && request.resource.data.get('viceUid', '').size() <= 60;
+        && request.resource.data.get('viceUid', '').size() <= 60
+        && request.resource.data.get('rules', '').size() <= 600;
       allow delete: if isAdmin() || (signedIn() && resource.data.ownerUid == request.auth.uid);
 
       // canal de discussion du club : membres + admins (modération)
