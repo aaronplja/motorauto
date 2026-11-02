@@ -18,6 +18,6 @@ const src = fs.readFileSync(path.join(root, "js/data.js"), "utf8").replace(/^con
   + "\n" + fs.readFileSync(path.join(root, "js/data2.js"), "utf8")
   + "\n" + fs.readdirSync(path.join(root, "js")).filter((f) => /^data-(alfa|audi|lemans|bmw.*|mercedes.*|renault.*|alpine.*|rally.*|split|enrich.*)\.js$/.test(f)).map((f) => f.replace(/\.js$/, "")).sort((a, b) => (/enrich/.test(a) - /enrich/.test(b)) || (a < b ? -1 : 1)).concat([]).reduce((a, f) => a.concat(f), ["data-kit"]).map((f) => fs.readFileSync(path.join(root, "js/" + f + ".js"), "utf8")).join("\n");
 const cars = new Function(src + ";return MOTORAUTO_DATABASE;")();
-const list = cars.map((c) => MA.normalizeCar(c)).map((c) => ({ id: c.id, power: c.stats.power, name: (c.brand + " " + c.model).trim(), brand: c.brand, category: c.category, pics: require(path.join(root, "js/game-core.js")).picKeys(c) }));
+const list = cars.map((c) => MA.normalizeCar(c)).map((c) => ({ id: c.id, power: c.stats.power, name: (c.brand + " " + c.model).trim(), brand: c.brand, category: c.category, year: require(path.join(root, "js/game-core.js")).yearOf(c), pics: require(path.join(root, "js/game-core.js")).picKeys(c) }));
 fs.writeFileSync(path.join(root, "functions/catalog-static.json"), JSON.stringify(list));
 console.log("functions/game-core.js copié · " + list.length + " voitures dans functions/catalog-static.json");

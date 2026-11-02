@@ -67,10 +67,16 @@
       <div class="comp-col"><h4>Tu reçois <small>(un de ses doublons)</small></h4>${m.want.length ? pick("want", m.want, want) : `<p class="lap-meta">Il n'a aucun doublon qui te manque.</p>`}</div>
       <div class="comp-send"><input type="text" maxlength="140" placeholder="Un petit mot (facultatif)" aria-label="Message" data-trade-msg="${esc(o.uid)}"><button type="button" class="cta-btn fill-btn" data-trade-send="${esc(o.uid)}" ${give && want ? "" : "disabled"}>Envoyer la proposition</button></div></div>`;
   }
+  /** échange rapide : en priorité ce que l'autre cherche, puis ce que je cherche, puis les cartes les plus rares */
+  function quickPair(m) {
+    const R = window.MACards.rarityOf, rank = (id) => window.MAGameCore.ORDER.indexOf(R(card(id)));
+    const best = (l) => l.slice().sort((a, b) => rank(a) - rank(b))[0];
+    return { give: m.theyWantMine[0] || (prefillGive && m.give.includes(prefillGive) ? prefillGive : best(m.give.slice().reverse())), want: m.iWantTheirs[0] || best(m.want) };
+  }
   function pilotRow(o, m) {
     const esc = C.esc, u = users.get(o.uid) || {}, open = openRow === o.uid;
     const tags = [m.theyWantMine.length ? `<span class="match-tag">⭐ cherche ta ${esc(name(m.theyWantMine[0]))}</span>` : "", m.iWantTheirs.length ? `<span class="match-tag me">⭐ a ta ${esc(name(m.iWantTheirs[0]))}</span>` : ""].join("");
-    return `<article class="pilot-trade ${open ? "open" : ""}"><button type="button" class="pt-head" data-trade-open="${esc(o.uid)}" aria-expanded="${open}">${C.avatarImg(u.avatar, "pilot-row-avatar")}<span class="pt-main"><b>${esc(u.username || "Pilote")}</b><small>${m.want.length} doublon${m.want.length > 1 ? "s" : ""} pour toi · ${m.give.length} de ton côté</small>${tags}</span><span class="pt-go" aria-hidden="true">${open ? "−" : "+"}</span></button>${open ? composer(o, m) : ""}</article>`;
+    return `<article class="pilot-trade ${open ? "open" : ""}"><button type="button" class="pt-head" data-trade-open="${esc(o.uid)}" aria-expanded="${open}">${C.avatarImg(u.avatar, "pilot-row-avatar")}<span class="pt-main"><b>${esc(u.username || "Pilote")}</b><small>${m.want.length} doublon${m.want.length > 1 ? "s" : ""} pour toi · ${m.give.length} de ton côté</small>${tags}</span><span class="pt-go" aria-hidden="true">${open ? "−" : "+"}</span></button>${open ? composer(o, m) : `<button type="button" class="cta-btn fill-btn compact-btn pt-quick" data-trade-quick="${esc(o.uid)}" title="Propose automatiquement un de tes doublons contre un des siens">⚡ Échange rapide : ta ${esc(name(quickPair(m).give))} contre sa ${esc(name(quickPair(m).want))}</button>`}</article>`;
   }
 
   function render() {
@@ -121,6 +127,13 @@
       const t = e.target;
       const op = t.closest("[data-trade-open]"); if (op) { openRow = openRow === op.dataset.tradeOpen ? "" : op.dataset.tradeOpen; render(); return; }
       const pk = t.closest("[data-pick]"); if (pk) { const u = pk.dataset.uid; picks[u] = Object.assign(picks[u] || {}, { [pk.dataset.pick]: pk.dataset.id }); const msg = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`), v = msg ? msg.value : ""; render(); const m2 = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`); if (m2) m2.value = v; return; }
+      const qk = t.closest("[data-trade-quick]");
+      if (qk) {
+        const uid = qk.dataset.tradeQuick, o = others.find((x) => x.uid === uid); if (!o) return;
+        const q = quickPair(matchFor(o)); if (!q.give || !q.want) { C.toast("Aucun échange automatique possible.", "err"); return; }
+        act(() => window.MAGameAPI.call("proposeTrade", { toUid: uid, give: q.give, want: q.want, message: "Échange rapide" }).then((r) => { prefillGive = ""; return r; }), "Proposition envoyée 📨 (échange rapide).");
+        return;
+      }
       const sd = t.closest("[data-trade-send]");
       if (sd) {
         const uid = sd.dataset.tradeSend, o = others.find((x) => x.uid === uid), m = matchFor(o), p = picks[uid] || {};

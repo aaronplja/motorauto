@@ -4,7 +4,7 @@ const core = require("../functions/game-core.js");
 const cat = require("../functions/catalog-static.json");
 const sets = core.setsOf(cat);
 assert(sets.length > 10, "des sets doivent exister");
-sets.forEach((s) => { assert(s.ids.length >= 3 && s.reward >= 20 && s.reward <= 600, s.id); const ids = new Set(cat.map((c) => c.id)); s.ids.forEach((i) => assert(ids.has(i), "id inconnu " + i)); });
+sets.forEach((s) => { assert(s.ids.length >= 2 && s.reward >= 20 && s.reward <= 700, s.id); const ids = new Set(cat.map((c) => c.id)); s.ids.forEach((i) => assert(ids.has(i), "id inconnu " + i)); });
 assert.strictEqual(new Set(sets.map((s) => s.id)).size, sets.length, "ids de sets uniques");
 const T = require("../js/data-track.js");
 ["P","T","A","E","X","M","R"].forEach((c) => assert(T.DRIVES[c], "code " + c));

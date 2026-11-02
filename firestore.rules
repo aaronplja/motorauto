@@ -595,7 +595,8 @@ service cloud.firestore {
       allow delete: if false;
     }
     function validCollection() {
-      return request.resource.data.keys().hasOnly(['owned', 'count', 'specials', 'dust', 'lastPack', 'bonus', 'claimed', 'opened', 'trades', 'chal', 'dustLog', 'pics', 'picClaims', 'updatedAt'])
+      return request.resource.data.keys().hasOnly(['owned', 'count', 'specials', 'dust', 'lastPack', 'bonus', 'claimed', 'opened', 'trades', 'chal', 'dustLog', 'pics', 'picClaims', 'lv', 'mis', 'offers', 'updatedAt'])
+        && request.resource.data.get('lv', {}) is map && request.resource.data.get('mis', {}) is map && request.resource.data.get('offers', {}) is map
         && request.resource.data.get('dustLog', []) is list && request.resource.data.get('dustLog', []).size() <= 40
         && request.resource.data.owned is map
         && request.resource.data.count is number && request.resource.data.count >= 0 && request.resource.data.count <= 1000
@@ -615,6 +616,17 @@ service cloud.firestore {
         && request.resource.data.ids is list && request.resource.data.ids.size() <= 40
         && request.resource.data.updatedAt == request.time;
       allow delete: if isOwner(wid);
+    }
+
+    // --- Vitrine de profil : 6 cartes préférées + jusqu'à 3 de mes voitures affichées en carte (privées par défaut)
+    match /showcases/{sid} {
+      allow read: if true;
+      allow create, update: if isOwner(sid) && notMuted()
+        && request.resource.data.keys().hasOnly(['ids', 'cars', 'updatedAt'])
+        && request.resource.data.ids is list && request.resource.data.ids.size() <= 6
+        && request.resource.data.get('cars', []) is list && request.resource.data.get('cars', []).size() <= 3
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isOwner(sid);
     }
 
     // --- Propositions d'échange : visibles par les deux pilotes et l'admin ; créées / traitées par le serveur (Cloud Functions)

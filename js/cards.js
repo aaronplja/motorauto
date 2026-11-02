@@ -24,7 +24,7 @@
     rarityMap = G.computeRarities(cars.map((c) => ({ id: c.id, power: c.stats.power })));
     cars.forEach((c, i) => numbering.set(c.id, i + 1));
   }
-  const rarityOf = (car) => { if (car.special) return "special"; indexCars(); return rarityMap.get(car.id) || "common"; };
+  const rarityOf = (car) => { if (car.mine) return "mine"; if (car.special) return "special"; indexCars(); return rarityMap.get(car.id) || "common"; };
   const numberOf = (car) => { indexCars(); return numbering.get(car.id) || 0; };
   /** une carte, qu'elle vienne du catalogue ou d'une édition limitée */
   function cardObj(id) {
@@ -37,7 +37,7 @@
 
   // ----- cartes à plusieurs images : une image se débloque à chaque nouvelle copie obtenue (pas un doublon)
   function picInfo(car) {
-    if (!car || car.special || !G.picUrls) return null;
+    if (!car || car.special || car.mine || !G.picUrls) return null;
     const urls = G.picUrls(car).filter((u) => C.safeUrl(u)); if (urls.length < 2) return null;
     const keys = urls.map(G.picKey), have = doc ? G.picsHave(doc, car.id, keys) : [];
     return { urls, keys, have };
@@ -50,7 +50,7 @@
   }
   function cardHtml(car, o) {
     o = o || {};
-    const esc = C.esc, r = rarityOf(car), R = RAR[r], owned = o.owned !== false, sp = car.special;
+    const esc = C.esc, r = rarityOf(car), R = RAR[r] || { label: "Ma voiture" }, owned = o.owned !== false, sp = car.special, lv = Math.max(1, Math.min(5, Number(o.lv) || 1));
     const pi = owned && !sp ? picInfo(car) : null, cardImage = o.image || (pi && pi.have.length ? shownUrl(car, pi) : car.image);
     const img = cardImage && C.safeUrl(cardImage) ? `<img class="${owned ? "" : "tcg-ghost"}" src="${esc(C.safeUrl(cardImage))}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">${owned ? "" : `<span class="tcg-q tcg-q-over" aria-hidden="true">?</span>`}` : `<span class="tcg-q" aria-hidden="true">${owned && sp ? "✦" : "?"}</span>`;
     const mosaic = owned && sp && Array.isArray(car.images) && car.images.length > 1 ? car.images.map((u) => C.safeUrl(u)).filter(Boolean).slice(0, 4) : null;
@@ -59,14 +59,14 @@
     const bar = (v) => `<i style="--v:${Math.max(0, Math.min(1, v)).toFixed(2)}"></i>`;
     const st = car.stats || {}, z = Number(st.zero) || 0;
     const stats = hasStats
-      ? `<div class="tcg-stats"><span><b>${owned ? st.power : "?"}</b>ch${bar(owned ? st.power / 1200 : 0)}</span><span><b>${owned ? st.speed : "?"}</b>km/h${bar(owned ? st.speed / 400 : 0)}</span><span><b>${owned ? (z || "—") : "?"}</b>0-100${bar(owned && z ? (14 - z) / 11 : 0)}</span></div>`
+      ? `<div class="tcg-stats"><span><b>${owned ? st.power : "?"}</b>ch${bar(owned ? st.power / 1200 : 0)}</span><span><b>${owned ? (st.speed || "—") : "?"}</b>km/h${bar(owned ? st.speed / 400 : 0)}</span><span><b>${owned ? (z || "—") : "?"}</b>0-100${bar(owned && z ? (14 - z) / 11 : 0)}</span></div>`
       : `<p class="tcg-note">${owned ? esc(sp.text || "") : ""}</p>`;
-    const no = sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0");
+    const no = car.mine ? "MA" : sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0");
     const color = sp && sp.color ? " tcg-c-" + esc(sp.color) : "";
-    return `<div class="tcg tcg-${r}${color} ${owned ? "" : "locked"} ${o.cls || ""}" data-card="${esc(car.id)}" role="button" tabindex="0" aria-label="${owned ? esc(car.brand + " " + model) : "Carte non débloquée " + no}, ${R.label}">
+    return `<div class="tcg tcg-${r}${color}${lv > 1 ? " has-lv lvl" + lv : ""} ${owned ? "" : "locked"} ${o.cls || ""}" data-card="${esc(car.id)}" role="button" tabindex="0" aria-label="${owned ? esc(car.brand + " " + model) : "Carte non débloquée " + no}, ${R.label}">
       <div class="tcg-art ${mosaic ? "tcg-mosaic m" + mosaic.length : ""}">${mosaic ? mosaic.map((u) => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">`).join("") : img}<i class="tcg-foil" aria-hidden="true"></i>${owned && !sp && car.drives && car.drives[0] && window.MATrack ? `<span class="tcg-drv" title="${esc(window.MATrack.DRIVES[car.drives[0]][0])}">${window.MATrack.driveIcon(car.drives[0], 14)}</span>` : ""}</div><i class="tcg-holo" aria-hidden="true"></i>
       <div class="tcg-body"><span class="tcg-brand">${owned || sp ? esc(car.brand) : "—"}</span><b class="tcg-name">${owned || sp ? esc(model) : "Carte à débloquer"}</b>${stats}</div>
-      <span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span><span class="tcg-no">${no}</span>
+      ${lv > 1 ? `<i class="tcg-frame lv${lv}" aria-hidden="true"></i>` : ""}<span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span><span class="tcg-no">${no}</span>
       ${pi ? `<span class="tcg-pics" title="Images débloquées : ${pi.have.length} sur ${pi.keys.length}"><i></i>${pi.have.length}/${pi.keys.length}</span>` : ""}
       ${o.count > 1 ? `<span class="tcg-dup">×${o.count}</span>` : ""}${o.isNew ? `<span class="tcg-new-pill">NEW</span>` : ""}${o.wish ? `<span class="tcg-wish" title="Dans ta wishlist" aria-label="Dans ta wishlist">★</span>` : ""}
     </div>`;
@@ -123,6 +123,16 @@
     catch (e) { wish = prev; renderGrid(); refreshDetail(id); C.toast("Wishlist indisponible : " + e.message, "err"); }
   }
 
+  /** « Je cherche cette carte » : ajoute la carte d'une vitrine à ma wishlist (sans jamais la retirer) */
+  async function addWish(id, btn) {
+    if (!C.requireLogin()) return;
+    await load().catch(() => {});
+    if (countOf(id) > 0) { C.toast("Tu as déjà cette carte.", "ok"); return; }
+    if ((wish || []).includes(id)) { C.toast("Elle est déjà dans ta wishlist.", "ok"); return; }
+    await toggleWish(id);
+    if (btn && (wish || []).includes(id)) { btn.disabled = true; btn.textContent = "★ Dans ta wishlist"; }
+  }
+
   // ------------------------------------------------------------------ packs et fabrication (serveur)
   /** décor d'un pack : drapeau du pays (bandes de couleur), plaque centrale lisible quel que soit le fond */
   function packTheme(id) {
@@ -133,7 +143,7 @@
     const t = packTheme(id);
     return `<i class="pkart-flag" data-f="${t.f}" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>${C.esc(t.label)}</b><em>${C.esc(sub || "2 cartes")}</em></span>`;
   }
-  async function openPack(kind, packId) {
+  async function openPack(kind, packId, offer) {
     if (busy || !C.requireLogin()) return;
     const shopId = kind === "shop" ? (packId || "world") : "";
     const theme = shopId && shopId !== "world" ? packTheme(shopId) : null;
@@ -142,7 +152,8 @@
     mountOverlay("pack", "Ouverture de pack", `<div class="pk3 pk3-loading" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : kind === "shop" ? "Ton pack cristal" : "Ton pack"}</h2><div class="pk3-pack ${C.esc(kind)}${theme ? " country" : ""} pk3-wait" ${theme ? `style="${theme.style}"` : ""} aria-hidden="true">${theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</div><p class="tcg-hint" role="status">Préparation du pack…</p></div>`);
     try {
       if (!doc) await load();
-      const r = await API("openPack", shopId ? { kind, pack: shopId } : { kind });
+      const r = await API("openPack", shopId ? (offer ? { kind, pack: shopId, offer: true } : { kind, pack: shopId }) : { kind });
+      missionToast(r);
       applyDoc(r.doc);
       showPack(r.cards.map((c) => { const car = cardObj(c.id), pi = picInfo(car), at = c.newPic && pi ? pi.keys.indexOf(c.newPic) : -1; return { car, fresh: c.fresh, newPic: at >= 0, image: at >= 0 ? pi.urls[at] : "", picN: c.picN, picTotal: c.picTotal, reward: c.reward || 0 }; }).filter((x) => x.car), r.dust, kind, r.bonus || 0, shopId);
     } catch (e) { closeOverlay(); C.toast(e.message, "err"); await load(true).catch(() => {}); }
@@ -157,10 +168,28 @@
       <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div></div>`);
     lo.addEventListener("click", (e) => { if (e.target === lo || e.target.closest("[data-close]")) closeOverlay(); });
   }
+  async function upgrade(id) {
+    if (busy || !C.requireLogin()) return;
+    busy = true;
+    try {
+      const r = await API("upgradeCard", { id });
+      applyDoc(r.doc); buzz([20, 30, 40]); C.toast("Carte améliorée : niveau " + r.level + " (" + G.LV_NAMES[r.level] + ").", "ok"); missionToast(r);
+    } catch (e) { C.toast(e.message, "err"); }
+    finally { busy = false; refreshDetail(id); renderGrid(); renderHero(); }
+  }
+  async function buyOffer(id) {
+    if (busy || !C.requireLogin()) return;
+    busy = true; renderHero();
+    try {
+      const r = await API("craftCard", { id, offer: true });
+      applyDoc(r.doc); C.toast("Carte du jour achetée !", "ok"); missionToast(r);
+    } catch (e) { C.toast(e.message, "err"); await load(true).catch(() => {}); }
+    finally { busy = false; renderHero(); }
+  }
   async function craft(id) {
     if (busy || !C.requireLogin()) return;
     const car = cardObj(id); if (!car) return;
-    const cost = RAR[rarityOf(car)].craft;
+    const cost = RAR[rarityOf(car)].craft; if (!cost) { C.toast("Une carte Légende se gagne en complétant un album.", "err"); return; }
     if (!confirm(`Fabriquer « ${car.brand} ${car.model} » pour ${cost} cristaux ?`)) return;
     busy = true;
     try {
@@ -220,7 +249,7 @@
   function markSeen(id) { const s = seenSet(); if (!s.has(id)) { s.add(id); saveSeen(); } }
 
   // ------------------------------------------------------------------ ouverture d'un pack
-  const BURST = { rare: "#3b82f6", epic: "#a855f7", legendary: "#f59e0b", shiny: "#ff7ad9", special: "#cbd5e1" };
+  const BURST = { rare: "#3b82f6", epic: "#a855f7", legendary: "#f59e0b", shiny: "#ff7ad9", mythic: "#fde047", special: "#cbd5e1" };
   const buzz = (p) => { try { if (navigator.vibrate) navigator.vibrate(p); } catch (_) { /* ignoré */ } };
   function sparks(el, n) {
     for (let i = 0; i < n; i++) {
@@ -256,7 +285,7 @@
         const rr = el.dataset.r;
         if (rr === "rare") buzz(15);
         else if (rr === "epic") { sparks(el, 10); buzz([20, 30, 20]); }
-        else if (rr === "legendary" || rr === "shiny" || rr === "special") { sparks(el, 18); buzz([30, 40, 60]); }
+        else if (rr === "legendary" || rr === "shiny" || rr === "special" || rr === "mythic") { sparks(el, 18); buzz([30, 40, 60]); }
         if (BURST[rr] && rr !== "rare") { o.style.setProperty("--burst", BURST[rr]); o.classList.remove("flash"); void o.offsetWidth; o.classList.add("flash"); }
         if (shown === results.length) finish();
       };
@@ -313,6 +342,8 @@
       ? `Édition limitée${sp.supply ? " · " + (sp.granted || 0) + " / " + sp.supply + " exemplaires attribués" : ""}. ${n > 0 ? "Elle fait partie de ta collection." : "Elle s'obtient uniquement en la gagnant (événements, concours)."}`
       : peek === id && !countOf(id) ? "Carte partagée par un pilote : tu ne l'as pas encore dans ta collection."
       : n > 0 ? `Tu possèdes cette carte${n > 1 ? " en " + n + " exemplaires" : ""}.` : `Carte ${R.label.toLowerCase()} · fabrication : ${R.craft} \u0001 (tu en as ${doc ? doc.dust : 0}).`;
+    const lv = lvOf(id), next = lv < G.LV_MAX ? G.upgradeCost(sp ? "special" : rarityOf(car), lv + 1) : 0;
+    const lvBlock = n > 0 ? `<div class="cg-lvbox"><span class="cg-lvpips" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</span><b>Niveau ${lv} · ${G.LV_NAMES[lv]}</b>${lv < G.LV_MAX ? `<button type="button" class="cta-btn fill-btn compact-btn" data-upgrade ${doc && doc.dust >= next && !peek ? "" : "disabled"}>Améliorer (${next} ${window.MA.dustIcon(14)})</button>` : `<span class="tcg-hint">niveau maximum</span>`}</div>` : "";
     const actions = [`<button type="button" class="cta-btn btn-ghost" data-flipcard>↻ Retourner</button>`];
     if (n > 0 && !sp) actions.push(`<a class="cta-btn btn-ghost" href="#/voiture/${encodeURIComponent(id)}" data-close>Voir la fiche</a>`);
     if (n > 1) actions.push(`<button type="button" class="cta-btn fill-btn" data-swap>🔄 Proposer à l'échange</button>`);
@@ -322,7 +353,7 @@
     if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-wish aria-pressed="${inWish}">${inWish ? "★ Dans ma wishlist" : "☆ Wishlist"}</button>`);
     actions.push(`<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button>`);
     const i = navIds.indexOf(id), nav = i >= 0 && navIds.length > 1 ? `<div class="tcg-nav"><button type="button" data-nav="-1" aria-label="Carte précédente" ${i > 0 ? "" : "disabled"}>‹</button><span class="tcg-hint">${i + 1} / ${navIds.length}</span><button type="button" data-nav="1" aria-label="Carte suivante" ${i < navIds.length - 1 ? "" : "disabled"}>›</button></div>` : "";
-    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}<div class="tcg-actions">${actions.join("")}</div></div>`;
+    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n, lv: n > 0 && !peek ? lv : 1 })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${lvBlock}${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}<div class="tcg-actions">${actions.join("")}</div></div>`;
   }
   function showDetail(id, ids, opts) {
     peek = opts && opts.peek ? id : "";
@@ -334,6 +365,7 @@
     o.addEventListener("click", (e) => {
       if (e.target === o || e.target.closest("[data-close]")) closeOverlay();
       else if (e.target.closest("[data-craft]")) craft(id);
+      else if (e.target.closest("[data-upgrade]")) upgrade(id);
       else if (e.target.closest("[data-wish]")) toggleWish(id);
       else if (e.target.closest("[data-flipcard]") || e.target.closest(".tcg-3d")) { const t = o.querySelector("#tcg-3d"); if (t) t.classList.toggle("back"); }
       else if (e.target.closest("[data-pic]")) { const k = e.target.closest("[data-pic]").dataset.pic; try { localStorage.setItem(picPrefKey(id), k); } catch (_) { /* facultatif */ } refreshDetail(id); renderGrid(); }
@@ -384,7 +416,174 @@
     overlay.querySelectorAll(".tcg-3d").forEach((t) => { t.classList.add("rest"); t.style.setProperty("--rx", "0deg"); t.style.setProperty("--ry", "0deg"); });
   }
 
-  // ------------------------------------------------------------------ page « Cartes »
+  // ------------------------------------------------------------------ page « Cartes » : deux onglets (Boutique / Mes cartes)
+  let ctab = store.get("ma_cards_tab", "shop"), albumKind = store.get("ma_cards_albums", "country"), countryFilter = "all", minPower = 0;
+  let claims = null, claimsUid = "", showcase = null, showcaseUid = "", setsSig = "", setsList = [];
+  const dust$ = (n) => `${n} ${window.MA.dustIcon(14)}`;
+  const lvOf = (id) => (doc && doc.lv && doc.lv[id]) || 1;
+  const pct = (a, b) => Math.round((a / Math.max(1, b)) * 100);
+  const gauge = (a, b, cls) => `<span class="cg-gauge ${cls || ""}" role="img" aria-label="${a} sur ${b}"><i style="width:${pct(a, b)}%"></i></span>`;
+  function missionToast(r) {
+    const m = r && r.missions; if (m && m.gain) C.toast("Mission accomplie : +" + m.gain + " cristaux (" + m.names.join(", ") + ")", "ok");
+  }
+  async function loadClaims(force) {
+    if (!C.user) { claims = {}; return; }
+    if (claims && claimsUid === C.user.uid && !force) return;
+    try { const s = await C.db.collection("set_claims").doc(C.user.uid).get(); claims = s.exists ? (s.data().done || {}) : {}; } catch (_) { claims = {}; }
+    claimsUid = C.user.uid;
+  }
+  async function loadShowcase(uid) {
+    try { const s = await C.db.collection("showcases").doc(uid).get(); const d = s.exists ? s.data() : {}; return { ids: Array.isArray(d.ids) ? d.ids : [], cars: Array.isArray(d.cars) ? d.cars : [] }; } catch (_) { return { ids: [], cars: [] }; }
+  }
+  async function loadMyShowcase(force) {
+    if (!C.user) { showcase = null; return; }
+    if (showcase && showcaseUid === C.user.uid && !force) return;
+    showcase = await loadShowcase(C.user.uid); showcaseUid = C.user.uid;
+  }
+  async function saveShowcase(next) {
+    const prev = showcase; showcase = Object.assign({ ids: [], cars: [] }, showcase, next);
+    try { await C.db.collection("showcases").doc(C.user.uid).set({ ids: showcase.ids.slice(0, 6), cars: showcase.cars.slice(0, 3), updatedAt: C.FieldValue.serverTimestamp() }); return true; }
+    catch (e) { showcase = prev; C.toast("Vitrine indisponible : " + e.message + " (règles Firestore à publier ?)", "err"); return false; }
+  }
+  function allSets() { indexCars(); if (setsSig !== sig) { setsSig = sig; setsList = G.setsOf(C.cars); } return setsList; }
+
+  // ----- Boutique
+  function missionsHtml() {
+    const m = doc.mis && doc.mis.day === day() ? doc.mis : { p: {}, done: [] };
+    const list = G.dailyMissions(day()).map((x) => Object.assign({}, x, { n: Math.min(x.goal, m.p[x.id] || 0), ok: (m.done || []).indexOf(x.id) >= 0 }));
+    const left = list.filter((x) => !x.ok).length;
+    return `<section class="cg-block cg-missions" aria-label="Missions du jour"><header class="cg-bh"><h3>Missions du jour</h3><span class="cg-sub">${left ? left + " à faire" : "toutes terminées"} · nouvelles à minuit</span></header>
+      <div class="cg-mlist">${list.map((x) => `<div class="cg-mission${x.ok ? " ok" : ""}"><span class="cg-mi" aria-hidden="true">${x.ok ? "✓" : x.n + "/" + x.goal}</span><span class="cg-mt"><b>${C.esc(x.label)}</b>${gauge(x.n, x.goal)}</span><span class="cg-mr">+${dust$(x.reward)}</span></div>`).join("")}</div></section>`;
+  }
+  function packTileHtml(p, o) {
+    o = o || {};
+    const dust = doc.dust, cost = o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
+    const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
+    const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>2 cartes</em></span>` : packInner(p.id);
+    const price = o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
+    return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}${o.cost != null ? " promo" : ""}" data-pack="shop" data-shop="${p.id}"${o.offer ? ` data-offer="1"` : ""} ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${cost} cristaux">
+      ${o.cost != null ? `<span class="cg-ribbon">-${G.OFFER_PCT} %</span>` : ""}<span class="cg-art" ${st}>${art}</span>
+      <span class="cg-pm"><b>${p.id === "world" ? "Pack mondial" : C.esc(p.label)}</b><span class="cg-price">${price}</span></span>
+      <span class="cg-have">${gauge(p.have, p.total, full ? "full" : "")}<small>${p.have} / ${p.total} cartes${full ? " · complet" : ""}</small></span>
+      ${o.used ? `<small class="cg-note">Offre déjà utilisée aujourd'hui</small>` : !ok && miss && !full ? `<small class="cg-note">il manque ${miss}</small>` : ""}</button>`;
+  }
+  function packRows() {
+    indexCars();
+    const cars = C.cars;
+    return [{ id: "world", label: "Monde", cost: G.PACKS.world.cost, total: cars.length, have: cars.filter((c) => countOf(c.id) > 0).length }].concat((G.COUNTRIES || []).map((k) => {
+      const list = cars.filter((c) => G.countryOf(c.brand) === k.id && rarityOf(c) !== "mythic");
+      return { id: k.id, label: k.label, cost: k.cost, total: list.length, have: list.filter((c) => countOf(c.id) > 0).length };
+    }));
+  }
+  function offersHtml(rows) {
+    indexCars();
+    const of = G.dailyOffers(day(), C.cars, rarityMap), used = doc.offers && doc.offers.day === day() ? doc.offers : { pack: 0, card: 0 };
+    const row = rows.find((r) => r.id === of.pack), car = of.card ? cardObj(of.card) : null;
+    const packOffer = row ? packTileHtml(row, { cost: G.offerPackCost(row.id), offer: true, used: !!used.pack }) : "";
+    const owned = car && countOf(car.id) > 0, can = car && !owned && !used.card && doc.dust >= of.cardCost && !busy;
+    const cardOffer = car ? `<div class="cg-cardoffer${used.card || owned ? " off" : ""}"><span class="cg-ribbon">-30 %</span><div class="cg-co-card">${cardHtml(car, { owned: !!owned, count: 0, cls: "tcg-mini" })}</div>
+      <div class="cg-co-info"><b>Carte du jour</b><span>${C.esc(car.brand + " " + String(car.model).replace(/\s*\(.*$/, ""))}</span><span class="cg-price"><s>${of.cardFull}</s> <b>${of.cardCost}</b> ${window.MA.dustIcon(14)}</span>
+      <button type="button" class="cta-btn fill-btn compact-btn" data-offer-card="${C.esc(car.id)}" ${can ? "" : "disabled"}>${owned ? "Tu l'as déjà" : used.card ? "Offre utilisée" : "Acheter"}</button></div></div>` : "";
+    return `<section class="cg-block cg-offers" aria-label="Offres du jour"><header class="cg-bh"><h3>Offres du jour</h3><span class="cg-sub">changent chaque jour à minuit</span></header><div class="cg-offer-row">${packOffer}${cardOffer}</div></section>`;
+  }
+  function shopHtml() {
+    const rows = packRows(), canDaily = doc.lastPack !== day();
+    const canBattle = Object.keys(doc.owned).filter((k) => doc.owned[k] > 0 && C.carsById.has(k)).length >= 3;
+    return `<div class="cg-free">
+        <button type="button" class="cg-gift ${canDaily ? "ready" : "off"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="cg-gi">🎁</span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
+        <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
+        <button type="button" class="cg-gift battle ${canBattle ? "ready" : "off"}" data-battle ${canBattle ? "" : "disabled"} aria-label="Bataille de cartes"><span class="cg-gi">⚔</span><b>Bataille</b><small>${canBattle ? "entraînement, sans récompense" : "3 cartes minimum"}</small></button>
+      </div>${offersHtml(rows)}${missionsHtml()}
+      <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">2 voitures du pays, dont 1 rare ou mieux · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
+  }
+
+  // ----- Mes cartes
+  function rarityChips() {
+    return ORDER.map((r) => { const all = C.cars.filter((c) => rarityOf(c) === r); if (!all.length) return ""; const have = all.filter((c) => countOf(c.id) > 0).length; return `<span class="tcg-rar-chip ${r}">${RAR[r].label} <b>${have}/${all.length}</b></span>`; }).join("");
+  }
+  function showcaseHtml() {
+    const ids = ((showcase && showcase.ids) || []).filter((id) => isOwned(id) && cardObj(id)).slice(0, 6);
+    const slots = [];
+    for (let i = 0; i < 6; i++) slots.push(ids[i] ? `<div class="cg-slot" data-card="${C.esc(ids[i])}">${cardHtml(cardObj(ids[i]), { owned: true, count: 0, lv: lvOf(ids[i]) })}</div>` : `<button type="button" class="cg-slot empty" data-show-edit aria-label="Ajouter une carte à ma vitrine"><span>+</span></button>`);
+    return `<section class="cg-block cg-showcase" aria-label="Ma vitrine"><header class="cg-bh"><h3>Ma vitrine</h3><span class="cg-sub">tes 6 cartes préférées, visibles sur ton profil</span><button type="button" class="cta-btn btn-ghost compact-btn" data-show-edit>Modifier</button></header><div class="cg-slots">${slots.join("")}</div></section>`;
+  }
+  function myCarObj(c) {
+    const photos = (c.photos || []).filter((u) => C.safeUrl(u));
+    return { id: "mine-" + c.id, mine: true, brand: c.pilot || "Ma voiture", model: c.name || "Ma voiture", image: photos[0] || "", images: photos, category: "", years: c.year || "", stats: { power: Number(c.power) || 0, speed: 0, zero: Number(c.zero) || null } };
+  }
+  function myCarsHtml() {
+    const cars = ((window.MAApp && window.MAApp.getMyCars && window.MAApp.getMyCars()) || []).slice(0, 6), pub = new Set((showcase && showcase.cars) || []);
+    return `<section class="cg-block cg-mycars" aria-label="Ma voiture en carte"><header class="cg-bh"><h3>Ma voiture en carte</h3><span class="cg-sub">une carte unique faite avec ta photo et tes caractéristiques</span></header>
+      ${cars.length ? `<div class="cg-mc-row">${cars.map((c) => `<div class="cg-mc"><div class="cg-mc-card">${cardHtml(myCarObj(c), { owned: true, count: 0 })}</div><button type="button" class="cta-btn ${pub.has(c.id) ? "fill-btn" : "btn-ghost"} compact-btn" data-mycar-pub="${C.esc(c.id)}" aria-pressed="${pub.has(c.id)}">${pub.has(c.id) ? "Visible sur mon profil" : "Privée · afficher sur mon profil"}</button></div>`).join("")}</div>`
+        : `<p class="lap-meta">Ajoute une voiture dans ton garage (Moi › Garage) pour la transformer en carte. Elle reste privée tant que tu ne l'affiches pas sur ton profil.</p>`}</section>`;
+  }
+  const kindLabel = { country: "Pays", decade: "Décennies", brand: "Marques", category: "Familles" };
+  function albumsHtml() {
+    const sets = allSets().map((s) => { const have = s.ids.filter((id) => countOf(id) > 0).length; return Object.assign({ have, done: !!(claims && claims[s.id]), full: have === s.ids.length }, s); });
+    const ready = sets.filter((s) => s.full && !s.done), list = sets.filter((s) => s.kind === albumKind);
+    const tile = (s) => {
+      const leg = s.legend && cardObj(s.legend), got = leg && countOf(leg.id) > 0;
+      return `<button type="button" class="cg-album${s.done ? " done" : ""}${s.full && !s.done ? " ready" : ""}" data-album="${C.esc(s.id)}"><span class="ab-top"><b>${C.esc(s.name)}</b><small>${s.have} / ${s.ids.length}</small></span>${gauge(s.have, s.ids.length, s.done ? "full" : "")}
+        <span class="ab-foot">${s.done ? "✓ Terminé" : s.full ? "À récupérer !" : "+" + s.reward + " ◆"}${leg ? `<span class="ab-leg${got ? " got" : ""}" title="Carte Légende : ${C.esc(leg.brand + " " + leg.model)}">${got ? "Légende obtenue" : "Légende à gagner"}</span>` : ""}</span></button>`;
+    };
+    return `<section class="cg-block cg-albums" aria-label="Albums"><header class="cg-bh"><h3>Albums</h3><span class="cg-sub">${sets.filter((s) => s.done).length} / ${sets.length} terminés · complète un album pour des cristaux (et une carte Légende)</span>${ready.length ? `<button type="button" class="cta-btn fill-btn compact-btn" data-set-claim ${busy ? "disabled" : ""}>Récupérer ${dust$(ready.reduce((t, s) => t + s.reward, 0))}</button>` : ""}</header>
+      <div class="seg cg-seg" role="group" aria-label="Type d'album">${Object.keys(kindLabel).map((k) => `<button type="button" data-akind="${k}" aria-pressed="${k === albumKind}">${kindLabel[k]}</button>`).join("")}</div>
+      <div class="cg-albumgrid">${list.map(tile).join("") || `<p class="lap-meta">Aucun album de ce type.</p>`}</div></section>`;
+  }
+  function showAlbum(id) {
+    const s = allSets().find((x) => x.id === id); if (!s) return;
+    const cars = s.ids.map((i) => C.carsById.get(i)).filter(Boolean).sort((a, b) => numberOf(a) - numberOf(b));
+    const have = cars.filter((c) => countOf(c.id) > 0).length, done = !!(claims && claims[s.id]), full = have === cars.length, leg = s.legend && cardObj(s.legend);
+    const o = mountOverlay("album", "Album " + s.name, `<div class="tcg-stage cg-album-ov"><h2>${C.esc(s.name)}</h2><p class="tcg-hint">${have} / ${cars.length} cartes · récompense ${dust$(s.reward)}${leg ? " + carte Légende" : ""}</p>${gauge(have, cars.length, done ? "full" : "")}
+      <div class="tcg-grid compact cg-album-grid">${cars.map((c) => cardHtml(c, { owned: countOf(c.id) > 0, count: countOf(c.id), lv: lvOf(c.id) })).join("")}</div>
+      ${leg ? `<h3 class="cg-legend-title">Récompense : carte Légende</h3><div class="cg-legend-slot">${cardHtml(leg, { owned: countOf(leg.id) > 0, count: 0, lv: lvOf(leg.id) })}</div>` : ""}
+      <div class="tcg-actions">${full && !done ? `<button type="button" class="cta-btn fill-btn" data-set-claim>Récupérer la récompense</button>` : ""}<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div>`);
+    o.addEventListener("click", (e) => {
+      if (e.target === o || e.target.closest("[data-close]")) { closeOverlay(); return; }
+      const cd = e.target.closest("[data-card]"); if (cd) { showDetail(cd.dataset.card, cars.map((c) => c.id)); return; }
+      if (e.target.closest("[data-set-claim]")) claimAlbums(true);
+    });
+  }
+  async function claimAlbums(fromOverlay) {
+    if (busy) return; busy = true; renderHero();
+    try {
+      const r = await API("claimSets", {});
+      claims = r.done || claims; applyDoc(r.doc);
+      if (r.claimed && r.claimed.length) {
+        C.toast("Album complété : " + r.claimed.map((x) => x.name).join(", ") + " · +" + r.total + " cristaux" + (r.legends && r.legends.length ? " · carte Légende obtenue !" : ""), "ok");
+        if (r.legends && r.legends.length) { buzz([30, 40, 60]); const lg = cardObj(r.legends[0]); if (lg) { busy = false; if (fromOverlay) closeOverlay(); showDetail(lg.id, [], {}); return; } }
+      } else C.toast("Aucun album à récupérer.", "ok");
+      if (fromOverlay) closeOverlay();
+    } catch (e) { C.toast(e.message || "Impossible pour l'instant.", "err"); }
+    finally { busy = false; renderHero(); }
+  }
+  function editShowcase() {
+    if (!doc || !C.requireLogin()) return;
+    let sel = ((showcase && showcase.ids) || []).filter(isOwned).slice(0, 6), q = "";
+    const owned = Object.keys(doc.owned).filter((id) => doc.owned[id] > 0 && cardObj(id)).map(cardObj).sort((a, b) => ORDER.indexOf(rarityOf(a)) - ORDER.indexOf(rarityOf(b)) || (b.stats.power || 0) - (a.stats.power || 0));
+    const o = mountOverlay("showcase", "Choisir ma vitrine", `<div class="tcg-stage cg-pick"><h2>Ma vitrine</h2><p class="tcg-hint" id="sc-count"></p><input type="search" id="sc-q" placeholder="Rechercher parmi tes cartes…" aria-label="Rechercher une carte" autocomplete="off"><div class="tcg-grid compact" id="sc-grid"></div><div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-sc-save>Enregistrer</button><button type="button" class="cta-btn btn-ghost" data-close>Annuler</button></div></div>`);
+    const paint = () => {
+      const nq = C.normalize(q), list = owned.filter((c) => !nq || C.normalize(c.brand + " " + c.model).includes(nq)).slice(0, 150);
+      o.querySelector("#sc-count").textContent = sel.length + " / 6 cartes choisies";
+      o.querySelector("#sc-grid").innerHTML = list.map((c) => `<div class="cg-pickcard${sel.indexOf(c.id) >= 0 ? " on" : ""}" data-pick="${C.esc(c.id)}">${cardHtml(c, { owned: true, count: 0 })}<span class="cg-tick" aria-hidden="true">${sel.indexOf(c.id) >= 0 ? sel.indexOf(c.id) + 1 : ""}</span></div>`).join("") || `<p class="lap-meta">Aucune carte.</p>`;
+    };
+    paint();
+    o.addEventListener("input", (e) => { if (e.target.id === "sc-q") { q = e.target.value; paint(); } });
+    o.addEventListener("click", async (e) => {
+      if (e.target === o || e.target.closest("[data-close]")) { closeOverlay(); return; }
+      const pk = e.target.closest("[data-pick]");
+      if (pk) { const id = pk.dataset.pick, i = sel.indexOf(id); if (i >= 0) sel.splice(i, 1); else if (sel.length < 6) sel.push(id); else C.toast("6 cartes maximum.", "err"); paint(); return; }
+      if (e.target.closest("[data-sc-save]")) { if (await saveShowcase({ ids: sel })) { C.toast("Vitrine enregistrée.", "ok"); closeOverlay(); } }
+    });
+  }
+  async function toggleMyCar(id) {
+    if (!showcase) await loadMyShowcase();
+    const cur = (showcase.cars || []).slice(), i = cur.indexOf(id);
+    if (i >= 0) cur.splice(i, 1); else if (cur.length >= 3) { C.toast("3 voitures maximum sur ton profil.", "err"); return; } else cur.push(id);
+    if (await saveShowcase({ cars: cur })) { C.toast(i >= 0 ? "Carte masquée de ton profil." : "Carte visible sur ton profil.", "ok"); renderHero(); }
+  }
+
+  // ----- collection : recherche, filtres, tri
   let sortBy = store.get("ma_cards_sort", "num"), view = store.get("ma_cards_view", "grid");
   const zeroKey = (c) => Number(c.stats.zero) || 99;
   function sortList(list) {
@@ -396,7 +595,8 @@
       speed: (a, b) => b.stats.speed - a.stats.speed || byNum(a, b),
       zero: (a, b) => zeroKey(a) - zeroKey(b) || byNum(a, b),
       brand: (a, b) => a.brand.localeCompare(b.brand, "fr") || a.model.localeCompare(b.model, "fr") || byNum(a, b),
-      owned: (a, b) => countOf(b.id) - countOf(a.id) || byNum(a, b)
+      owned: (a, b) => countOf(b.id) - countOf(a.id) || byNum(a, b),
+      level: (a, b) => lvOf(b.id) - lvOf(a.id) || byNum(a, b)
     };
     return list.sort(cmp[sortBy] || byNum);
   }
@@ -410,49 +610,17 @@
       if (filter === "dups" && n < 2) return false;
       if (filter === "wish" && !(wish || []).includes(c.id)) return false;
       if (rarFilter !== "all" && rarityOf(c) !== rarFilter) return false;
+      if (countryFilter !== "all" && G.countryOf(c.brand) !== countryFilter) return false;
+      if (minPower && c.stats.power < minPower) return false;
       return !q || C.normalize(c.brand + " " + c.model).includes(q);
     });
     return sortList(list);
   }
-  /** boutique : un pack par pays (2 cartes du pays, dont 1 rare ou mieux), prix selon la taille du catalogue du pays */
-  function shopHtml() {
-    const cars = C.cars, dust = doc.dust;
-    const packs = [{ id: "world", label: "Monde", cost: G.PACKS.world.cost, total: cars.length, have: doc.count }].concat((G.COUNTRIES || []).map((k) => {
-      const list = cars.filter((c) => G.countryOf(c.brand) === k.id);
-      return { id: k.id, label: k.label, cost: k.cost, total: list.length, have: list.filter((c) => countOf(c.id) > 0).length };
-    }));
-    const tile = (p) => {
-      const ok = dust >= p.cost && !busy && p.total >= 2, miss = Math.max(0, p.cost - dust), full = p.total > 0 && p.have >= p.total;
-      const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
-      return `<button type="button" class="shop-pack ${ok ? "ready" : "done"}${p.id === "world" ? " world" : ""}" data-pack="shop" data-shop="${p.id}" ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${p.cost} cristaux">
-        <span class="shop-art pk3-pack-art" ${st}>${p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>2 cartes</em></span>` : packInner(p.id)}</span>
-        <span class="shop-meta"><b>${p.id === "world" ? "Pack mondial" : C.esc(p.label)}</b><span class="shop-price">${p.cost} ${window.MA.dustIcon(14)}</span></span>
-        <small>${full ? "Collection complète" : `${p.have} / ${p.total} voitures`}${!ok && miss ? ` · il manque ${miss}` : ""}</small>
-      </button>`;
-    };
-    return `<section class="shop" aria-label="Boutique de packs"><header><h3>Boutique</h3><span>2 voitures par pack, dont 1 rare ou mieux · les doublons rapportent des cristaux</span></header><div class="shop-grid">${packs.map(tile).join("")}</div></section>`;
-  }
-  function renderHero() {
-    const el = document.getElementById("tcg-hero"); if (!el || !doc) return;
-    indexCars();
-    const total = C.cars.length, owned = doc.count, pct = Math.round((owned / Math.max(1, total)) * 100), canDaily = doc.lastPack !== day();
-    const byR = ORDER.map((r) => { const all = C.cars.filter((c) => rarityOf(c) === r); const have = all.filter((c) => countOf(c.id) > 0).length; return `<span class="tcg-rar-chip ${r}">${RAR[r].label} <b>${have}/${all.length}</b></span>`; }).join("");
-    const dups = Object.keys(doc.owned).filter((k) => doc.owned[k] > 1).length;
-    const canBattle = Object.keys(doc.owned).filter((k) => doc.owned[k] > 0 && C.carsById.has(k)).length >= 3;
-    el.innerHTML = `<div class="tcg-progress"><div class="tcg-pg-top"><span><b>${owned}</b> / ${total} cartes</span><em>${pct} %</em></div><div class="xp-bar"><i style="width:${pct}%"></i></div><div class="tcg-rar-row">${byR}${doc.specials ? `<span class="tcg-rar-chip special">✦ Éditions <b>${doc.specials}</b></span>` : ""}</div></div>
-      <div class="tcg-packs">
-        <button type="button" class="tcg-pack ${canDaily ? "ready" : "done"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="pk-logo">MOTOR<i>AUTO</i></span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
-        <button type="button" class="tcg-pack bonus ${doc.bonus ? "ready" : "done"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="pk-logo">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
-        <button type="button" class="tcg-pack battle ${canBattle ? "ready" : "done"}" data-battle ${canBattle ? "" : "disabled"} aria-label="Bataille de cartes"><span class="pk-logo">⚔</span><b>Bataille</b><small>${canBattle ? "entraînement, sans récompense" : "3 cartes minimum"}</small></button>
-        <button type="button" class="tcg-dust" data-dust-log title="Cristaux issus des doublons et des défis : fabrique des cartes ou achète un pack. Touche pour voir l'historique"><b>${window.MA.dustIcon(20)} ${doc.dust}</b><small>cristaux${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></button>
-      </div>${shopHtml()}${notice ? `<p class="tcg-alert" role="status">⚠ ${C.esc(notice)}</p>` : ""}`;
-  }
-
-  let curList = [], shown = 0, io = null, albumBrands = [];
+  let curList = [], shown = 0, io = null;
   const CH = 36;
-  const cardTpl = (c, w, sn) => cardHtml(c, { owned: countOf(c.id) > 0, count: countOf(c.id), wish: w.has(c.id) && !countOf(c.id), isNew: countOf(c.id) > 0 && !sn.has(c.id) });
+  const cardTpl = (c, w, sn) => cardHtml(c, { owned: countOf(c.id) > 0, count: countOf(c.id), wish: w.has(c.id) && !countOf(c.id), isNew: countOf(c.id) > 0 && !sn.has(c.id), lv: lvOf(c.id) });
   function appendChunk() {
-    const el = document.getElementById("tcg-grid"); if (!el || view === "albums") return;
+    const el = document.getElementById("tcg-grid"); if (!el) return;
     const old = el.querySelector(".tcg-sentinel"); if (old) old.remove();
     const w = new Set(wish || []), sn = seenSet(), slice = curList.slice(shown, shown + CH);
     shown += slice.length;
@@ -465,55 +633,62 @@
       } else appendChunk();
     }
   }
-  function fillAlbum(d) {
-    const g = d.querySelector("[data-fill]"); if (!g || g.dataset.done) return;
-    g.dataset.done = "1";
-    const w = new Set(wish || []), sn = seenSet();
-    g.innerHTML = curList.filter((c) => c.brand === d.dataset.brand).map((c) => cardTpl(c, w, sn)).join("");
-  }
-  function renderAlbums(el) {
-    const by = new Map(); curList.forEach((c) => { if (!by.has(c.brand)) by.set(c.brand, true); });
-    albumBrands = Array.from(by.keys()).sort((a, b) => a.localeCompare(b, "fr"));
-    el.innerHTML = albumBrands.map((b) => {
-      const all = C.cars.filter((c) => c.brand === b), have = all.filter((c) => countOf(c.id) > 0).length, shownN = curList.filter((c) => c.brand === b).length;
-      return `<details class="tcg-album ${have === all.length ? "done" : ""}" data-brand="${C.esc(b)}"><summary><span class="ab-name">${C.esc(b)}<small>${have} / ${all.length} cartes${shownN !== all.length ? " · " + shownN + " affichée" + (shownN > 1 ? "s" : "") : ""}</small></span><span class="ab-bar" aria-hidden="true"><i style="width:${Math.round((have / all.length) * 100)}%"></i></span></summary><div class="tcg-grid compact" data-fill></div></details>`;
-    }).join("") || `<div class="empty-note tcg-empty">Aucune carte pour ce filtre.</div>`;
-    if (albumBrands.length === 1) { const d = el.querySelector(".tcg-album"); if (d) { d.open = true; fillAlbum(d); } }
-  }
   function renderGrid() {
     const el = document.getElementById("tcg-grid"); if (!el || !doc) return;
     if (io) io.disconnect();
     curList = visibleList(); shown = 0;
     const cnt = document.getElementById("tcg-count"); if (cnt) cnt.textContent = curList.length + " carte" + (curList.length > 1 ? "s" : "");
-    el.className = view === "albums" ? "tcg-albums" : "tcg-grid" + (view === "compact" ? " compact" : "");
-    if (view === "albums") { renderAlbums(el); return; }
-    const sp = Array.from(specials.values()).filter((s) => (filter === "all" ? (countOf(s.id) > 0 || (s.claimable && s.active !== false)) : filter === "owned" ? countOf(s.id) > 0 : false) && rarFilter === "all" && sortBy === "num");
+    el.className = "tcg-grid" + (view === "compact" ? " compact" : "");
+    const sp = Array.from(specials.values()).filter((s) => (filter === "all" ? (countOf(s.id) > 0 || (s.claimable && s.active !== false)) : filter === "owned" ? countOf(s.id) > 0 : false) && rarFilter === "all" && countryFilter === "all" && !minPower && sortBy === "num");
     const sn = seenSet();
-    el.innerHTML = sp.length && !query ? `<div class="tcg-sec">✦ Éditions limitées</div>${sp.map((s) => cardHtml(cardObj(s.id), { owned: countOf(s.id) > 0, count: countOf(s.id), isNew: countOf(s.id) > 0 && !sn.has(s.id) })).join("")}<div class="tcg-sec">Catalogue</div>` : "";
+    el.innerHTML = sp.length && !query ? `<div class="tcg-sec">✦ Éditions limitées</div>${sp.map((s) => cardHtml(cardObj(s.id), { owned: countOf(s.id) > 0, count: countOf(s.id), isNew: countOf(s.id) > 0 && !sn.has(s.id), lv: lvOf(s.id) })).join("")}<div class="tcg-sec">Catalogue</div>` : "";
     if (!curList.length) { el.insertAdjacentHTML("beforeend", `<div class="empty-note tcg-empty">Aucune carte pour ce filtre.</div>`); return; }
     appendChunk();
   }
   function syncToolbar() {
     document.querySelectorAll("#cards-root [data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
     const s = document.getElementById("cards-sort"); if (s) s.value = sortBy;
+    const c = document.getElementById("cards-country"); if (c) c.value = countryFilter;
+    const m = document.getElementById("cards-minp"); if (m) m.value = String(minPower);
+    const r = document.getElementById("cards-rar"); if (r) r.value = rarFilter;
+    document.querySelectorAll("#cards-root [data-cf]").forEach((b) => { const on = b.dataset.cf === filter; b.classList.toggle("active", on); b.setAttribute("aria-pressed", String(on)); });
+  }
+
+  // ----- structure de la page
+  /** met à jour l'en-tête et le panneau visible (pas la grille de la collection) */
+  function renderHero() {
+    const top = document.getElementById("cg-top"); if (!top || !doc) return;
+    indexCars();
+    const total = C.cars.length, owned = doc.count, dups = Object.keys(doc.owned).filter((k) => doc.owned[k] > 1).length;
+    top.innerHTML = `<div class="cg-prog"><div class="cg-pt"><b>${owned}</b><span> / ${total} cartes</span><em>${pct(owned, total)} %</em></div>${gauge(owned, total, "big")}</div>
+      <button type="button" class="cg-dust" data-dust-log title="Historique des cristaux"><span class="cg-di">${window.MA.dustIcon(22)}</span><b>${doc.dust}</b><small>cristaux${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></button>`;
+    document.querySelectorAll("#cards-root [data-ctab]").forEach((b) => { const on = b.dataset.ctab === ctab; b.classList.toggle("active", on); b.setAttribute("aria-selected", String(on)); });
+    const shop = document.getElementById("cg-shop"), mine = document.getElementById("cg-mine");
+    shop.hidden = ctab !== "shop"; mine.hidden = ctab !== "mine";
+    if (ctab === "shop") shop.innerHTML = (notice ? `<p class="tcg-alert" role="status">⚠ ${C.esc(notice)}</p>` : "") + shopHtml();
+    else { const t = document.getElementById("cg-mine-top"); if (t) t.innerHTML = `<div class="tcg-rar-row">${rarityChips()}${doc.specials ? `<span class="tcg-rar-chip special">✦ Éditions <b>${doc.specials}</b></span>` : ""}</div>${showcaseHtml()}${albumsHtml()}${myCarsHtml()}`; }
   }
   function render() {
     const root = document.getElementById("cards-root"); if (!root) return;
     if (!C.user) { root.innerHTML = `<div class="empty-note">Connecte-toi pour ouvrir des packs et collectionner les cartes du catalogue.<br><button type="button" class="cta-btn fill-btn mt" data-action="open-auth">Me connecter</button></div>`; return; }
     if (!doc) { root.innerHTML = `<div class="tcg-skeleton" aria-busy="true" aria-label="Chargement de ta collection"><i></i><i></i><i></i></div>`; return; }
-    if (!document.getElementById("tcg-grid")) {
-      root.innerHTML = `<div class="tcg-hero" id="tcg-hero"></div>
-        <div class="tcg-tools"><input type="search" id="cards-search" placeholder="Rechercher une carte…" aria-label="Rechercher une carte" value="${C.esc(query)}" autocomplete="off">
-          <select id="cards-rar" aria-label="Rareté"><option value="all">Toutes raretés</option>${ORDER.map((r) => `<option value="${r}">${RAR[r].label}</option>`).join("")}</select>
-          <span class="tcg-count" id="tcg-count" aria-live="polite"></span></div>
-        <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}</div>
-        <div class="tcg-toolbar"><div class="seg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"], ["albums", "Albums"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</div>
-          <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : rareté"], ["owned", "Tri : possédées d'abord"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
-        <div class="tcg-grid" id="tcg-grid"></div>`;
+    if (!document.getElementById("cg-top")) {
+      const countries = (G.COUNTRIES || []).map((k) => `<option value="${k.id}">${C.esc(k.label)}</option>`).join("");
+      root.innerHTML = `<div class="cg"><div class="cg-top" id="cg-top"></div>
+        <div class="cg-tabs" role="tablist" aria-label="Cartes"><button type="button" role="tab" class="cg-tab" data-ctab="shop">Boutique</button><button type="button" role="tab" class="cg-tab" data-ctab="mine">Mes cartes</button></div>
+        <div id="cg-shop" role="tabpanel"></div>
+        <div id="cg-mine" role="tabpanel" hidden><div id="cg-mine-top"></div>
+          <section class="cg-block" aria-label="Collection"><header class="cg-bh"><h3>Collection</h3><span class="tcg-count" id="tcg-count" aria-live="polite"></span></header>
+            <div class="cg-tools"><input type="search" id="cards-search" placeholder="Rechercher une carte…" aria-label="Rechercher une carte" value="${C.esc(query)}" autocomplete="off">
+              <select id="cards-rar" aria-label="Rareté"><option value="all">Toutes raretés</option>${ORDER.map((r) => `<option value="${r}">${RAR[r].label}</option>`).join("")}</select>
+              <select id="cards-country" aria-label="Pays"><option value="all">Tous pays</option>${countries}</select>
+              <select id="cards-minp" aria-label="Puissance minimale">${[[0, "Toute puissance"], [150, "150 ch et +"], [300, "300 ch et +"], [500, "500 ch et +"], [800, "800 ch et +"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
+              <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : rareté"], ["owned", "Tri : doublons d'abord"], ["level", "Tri : niveau"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
+            <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}
+              <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>
+            <div class="tcg-grid" id="tcg-grid"></div></section></div></div>`;
     }
-    root.querySelectorAll("[data-cf]").forEach((b) => { const on = b.dataset.cf === filter; b.classList.toggle("active", on); b.setAttribute("aria-pressed", String(on)); });
-    const sel = document.getElementById("cards-rar"); if (sel) sel.value = rarFilter;
-    syncToolbar(); renderHero(); renderGrid();
+    syncToolbar(); renderHero(); if (ctab === "mine") renderGrid();
   }
 
   // ------------------------------------------------------------------ profil public : collection et wishlist
@@ -528,11 +703,15 @@
       const d = snap.exists ? snap.data() : { owned: {} };
       const ids = Object.keys(d.owned || {}).filter((k) => d.owned[k] > 0 && cardObj(k));
       const wl = w.filter((id) => cardObj(id) && !(d.owned && d.owned[id] > 0));
-      if (!ids.length && !wl.length) return;
       ids.sort((a, b) => (G.isSpecial(b) ? 1 : 0) - (G.isSpecial(a) ? 1 : 0) || ORDER.indexOf(rarityOf(cardObj(a))) - ORDER.indexOf(rarityOf(cardObj(b))));
       const mine = C.user && C.user.uid !== uid ? await myCollection() : null;
       const offer = (id) => mine && (mine.owned[id] || 0) > 1;
-      el.innerHTML = `${ids.length ? `<div class="panel-section-title">Collection de cartes <span class="lap-meta">${(d.count || 0)} / ${C.cars.length}${d.specials ? " · ✦ " + d.specials : ""}</span></div>
+      const sc = await loadShowcase(uid), vit = (sc.ids || []).filter((id) => (d.owned || {})[id] > 0 && cardObj(id)).slice(0, 6);
+      const carDocs = await Promise.all((sc.cars || []).slice(0, 3).map((cid) => C.db.collection("community_cars").doc(cid).get().then((x) => (x.exists && x.data().uid === uid ? Object.assign({ id: x.id }, x.data()) : null)).catch(() => null)));
+      const pubCars = carDocs.filter(Boolean);
+      if (!ids.length && !wl.length && !vit.length) return;
+      const vitHtml = vit.length || pubCars.length ? `<div class="panel-section-title">Vitrine</div><div class="cg-pshow">${vit.map((id) => `<div class="cg-pshow-i"><a href="${G.isSpecial(id) ? "#/jouer/cartes" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { owned: true, count: 0 })}</a>${mine && !(mine.owned[id] > 0) ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-wish-add="${C.esc(id)}">★ Je cherche cette carte</button>` : ""}</div>`).join("")}${pubCars.map((c) => `<div class="cg-pshow-i">${cardHtml(myCarObj(c), { owned: true, count: 0 })}<small class="tcg-hint">Sa voiture</small></div>`).join("")}</div>` : "";
+      el.innerHTML = `${vitHtml}${ids.length ? `<div class="panel-section-title">Collection de cartes <span class="lap-meta">${(d.count || 0)} / ${C.cars.length}${d.specials ? " · ✦ " + d.specials : ""}</span></div>
         <div class="tcg-strip">${ids.slice(0, 10).map((id) => `<a href="${G.isSpecial(id) ? "#/jouer/cartes" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { cls: "tcg-mini" })}</a>`).join("")}</div>` : ""}
         ${wl.length ? `<div class="panel-section-title">★ Cartes recherchées <span class="lap-meta">${wl.length}</span></div>
         <div class="wish-list">${wl.slice(0, 12).map((id) => { const c = cardObj(id); return `<span class="wish-chip ${offer(id) ? "match" : ""}" title="${C.esc(c.brand + " " + c.model)}">${C.esc(String(c.model).replace(/\s*\(.*$/, "").slice(0, 26))}${offer(id) ? " · tu l'as en double" : ""}</span>`; }).join("")}</div>
@@ -541,7 +720,7 @@
   }
   async function myCollection() { try { await load(); return doc; } catch (_) { return null; } }
 
-  window.MACards = { pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
+  window.MACards = { lvOf, pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
@@ -549,6 +728,7 @@
       if (p.tab !== "cartes") return;
       render();
       await load().catch(() => {});
+      await Promise.all([loadClaims(), loadMyShowcase()]).catch(() => {});
       render();
       let want = "";
       try { const u = new URL(location.href); want = u.searchParams.get("carte") || ""; if (want) { u.searchParams.delete("carte"); history.replaceState(null, "", u.pathname + (u.search || "") + u.hash); } } catch (_) { /* facultatif */ }
@@ -558,13 +738,27 @@
       }
     } });
     ctx.Router.register("pilot", { enter: (p) => renderProfile(p.uid) });
-    document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; if (ctx.Router.is("play", { tab: "cartes" })) { render(); load(true).then(render).catch(() => {}); } });
+    document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (ctx.Router.is("play", { tab: "cartes" })) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-dust-log]")) { showDustLog(); return; }
       const pk = e.target.closest("[data-pack]");
-      if (pk) { openPack(pk.dataset.pack, pk.dataset.shop); return; }
+      if (pk) { openPack(pk.dataset.pack, pk.dataset.shop, pk.dataset.offer === "1"); return; }
+      const ct = e.target.closest("#cards-root [data-ctab]");
+      if (ct) { ctab = ct.dataset.ctab; store.set("ma_cards_tab", ctab); render(); return; }
+      const ak = e.target.closest("#cards-root [data-akind]");
+      if (ak) { albumKind = ak.dataset.akind; store.set("ma_cards_albums", albumKind); renderHero(); return; }
+      const al = e.target.closest("#cards-root [data-album]");
+      if (al) { showAlbum(al.dataset.album); return; }
+      if (e.target.closest("#cards-root [data-show-edit]")) { editShowcase(); return; }
+      const mp = e.target.closest("#cards-root [data-mycar-pub]");
+      if (mp) { toggleMyCar(mp.dataset.mycarPub); return; }
+      const oc = e.target.closest("#cards-root [data-offer-card]");
+      if (oc) { buyOffer(oc.dataset.offerCard); return; }
+      if (e.target.closest("#cards-root [data-set-claim]")) { claimAlbums(false); return; }
+      const wa = e.target.closest("[data-wish-add]");
+      if (wa) { addWish(wa.dataset.wishAdd, wa); return; }
       const cf = e.target.closest("[data-cf]");
-      if (cf) { filter = cf.dataset.cf; render(); return; }
+      if (cf) { filter = cf.dataset.cf; syncToolbar(); renderGrid(); return; }
       const vw = e.target.closest("#cards-root [data-view]");
       if (vw) { view = vw.dataset.view; store.set("ma_cards_view", view); syncToolbar(); renderGrid(); return; }
       if (e.target.closest("#cards-root [data-battle]")) { if (window.MABattle) window.MABattle.open(); return; }
@@ -579,6 +773,8 @@
     document.addEventListener("input", (e) => { if (e.target.id === "cards-search") { query = e.target.value; renderGrid(); } });
     document.addEventListener("change", (e) => {
       if (e.target.id === "cards-rar") { rarFilter = e.target.value; renderGrid(); }
+      else if (e.target.id === "cards-country") { countryFilter = e.target.value; renderGrid(); }
+      else if (e.target.id === "cards-minp") { minPower = Number(e.target.value) || 0; renderGrid(); }
       else if (e.target.id === "cards-sort") { sortBy = e.target.value; store.set("ma_cards_sort", sortBy); renderGrid(); }
     });
     document.addEventListener("ma:game", () => { if (doc && ctx.Router.is("play", { tab: "cartes" })) load(true).then(render).catch(() => {}); });

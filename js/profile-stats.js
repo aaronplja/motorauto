@@ -28,7 +28,7 @@
 
   function render(uid, d, self) {
     const esc = C.esc, L = G.levelOf(d.s.xp), s = d.s, col = d.col;
-    const rar = { shiny: [0, 0], legendary: [0, 0], epic: [0, 0], rare: [0, 0], common: [0, 0] };
+    const rar = { mythic: [0, 0], shiny: [0, 0], legendary: [0, 0], epic: [0, 0], rare: [0, 0], common: [0, 0] };
     C.cars.forEach((c) => { const r = window.MACards.rarityOf(c); const row = rar[r] || (rar[r] = [0, 0]); row[1]++; if ((col.owned[c.id] || 0) > 0) row[0]++; });
     const dups = Object.keys(col.owned || {}).filter((k) => col.owned[k] > 1).reduce((n, k) => n + (col.owned[k] - 1), 0);
     const hp = d.cars.reduce((n, c) => n + (Number(c.power) || 0), 0), pct = Math.round(((col.count || 0) / Math.max(1, C.cars.length)) * 100);

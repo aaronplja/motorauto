@@ -106,22 +106,31 @@
     epic: { id: "epic", label: "Épique", dust: 40, craft: 240, odds: 0.09 },
     legendary: { id: "legendary", label: "Légendaire", dust: 100, craft: 600, odds: 0.03 },
     shiny: { id: "shiny", label: "Shiny", dust: 400, craft: 2400, odds: 0.005 },
+    mythic: { id: "mythic", label: "Légende", dust: 600, craft: 0, odds: 0 },
     special: { id: "special", label: "Édition limitée", dust: 150, craft: 0, odds: 0 }
   };
-  const ORDER = ["shiny", "legendary", "epic", "rare", "common"];          // raretés tirables, de la plus haute à la plus basse
+  const ORDER = ["mythic", "shiny", "legendary", "epic", "rare", "common"];          // raretés tirables, de la plus haute à la plus basse
   const isSpecial = (id) => String(id).indexOf("sp-") === 0;
   /** puissance « de classement » : les voitures de course du Mans (identifiants lm-…) pèsent 60 % de leur puissance, pour ne pas écraser les voitures de route */
   const rankPower = (c) => (String(c.id).indexOf("lm-") === 0 ? c.power * 0.6 : c.power);
   /** cartes « Shiny » (arc-en-ciel, ≈ 0,5 % par carte tirée) : voitures mythiques choisies à la main */
   const SHINY = ["peugeot-205-t16", "peugeot-206-wrc", "nissan-skyline-gtr-r34", "nissan-gt-r-r35", "toyota-supra-a80-mk4", "ford-rs200", "ford-escort-rs-cosworth-t35", "audi-r8-v10", "honda-civic-ek9-type-r",
     "lm-ford-gt40", "lm-porsche-917k", "lm-porsche-956", "lm-porsche-962c", "lm-mazda-787b", "lm-mclaren-f1-gtr", "lm-porsche-919"];
+  /** cartes « Légende » : une par album pays / décennie, gagnée en complétant l'album (jamais tirée en pack, jamais fabriquée) */
+  const LEGENDS = {
+    "country:fr": "alpine-a110-classic", "country:de": "mb-300-slr", "country:it": "rally-lancia-037", "country:gb": "lm-mirage-gr8",
+    "country:jp": "rally-subaru-impreza-gc8", "country:us": "lm-chevrolet-corvette-c5r", "country:se": "rally-saab-96", "country:xx": "rally-i20-n-rally1",
+    "decade:1940": "mb-w125", "decade:1950": "mb-300-sl-gullwing", "decade:1960": "rally-citroen-ds-monte", "decade:1970": "rally-lancia-stratos", "decade:1980": "rally-lancia-delta-s4",
+    "decade:1990": "mb-clk-gtr", "decade:2000": "lm-audi-r8-lmp", "decade:2010": "mb-f1-hybrid", "decade:2020": "fiat-1000tipla"
+  };
+  const LEGEND_IDS = Object.keys(LEGENDS).map((k) => LEGENDS[k]);
   /** rareté de chaque voiture selon son rang de puissance (égalités départagées par l'identifiant : même résultat partout) */
   function computeRarities(list) {
     const sorted = list.slice().sort((a, b) => (rankPower(b) - rankPower(a)) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const map = new Map();
     sorted.forEach((c, i) => {
       const p = i / Math.max(1, sorted.length - 1);
-      map.set(c.id, SHINY.indexOf(c.id) >= 0 ? "shiny" : p < 0.06 || rankPower(c) >= 500 ? "legendary" : p < 0.2 ? "epic" : p < 0.5 ? "rare" : "common");
+      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : SHINY.indexOf(c.id) >= 0 ? "shiny" : p < 0.06 || rankPower(c) >= 500 ? "legendary" : p < 0.2 ? "epic" : p < 0.5 ? "rare" : "common");
     });
     return map;
   }
@@ -135,6 +144,7 @@
   }
   /** tire un pack de 3 cartes ; tous les 10 packs, une carte au moins « rare » est garantie, tous les 30 une « épique » */
   function drawPack(rarities, ids, rng, pity, epicPity) {
+    ids = ids.filter((id) => rarities.get(id) !== "mythic");
     const by = {}; ORDER.forEach((r) => { by[r] = []; });
     ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
     const pick = (r) => { const list = by[r].length ? by[r] : (r === "shiny" && by.legendary.length ? by.legendary : ids); return list[Math.floor(rng() * list.length)]; };
@@ -175,6 +185,7 @@
   COUNTRIES.forEach((k) => { PACKS[k.id] = { id: k.id, label: "Pack " + k.label, cost: k.cost, cards: 2, min: "rare", country: k.id }; });
   const SHOP_PACK = { cost: PACKS.world.cost, cards: 2 };
   function drawShopPack(rarities, ids, rng, min) {
+    ids = ids.filter((id) => rarities.get(id) !== "mythic");
     const by = {}; ORDER.forEach((r) => { by[r] = []; });
     ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
     const pick = (r) => { const list = by[r] && by[r].length ? by[r] : ids; return list[Math.floor(rng() * list.length)]; };
@@ -189,7 +200,7 @@
     out.push(second);
     return out;
   }
-  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [], pics: {}, picClaims: {} });
+  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [], pics: {}, picClaims: {}, lv: {}, mis: { day: "", p: {}, done: [] }, offers: { day: "", pack: 0, card: 0 } });
 
   // ------------------------------------------------------------------ cartes à plusieurs images
   /** clé courte et stable d'une image (ne change pas si l'administrateur réordonne la galerie) */
@@ -273,21 +284,64 @@
   const PERFECT_WEEK_BONUS = 1;
   const THEMES = ["Ma voiture au lever du soleil", "Détail mécanique", "Mon garage", "Route de rêve", "Voiture en mouvement", "Noir & blanc", "Mon plus beau reflet", "Sortie entre pilotes", "Voiture sous la pluie", "Intérieur et cockpit", "Avant / après", "Ma voiture de collection"];
 
-  /** familles de cartes : une par marque (3 à 30 cartes) et une par carrosserie ; récompense = cristaux selon la taille */
+  /** année de début d'une voiture (champ « year » du serveur, ou « 1984 - 1994 » côté site) */
+  const yearOf = (c) => { if (c && Number(c.year) > 1800) return Number(c.year); const m = String((c && c.years) || "").match(/\d{4}/); return m ? Number(m[0]) : 0; };
+  const decadeOf = (c) => { const y = yearOf(c); return !y ? 0 : y < 1950 ? 1940 : Math.floor(y / 10) * 10; };
+  const decadeLabel = (d) => d === 1940 ? "Avant 1950" : "Années " + d;
+  /** albums : un par pays, par décennie (avec une carte « Légende » à la clé), par marque et par carrosserie ; récompense en cristaux selon la taille */
   function setReward(n) { return Math.min(600, 20 + n * 10); }
   function setsOf(list) {
-    const out = [], group = (key, prefix, kind, min, max) => {
-      const m = new Map();
-      (list || []).forEach((c) => { const v = String(c[key] || "").trim(); if (!v) return; if (!m.has(v)) m.set(v, []); m.get(v).push(c.id); });
-      m.forEach((ids, name) => { if (ids.length >= min && ids.length <= max) out.push({ id: prefix + ":" + name, name: kind === "category" ? "Famille " + name : name, kind, ids, reward: setReward(ids.length) }); });
+    const out = [], skip = new Set(LEGEND_IDS);
+    const add = (id, name, kind, ids, legend) => {
+      ids = ids.filter((x) => !skip.has(x));
+      if (ids.length >= (kind === "category" ? 3 : kind === "brand" ? 3 : 2)) out.push({ id, name: kind === "category" ? "Famille " + name : name, kind, ids, reward: setReward(ids.length) + (legend ? 100 : 0), legend: legend || "" });
     };
-    group("brand", "brand", "brand", 3, 30); group("category", "cat", "category", 3, 80);
-    return out.sort((a, b) => a.ids.length - b.ids.length || (a.name < b.name ? -1 : 1));
+    const group = (keyFn, prefix, kind, min, max, nameFn) => {
+      const m = new Map();
+      (list || []).forEach((c) => { const v = keyFn(c); if (!v && v !== 0) return; if (!m.has(v)) m.set(v, []); m.get(v).push(c.id); });
+      m.forEach((ids, v) => { if (ids.length >= min && ids.length <= max) add(prefix + ":" + v, nameFn ? nameFn(v) : v, kind, ids, LEGENDS[prefix + ":" + v]); });
+    };
+    group((c) => countryOf(c.brand), "country", "country", 2, 400, (v) => (COUNTRIES.find((k) => k.id === v) || {}).label || v);
+    group((c) => decadeOf(c) || "", "decade", "decade", 2, 400, (v) => decadeLabel(Number(v)));
+    group((c) => String(c.brand || "").trim(), "brand", "brand", 3, 30);
+    group((c) => String(c.category || "").trim(), "cat", "category", 3, 80);
+    const rank = { country: 0, decade: 1, brand: 2, category: 3 };
+    return out.sort((a, b) => rank[a.kind] - rank[b.kind] || a.ids.length - b.ids.length || (a.name < b.name ? -1 : 1));
+  }
+
+  // ------------------------------------------------------------------ niveaux de carte (cadre et effets, purement visuels)
+  const LV_MAX = 5, LV_NAMES = ["", "Série", "Bronze", "Argent", "Or", "Platine"];
+  const LV_BASE = [0, 0, 60, 150, 320, 650], LV_MUL = { common: 1, rare: 1.5, epic: 2, legendary: 3, shiny: 4, mythic: 4, special: 3 };
+  /** coût en cristaux pour passer au niveau « to » (2 à 5) */
+  const upgradeCost = (rar, to) => to >= 2 && to <= LV_MAX ? Math.round((LV_BASE[to] * (LV_MUL[rar] || 1)) / 5) * 5 : 0;
+
+  // ------------------------------------------------------------------ boutique du jour et missions (identiques pour tous, tirées de la date)
+  const OFFER_PCT = 30;
+  /** offres du jour : un pack par pays à -30 % et une carte à prix réduit ; listes triées pour que site et serveur obtiennent le même résultat */
+  function dailyOffers(day, list, rarities) {
+    const h = hashStr("motorauto-offer-" + day), cs = COUNTRIES.map((k) => k.id);
+    const ids = (list || []).map((c) => c.id).filter((id) => { const r = rarities.get(id); return r === "rare" || r === "epic" || r === "legendary"; }).sort();
+    const cid = ids.length ? ids[hashStr("motorauto-offer-card-" + day) % ids.length] : "";
+    const cost = cid ? Math.max(5, Math.round(RAR[rarities.get(cid)].craft * 0.7 / 5) * 5) : 0;
+    return { pack: cs[h % cs.length], pct: OFFER_PCT, card: cid, cardCost: cost, cardFull: cid ? RAR[rarities.get(cid)].craft : 0 };
+  }
+  const offerPackCost = (id, pct) => Math.round((PACKS[id].cost * (100 - (pct || OFFER_PCT))) / 100 / 5) * 5;
+  /** 3 missions courtes par jour : un pack de pays + deux autres */
+  function dailyMissions(day) {
+    const h = hashStr("motorauto-mission-" + day), k = COUNTRIES[h % COUNTRIES.length];
+    const others = [
+      { id: "m-open", type: "open", goal: 2, label: "Ouvre 2 packs (jour, bonus ou boutique)", reward: 30 },
+      { id: "m-upgrade", type: "upgrade", goal: 1, label: "Améliore une carte", reward: 30 },
+      { id: "m-offer", type: "offer", goal: 1, label: "Profite d'une offre du jour", reward: 25 },
+      { id: "m-trade", type: "trade", goal: 1, label: "Réalise un échange de cartes", reward: 40 }
+    ];
+    const a = others.splice(Math.floor(h / 8) % others.length, 1)[0], b = others[Math.floor(h / 64) % others.length];
+    return [{ id: "m-shop-" + k.id, type: "shop", country: k.id, goal: 1, label: "Ouvre un pack " + k.label, reward: 40 }, a, b];
   }
 
   return {
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
-    setsOf, setReward,
+    setsOf, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
