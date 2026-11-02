@@ -539,6 +539,7 @@
         </div>
 
         ${car.approx ? `<p class="sheet-approx">Chiffres de référence arrondis (indicatifs) : ils varient selon l'année, le marché et le règlement.</p>` : ""}
+        ${window.MACards && window.MACards.sheetBadge ? window.MACards.sheetBadge(car) : ""}
         ${car.history ? `<div class="sheet-section-head">Histoire</div><div class="history-prose">${car.history.split(/\n{2,}|\n/).filter(Boolean).map((p) => `<p>${esc(p)}</p>`).join("")}</div>` : ""}
         ${window.MATrack ? window.MATrack.trackHtml(car) : ""}
         <div class="sheet-section-head">Motorisations</div>
@@ -1321,13 +1322,13 @@
   // ----- lien vers une fiche du catalogue
   const catLabel = (c) => (c.brand + " " + c.model).trim();
   function fillCatalogList() {
-    const dl = $("mc-cat-list"); if (!dl || dl.dataset.n === String(cars.length)) return;
-    dl.dataset.n = String(cars.length);
-    dl.innerHTML = cars.map((c) => `<option value="${esc(catLabel(c))}"></option>`).join("");
+    const dl = $("mc-cat-list"); if (!dl || dl.dataset.n === String(CATALOGUE.length)) return;
+    dl.dataset.n = String(CATALOGUE.length);
+    dl.innerHTML = CATALOGUE.map((c) => `<option value="${esc(catLabel(c))}"></option>`).join("");
   }
   function catalogFromInput() {
     const v = $("mc-cat").value.trim(); if (!v) return { id: "" };
-    const n = normalize(v), hit = cars.find((c) => normalize(catLabel(c)) === n);
+    const n = normalize(v), hit = CATALOGUE.find((c) => normalize(catLabel(c)) === n);
     return hit ? { id: hit.id, car: hit } : { id: "", bad: true };
   }
   function onCatalogPick() {

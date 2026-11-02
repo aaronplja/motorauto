@@ -316,6 +316,25 @@
   let navIds = [];
   let peek = "";
   const cnt = (id) => countOf(id) || (peek === id ? 1 : 0);
+  /** infos de la fiche voiture reprises sur la carte : couple, transmission, circuit, motorisations (même source que la fiche) */
+  function fiche(car) {
+    const e = C.esc, T = window.MATrack, engs = (car.phases || []).reduce((a, p) => a.concat(p.engines || []), []);
+    const tq = Math.max(0, ...engs.map((x) => Number(x.torque) || 0)), out = [];
+    if (tq) out.push(`<dt>Couple</dt><dd>${tq} Nm</dd>`);
+    if (engs.length) out.push(`<dt>Moteurs</dt><dd>${engs.length} version${engs.length > 1 ? "s" : ""}</dd>`);
+    if (T && car.drives && car.drives.length) out.push(`<dt>Transmission</dt><dd>${e(car.drives.map((d) => (T.DRIVES[d] || [d])[0]).join(", "))}</dd>`);
+    if (T && car.track && T.VERDICTS[car.track.verdict]) out.push(`<dt>Circuit</dt><dd>${e(T.VERDICTS[car.track.verdict][0])}</dd>`);
+    return out.join("");
+  }
+  /** bloc « Carte à collectionner » affiché sur la fiche : même rareté et mêmes chiffres que dans le jeu */
+  function sheetBadge(car) {
+    try {
+      if (!car || !C || !C.cars || !car.stats) return "";
+      const r = rarityOf(car), R = RAR[r]; if (!R) return "";
+      const n = doc ? countOf(car.id) : 0, st = car.stats;
+      return `<div class="sheet-cardlink"><span class="scl-pill tcg-${r}">${C.esc(R.label)}</span><span class="scl-txt"><b>Carte #${String(numberOf(car)).padStart(3, "0")}</b><small>${st.power} ch · ${st.speed || "—"} km/h · ${st.zero ? st.zero + " s" : "—"} · ${n > 0 ? "dans ta collection" + (n > 1 ? " ×" + n : "") : "à collectionner"}</small></span><button type="button" class="cta-btn btn-ghost compact-btn" data-sheet-card="${C.esc(car.id)}">Voir la carte</button></div>`;
+    } catch (_) { return ""; }
+  }
   function backHtml(car, id) {
     const n = cnt(id), R = RAR[rarityOf(car)], sp = car.special, e = C.esc;
     if (n === 0) return `<h3>Carte à débloquer</h3><p>Ouvre des packs pour la trouver${sp ? "." : " ou fabrique-la avec des cristaux."}</p><dl><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0")}</dd></dl>`;
@@ -323,7 +342,7 @@
     const all = C.cars.filter((c) => c.brand === car.brand), have = all.filter((c) => countOf(c.id) > 0).length, st = car.stats;
     const desc = String(car.description || "").replace(/\s+/g, " ");
     return `<h3>${e(car.brand)} ${e(String(car.model).replace(/\s*\(.*$/, ""))}</h3>
-      <dl><dt>Années</dt><dd>${e(car.years || "—")}</dd><dt>Catégorie</dt><dd>${e(car.category)}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>#${String(numberOf(car)).padStart(3, "0")}</dd><dt>Puissance</dt><dd>${st.power} ch</dd><dt>Vitesse</dt><dd>${st.speed} km/h</dd><dt>0-100</dt><dd>${st.zero ? st.zero + " s" : "—"}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>
+      <dl><dt>Années</dt><dd>${e(car.years || "—")}</dd><dt>Catégorie</dt><dd>${e(car.category)}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>#${String(numberOf(car)).padStart(3, "0")}</dd><dt>Puissance</dt><dd>${st.power} ch</dd><dt>Vitesse</dt><dd>${st.speed} km/h</dd><dt>0-100</dt><dd>${st.zero ? st.zero + " s" : "—"}</dd>${fiche(car)}<dt>Exemplaires</dt><dd>${n}</dd></dl>
       <div><small>Album ${e(car.brand)} : ${have} / ${all.length}</small><div class="ab-bar"><i style="width:${Math.round((have / all.length) * 100)}%"></i></div></div>${desc ? `<p>${e(desc.slice(0, 150))}${desc.length > 150 ? "…" : ""}</p>` : ""}`;
   }
   /** courbe de progression des images d'une carte : images débloquées (choisis celle qui s'affiche) et silhouettes verrouillées */
@@ -342,7 +361,7 @@
     const car = cardObj(id), n = cnt(id), R = RAR[rarityOf(car)], sp = car.special, inWish = (wish || []).includes(id);
     const info = sp
       ? `Édition limitée${sp.supply ? " · " + (sp.granted || 0) + " / " + sp.supply + " exemplaires attribués" : ""}. ${n > 0 ? "Elle fait partie de ta collection." : "Elle s'obtient uniquement en la gagnant (événements, concours)."}`
-      : peek === id && !countOf(id) ? "Carte partagée par un pilote : tu ne l'as pas encore dans ta collection."
+      : peek === id && !countOf(id) ? "Carte liée à cette fiche ou partagée par un pilote : tu ne l'as pas encore dans ta collection."
       : n > 0 ? `Tu possèdes cette carte${n > 1 ? " en " + n + " exemplaires" : ""}.` : `Carte ${R.label.toLowerCase()} · fabrication : ${R.craft} \u0001 (tu en as ${doc ? doc.dust : 0}).`;
     const lv = lvOf(id), next = lv < G.LV_MAX ? G.upgradeCost(sp ? "special" : rarityOf(car), lv + 1) : 0;
     const lvBlock = n > 0 ? `<div class="cg-lvbox"><span class="cg-lvpips" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</span><b>Niveau ${lv} · ${G.LV_NAMES[lv]}</b>${lv < G.LV_MAX ? `<button type="button" class="cta-btn fill-btn compact-btn" data-upgrade ${doc && doc.dust >= next && !peek ? "" : "disabled"}>Améliorer (${next} ${window.MA.dustIcon(14)})</button>` : `<span class="tcg-hint">niveau maximum</span>`}</div>` : "";
@@ -490,11 +509,9 @@
   }
   function shopHtml() {
     const rows = packRows(), canDaily = doc.lastPack !== day();
-    const canBattle = Object.keys(doc.owned).filter((k) => doc.owned[k] > 0 && C.carsById.has(k)).length >= 3;
-    return `<div class="cg-free">
+        return `<div class="cg-free">
         <button type="button" class="cg-gift ${canDaily ? "ready" : "off"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="cg-gi">🎁</span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
-        <button type="button" class="cg-gift battle ${canBattle ? "ready" : "off"}" data-battle ${canBattle ? "" : "disabled"} aria-label="Bataille de cartes"><span class="cg-gi">⚔</span><b>Bataille</b><small>${canBattle ? "entraînement, sans récompense" : "3 cartes minimum"}</small></button>
       </div>${offersHtml(rows)}${missionsHtml()}
       <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">2 voitures du pays, dont 1 rare ou mieux · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
   }
@@ -735,7 +752,8 @@
   }
   async function myCollection() { try { await load(); return doc; } catch (_) { return null; } }
 
-  window.MACards = { setRarOv: (m) => { rarOv = m || {}; }, rarOv: () => rarOv, autoRarity: (car) => { indexCars(); return rarityMap.get(car.id) || "common"; }, lvOf, pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-sheet-card]"); if (b && C && C.user) showDetail(b.dataset.sheetCard, [], { peek: true }); else if (b) C && C.toast && C.toast("Connecte-toi pour voir la carte.", "err"); });
+  window.MACards = { sheetBadge, setRarOv: (m) => { rarOv = m || {}; }, rarOv: () => rarOv, autoRarity: (car) => { indexCars(); return rarityMap.get(car.id) || "common"; }, lvOf, pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);

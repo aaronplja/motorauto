@@ -95,7 +95,7 @@
 #cg-shop, #cg-mine, #cg-mine-top { display: grid; gap: 1.1rem; min-width: 0; }
 #cg-shop[hidden], #cg-mine[hidden] { display: none; }
 #cg-shop > *, #cg-mine > *, #cg-mine-top > * { margin: 0; }
-.cg-free { gap: .8rem; }
+.cg-free { gap: .8rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .cg-block { padding: 1.15rem; gap: 1rem; }
 .cg-packs, .cg-albumgrid, .cg-mlist, .cg-mc-row { gap: .8rem; }
 .cg-tabs { margin-bottom: .2rem; }

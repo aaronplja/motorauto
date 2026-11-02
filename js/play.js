@@ -108,6 +108,7 @@
         ${tile("#/jouer/defis", "🎯", "Défis", st.chal, st.chalBadge)}
         ${tile("#/jouer/echanges", "🔄", "Échanges", st.trade, st.tradeBadge)}
         ${tile("#/jouer/concours", "📸", "Concours photo", st.contest, "")}
+        <a class="hub-tile" href="#/jouer/cartes" data-battle-tile role="button"><i class="hub-ico" aria-hidden="true">⚔</i><b>Bataille contre l'IA</b><small>Entraînement avec tes cartes, sans récompense</small></a>
         ${tile("#/duel", "🏁", "Duel", "0-100 km/h et 400 m en course", "")}
         ${tile("#/classement", "🏆", "Classements", "Chronos, circuits, pilotes", "")}
       </div>`;
@@ -158,5 +159,11 @@
     document.addEventListener("ma:duel-done", () => log("duel"));
     document.addEventListener("ma:shared", () => log("share"));
     document.addEventListener("ma:cards", () => { weeklyAt = 0; });
+  });
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-battle-tile]"); if (!b) return;
+    e.preventDefault();
+    if (!window.MABattle) { location.hash = "#/jouer/cartes"; return; }
+    Promise.resolve(window.MACards && window.MACards.load ? window.MACards.load() : null).catch(() => {}).then(() => window.MABattle.open());
   });
 })();
