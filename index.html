@@ -199,6 +199,18 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <div class="marquee-track" id="brand-marquee"></div>
   </section>
 
+
+
+  <section class="stage-shell home-section" id="home-feed-sec">
+    <div class="section-head">
+      <div><h2 class="section-title">Fil d'actualité</h2><p class="count-stream">Nouveaux pilotes, nouvelles voitures et nouveaux records</p></div>
+      <a class="link-more" href="#/communaute/fil">Tout voir&nbsp;➔</a>
+    </div>
+    <div class="feed-list" id="home-feed" aria-live="polite"></div>
+  </section>
+
+  <section class="stage-shell home-section home-contest" id="home-contest" hidden></section>
+
   <section class="stage-shell home-section" id="home-play-sec">
     <div class="section-head"><div><h2 class="section-title">À explorer</h2><p class="count-stream">La voiture du jour, le jeu et la communauté</p></div></div>
     <div id="home-daily" class="daily-wrap"></div>
@@ -210,16 +222,6 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       <a class="bento-tile" href="#/classement"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></svg></span><b>Classement</b><small>Chronos et collectionneurs</small><i class="bt-go" aria-hidden="true">›</i></a>
     </div>
   </section>
-
-  <section class="stage-shell home-section" id="home-feed-sec">
-    <div class="section-head">
-      <div><h2 class="section-title">Fil d'actualité</h2><p class="count-stream">Nouveaux pilotes, nouvelles voitures et nouveaux records</p></div>
-      <a class="link-more" href="#/communaute/fil">Tout voir&nbsp;➔</a>
-    </div>
-    <div class="feed-list" id="home-feed" aria-live="polite"></div>
-  </section>
-
-  <section class="stage-shell home-section home-contest" id="home-contest" hidden></section>
 
 
   <section class="stage-shell home-section">
@@ -1367,8 +1369,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/report.js"></script>
   <script defer src="js/market.js"></script>
   <script defer src="js/errors.js"></script>
-  <script defer src="js/home-me.js"></script>
-  <script defer src="js/compare-share.js"></script>
+    <script defer src="js/compare-share.js"></script>
   <script defer src="js/app.js"></script>
   <script defer src="js/polish.js"></script>
   <script defer src="js/nav.js"></script>
