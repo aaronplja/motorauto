@@ -11,6 +11,18 @@
   let C = null;
   const day = (d) => (d || new Date()).toISOString().slice(0, 10);
   const SS = { get: (k) => { try { return sessionStorage.getItem(k); } catch (_) { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (_) { /* ignoré */ } } };
+  // cache court des grosses lectures de l'admin (pilotes, chronos, catalogue) : évite de les relire à chaque onglet
+  const _cache = new Map();
+  window.MAAdminCache = {
+    get(key, fn, ttl) {
+      const hit = _cache.get(key), t = Date.now();
+      if (hit && t - hit.at < (ttl || 90000)) return hit.p;
+      const p = Promise.resolve().then(fn); _cache.set(key, { at: t, p });
+      p.catch(() => _cache.delete(key));
+      return p;
+    },
+    clear() { _cache.clear(); }
+  };
   const tsMs = (t) => (t && t.toMillis ? t.toMillis() : t && t.seconds ? t.seconds * 1000 : 0);
   const ACTION_LABEL = {
     "lap-delete": "Chrono supprimé", "user-delete": "Profil supprimé", "car-delete": "Fiche supprimée", "suggestion-approve": "Proposition acceptée",
@@ -50,44 +62,79 @@
   }
 
   // ---------------------------------------------------------------- tableau de bord
-  async function renderDash(extra) {
+  let dashState = { days: 30 };
+  const nf = (n) => Number(n || 0).toLocaleString("fr-FR");
+  function chartSvg(series) {
+    const W = 640, H = 200, P = { l: 34, r: 10, t: 12, b: 24 }, w = W - P.l - P.r, h = H - P.t - P.b;
+    const max = Math.max(4, ...series.map((x) => x.v)), step = Math.ceil(max / 4), top = step * 4;
+    const x = (i) => P.l + (series.length < 2 ? w / 2 : (i / (series.length - 1)) * w), y = (v) => P.t + h - (v / top) * h;
+    const line = series.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p.v).toFixed(1)).join(" ");
+    const area = line + ` L${x(series.length - 1).toFixed(1)} ${P.t + h} L${x(0).toFixed(1)} ${P.t + h} Z`;
+    const grid = [0, 1, 2, 3, 4].map((k) => { const v = k * step, yy = y(v).toFixed(1); return `<line x1="${P.l}" x2="${W - P.r}" y1="${yy}" y2="${yy}" class="dg"/><text x="${P.l - 6}" y="${(+yy + 3.5).toFixed(1)}" text-anchor="end" class="dt">${v}</text>`; }).join("");
+    const every = Math.max(1, Math.ceil(series.length / 6));
+    const ticks = series.map((p, i) => (i % every === 0 || i === series.length - 1) ? `<text x="${x(i).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${p.k.slice(8)}/${p.k.slice(5, 7)}</text>` : "").join("");
+    const hits = series.map((p, i) => `<g><rect x="${(x(i) - w / series.length / 2).toFixed(1)}" y="${P.t}" width="${(w / series.length).toFixed(1)}" height="${h}" class="dh"/><circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="3.5" class="dp"/><title>${p.k} : ${p.v} visite(s), ${p.s} inscription(s)</title></g>`).join("");
+    const sg = series.map((p, i) => p.s ? `<rect x="${(x(i) - 3).toFixed(1)}" y="${y(Math.min(p.s, top)).toFixed(1)}" width="6" height="${(P.t + h - y(Math.min(p.s, top))).toFixed(1)}" rx="2" class="ds"/>` : "").join("");
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Visites par jour sur ${series.length} jours" class="dash-svg"><defs><linearGradient id="dgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".35"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>${grid}<path d="${area}" fill="url(#dgrad)"/>${sg}<path d="${line}" class="dl" fill="none"/>${ticks}${hits}</svg>`;
+  }
+  function delta(cur, prev) {
+    if (!prev && !cur) return `<em class="dd flat">—</em>`;
+    if (!prev) return `<em class="dd up">nouveau</em>`;
+    const p = Math.round(((cur - prev) / prev) * 100);
+    return `<em class="dd ${p > 0 ? "up" : p < 0 ? "down" : "flat"}">${p > 0 ? "+" : ""}${p} %</em>`;
+  }
+  function paintChart(box) {
+    const data = box._series, n = dashState.days, s = data.slice(-n);
+    const host = box.querySelector("#dash-chart"); if (!host) return;
+    host.innerHTML = chartSvg(s);
+    box.querySelector("#dash-chart-total").textContent = nf(s.reduce((a, x) => a + x.v, 0)) + " visites · " + nf(s.reduce((a, x) => a + x.s, 0)) + " inscriptions";
+    box.querySelectorAll("[data-dash-days]").forEach((b) => { const on = Number(b.dataset.dashDays) === n; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+  }
+  async function renderDash() {
     const box = document.getElementById("adm-dash"), esc = C.esc;
     if (!box) return;
-    box.innerHTML = `<div class="empty-note">Chargement du tableau de bord…</div>`;
+    box.innerHTML = `<div class="dash-skel"><i></i><i></i><i></i></div>`;
     try {
-      const [st, views, mem] = await Promise.all([
-        C.db.collection("stats").limit(120).get(),
-        C.db.collection("car_views").limit(400).get(),
-        C.db.collection("users").limit(500).get()
+      const [st, views, sgSnap, rpSnap] = await Promise.all([
+        window.MAAdminCache.get("stats", () => C.db.collection("stats").limit(120).get()),
+        window.MAAdminCache.get("car_views", () => C.db.collection("car_views").limit(400).get()),
+        window.MAAdminCache.get("sg", () => C.db.collection("suggestions").where("status", "==", "pending").limit(100).get().catch(() => ({ size: 0 })), 30000),
+        window.MAAdminCache.get("rp", () => C.db.collection("reports").where("status", "==", "open").limit(100).get().catch(() => ({ size: 0 })), 30000)
       ]);
-      const days = new Map();
-      st.forEach((d) => days.set(d.id, d.data()));
+      const days = new Map(); st.forEach((d) => days.set(d.id, d.data()));
       const series = [];
-      for (let i = 29; i >= 0; i--) { const dd = new Date(Date.now() - i * 86400000), k = day(dd); series.push({ k, v: (days.get(k) || {}).visits || 0, s: (days.get(k) || {}).signups || 0 }); }
+      for (let i = 89; i >= 0; i--) { const dd = new Date(Date.now() - i * 86400000), k = day(dd); series.push({ k, v: (days.get(k) || {}).visits || 0, s: (days.get(k) || {}).signups || 0 }); }
       const sum = (arr, f) => arr.reduce((a, x) => a + (x[f] || 0), 0);
-      const max = Math.max(1, ...series.map((x) => x.v));
+      const v7 = sum(series.slice(-7), "v"), p7 = sum(series.slice(-14, -7), "v"), v30 = sum(series.slice(-30), "v"), p30 = sum(series.slice(-60, -30), "v"), s7 = sum(series.slice(-7), "s"), sp7 = sum(series.slice(-14, -7), "s");
       const top = [];
       views.forEach((d) => { const car = C.carsById.get(d.id); top.push({ id: d.id, n: (d.data() || {}).n || 0, name: car ? car.brand + " " + car.model : d.id }); });
       top.sort((a, b) => b.n - a.n);
-      const sgSnap = await C.db.collection("suggestions").where("status", "==", "pending").limit(100).get().catch(() => ({ size: 0 }));
-      const rpSnap = await C.db.collection("reports").where("status", "==", "open").limit(100).get().catch(() => ({ size: 0 }));
+      const topMax = Math.max(1, top.length ? top[0].n : 1);
+      const brands = new Map(); C.carsById.forEach((c) => { const g = c.group || c.brand || "Autres"; brands.set(g, (brands.get(g) || 0) + 1); });
+      const bl = [...brands.entries()].sort((a, b) => b[1] - a[1]), bMax = Math.max(1, bl.length ? bl[0][1] : 1);
       box.innerHTML = `
-        <div class="dash-grid">
-          <div class="dash-card"><b>${sum(series.slice(-7), "v")}</b><span>Visites (7 jours)</span></div>
-          <div class="dash-card"><b>${sum(series, "v")}</b><span>Visites (30 jours)</span></div>
-          <div class="dash-card"><b>${sum(series.slice(-7), "s")}</b><span>Inscriptions (7 jours)</span></div>
-          <div class="dash-card"><b>${mem.size}</b><span>Pilotes inscrits</span></div>
-          <a class="dash-card ${rpSnap.size ? "alert" : ""}" href="#/admin/moderation" style="text-decoration:none;color:inherit"><b>${rpSnap.size}</b><span>Signalements en attente</span></a>
-          <a class="dash-card ${sgSnap.size ? "alert" : ""}" href="#/admin/moderation" style="text-decoration:none;color:inherit"><b>${sgSnap.size}</b><span>Propositions en attente</span></a>
+        <div class="adm-block-head"><h2>Fréquentation</h2><span>Une visite = un navigateur, une fois par jour</span></div>
+        <div class="dash-kpis">
+          <div class="dash-kpi"><span>Visites · 7 jours</span><b>${nf(v7)}</b>${delta(v7, p7)}</div>
+          <div class="dash-kpi"><span>Visites · 30 jours</span><b>${nf(v30)}</b>${delta(v30, p30)}</div>
+          <div class="dash-kpi"><span>Inscriptions · 7 jours</span><b>${nf(s7)}</b>${delta(s7, sp7)}</div>
+          <a class="dash-kpi ${rpSnap.size ? "alert" : ""}" href="#/admin/moderation"><span>Signalements ouverts</span><b>${nf(rpSnap.size)}</b><em class="dd flat">Modération</em></a>
+          <a class="dash-kpi ${sgSnap.size ? "alert" : ""}" href="#/admin/moderation"><span>Propositions en attente</span><b>${nf(sgSnap.size)}</b><em class="dd flat">Modération</em></a>
         </div>
-        <div class="dash-cols">
-          <div class="chart-box"><div class="panel-section-title nomargin">Visites par jour (30 derniers jours)</div>
-            <div class="bars" role="img" aria-label="Histogramme des visites : ${sum(series, "v")} au total sur 30 jours">${series.map((x) => `<i style="height:${Math.max(2, Math.round((x.v / max) * 100))}%" title="${x.k} : ${x.v} visite(s), ${x.s} inscription(s)"></i>`).join("")}</div>
-            <div class="bars-legend"><span>${series[0].k.slice(5)}</span><span>aujourd'hui</span></div></div>
-          <div class="chart-box"><div class="panel-section-title nomargin">Voitures les plus consultées</div>
-            <ol class="rank-list" style="list-style:none;padding:0;margin:.5rem 0 0">${top.length ? top.slice(0, 8).map((t, i) => `<li><a class="rank-row" href="#/voiture/${encodeURIComponent(t.id)}"><span class="rank-pos">${i + 1}</span><span class="rank-main"><b>${esc(t.name)}</b></span><span class="rank-score">${t.n}<small>vues</small></span></a></li>`).join("") : `<li class="empty-note small">Pas encore de consultations enregistrées.</li>`}</ol></div>
-        </div>
-        <p class="admin-note">Les visites comptent une fois par jour et par navigateur. Données basées sur les 30 derniers jours.</p>`;
+        <section class="dash-card2">
+          <header><div><h3>Visites par jour</h3><small id="dash-chart-total"></small></div>
+            <div class="seg" role="group" aria-label="Période"><button type="button" data-dash-days="7">7 j</button><button type="button" data-dash-days="30">30 j</button><button type="button" data-dash-days="90">90 j</button></div></header>
+          <div id="dash-chart" class="dash-chart"></div>
+          <div class="dash-legend"><span><i class="l1"></i>Visites</span><span><i class="l2"></i>Inscriptions</span></div>
+        </section>
+        <div class="dash-two">
+          <section class="dash-card2"><header><div><h3>Voitures les plus consultées</h3><small>${top.length ? "Top " + Math.min(8, top.length) : "Pas encore de données"}</small></div></header>
+            <ol class="dash-rank">${top.length ? top.slice(0, 8).map((t, i) => `<li><a href="#/voiture/${encodeURIComponent(t.id)}"><span class="rk">${i + 1}</span><span class="nm">${esc(t.name)}</span><span class="vl">${nf(t.n)}</span><i style="width:${Math.max(4, Math.round((t.n / topMax) * 100))}%"></i></a></li>`).join("") : `<li class="empty">Les vues apparaîtront ici dès les premières consultations.</li>`}</ol></section>
+          <section class="dash-card2"><header><div><h3>Catalogue par marque</h3><small>${nf(C.carsById.size)} fiches · ${nf(bl.length)} marques</small></div></header>
+            <ol class="dash-rank">${bl.slice(0, 8).map(([g, n], i) => `<li><span class="row"><span class="rk">${i + 1}</span><span class="nm">${esc(g)}</span><span class="vl">${nf(n)}</span><i style="width:${Math.max(4, Math.round((n / bMax) * 100))}%"></i></span></li>`).join("")}</ol></section>
+        </div>`;
+      box._series = series; paintChart(box);
+      box.onclick = (e) => { const b = e.target.closest("[data-dash-days]"); if (b) { dashState.days = Number(b.dataset.dashDays); paintChart(box); } };
     } catch (e) { box.innerHTML = `<div class="empty-note error">Tableau de bord indisponible (règles Firestore à republier ?) : ${esc(e.message)}</div>`; }
   }
 

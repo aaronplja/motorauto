@@ -1,0 +1,45 @@
+/* Packs : décor drapeau, boutique par pays, ouverture */
+.pkart-flag { position: absolute; inset: 0; border-radius: inherit; background: var(--p1); overflow: hidden; }
+.pkart-flag[data-f="v"] { background: linear-gradient(90deg, var(--p1) 0 33.33%, var(--p2) 33.33% 66.66%, var(--p3) 66.66% 100%); }
+.pkart-flag[data-f="h"] { background: linear-gradient(180deg, var(--p1) 0 33.33%, var(--p2) 33.33% 66.66%, var(--p3) 66.66% 100%); }
+.pkart-flag[data-f="jp"] { background: radial-gradient(circle at 50% 44%, var(--p2) 0 24%, transparent 24.6%), var(--p1); }
+.pkart-flag[data-f="se"] { background: linear-gradient(90deg, transparent 0 28%, var(--p2) 28% 42%, transparent 42%), linear-gradient(180deg, transparent 0 40%, var(--p2) 40% 54%, transparent 54%), var(--p1); }
+.pkart-flag[data-f="gb"] { background: linear-gradient(90deg, transparent 0 40%, var(--p3) 40% 60%, transparent 60%), linear-gradient(180deg, transparent 0 38%, var(--p3) 38% 56%, transparent 56%), linear-gradient(90deg, transparent 0 34%, var(--p2) 34% 66%, transparent 66%), linear-gradient(180deg, transparent 0 32%, var(--p2) 32% 62%, transparent 62%), var(--p1); }
+.pkart-flag[data-f="us"] { background: linear-gradient(180deg, transparent 0 34%, transparent 34%), repeating-linear-gradient(180deg, var(--p1) 0 7.69%, var(--p2) 7.69% 15.38%); }
+.pkart-flag[data-f="us"]::after { content: ""; position: absolute; left: 0; top: 0; width: 52%; height: 46%; background: var(--p3); }
+.pkart-flag[data-f="world"] { background: radial-gradient(120% 90% at 20% 10%, var(--p3) 0, transparent 55%), radial-gradient(120% 90% at 90% 100%, var(--p2) 0, transparent 60%), linear-gradient(150deg, var(--p1), #0f172a); }
+.pkart-flag::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.05) 0, rgba(0,0,0,.28) 100%); z-index: 1; }
+.pkart-plate { position: absolute; left: 8%; right: 8%; top: 50%; transform: translateY(-50%); z-index: 2; display: grid; gap: .15rem; justify-items: center; text-align: center; padding: .6rem .4rem; border-radius: 12px; background: rgba(8,10,18,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.28); color: #fff; box-shadow: 0 8px 22px rgba(0,0,0,.4); }
+.pkart-plate small { font-size: .52rem; font-weight: 800; letter-spacing: .26em; opacity: .85; }
+.pkart-plate b { font-size: clamp(.82rem, 3.8vw, 1.15rem); font-weight: 900; letter-spacing: .04em; line-height: 1.1; text-transform: uppercase; overflow-wrap: normal; hyphens: manual; position: static; display: block; text-shadow: none; inset: auto; place-content: unset; }
+.pkart-plate em { font-style: normal; font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+
+/* pack en cours d'ouverture (version pays) */
+.pk3-pack.country { background: var(--p1); box-shadow: 0 28px 56px -22px rgba(0,0,0,.7), 0 0 0 2px rgba(255,255,255,.22) inset; }
+.pk3-pack.country::after { display: none; }
+.pk3-pack.country::before { z-index: 3; }
+.pk3-pack.country .pkart-plate b { font-size: clamp(.85rem, 5.4cqw, 1.15rem); letter-spacing: .03em; }
+.pk3-pack.country .pkart-plate { padding: .8rem .5rem; }
+
+/* boutique */
+.shop { margin-top: 1.1rem; }
+.shop > header { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem 1rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.shop > header h3 { margin: 0; font-size: 1.05rem; }
+.shop > header span { font-size: .76rem; color: var(--color-muted); }
+.shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+@media (min-width: 640px) { .shop-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .shop-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.shop-pack { display: flex; flex-direction: column; gap: .5rem; padding: .6rem; text-align: left; border-radius: 16px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: inherit; font: inherit; cursor: pointer; min-width: 0; transition: transform .2s var(--ease-out, ease), border-color .2s, box-shadow .2s; }
+.shop-pack:disabled { cursor: not-allowed; }
+.shop-pack.done .shop-art { filter: saturate(.45) brightness(.8); }
+.shop-pack.ready:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 26px -14px var(--accent); }
+.shop-pack:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.shop-art { position: relative; display: block; width: 100%; aspect-ratio: 5 / 6.4; border-radius: 12px; overflow: hidden; background: var(--p1, #333); box-shadow: 0 10px 24px -14px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.18) inset; }
+.shop-art::after { content: ""; position: absolute; inset: 0; z-index: 3; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.3) 50%, transparent 65%); transform: translateX(-120%); pointer-events: none; }
+@media (hover: hover) { .shop-pack.ready:hover .shop-art::after { animation: shine 1.2s ease-in-out; } }
+.shop-meta { display: flex; align-items: center; justify-content: space-between; gap: .4rem; min-width: 0; }
+.shop-meta b { font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.shop-price { display: inline-flex; align-items: center; gap: .25rem; flex: 0 0 auto; font-size: .82rem; font-weight: 800; padding: .15rem .5rem; border-radius: 999px; background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.shop-pack small { font-size: .72rem; color: var(--color-muted); line-height: 1.3; }
+@media (prefers-reduced-motion: reduce) { .shop-pack, .shop-art::after { transition: none; animation: none !important; } }
+.pk3-pack.country { container-type: inline-size; }

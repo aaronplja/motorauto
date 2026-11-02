@@ -133,25 +133,59 @@
     }
     return "common";
   }
-  /** tire un pack de 3 cartes ; tous les 10 packs, une carte au moins « rare » est garantie */
-  function drawPack(rarities, ids, rng, pity) {
+  /** tire un pack de 3 cartes ; tous les 10 packs, une carte au moins « rare » est garantie, tous les 30 une « épique » */
+  function drawPack(rarities, ids, rng, pity, epicPity) {
     const by = {}; ORDER.forEach((r) => { by[r] = []; });
     ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
     const pick = (r) => { const list = by[r].length ? by[r] : (r === "shiny" && by.legendary.length ? by.legendary : ids); return list[Math.floor(rng() * list.length)]; };
     const out = [];
-    for (let i = 0; i < 3; i++) out.push(pick(pickRarity(rng, pity && i === 2 ? "rare" : null)));
+    for (let i = 0; i < 3; i++) out.push(pick(pickRarity(rng, epicPity && i === 2 ? "epic" : pity && i === 2 ? "rare" : null)));
     if (pity && !out.some((id) => rarities.get(id) !== "common")) out[2] = pick("rare");
     return out;
   }
-  /** pack acheté avec de la poussière : 2 voitures, dont une « rare » ou mieux garantie */
-  const SHOP_PACK = { cost: 200, cards: 2 };
-  function drawShopPack(rarities, ids, rng) {
+
+  // ------------------------------------------------------------------ boutique : packs par pays
+  /** pays des constructeurs (le drapeau sert de décor au pack) ; c = couleurs, f = motif du drapeau */
+  const COUNTRIES = [
+    { id: "fr", label: "France", cost: 250, f: "v", c: ["#0055a4", "#ffffff", "#ef4135"] },
+    { id: "de", label: "Allemagne", cost: 200, f: "h", c: ["#111111", "#dd0000", "#ffce00"] },
+    { id: "it", label: "Italie", cost: 250, f: "v", c: ["#009246", "#ffffff", "#ce2b37"] },
+    { id: "gb", label: "Royaume-Uni", cost: 350, f: "gb", c: ["#012169", "#ffffff", "#c8102e"] },
+    { id: "jp", label: "Japon", cost: 250, f: "jp", c: ["#ffffff", "#bc002d", "#ffffff"] },
+    { id: "us", label: "États-Unis", cost: 300, f: "us", c: ["#b22234", "#ffffff", "#3c3b6e"] },
+    { id: "se", label: "Suède", cost: 350, f: "se", c: ["#006aa7", "#fecc00", "#fecc00"] },
+    { id: "xx", label: "Autres pays", cost: 350, f: "world", c: ["#0f766e", "#6366f1", "#f59e0b"] }
+  ];
+  const BRAND_COUNTRY = [
+    [/^(renault|alpine|peugeot|citro|ds\b|matra|bugatti|delahaye|talbot|lorraine|chenard|rondeau|vilebrequin|simca|venturi)/i, "fr"],
+    [/^(mercedes|sauber|bmw|audi|auto union|volkswagen|vw\b|opel|porsche|dauer|ruf|smart|maybach)/i, "de"],
+    [/^(alfa|ferrari|lancia|fiat|abarth|lamborghini|maserati|pagani)/i, "it"],
+    [/^(bentley|jaguar|aston|mini\b|lagonda|mclaren|mg\b|prodrive|mirage|lotus|rover|land rover|tvr|caterham|morgan)/i, "gb"],
+    [/^(toyota|nissan|datsun|honda|mazda|mitsubishi|subaru|suzuki|lexus|acura|infiniti|daihatsu)/i, "jp"],
+    [/^(ford|chevrolet|cadillac|dodge|chrysler|tesla|jeep|buick|pontiac|shelby|gmc)/i, "us"],
+    [/^(volvo|saab|koenigsegg|polestar)/i, "se"]
+  ];
+  function countryOf(brand) {
+    const b = String(brand || "").trim();
+    for (const [rx, id] of BRAND_COUNTRY) if (rx.test(b)) return id;
+    return "xx";
+  }
+  /** packs de la boutique : « world » (toutes les voitures) et un pack par pays ; 2 cartes dont 1 « rare » ou mieux */
+  const PACKS = { world: { id: "world", label: "Pack mondial", cost: 200, cards: 2, min: "rare", country: "" } };
+  COUNTRIES.forEach((k) => { PACKS[k.id] = { id: k.id, label: "Pack " + k.label, cost: k.cost, cards: 2, min: "rare", country: k.id }; });
+  const SHOP_PACK = { cost: PACKS.world.cost, cards: 2 };
+  function drawShopPack(rarities, ids, rng, min) {
     const by = {}; ORDER.forEach((r) => { by[r] = []; });
     ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
     const pick = (r) => { const list = by[r] && by[r].length ? by[r] : ids; return list[Math.floor(rng() * list.length)]; };
-    const out = [pick(pickRarity(rng, "rare"))];
+    // rareté minimale : si le pays n'a aucune carte assez rare, on prend la meilleure rareté disponible
+    let first = pick(pickRarity(rng, min || "rare"));
+    if ((rarities.get(first) === "common") && ids.some((id) => rarities.get(id) !== "common")) {
+      const better = ids.filter((id) => rarities.get(id) !== "common"); first = better[Math.floor(rng() * better.length)];
+    }
+    const out = [first];
     let second = pick(pickRarity(rng, null));
-    for (let k = 0; k < 4 && second === out[0] && ids.length > 2; k++) second = pick(pickRarity(rng, null));   // évite le doublon dans le même pack quand c'est possible
+    for (let k = 0; k < 6 && second === out[0] && ids.length > 2; k++) second = pick(pickRarity(rng, null));   // évite le doublon dans le même pack quand c'est possible
     out.push(second);
     return out;
   }
@@ -255,7 +289,7 @@
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     setsOf, setReward,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    RAR, ORDER, SHOP_PACK, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
+    RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

@@ -124,16 +124,27 @@
   }
 
   // ------------------------------------------------------------------ packs et fabrication (serveur)
-  async function openPack(kind) {
+  /** décor d'un pack : drapeau du pays (bandes de couleur), plaque centrale lisible quel que soit le fond */
+  function packTheme(id) {
+    const k = (G.COUNTRIES || []).find((x) => x.id === id);
+    return k ? { label: k.label, f: k.f, style: `--p1:${k.c[0]};--p2:${k.c[1]};--p3:${k.c[2]}` } : { label: "Monde", f: "world", style: "--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24" };
+  }
+  function packInner(id, sub) {
+    const t = packTheme(id);
+    return `<i class="pkart-flag" data-f="${t.f}" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>${C.esc(t.label)}</b><em>${C.esc(sub || "2 cartes")}</em></span>`;
+  }
+  async function openPack(kind, packId) {
     if (busy || !C.requireLogin()) return;
+    const shopId = kind === "shop" ? (packId || "world") : "";
+    const theme = shopId && shopId !== "world" ? packTheme(shopId) : null;
     busy = true; renderHero();
     // le pack apparaît tout de suite pendant que le serveur tire les cartes (plus d'écran figé)
-    mountOverlay("pack", "Ouverture de pack", `<div class="pk3 pk3-loading" id="pk3"><h2>${kind === "shop" ? "Ton pack cristal" : "Ton pack"}</h2><div class="pk3-pack ${C.esc(kind)} pk3-wait" aria-hidden="true"><b>MOTOR<span>AUTO</span></b></div><p class="tcg-hint" role="status">Préparation du pack…</p></div>`);
+    mountOverlay("pack", "Ouverture de pack", `<div class="pk3 pk3-loading" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : kind === "shop" ? "Ton pack cristal" : "Ton pack"}</h2><div class="pk3-pack ${C.esc(kind)}${theme ? " country" : ""} pk3-wait" ${theme ? `style="${theme.style}"` : ""} aria-hidden="true">${theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</div><p class="tcg-hint" role="status">Préparation du pack…</p></div>`);
     try {
       if (!doc) await load();
-      const r = await API("openPack", { kind });
+      const r = await API("openPack", shopId ? { kind, pack: shopId } : { kind });
       applyDoc(r.doc);
-      showPack(r.cards.map((c) => { const car = cardObj(c.id), pi = picInfo(car), at = c.newPic && pi ? pi.keys.indexOf(c.newPic) : -1; return { car, fresh: c.fresh, newPic: at >= 0, image: at >= 0 ? pi.urls[at] : "", picN: c.picN, picTotal: c.picTotal, reward: c.reward || 0 }; }).filter((x) => x.car), r.dust, kind, r.bonus || 0);
+      showPack(r.cards.map((c) => { const car = cardObj(c.id), pi = picInfo(car), at = c.newPic && pi ? pi.keys.indexOf(c.newPic) : -1; return { car, fresh: c.fresh, newPic: at >= 0, image: at >= 0 ? pi.urls[at] : "", picN: c.picN, picTotal: c.picTotal, reward: c.reward || 0 }; }).filter((x) => x.car), r.dust, kind, r.bonus || 0, shopId);
     } catch (e) { closeOverlay(); C.toast(e.message, "err"); await load(true).catch(() => {}); }
     finally { busy = false; renderHero(); }
   }
@@ -218,10 +229,11 @@
       el.appendChild(s); setTimeout(() => s.remove(), 1000);
     }
   }
-  function showPack(results, dust, kind, bonus) {
+  function showPack(results, dust, kind, bonus, shopId) {
+    const theme = shopId && shopId !== "world" ? packTheme(shopId) : null;
     const rank = (r) => (r === "special" ? ORDER.length + 2 : ORDER.length - ORDER.indexOf(r));
     const best = results.reduce((b, r) => (rank(rarityOf(r.car)) > rank(rarityOf(b.car)) ? r : b), results[0]);
-    const o = mountOverlay("pack", "Ouverture de pack", `<div class="pk3" id="pk3"><h2>Ton pack</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}" id="pk3-open" aria-label="Ouvrir le pack"><b>MOTOR<span>AUTO</span></b></button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`);
+    const o = mountOverlay("pack", "Ouverture de pack", `<div class="pk3" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : "Ton pack"}</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}${theme ? " country" : ""}" id="pk3-open" ${theme ? `style="${theme.style}"` : ""} aria-label="Ouvrir le pack"> ${theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`);
     const openBtn = o.querySelector("#pk3-open"); openBtn.focus();
     let started = false;
     openBtn.addEventListener("click", () => {
@@ -254,7 +266,10 @@
         sum.innerHTML = `<span>${news} nouvelle${news > 1 ? "s" : ""}</span>${pics ? `<span>${pics} nouvelle${pics > 1 ? "s" : ""} image${pics > 1 ? "s" : ""}</span>` : ""}<span>${dups} doublon${dups > 1 ? "s" : ""}</span>${bonus ? `<span>+${bonus} ${window.MA.dustIcon(15)} collection d'images</span>` : ""}${dust ? `<span>+${dust} ${window.MA.dustIcon(15)} cristaux</span>` : ""}`;
         if (rank(rarityOf(best.car)) > 1) sum.insertAdjacentHTML("afterend", `<p class="pk3-best">Meilleure carte : ${C.esc(best.car.brand + " " + String(best.car.model).replace(/\s*\(.*$/, ""))} · ${RAR[rarityOf(best.car)].label}</p>`);
         sum.hidden = false; o.querySelector("#tcg-end").hidden = false; o.querySelector("#tcg-all").parentNode.hidden = true; o.querySelector("#tcg-hint").textContent = "";
-        const again = doc && (doc.lastPack !== day() ? "daily" : doc.bonus > 0 ? "bonus" : "");
+        const again = kind === "shop" ? "" : doc && (doc.lastPack !== day() ? "daily" : doc.bonus > 0 ? "bonus" : "");
+        const shopAgain = kind === "shop" && doc && shopId && G.PACKS[shopId] && doc.dust >= G.PACKS[shopId].cost ? shopId : "";
+        if (shopAgain) o.querySelector("#tcg-end").insertAdjacentHTML("afterbegin", `<button type="button" class="cta-btn btn-ghost" id="tcg-again-shop">Racheter ce pack (${G.PACKS[shopId].cost} ${window.MA.dustIcon(14)})</button>`);
+        const sa = o.querySelector("#tcg-again-shop"); if (sa) sa.addEventListener("click", () => { closeOverlay(); setTimeout(() => openPack("shop", shopAgain), 220); });
         if (again) o.querySelector("#tcg-end").insertAdjacentHTML("afterbegin", `<button type="button" class="cta-btn btn-ghost" id="tcg-again">Ouvrir un autre pack</button>`);
         const ag = o.querySelector("#tcg-again"); if (ag) ag.addEventListener("click", () => { closeOverlay(); setTimeout(() => openPack(again), 220); });
         o.querySelector("#tcg-done").focus();
@@ -268,8 +283,10 @@
 
   // ------------------------------------------------------------------ détail : carte 3D, retournable, navigation
   let navIds = [];
+  let peek = "";
+  const cnt = (id) => countOf(id) || (peek === id ? 1 : 0);
   function backHtml(car, id) {
-    const n = countOf(id), R = RAR[rarityOf(car)], sp = car.special, e = C.esc;
+    const n = cnt(id), R = RAR[rarityOf(car)], sp = car.special, e = C.esc;
     if (n === 0) return `<h3>Carte à débloquer</h3><p>Ouvre des packs pour la trouver${sp ? "." : " ou fabrique-la avec des cristaux."}</p><dl><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0")}</dd></dl>`;
     if (sp) return `<h3>${e(car.model)}</h3><p>${e(sp.text || "")}</p><dl><dt>Édition</dt><dd>${e(car.brand)}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
     const all = C.cars.filter((c) => c.brand === car.brand), have = all.filter((c) => countOf(c.id) > 0).length, st = car.stats;
@@ -291,9 +308,10 @@
     return `<div class="pic-gal"><div class="pg-head"><b>Images ${have}/${N}</b><span>${pct} %</span></div><div class="pg-bar"><i style="width:${pct}%"></i>${marks}</div><div class="pg-row">${thumbs}</div><small class="tcg-hint">${e(rewards)}</small></div>`;
   }
   function detailHtml(id, back) {
-    const car = cardObj(id), n = countOf(id), R = RAR[rarityOf(car)], sp = car.special, inWish = (wish || []).includes(id);
+    const car = cardObj(id), n = cnt(id), R = RAR[rarityOf(car)], sp = car.special, inWish = (wish || []).includes(id);
     const info = sp
       ? `Édition limitée${sp.supply ? " · " + (sp.granted || 0) + " / " + sp.supply + " exemplaires attribués" : ""}. ${n > 0 ? "Elle fait partie de ta collection." : "Elle s'obtient uniquement en la gagnant (événements, concours)."}`
+      : peek === id && !countOf(id) ? "Carte partagée par un pilote : tu ne l'as pas encore dans ta collection."
       : n > 0 ? `Tu possèdes cette carte${n > 1 ? " en " + n + " exemplaires" : ""}.` : `Carte ${R.label.toLowerCase()} · fabrication : ${R.craft} \u0001 (tu en as ${doc ? doc.dust : 0}).`;
     const actions = [`<button type="button" class="cta-btn btn-ghost" data-flipcard>↻ Retourner</button>`];
     if (n > 0 && !sp) actions.push(`<a class="cta-btn btn-ghost" href="#/voiture/${encodeURIComponent(id)}" data-close>Voir la fiche</a>`);
@@ -306,7 +324,8 @@
     const i = navIds.indexOf(id), nav = i >= 0 && navIds.length > 1 ? `<div class="tcg-nav"><button type="button" data-nav="-1" aria-label="Carte précédente" ${i > 0 ? "" : "disabled"}>‹</button><span class="tcg-hint">${i + 1} / ${navIds.length}</span><button type="button" data-nav="1" aria-label="Carte suivante" ${i < navIds.length - 1 ? "" : "disabled"}>›</button></div>` : "";
     return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}<div class="tcg-actions">${actions.join("")}</div></div>`;
   }
-  function showDetail(id, ids) {
+  function showDetail(id, ids, opts) {
+    peek = opts && opts.peek ? id : "";
     const car = cardObj(id); if (!car) return;
     if (ids) navIds = ids;
     if (countOf(id) > 0) markSeen(id);
@@ -395,6 +414,24 @@
     });
     return sortList(list);
   }
+  /** boutique : un pack par pays (2 cartes du pays, dont 1 rare ou mieux), prix selon la taille du catalogue du pays */
+  function shopHtml() {
+    const cars = C.cars, dust = doc.dust;
+    const packs = [{ id: "world", label: "Monde", cost: G.PACKS.world.cost, total: cars.length, have: doc.count }].concat((G.COUNTRIES || []).map((k) => {
+      const list = cars.filter((c) => G.countryOf(c.brand) === k.id);
+      return { id: k.id, label: k.label, cost: k.cost, total: list.length, have: list.filter((c) => countOf(c.id) > 0).length };
+    }));
+    const tile = (p) => {
+      const ok = dust >= p.cost && !busy && p.total >= 2, miss = Math.max(0, p.cost - dust), full = p.total > 0 && p.have >= p.total;
+      const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
+      return `<button type="button" class="shop-pack ${ok ? "ready" : "done"}${p.id === "world" ? " world" : ""}" data-pack="shop" data-shop="${p.id}" ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${p.cost} cristaux">
+        <span class="shop-art pk3-pack-art" ${st}>${p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>2 cartes</em></span>` : packInner(p.id)}</span>
+        <span class="shop-meta"><b>${p.id === "world" ? "Pack mondial" : C.esc(p.label)}</b><span class="shop-price">${p.cost} ${window.MA.dustIcon(14)}</span></span>
+        <small>${full ? "Collection complète" : `${p.have} / ${p.total} voitures`}${!ok && miss ? ` · il manque ${miss}` : ""}</small>
+      </button>`;
+    };
+    return `<section class="shop" aria-label="Boutique de packs"><header><h3>Boutique</h3><span>2 voitures par pack, dont 1 rare ou mieux · les doublons rapportent des cristaux</span></header><div class="shop-grid">${packs.map(tile).join("")}</div></section>`;
+  }
   function renderHero() {
     const el = document.getElementById("tcg-hero"); if (!el || !doc) return;
     indexCars();
@@ -405,11 +442,10 @@
     el.innerHTML = `<div class="tcg-progress"><div class="tcg-pg-top"><span><b>${owned}</b> / ${total} cartes</span><em>${pct} %</em></div><div class="xp-bar"><i style="width:${pct}%"></i></div><div class="tcg-rar-row">${byR}${doc.specials ? `<span class="tcg-rar-chip special">✦ Éditions <b>${doc.specials}</b></span>` : ""}</div></div>
       <div class="tcg-packs">
         <button type="button" class="tcg-pack ${canDaily ? "ready" : "done"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="pk-logo">MOTOR<i>AUTO</i></span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
-        <button type="button" class="tcg-pack shop ${doc.dust >= G.SHOP_PACK.cost ? "ready" : "done"}" data-pack="shop" ${doc.dust >= G.SHOP_PACK.cost && !busy ? "" : "disabled"} aria-label="Pack cristal : ${G.SHOP_PACK.cost} cristaux"><span class="pk-logo">${window.MA.dustIcon(34)}</span><b>Pack cristal</b><small>${G.SHOP_PACK.cards} voitures dont 1 rare+ · ${G.SHOP_PACK.cost} ${window.MA.dustIcon(13)}</small></button>
         <button type="button" class="tcg-pack bonus ${doc.bonus ? "ready" : "done"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="pk-logo">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
         <button type="button" class="tcg-pack battle ${canBattle ? "ready" : "done"}" data-battle ${canBattle ? "" : "disabled"} aria-label="Bataille de cartes"><span class="pk-logo">⚔</span><b>Bataille</b><small>${canBattle ? "entraînement, sans récompense" : "3 cartes minimum"}</small></button>
         <button type="button" class="tcg-dust" data-dust-log title="Cristaux issus des doublons et des défis : fabrique des cartes ou achète un pack. Touche pour voir l'historique"><b>${window.MA.dustIcon(20)} ${doc.dust}</b><small>cristaux${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></button>
-      </div>${notice ? `<p class="tcg-alert" role="status">⚠ ${C.esc(notice)}</p>` : ""}`;
+      </div>${shopHtml()}${notice ? `<p class="tcg-alert" role="status">⚠ ${C.esc(notice)}</p>` : ""}`;
   }
 
   let curList = [], shown = 0, io = null, albumBrands = [];
@@ -514,13 +550,19 @@
       render();
       await load().catch(() => {});
       render();
+      let want = "";
+      try { const u = new URL(location.href); want = u.searchParams.get("carte") || ""; if (want) { u.searchParams.delete("carte"); history.replaceState(null, "", u.pathname + (u.search || "") + u.hash); } } catch (_) { /* facultatif */ }
+      if (want) {
+        if (/^sp-/.test(want)) await loadSpecials().catch(() => {});
+        if (cardObj(want)) showDetail(want, [], { peek: true }); else C.toast("Cette carte n'existe plus.", "err");
+      }
     } });
     ctx.Router.register("pilot", { enter: (p) => renderProfile(p.uid) });
     document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; if (ctx.Router.is("play", { tab: "cartes" })) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-dust-log]")) { showDustLog(); return; }
       const pk = e.target.closest("[data-pack]");
-      if (pk) { openPack(pk.dataset.pack); return; }
+      if (pk) { openPack(pk.dataset.pack, pk.dataset.shop); return; }
       const cf = e.target.closest("[data-cf]");
       if (cf) { filter = cf.dataset.cf; render(); return; }
       const vw = e.target.closest("#cards-root [data-view]");

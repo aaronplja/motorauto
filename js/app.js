@@ -36,7 +36,7 @@
   let cloudIds = new Set();
   let cloudCars = [];
 
-  const filters = { category: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", verdict: "all", turbo: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
+  const filters = { noimg: false, category: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", verdict: "all", turbo: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
 
   let modalStack = [];
   let allLaps = [];
@@ -172,9 +172,32 @@
     const q = el ? el.value.trim() : "";
     return q ? CATALOGUE.filter((c) => matchesQuery(c, q)) : CATALOGUE;
   }
+  // Admin : fiches dont l'image est introuvable (affichage de l'image générique). Le test charge chaque image une fois, par petits lots.
+  const noImageIds = new Set(); let noImageScan = 0;
+  function imageMissing(src) {
+    return new Promise((res) => {
+      if (!src) { res(true); return; }
+      const u = safeUrl(src) || (/^(img|assets)\//.test(src) ? src : "");
+      if (!u) { res(true); return; }
+      if (u === FALLBACK_CAR) { res(true); return; }
+      const im = new Image(); im.onload = () => res(false); im.onerror = () => res(true); im.src = u;
+    });
+  }
+  async function scanNoImage() {
+    const id = ++noImageScan, list = CATALOGUE.slice(), btn = $("noimg-pill"); noImageIds.clear();
+    let done = 0;
+    for (let i = 0; i < list.length && id === noImageScan; i += 12) {
+      await Promise.all(list.slice(i, i + 12).map(async (c) => { if (await imageMissing(c.image)) noImageIds.add(c.id); done++; }));
+      if (btn) btn.textContent = `Sans image (${noImageIds.size}) · ${Math.round((done / list.length) * 100)} %`;
+      if (filters.noimg && (i % 60 === 0)) renderCatalog();
+    }
+    if (btn && id === noImageScan) btn.textContent = `Sans image (${noImageIds.size})`;
+    if (filters.noimg) renderCatalog();
+  }
   function getFilteredCars() {
     let result = CATALOGUE;
     if (filters.query.trim()) result = result.filter((c) => matchesQuery(c, filters.query));
+    if (filters.noimg && isAdmin) result = result.filter((c) => noImageIds.has(c.id));
     if (filters.category !== "all") result = result.filter((c) => c.category === filters.category);
     if (filters.brand !== "all") result = result.filter((c) => c.group === filters.brand);
     if (filters.drive !== "all") result = result.filter((c) => (c.drives || []).includes(filters.drive));
@@ -1814,6 +1837,7 @@
 
     try {
       if (window.MAOutbox) await MAOutbox.set(db, "motorauto_catalog/" + id, carData); else await db.collection("motorauto_catalog").doc(id).set(carData);
+      if (window.MAAdminCache) window.MAAdminCache.clear();
       if (window.MADraft) { MADraft.clear(admDraftKey); MADraft.clear("car:new"); }
       if (!editingCar) document.dispatchEvent(new CustomEvent("ma:feed", { detail: { type: "catalog", text: `a ajouté la fiche ${carData.brand} ${carData.model}`, link: "#/voiture/" + encodeURIComponent(id) } }));
       closeModal($("admin-modal"));
@@ -1874,6 +1898,7 @@
     if (!confirm(msg)) return;
     try {
       await db.collection("motorauto_catalog").doc(carId).delete();
+      if (window.MAAdminCache) window.MAAdminCache.clear();
       logAdmin("car-delete", { target: carId, detail: "fiche supprimée du catalogue en ligne" });
       await loadPublicCatalog();
     } catch (err) {
@@ -2247,10 +2272,11 @@
     ["adm-stat-cars", "adm-stat-users", "adm-stat-laps", "adm-stat-msgs", "adm-stat-sg", "adm-stat-rp"].forEach((id) => { $(id).textContent = "…"; });
     $("adm-stat-cars").textContent = carsById.size;
     try {
+      const AC = window.MAAdminCache, cg = (k, f) => (AC ? AC.get(k, f, 60000) : f());
       const [users, laps, cat] = await Promise.all([
-        db.collection("users").limit(500).get(),
-        db.collection("global_laps").limit(500).get(),
-        db.collection("motorauto_catalog").limit(500).get()
+        cg("users", () => db.collection("users").limit(500).get()),
+        cg("laps", () => db.collection("global_laps").limit(500).get()),
+        cg("catalog", () => db.collection("motorauto_catalog").limit(500).get())
       ]);
       $("adm-stat-users").textContent = users.size;
       $("adm-stat-laps").textContent = laps.size;
@@ -2847,9 +2873,14 @@
 
     $("brand-select").addEventListener("change", (e) => { filters.brand = e.target.value; filters.page = 1; renderCatalog(); });
     $("sort-select").addEventListener("change", (e) => { filters.sort = e.target.value; filters.page = 1; renderCatalog(); });
-    $("body-filter-chips").querySelectorAll(".filter-pill").forEach((btn) => {
+    $("noimg-pill").addEventListener("click", () => {
+      filters.noimg = !filters.noimg; filters.page = 1;
+      $("noimg-pill").classList.toggle("active", filters.noimg); $("noimg-pill").setAttribute("aria-pressed", String(filters.noimg));
+      if (filters.noimg && !noImageIds.size) scanNoImage(); else renderCatalog();
+    });
+    $("body-filter-chips").querySelectorAll(".filter-pill:not(#noimg-pill)").forEach((btn) => {
       btn.addEventListener("click", () => {
-        $("body-filter-chips").querySelectorAll(".filter-pill").forEach((b) => b.classList.remove("active"));
+        $("body-filter-chips").querySelectorAll(".filter-pill:not(#noimg-pill)").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         filters.category = btn.dataset.filterType;
         filters.page = 1;
@@ -3008,7 +3039,7 @@
     // session
     auth.onAuthStateChanged(async (user) => {
       currentUser = user;
-      isAdmin = false; isSuper = false;
+      isAdmin = false; isSuper = false; filters.noimg = false; { const np = $("noimg-pill"); if (np) { np.hidden = true; np.classList.remove("active"); } }
       const dot = document.querySelector(".live-status-dot");
       const gearBox = $("admin-gear-container");
       gearBox.innerHTML = "";
@@ -3017,6 +3048,7 @@
         dot.classList.remove("logged-out");
         isSuper = await MA.checkSuper(user);
         isAdmin = isSuper || await MA.checkAdmin(user);
+        { const np = $("noimg-pill"); if (np) np.hidden = !isAdmin; }
         if (isSuper) MA.registerAdmin(db, user);
         MA.admins.load(db);
         MA.loginPing(db, user);

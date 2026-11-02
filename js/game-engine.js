@@ -104,17 +104,24 @@
     async function openPack(caller, data) {
       const uid = caller.uid, kind = data && data.kind;
       if (kind !== "daily" && kind !== "bonus" && kind !== "test" && kind !== "shop") fail("invalid-argument", "Type de pack inconnu.");
+      const def = kind === "shop" ? core.PACKS[String((data && data.pack) || "world")] : null;
+      if (kind === "shop" && !def) fail("invalid-argument", "Ce pack n'existe pas.");
       if (kind === "test") await requireAdmin(caller);   // pack de test illimité : réservé à l'administration, sans effet sur les défis ni les compteurs
       const pool = await getPool(), today = core.dayKey(now()), wk = core.weekKey(now());
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid), w = await readWeekly(tx, uid, wk);
         if (kind === "daily" && d.lastPack === today) fail("failed-precondition", "Ton pack du jour est déjà ouvert : reviens demain !");
         if (kind === "bonus" && d.bonus < 1) fail("failed-precondition", "Aucun pack bonus disponible.");
+        let src = pool.ids;
         if (kind === "shop") {
-          if (d.dust < core.SHOP_PACK.cost) fail("failed-precondition", "Il te faut " + core.SHOP_PACK.cost + " cristaux pour ce pack (tu en as " + d.dust + ").");
-          dustMove(d, -core.SHOP_PACK.cost, "Pack acheté");
+          if (def.country) {
+            src = pool.ids.filter((id) => core.countryOf((pool.byId.get(id) || {}).brand) === def.country);
+            if (src.length < 2) fail("failed-precondition", "Ce pack n'est pas disponible pour l'instant.");
+          }
+          if (d.dust < def.cost) fail("failed-precondition", "Il te faut " + def.cost + " cristaux pour ce pack (tu en as " + d.dust + ").");
+          dustMove(d, -def.cost, def.country ? def.label + " acheté" : "Pack acheté");
         }
-        const ids = kind === "shop" ? core.drawShopPack(pool.rar, pool.ids, rng) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % 10 === 0);
+        const ids = kind === "shop" ? core.drawShopPack(pool.rar, src, rng, def.min) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % 10 === 0, (d.opened + 1) % 30 === 0);
         let dust = 0, bonus = 0;
         d.pics = d.pics || {}; d.picClaims = d.picClaims || {};
         const cards = ids.map((id) => {

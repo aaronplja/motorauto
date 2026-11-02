@@ -54,6 +54,9 @@
   <link rel="stylesheet" href="css/dock.css">
   <link rel="stylesheet" href="css/motion.css">
   <link rel="stylesheet" href="css/season.css">
+  <link rel="stylesheet" href="css/admin-dash.css">
+  <link rel="stylesheet" href="css/packs.css">
+  <link rel="stylesheet" href="css/cards3.css">
 <style id="splash-css">#splash{display:none}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;background:var(--bg-core,#09090b);animation:splashOut .38s ease .8s forwards;pointer-events:none}
 #splash .sp-logo{display:flex;align-items:baseline;font:900 clamp(2rem,9vw,2.8rem)/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.04em;animation:splashLogo .7s cubic-bezier(.34,1.45,.56,1) both}
@@ -276,6 +279,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <button type="button" class="filter-pill" data-filter-type="Break">Break</button>
         <button type="button" class="filter-pill" data-filter-type="Supercar">Supercar</button>
         <button type="button" class="filter-pill" data-filter-type="Le Mans">Le Mans</button>
+        <button type="button" class="filter-pill" id="noimg-pill" hidden aria-pressed="false" title="Admin : fiches qui affichent encore l'image générique">Sans image</button>
       </div>
       <div class="selectors-cluster">
         <label class="sort-cluster"><span class="sort-title">Marque</span>
@@ -580,13 +584,14 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <nav data-section="admin"></nav>
     <section class="tab-panel" data-tab="tableau" hidden>
       <details class="adm-sec" open><summary><span class="adm-t">À traiter</span></summary><div class="adm-body"><div id="admin-inbox"><div class="empty-note">Chargement…</div></div></div></details>
-      <div class="stats-ribbon" id="admin-stats">
-          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-cars">…</span><span class="ribbon-key">Véhicules</span></div>
-          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-users">…</span><span class="ribbon-key">Pilotes</span></div>
-          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-laps">…</span><span class="ribbon-key">Chronos</span></div>
-          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-msgs">…</span><span class="ribbon-key">Messages</span></div>
-          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-sg">…</span><span class="ribbon-key">Propositions</span></div>
-          <div class="ribbon-card"><span class="ribbon-value" id="adm-stat-rp">…</span><span class="ribbon-key">Signalements</span></div>
+      <div class="adm-block-head"><h2>Vue d'ensemble</h2><span>Données en direct de la base</span></div>
+      <div class="stats-ribbon adm-kpis" id="admin-stats">
+          <div class="ribbon-card"><span class="ribbon-key">Véhicules</span><span class="ribbon-value" id="adm-stat-cars">…</span></div>
+          <div class="ribbon-card"><span class="ribbon-key">Pilotes</span><span class="ribbon-value" id="adm-stat-users">…</span></div>
+          <div class="ribbon-card"><span class="ribbon-key">Chronos</span><span class="ribbon-value" id="adm-stat-laps">…</span></div>
+          <div class="ribbon-card"><span class="ribbon-key">Messages de contact</span><span class="ribbon-value" id="adm-stat-msgs">…</span></div>
+          <div class="ribbon-card"><span class="ribbon-key">Propositions</span><span class="ribbon-value" id="adm-stat-sg">…</span></div>
+          <div class="ribbon-card"><span class="ribbon-key">Signalements</span><span class="ribbon-value" id="adm-stat-rp">…</span></div>
         </div>
       <div id="adm-dash"></div>
     </section>
