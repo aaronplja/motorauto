@@ -105,3 +105,5 @@
 }
 .chat-side .side-search input { padding-left: 2.8rem; padding-right: 1rem; }
 .chat-side .side-search svg { left: 1.05rem; }
+/* aperçu du profil retiré de la liste */
+.side-me { display: none !important; }

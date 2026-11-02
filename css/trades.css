@@ -1,0 +1,47 @@
+/* ============ Échanges (tour22-24) ============ */
+.tr { display: grid; gap: 1rem; min-width: 0; }
+.tr-hero { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+.tr-stat { display: grid; justify-items: center; gap: .1rem; padding: .85rem .4rem; border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--stroke-line); text-align: center; }
+.tr-stat b { font-family: var(--font-display); font-size: 1.9rem; font-weight: 900; line-height: 1; }
+.tr-stat span { font-size: .72rem; color: var(--color-muted); line-height: 1.2; }
+.tr-stat.hot { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--bg-surface)); }
+.tr-stat.hot b { color: var(--accent); }
+.tr-lead { margin: 0; font-size: .88rem; line-height: 1.5; color: var(--color-secondary); }
+.tr-tabs { display: flex; gap: .3rem; padding: .3rem; border-radius: 999px; background: var(--bg-surface); border: 1px solid var(--stroke-line); overflow-x: auto; scrollbar-width: none; }
+.tr-tabs::-webkit-scrollbar { display: none; }
+.tr-tab { flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 40px; padding: 0 1rem; border: 0; border-radius: 999px; background: transparent; color: var(--color-muted); font: inherit; font-weight: 800; font-size: .88rem; cursor: pointer; white-space: nowrap; transition: background .2s, color .2s; }
+.tr-tab i { font-style: normal; min-width: 20px; height: 20px; padding: 0 .35rem; border-radius: 999px; display: inline-grid; place-items: center; background: var(--bg-elevated); font-size: .7rem; }
+.tr-tab.active { background: var(--accent); color: var(--on-accent, #fff); box-shadow: 0 8px 18px -10px var(--accent); }
+.tr-tab.active i { background: rgba(0,0,0,.22); color: inherit; }
+
+/* proposition */
+.trade-list { gap: 1rem; }
+.trade-row { padding: 1.1rem; border-radius: 24px; gap: 1rem; }
+.trade-head { gap: .7rem; }
+.trade-head b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tr-av { flex: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--stroke-line); }
+.trade-st { padding: .25rem .7rem; }
+.trade-swap { position: relative; grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); padding: .9rem .5rem; border-radius: 20px; background: var(--bg-elevated); }
+.trade-swap > i { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--on-accent, #fff); font-size: 1.15rem; box-shadow: 0 10px 22px -10px var(--accent); }
+.trade-swap small { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 800; }
+.own-badge { display: inline-block; margin-top: .4rem; padding: .15rem .6rem; border-radius: 999px; background: var(--bg-surface); border: 1px solid var(--stroke-line); font-size: .68rem; font-weight: 700; color: var(--color-muted); }
+.own-badge.new { color: #10b981; border-color: #10b981; }
+.trade-msg { margin: 0; padding: .6rem .9rem; border-radius: 16px; background: var(--bg-elevated); }
+.trade-actions { gap: .5rem; }
+
+/* pilotes */
+.pilot-trades { gap: .8rem; }
+.pilot-trade { border-radius: 24px; }
+.pt-head { padding: .9rem 1rem; gap: .9rem; }
+.pt-head .pilot-row-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex: none; }
+.pt-main b { font-size: 1rem; }
+.pt-go { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-elevated); font-size: 1.2rem; }
+.pilot-trade.open .pt-go { background: var(--accent); color: var(--on-accent, #fff); }
+.pt-quick { display: flex; width: calc(100% - 2rem); margin: 0 1rem 1rem; justify-content: center; white-space: normal; text-align: center; line-height: 1.25; padding-block: .55rem; }
+.trade-composer { padding: .3rem 1rem 1.1rem; gap: 1.1rem; border-top: 1px solid var(--stroke-line); }
+.comp-col h4 { font-size: .74rem; text-transform: uppercase; letter-spacing: .1em; }
+.comp-send input { border-radius: 999px; padding: 0 1.1rem; }
+.pick { border-radius: 18px; }
+.trade-why { margin: .7rem 0 0; padding-left: 1.1rem; text-align: left; display: grid; gap: .4rem; font-size: .86rem; }
+@media (max-width: 460px) { .tr-tab { padding: 0 .65rem; font-size: .8rem; gap: .25rem; } }
+@media (max-width: 380px) { .tr-stat b { font-size: 1.5rem; } .tr-tab { padding: 0 .75rem; } }

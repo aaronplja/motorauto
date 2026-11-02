@@ -142,12 +142,12 @@
     const root = document.getElementById("admin-game"); if (!root) return;
     if (!C.isAdmin) { root.innerHTML = ""; return; }
     if (!loadedAt) { root.innerHTML = `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i></div>`; return; }
-    root.innerHTML = toolsHtml() + `<section id="feat-plan"></section><hr class="admin-sep">` + `<div class="admin-sec-head"><h3 class="admin-h3 nomargin">Cartes spéciales (éditions limitées)</h3>${draft ? "" : `<button type="button" class="cta-btn fill-btn compact-btn" data-sp-new>＋ Nouvelle carte</button>`}</div>
+    root.innerHTML = toolsHtml() + `<section id="rar-admin"></section><section id="feat-plan"></section><hr class="admin-sep">` + `<div class="admin-sec-head"><h3 class="admin-h3 nomargin">Cartes spéciales (éditions limitées)</h3>${draft ? "" : `<button type="button" class="cta-btn fill-btn compact-btn" data-sp-new>＋ Nouvelle carte</button>`}</div>
       <p class="admin-note">Ces cartes ne sortent jamais des packs : toi seul les attribues (événements, concours, récompenses). Elles apparaissent dans la collection du pilote, avec leur numéro d'exemplaire.</p>
       ${draft ? formHtml() : ""}
       <div class="admin-cards">${cards.length ? cards.map(cardRow).join("") : `<div class="empty-note">Aucune carte spéciale pour l'instant.</div>`}</div>
       <hr class="admin-sep">${contestHtml()}`;
-    renderFeatPlan();
+    renderFeatPlan(); if (window.MAAdminRarity) window.MAAdminRarity.mount(C);
     if (window.MADraft) { const f = document.getElementById("sp-form"); if (f) MADraft.watch({ key: "sp:" + (editing || "new"), root: f }); const tm = document.getElementById("tl-msg"); if (tm && tm.parentElement) MADraft.watch({ key: "announce", root: tm.parentElement.parentElement || tm.parentElement }); const c = document.getElementById("ct-new-form"); if (c) MADraft.watch({ key: "contest:new", root: c }); }
   }
 

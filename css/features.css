@@ -172,3 +172,14 @@
 .club-rules-edit textarea { width: 100%; margin: .4rem 0; }
 
 .cmp-share { display: flex; gap: .5rem; flex-wrap: wrap; margin: 0 0 .8rem; }
+
+/* Admin › raretés */
+#rar-admin { display: grid; gap: .8rem; }
+.rar-list { display: grid; gap: .5rem; }
+.rar-row { display: flex; align-items: center; gap: .6rem; padding: .6rem .8rem; border-radius: 16px; background: var(--bg-surface); border: 1px solid var(--stroke-line); }
+.rar-row.custom { border-color: var(--accent); }
+.rar-name { flex: 1; min-width: 0; display: grid; }
+.rar-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rar-name small { color: var(--color-muted); font-size: .74rem; }
+.rar-row select { flex: none; max-width: 150px; }
+.rar-sub { margin: .4rem 0 0; font-size: .9rem; }

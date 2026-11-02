@@ -24,7 +24,9 @@
     rarityMap = G.computeRarities(cars.map((c) => ({ id: c.id, power: c.stats.power, speed: c.stats.speed || 0, zero: c.stats.zero || 0, name: (c.brand + " " + c.model).trim(), brand: c.brand, category: c.category, year: G.yearOf(c) })));
     cars.forEach((c, i) => numbering.set(c.id, i + 1));
   }
-  const rarityOf = (car) => { if (car.mine) return "mine"; if (car.special) return "special"; indexCars(); return rarityMap.get(car.id) || "common"; };
+  let rarOv = {};
+  async function loadRarOv() { try { const s = await C.db.collection("config").doc("rarities").get(); rarOv = s.exists && s.data().map ? s.data().map : {}; } catch (_) { /* pas de surcharge */ } }
+  const rarityOf = (car) => { if (car.mine) return "mine"; if (car.special) return "special"; indexCars(); const o = rarOv[car.id]; if (o && ORDER.indexOf(o) >= 0) return o; return rarityMap.get(car.id) || "common"; };
   const numberOf = (car) => { indexCars(); return numbering.get(car.id) || 0; };
   /** une carte, qu'elle vienne du catalogue ou d'une édition limitée */
   function cardObj(id) {
@@ -99,7 +101,7 @@
     const uid = C.user.uid;
     if (loadedFor !== uid) { doc = null; wish = null; }
     loadedFor = uid;
-    const [snap, w] = await Promise.all([col(uid).get().catch(() => null), loadWish(uid), loadSpecials()]);
+    const [snap, w] = await Promise.all([col(uid).get().catch(() => null), loadWish(uid), loadSpecials(), loadRarOv()]);
     wish = w;
     if (snap && snap.exists) applyDoc(Object.assign({}, snap.data(), { bonus: snap.data().bonus || 0 }));
     notice = "";
@@ -733,7 +735,7 @@
   }
   async function myCollection() { try { await load(); return doc; } catch (_) { return null; } }
 
-  window.MACards = { lvOf, pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
+  window.MACards = { setRarOv: (m) => { rarOv = m || {}; }, rarOv: () => rarOv, autoRarity: (car) => { indexCars(); return rarityMap.get(car.id) || "common"; }, lvOf, pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);

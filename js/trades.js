@@ -6,7 +6,7 @@
  */
 (function () {
   "use strict";
-  let C = null, others = [], trades = [], users = new Map(), loadedAt = 0, prefillGive = "", openRow = "", picks = {}, busy = false, error = "";
+  let tab = "", C = null, others = [], trades = [], users = new Map(), loadedAt = 0, prefillGive = "", openRow = "", picks = {}, busy = false, error = "";
   const tsMs = (t) => (t && t.toMillis ? t.toMillis() : Number(t) || 0);
   const card = (id) => window.MACards.cardObj(id);
   const mini = (id, extra) => { const c = card(id); return c ? window.MACards.cardHtml(c, { cls: "tcg-mini " + (extra || "") }) : `<span class="wish-chip">carte retirée</span>`; };
@@ -54,7 +54,7 @@
     const actions = t.status === "open" ? (mineSent
       ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-trade-cancel="${esc(t.id)}">Annuler</button>`
       : `<button type="button" class="cta-btn fill-btn compact-btn" data-trade-yes="${esc(t.id)}">Accepter</button><button type="button" class="cta-btn btn-ghost compact-btn" data-trade-no="${esc(t.id)}">Décliner</button>`) : "";
-    return `<article class="trade-row ${t.status}"><div class="trade-head"><b>${esc(mineSent ? "Pour " + (t.toName || who(other)) : "De " + (t.fromName || who(other)))}</b><span class="trade-st ${t.status}">${st}</span></div>
+    return `<article class="trade-row ${t.status}"><div class="trade-head">${C.avatarImg((users.get(other) || {}).avatar, "tr-av")}<b>${esc(mineSent ? "Pour " + (t.toName || who(other)) : "De " + (t.fromName || who(other)))}</b><span class="trade-st ${t.status}">${st}</span></div>
       <div class="trade-swap"><div><small>${mineSent ? "Tu donnes" : "Il te donne"}</small>${mini(t.give)}${own(t.give, !mineSent)}</div><i aria-hidden="true">⇄</i><div><small>${mineSent ? "Tu reçois" : "Tu donnes"}</small>${mini(t.want)}${own(t.want, mineSent)}</div></div>
       ${t.message ? `<p class="trade-msg">« ${esc(t.message)} »</p>` : ""}<div class="trade-actions">${actions}<a class="cta-btn btn-ghost compact-btn" href="${dm(other)}">💬 Discuter</a></div></article>`;
   }
@@ -94,13 +94,18 @@
     else if (!lackable.length) whyNone.push("Les doublons des autres pilotes sont des cartes que tu possèdes déjà.");
     if (myDups && lackable.length) whyNone.push("Il y a des pilotes avec des doublons qui te manquent, mais il faut aussi un de <b>tes</b> doublons à leur donner.");
     const rows = others.map((o) => ({ o, m: matchFor(o) })).filter((x) => x.m.give.length && x.m.want.length).sort((a, b) => b.m.score - a.m.score).slice(0, 30);
-    root.innerHTML = `${error ? `<p class="tcg-alert">⚠ ${C.esc(error)}</p>` : ""}
-      <p class="sec-lead">On n'échange que des <b>doublons</b> : tu donnes un exemplaire en trop contre un exemplaire en trop d'un autre pilote. Tu as <b>${myDups}</b> doublon${myDups > 1 ? "s" : ""}.${prefillGive ? ` Tu proposes : <b>${C.esc(name(prefillGive))}</b>.` : ""}</p>
-      ${incoming.length ? `<h3 class="sec-title">Propositions reçues <span class="count-pill">${incoming.length}</span></h3><div class="trade-list">${incoming.map(tradeRow).join("")}</div>` : ""}
-      ${sent.length ? `<h3 class="sec-title">Mes propositions en attente</h3><div class="trade-list">${sent.map(tradeRow).join("")}</div>` : ""}
-      <h3 class="sec-title">Échanges possibles</h3>
-      ${rows.length ? `<div class="pilot-trades">${rows.map((x) => pilotRow(x.o, x.m)).join("")}</div>` : `<div class="empty-note">Aucun échange possible pour l'instant.<ul class="trade-why">${whyNone.map((x) => `<li>${x}</li>`).join("")}</ul>Ajoute des cartes à ta <a href="#/jouer/cartes">wishlist</a> pour que les autres sachent quoi te proposer !</div>`}
-      ${done.length ? `<h3 class="sec-title">Historique</h3><div class="trade-list compact">${done.map(tradeRow).join("")}</div>` : ""}`;
+    const tabs = [["pilots", "Pilotes", rows.length], ["in", "Reçues", incoming.length], ["out", "Envoyées", sent.length], ["done", "Historique", done.length]];
+    if (!tab || !tabs.some((t) => t[0] === tab)) tab = incoming.length ? "in" : "pilots";
+    const empty = (t) => `<div class="empty-note">${t}</div>`;
+    const body = tab === "in" ? (incoming.length ? `<div class="trade-list">${incoming.map(tradeRow).join("")}</div>` : empty("Aucune proposition reçue pour l'instant."))
+      : tab === "out" ? (sent.length ? `<div class="trade-list">${sent.map(tradeRow).join("")}</div>` : empty("Tu n'as aucune proposition en attente."))
+      : tab === "done" ? (done.length ? `<div class="trade-list compact">${done.map(tradeRow).join("")}</div>` : empty("Aucun échange terminé pour l'instant."))
+      : (rows.length ? `<div class="pilot-trades">${rows.map((x) => pilotRow(x.o, x.m)).join("")}</div>` : `<div class="empty-note">Aucun échange possible pour l'instant.<ul class="trade-why">${whyNone.map((x) => `<li>${x}</li>`).join("")}</ul></div>`);
+    root.innerHTML = `<div class="tr">${error ? `<p class="tcg-alert">⚠ ${C.esc(error)}</p>` : ""}
+      <div class="tr-hero"><div class="tr-stat"><b>${myDups}</b><span>doublon${myDups > 1 ? "s" : ""}</span></div><div class="tr-stat"><b>${rows.length}</b><span>pilote${rows.length > 1 ? "s" : ""} à contacter</span></div><div class="tr-stat${incoming.length ? " hot" : ""}"><b>${incoming.length}</b><span>proposition${incoming.length > 1 ? "s" : ""} reçue${incoming.length > 1 ? "s" : ""}</span></div></div>
+      <p class="tr-lead">On n'échange que des <b>doublons</b> : un exemplaire en trop contre un exemplaire en trop d'un autre pilote.${prefillGive ? ` Tu proposes : <b>${C.esc(name(prefillGive))}</b>.` : ""}</p>
+      <div class="tr-tabs" role="tablist" aria-label="Échanges">${tabs.map((t) => `<button type="button" role="tab" class="tr-tab${tab === t[0] ? " active" : ""}" aria-selected="${tab === t[0]}" data-trtab="${t[0]}">${t[1]}${t[2] ? `<i>${t[2]}</i>` : ""}</button>`).join("")}</div>
+      ${body}</div>`;
   }
 
   async function act(fn, okMsg) {
@@ -112,7 +117,7 @@
     render();
   }
 
-  window.MATrades = { prefill: (id) => { prefillGive = id; loadedAt = 0; } };
+  window.MATrades = { prefill: (id) => { prefillGive = id; tab = "pilots"; loadedAt = 0; } };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
@@ -125,6 +130,7 @@
     document.addEventListener("ma:auth", () => { loadedAt = 0; trades = []; others = []; if (ctx.Router.is("play", { tab: "echanges" })) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
       const t = e.target;
+      const tt = t.closest("[data-trtab]"); if (tt) { tab = tt.dataset.trtab; render(); return; }
       const op = t.closest("[data-trade-open]"); if (op) { openRow = openRow === op.dataset.tradeOpen ? "" : op.dataset.tradeOpen; render(); return; }
       const pk = t.closest("[data-pick]"); if (pk) { const u = pk.dataset.uid; picks[u] = Object.assign(picks[u] || {}, { [pk.dataset.pick]: pk.dataset.id }); const msg = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`), v = msg ? msg.value : ""; render(); const m2 = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`); if (m2) m2.value = v; return; }
       const qk = t.closest("[data-trade-quick]");

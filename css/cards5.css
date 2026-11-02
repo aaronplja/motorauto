@@ -90,3 +90,12 @@
 .cg-pg-n { font-size: .85rem; font-weight: 700; color: var(--color-muted); min-width: 6.5rem; text-align: center; }
 .tcg-strip .cg-pager { flex: 0 0 100%; }
 #pub-cards-strip { flex-wrap: wrap; overflow: visible; }
+
+/* Jouer › Cartes : blocs bien espacés */
+#cg-shop, #cg-mine, #cg-mine-top { display: grid; gap: 1.1rem; min-width: 0; }
+#cg-shop[hidden], #cg-mine[hidden] { display: none; }
+#cg-shop > *, #cg-mine > *, #cg-mine-top > * { margin: 0; }
+.cg-free { gap: .8rem; }
+.cg-block { padding: 1.15rem; gap: 1rem; }
+.cg-packs, .cg-albumgrid, .cg-mlist, .cg-mc-row { gap: .8rem; }
+.cg-tabs { margin-bottom: .2rem; }

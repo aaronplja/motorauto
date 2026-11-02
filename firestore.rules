@@ -159,6 +159,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // --- Raretés modifiées à la main par l'admin : { map: { idCarte: rareté } }
+    match /config/rarities {
+      allow read: if true;
+      allow create, update: if isSuper() && request.resource.data.keys().hasOnly(['map']) && request.resource.data.map is map;
+      allow delete: if false;
+    }
+
     // --- Admins délégués : lecture publique (pour afficher le tag « admin »), écriture réservée à l'admin principal
     match /admins/{adminUid} {
       allow read: if true;

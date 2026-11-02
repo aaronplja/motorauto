@@ -25,7 +25,13 @@
       if (poolCache.ids.length && now() - poolCache.at < 300000) return poolCache;
       const list = await deps.cardPool();
       if (!list.length) fail("unavailable", "Catalogue indisponible, réessaie dans un instant.");
-      poolCache = { at: now(), list, ids: list.map((c) => c.id), byId: new Map(list.map((c) => [c.id, c])), rar: core.computeRarities(list) };
+      const rar = core.computeRarities(list);
+      try { // raretés modifiées à la main par l'admin (config/rarities)
+        const ov = await col("config").doc("rarities").get();
+        const m = ov.exists ? ov.data().map || {} : {};
+        Object.keys(m).forEach((id) => { if (rar.has(id) && core.ORDER.indexOf(m[id]) >= 0) rar.set(id, m[id]); });
+      } catch (_) { /* pas de surcharge */ }
+      poolCache = { at: now(), list, ids: list.map((c) => c.id), byId: new Map(list.map((c) => [c.id, c])), rar };
       return poolCache;
     }
     async function specialCard(id) { const s = await col("special_cards").doc(id).get(); return s.exists ? s.data() : null; }
