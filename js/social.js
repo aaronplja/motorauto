@@ -255,7 +255,7 @@
       <div class="rating-box" aria-label="Notes de la communauté">${CRITERIA.map((c) => stars(c[0])).join("")}</div>
       <section class="comments-box" id="cmt-${esc(kind)}" aria-label="Commentaires">
         <h3>Commentaires (${list.length})</h3>
-        <div class="cmt-list">${list.length ? list.map((c) => `
+        <div class="cmt-list">${list.length ? list.filter((c) => !(window.MABlocks && window.MABlocks.has(c.uid))).map((c) => `
           <div class="cmt"><img src="${esc(C.safeUrl(c.avatar) || "")}" alt="" data-fallback="avatar">
             <div class="cmt-body"><b data-soc="profile" data-uid="${esc(c.uid)}">${esc(c.pilot || "Pilote")}</b>${C.MA.admins ? C.MA.admins.tag(c.uid) : ""}<small>${ago(tsMs(c.createdAt))}</small>
               ${(C.user && (C.user.uid === c.uid || C.isAdmin)) ? `<button type="button" class="cmt-del" data-soc="del" data-id="${esc(c.id)}" aria-label="Supprimer le commentaire" title="Supprimer">🗑</button>` : ""}

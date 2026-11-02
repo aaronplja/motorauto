@@ -83,11 +83,19 @@ function createPush({ db, messaging, region }) {
     }
     const toks = await db.collection("push_tokens").where("uid", "==", uid).limit(10).get();
     if (toks.empty) return;
-    const tokens = toks.docs.map((d) => d.data().token).filter(Boolean);
+    const docs = toks.docs.filter((d) => d.data().token);
     const data = { title: "MOTORAUTO", body: bodyOf(n).slice(0, 160), link: absolute(n.link), tag: String(n.type || "n") + ":" + String(n.fromUid || "") };
-    const res = await messaging.sendEachForMulticast({ tokens, data, webpush: { headers: { Urgency: "high", TTL: "86400" } }, android: { priority: "high" } });
+    const web = docs.filter((d) => d.data().platform !== "ios"), ios = docs.filter((d) => d.data().platform === "ios");
+    const jobs = [];
+    if (web.length) jobs.push({ docs: web, msg: { tokens: web.map((d) => d.data().token), data, webpush: { headers: { Urgency: "high", TTL: "86400" } }, android: { priority: "high" } } });
+    if (ios.length) jobs.push({ docs: ios, msg: { tokens: ios.map((d) => d.data().token), notification: { title: data.title, body: data.body }, data: { link: data.link, tag: data.tag }, apns: { headers: { "apns-priority": "10" }, payload: { aps: { sound: "default" } } } } });
+    const results = await Promise.all(jobs.map((j) => messaging.sendEachForMulticast(j.msg).then((res) => ({ res, docs: j.docs }))));
+    const res = { successCount: 0, failureCount: 0 };
     const bad = [];
-    res.responses.forEach((r, i) => { if (!r.success && r.error && /registration-token-not-registered|invalid-registration-token/.test(r.error.code || "")) bad.push(toks.docs[i].ref); });
+    results.forEach((x) => {
+      res.successCount += x.res.successCount; res.failureCount += x.res.failureCount;
+      x.res.responses.forEach((r, i) => { if (!r.success && r.error && /registration-token-not-registered|invalid-registration-token/.test(r.error.code || "")) bad.push(x.docs[i].ref); });
+    });
     await Promise.all(bad.map((ref) => ref.delete().catch(() => {})));
     if (res.failureCount) logger.info("Push : " + res.successCount + " envoyés, " + res.failureCount + " échecs (" + bad.length + " jetons supprimés)");
   });

@@ -51,7 +51,9 @@
   const supported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && !!(window.firebase && firebase.messaging && firebase.messaging.isSupported && firebase.messaging.isSupported());
   const standalone = () => (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
   const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const nat = () => (window.MANative && window.MANative.isNative ? window.MANative : null);
   function state() {
+    if (nat()) return nat().pushState();
     if (!window.MA_VAPID_KEY) return "noconfig";
     if (isIOS() && !standalone()) return "ios-install";
     if (!supported()) return "unsupported";
@@ -59,6 +61,7 @@
     return lsGet(TOKEN_KEY) && Notification.permission === "granted" ? "on" : "off";
   }
   async function enable(user) {
+    if (nat()) return nat().pushEnable(user);
     if (!window.MA_VAPID_KEY) throw new Error("Clé VAPID manquante (voir js/push-config.js).");
     if (!supported()) throw new Error("Ce navigateur ne gère pas les notifications push.");
     const perm = await Notification.requestPermission();
@@ -88,6 +91,7 @@
   }
   /** appareil déjà autorisé : on renouvelle l'identifiant et on le rattache au pilote connecté (sans rien demander) */
   async function refresh(user) {
+    if (nat()) return nat().pushRefresh(user);
     if (!user || !window.MA_VAPID_KEY || !supported() || Notification.permission !== "granted") return;
     try {
       const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js"); await navigator.serviceWorker.ready;
@@ -127,6 +131,11 @@
   function onAuth(user) {
     clearTimeout(askTimer); closeAsk();
     if (!user) return;
+    if (nat()) {
+      if (lsGet("ma_native_push") === "granted") refresh(user);
+      else if (!lsGet(ASKED) && lsGet("ma_native_push") !== "denied") askTimer = setTimeout(() => { if (!lsGet(ASKED) && document.visibilityState === "visible") showAsk(user, "web"); }, 6000);
+      return;
+    }
     if (typeof Notification !== "undefined" && Notification.permission === "granted") { refresh(user); return; }
     if (lsGet(ASKED) || !window.MA_VAPID_KEY) return;
     if (typeof Notification === "undefined" || Notification.permission === "denied") return;

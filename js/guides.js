@@ -76,6 +76,7 @@
       <p class="guide-text">${esc(g[1])}</p>
       <ul class="guide-points">${g[2].map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
       <label class="guide-check"><input type="checkbox" id="guide-off"${off[key] ? " checked" : ""}><span class="guide-box" aria-hidden="true"></span><span>Ne plus montrer ce message</span></label>
+      <label class="guide-check"><input type="checkbox" id="guide-all"${off.__all ? " checked" : ""}><span class="guide-box" aria-hidden="true"></span><span>Ne montrer aucun tutoriel</span></label>
       <button type="button" class="cta-btn fill-btn guide-ok" data-guide-close>Compris</button></div>`;
     document.body.appendChild(ov);
     requestAnimationFrame(() => ov.classList.add("on"));
@@ -85,7 +86,11 @@
   function done() {
     if (!root) return;
     const key = root._key, cb = root.querySelector("#guide-off"), want = !!(cb && cb.checked);
-    if (want && !off[key]) { off[key] = true; save(); } else if (!want && off[key]) { delete off[key]; save(); }
+    const all = !!(root.querySelector("#guide-all") || {}).checked;
+    let ch = false;
+    if (want && !off[key]) { off[key] = true; ch = true; } else if (!want && off[key]) { delete off[key]; ch = true; }
+    if (all && !off.__all) { off.__all = true; ch = true; } else if (!all && off.__all) { delete off.__all; ch = true; }
+    if (ch) save();
     close();
   }
   function decorate(route) {
@@ -101,13 +106,13 @@
     if (route.name !== "settings") return;
     const panel = document.querySelector('#page-settings .tab-panel[data-tab="profil"]'); if (!panel || panel.querySelector(".guide-reset")) return;
     const d = document.createElement("div"); d.className = "guide-reset";
-    d.innerHTML = `<div><b>Messages d'aide</b><small>Les petits popups explicatifs que tu as masqués.</small></div><button type="button" class="cta-btn btn-ghost compact-btn" data-guide-reset>Réafficher les aides</button>`;
+    d.innerHTML = `<div><b>Messages d'aide</b><small>Les petits popups explicatifs (y compris si tu as choisi « Ne montrer aucun tutoriel »).</small></div><button type="button" class="cta-btn btn-ghost compact-btn" data-guide-reset>Réafficher les aides</button>`;
     panel.appendChild(d);
   }
   function onRoute(route) {
     decorate(route); settingsReset(route);
     const key = keyOf(route); current = key; clearTimeout(pending);
-    if (!key || off[key] || shown.has(key)) return;
+    if (!key || off.__all || off[key] || shown.has(key)) return;
     const tryShow = (n) => {
       if (current !== key) return;
       if (busy()) { if (n < 8) pending = setTimeout(() => tryShow(n + 1), 1200); return; }

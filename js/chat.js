@@ -197,7 +197,7 @@
     const rowsSrc = Array.from(state.convs.values());
     if (state.conv && state.conv.type === "private" && !state.convs.has(state.conv.id)) rowsSrc.push({ other: state.conv.id, otherName: "", lastUid: "", lastText: "Nouvelle conversation", lastAt: Date.now(), draft: true });
     const convRows = rowsSrc
-      .filter((c) => c.lastAt)
+      .filter((c) => c.lastAt && !(window.MABlocks && window.MABlocks.has(c.other)))
       .map((c) => ({ c, p: pilotOf(c.other) }))
       .filter((r) => match((r.p && r.p.username) || r.c.otherName || ""))
       .sort((a, b) => b.c.lastAt - a.c.lastAt);
@@ -488,6 +488,7 @@
             ${EMOJIS.map((e) => `<button type="button" data-action="react" data-id="${esc(m.id)}" data-emoji="${e}" aria-label="Réagir ${e}">${e}</button>`).join("")}
             <span class="sep"></span>
             <button type="button" data-action="reply" data-id="${esc(m.id)}" aria-label="Répondre" title="Répondre">↩</button>
+            ${mine ? "" : `<button type="button" data-action="block-user" data-uid="${esc(m.uid)}" data-name="${esc(m.pilot || "Pilote")}" aria-label="Bloquer ce pilote" title="Bloquer ce pilote"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></button>`}
             ${mine ? "" : `<button type="button" data-action="report-msg" data-id="${esc(m.id)}" aria-label="Signaler" title="Signaler ce message">⚑</button>`}
             ${canDelete ? `<button type="button" class="danger" data-action="delete-msg" data-id="${esc(m.id)}" aria-label="Supprimer" title="Supprimer">🗑</button>` : ""}
           </div>
@@ -516,6 +517,8 @@
     state.blocks = next;
   }
 
+  document.addEventListener("ma:blocks", () => { try { renderLists(); if (state.lastList) { state.blocks = new Map(); scroller.innerHTML = ""; render(state.lastList, false); } } catch (_) { /* ignoré */ } });
+
   function render(list, newForeign) {
     if (list.length === 0) {
       const c = state.conv;
@@ -527,6 +530,7 @@
     const keepFromBottom = scroller.scrollHeight - scroller.scrollTop;
     const blocks = []; let prevDay = "", prev = null, prevDate = 0;
     for (const m of list) {
+      if (window.MABlocks && window.MABlocks.has(m.uid) && m.uid !== (auth.currentUser && auth.currentUser.uid)) continue;
       const d = m.timestamp ? m.timestamp.toDate() : new Date();
       const day = d.toDateString();
       if (day !== prevDay) { blocks.push({ key: "day:" + day, html: `<div class="day-sep"><span>${esc(dayLabel(d))}</span></div>` }); prevDay = day; prev = null; }
@@ -916,6 +920,7 @@
         case "react": react(d.id, d.emoji); document.querySelectorAll(".msg.show-actions").forEach((n) => n.classList.remove("show-actions")); break;
         case "reply": setReply(d.id); document.querySelectorAll(".msg.show-actions").forEach((n) => n.classList.remove("show-actions")); break;
         case "delete-msg": deleteMessage(d.id); break;
+        case "block-user": if (window.MABlocks && confirm("Bloquer " + (d.name || "ce pilote") + " ? Tu ne verras plus ses messages. Tu peux le débloquer depuis son profil.")) { window.MABlocks.toggle(d.uid).then(() => { MA.toast((d.name || "Pilote") + " est bloqué.", "ok"); }); } break;
         case "report-msg": openReport(d.id); document.querySelectorAll(".msg.show-actions").forEach((n) => n.classList.remove("show-actions")); break;
         case "profile": location.href = "index.html?pilot=" + encodeURIComponent(d.uid); break;
         case "lightbox":

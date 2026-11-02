@@ -366,6 +366,16 @@ service cloud.firestore {
     }
 
     // --- Titres de succès affichés à côté du pseudo : un titre = un album terminé (revérifié ici)
+    // --- Pilotes bloqués : { uids: [uid, …] } (privé)
+    match /blocks/{uid} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['uids', 'updatedAt'])
+        && request.resource.data.uids is list
+        && request.resource.data.uids.size() <= 400
+        && request.resource.data.updatedAt == request.time;
+    }
+
     // --- Messages d'aide masqués par le pilote : { off: { "play/cartes": true, … } }
     match /guides/{uid} {
       allow read: if isOwner(uid);
@@ -500,7 +510,7 @@ service cloud.firestore {
     match /push_tokens/{tid} {
       allow read: if signedIn() && resource.data.uid == request.auth.uid;
       allow create, update: if signedIn() && request.resource.data.uid == request.auth.uid
-        && request.resource.data.keys().hasOnly(['uid', 'token', 'ua', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'token', 'ua', 'platform', 'createdAt'])
         && request.resource.data.token is string && request.resource.data.token.size() < 400
         && request.resource.data.get('ua', '').size() <= 200
         && request.resource.data.createdAt == request.time;

@@ -1464,6 +1464,7 @@
     root.querySelectorAll("[data-sc]").forEach((b) => { b.textContent = "–"; });
     root.querySelectorAll(".social-count").forEach((b) => { b.dataset.uid = uid; });
     const btn = root.querySelector(".follow-btn") || (root.parentElement && root.parentElement.querySelector(".follow-btn"));
+    { const bb = $("pub-block-btn"); if (bb) { bb.dataset.uid = uid; bb.hidden = !(currentUser && currentUser.uid !== uid && scope === "pub"); bb.textContent = window.MABlocks && window.MABlocks.has(uid) ? "Débloquer" : "Bloquer"; } }
     if (btn) { btn.dataset.uid = uid; btn.hidden = !!(currentUser && currentUser.uid === uid); btn.disabled = false; btn.classList.remove("on"); btn.textContent = "Suivre"; }
     try {
       const mineP = !!(currentUser && currentUser.uid === uid);
@@ -2580,6 +2581,7 @@
     "quick-photo-url": (d) => { const u = prompt("Adresse (https://…) de la photo à ajouter :"); if (u) quickAddPhoto(d.id, u.trim()); },
     "toggle-compare": (d) => toggleCompare(d.id),
     "toggle-admin": (d) => toggleAdminGrade(d.uid, d.name),
+    "toggle-block": async (d, node) => { if (!window.MABlocks || !d.uid) return; const was = window.MABlocks.has(d.uid); if (!was && !confirm("Bloquer ce pilote ? Tu ne verras plus ses messages ni ses commentaires.")) return; const on = await window.MABlocks.toggle(d.uid); if (node) node.textContent = on ? "Débloquer" : "Bloquer"; MA.toast(on ? "Pilote bloqué." : "Pilote débloqué.", "ok"); },
     "mycar-new": () => openMyCarEditor(null),
     "mycar-edit": (d) => openMyCarEditor(d.id),
     "mycar-delete": (d) => deleteMyCar(d.id),
