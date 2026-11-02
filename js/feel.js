@@ -1,39 +1,11 @@
-/* Ressenti : retour haptique, squelettes de chargement, tirer pour actualiser. */
+/* Ressenti : squelettes de chargement, tirer pour actualiser. */
 (function () {
   "use strict";
   const store = { get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (_) { /* ignoré */ } } };
-  const KEY = "motorauto_haptic";
   const coarse = window.matchMedia && matchMedia("(pointer: coarse)").matches;
-  const enabled = () => store.get(KEY) !== "0";
 
-  // ---- haptique : vibration (Android) ou petit interrupteur invisible (iOS 17.4+)
-  // iOS 17.4+ : un interrupteur natif (input switch) déclenche le retour haptique quand on le « clique » pendant un geste de l'utilisateur.
-  function iosTick() {
-    try {
-      const label = document.createElement("label"); label.setAttribute("aria-hidden", "true"); label.style.display = "none";
-      const input = document.createElement("input"); input.type = "checkbox"; input.setAttribute("switch", "");
-      label.appendChild(input); document.head.appendChild(label);
-      label.click(); setTimeout(() => label.remove(), 60);
-    } catch (_) { /* ignoré */ }
-  }
-  const H = {
-    tap() { if (!enabled() || !coarse) return; if (navigator.vibrate) navigator.vibrate(8); else iosTick(); },
-    ok() { if (!enabled() || !coarse) return; if (navigator.vibrate) navigator.vibrate([10, 40, 14]); else { iosTick(); setTimeout(iosTick, 70); } },
-    enabled
-  };
-  window.MAHaptic = H;
-  document.addEventListener("click", (e) => { if (e.isTrusted && e.target.closest && e.target.closest(".touch-bar-item, .theme-tile, .seg-btn, .cta-btn, .set-toggle, .page-tab, .conv-item, .me-row, [data-pack], [data-action]")) H.tap(); }, true);
-
-  // ---- réglage (dans la fenêtre des ambiances)
-  function mountSetting() {
-    const anchor = document.getElementById("season-box") || document.getElementById("ct-box");
-    if (!anchor || document.getElementById("haptic-box")) return;
-    const box = document.createElement("section"); box.id = "haptic-box"; box.className = "ct-box";
-    box.innerHTML = `<div class="theme-family-title">📳 Ressenti</div><label class="sw"><input type="checkbox" id="haptic-on" ${enabled() ? "checked" : ""}><span>Vibrations légères sur mobile</span></label>`;
-    anchor.after(box);
-    box.querySelector("input").addEventListener("change", (e) => { store.set(KEY, e.target.checked ? "1" : "0"); if (e.target.checked) H.ok(); });
-  }
-  setTimeout(mountSetting, 400); setTimeout(mountSetting, 1500);
+  window.MAHaptic = { tap() {}, ok() {}, enabled: () => false };   // vibrations supprimées du site
+  try { localStorage.removeItem("motorauto_haptic"); } catch (_) { /* ignoré */ }
 
   // ---- squelettes : « Chargement… » devient un squelette animé
   function skel(el) {

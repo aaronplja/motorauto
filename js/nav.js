@@ -51,7 +51,6 @@
         ${user ? "" : `<div class="me-group"><h3>Découvrir</h3>${row("chat.html", "chat", "Salon des pilotes")}</div>`}
         <div class="me-group"><h3>Préférences &amp; aide</h3>
           ${user ? row("#/reglages/profil", "cog", "Réglages", "", 'data-me-link') : ""}
-          ${btnRow("theme", "sun", "Ambiance visuelle")}
           ${row("#/contact", "mail", "Contact")}
         </div>
         <nav class="me-legal" aria-label="Informations légales"><a href="#/legal/mentions">Mentions légales</a><a href="#/legal/confidentialite">Confidentialité</a><a href="#/legal/cgu">Conditions</a></nav>

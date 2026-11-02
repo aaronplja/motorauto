@@ -84,3 +84,9 @@
 .tcg-mythic.locked .tcg-art img, .tcg-mythic.locked .tcg-art img.tcg-ghost { filter: blur(14px) brightness(.55) saturate(.7) !important; opacity: 1 !important; transform: scale(1.18); }
 .tcg-mythic.locked .tcg-q-over { color: #f5d061; text-shadow: 0 2px 14px rgba(0,0,0,.7); }
 .tcg-mythic.locked .tcg-name { letter-spacing: .12em; }
+
+/* Pagination des cartes (25 par page) */
+.cg-pager { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: .8rem; flex-wrap: wrap; width: 100%; margin: .8rem 0 .2rem; }
+.cg-pg-n { font-size: .85rem; font-weight: 700; color: var(--color-muted); min-width: 6.5rem; text-align: center; }
+.tcg-strip .cg-pager { flex: 0 0 100%; }
+#pub-cards-strip { flex-wrap: wrap; overflow: visible; }

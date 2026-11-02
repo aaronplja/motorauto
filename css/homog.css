@@ -113,3 +113,16 @@ a.dash-kpi:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .
 @media (prefers-reduced-motion: reduce) {
   .cta-btn, .btn, .car-box, .comm-card, .feed-item, .club-card, .listing-card, .event-card, .telemetry-row { transition: none !important; transform: none !important; }
 }
+
+/* ----- liens-boutons : mêmes pilules que les boutons */
+.link-more:where(:not(.app-header *, [class*="dock"] *)), .back-link:where(:not(.app-header *, [class*="dock"] *)), .page-back:where(:not(.app-header *, [class*="dock"] *)), .see-profile:where(:not(.app-header *, [class*="dock"] *)) {
+  display: inline-flex; align-items: center; gap: .35rem; min-height: 34px; padding: 0 .95rem; border-radius: 999px; border: 1px solid var(--h-line); background: color-mix(in srgb, var(--color-ink) 5%, transparent); font-size: .84rem; font-weight: 700; text-decoration: none; transition: background-color .2s, border-color .2s, transform .2s var(--h-ease); }
+.link-more:hover, .back-link:hover, .page-back:hover, .see-profile:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--color-ink) 22%, transparent); }
+
+/* ----- mobile : actions pleine largeur, pas de débordement, cibles tactiles confortables */
+@media (max-width: 640px) {
+  .page-head-actions, .admin-quick { width: 100%; }
+  .page-head-actions > .cta-btn, .admin-quick > .cta-btn, .admin-quick > a.cta-btn { flex: 1 1 calc(50% - .5rem); }
+  img, video, canvas { max-width: 100%; }
+  .stage-shell { width: calc(100% - 2rem); }
+}

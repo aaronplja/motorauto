@@ -1,0 +1,14 @@
+{
+  "name": "MOTORAUTO — Archive automobile & communauté de pilotes",
+  "short_name": "MOTORAUTO",
+  "description": "Phases, motorisations et records de centaines de sportives, classement des chronos et salon des pilotes.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "lang": "fr",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

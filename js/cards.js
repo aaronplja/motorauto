@@ -250,7 +250,7 @@
 
   // ------------------------------------------------------------------ ouverture d'un pack
   const BURST = { rare: "#3b82f6", epic: "#a855f7", legendary: "#f59e0b", shiny: "#ff7ad9", mythic: "#fde047", special: "#cbd5e1" };
-  const buzz = (p) => { try { if (navigator.vibrate) navigator.vibrate(p); } catch (_) { /* ignoré */ } };
+  const buzz = () => {};   // vibrations supprimées
   function sparks(el, n) {
     for (let i = 0; i < n; i++) {
       const a = (Math.PI * 2 * i) / n + Math.random() * 0.4, d = 70 + Math.random() * 80, s = document.createElement("i");
@@ -531,16 +531,20 @@
       <div id="cg-titles" class="cg-titles"></div>
       <div class="cg-albumgrid">${list.map(tile).join("") || `<p class="lap-meta">Aucun album de ce type.</p>`}</div></section>`;
   }
+  function albumPage(cars, page) {
+    return cars.slice(page * PAGE, (page + 1) * PAGE).map((c) => cardHtml(c, { owned: countOf(c.id) > 0, count: countOf(c.id), lv: lvOf(c.id) })).join("") + pagerHtml("data-apage", page, cars.length);
+  }
   function showAlbum(id) {
     const s = allSets().find((x) => x.id === id); if (!s) return;
     const cars = s.ids.map((i) => C.carsById.get(i)).filter(Boolean).sort((a, b) => numberOf(a) - numberOf(b));
     const have = cars.filter((c) => countOf(c.id) > 0).length, done = !!(claims && claims[s.id]), full = have === cars.length, leg = s.legend && cardObj(s.legend);
     const o = mountOverlay("album", "Album " + s.name, `<div class="tcg-stage cg-album-ov"><h2>${C.esc(s.name)}</h2><p class="tcg-hint">${have} / ${cars.length} cartes · récompense ${dust$(s.reward)}${leg ? " + carte Légende" : ""}</p>${gauge(have, cars.length, done ? "full" : "")}
-      <div class="tcg-grid compact cg-album-grid">${cars.map((c) => cardHtml(c, { owned: countOf(c.id) > 0, count: countOf(c.id), lv: lvOf(c.id) })).join("")}</div>
+      <div class="tcg-grid compact cg-album-grid" id="cg-album-grid">${albumPage(cars, 0)}</div>
       ${leg ? `<h3 class="cg-legend-title">Récompense : carte Légende</h3><div class="cg-legend-slot">${cardHtml(leg, { owned: countOf(leg.id) > 0, count: 0, lv: lvOf(leg.id) })}</div>` : ""}
       <div class="tcg-actions">${full && !done ? `<button type="button" class="cta-btn fill-btn" data-set-claim>Récupérer la récompense</button>` : ""}<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div>`);
     o.addEventListener("click", (e) => {
       if (e.target === o || e.target.closest("[data-close]")) { closeOverlay(); return; }
+      const ap = e.target.closest("[data-apage]"); if (ap) { const g = o.querySelector("#cg-album-grid"); if (g) { g.innerHTML = albumPage(cars, Math.max(0, Number(ap.dataset.apage) || 0)); g.scrollIntoView({ block: "nearest" }); } return; }
       const cd = e.target.closest("[data-card]"); if (cd) { showDetail(cd.dataset.card, cars.map((c) => c.id)); return; }
       if (e.target.closest("[data-set-claim]")) claimAlbums(true);
     });
@@ -617,27 +621,26 @@
     });
     return sortList(list);
   }
-  let curList = [], shown = 0, io = null;
-  const CH = 36;
+  let curList = [], gridPage = 0, gridSig = "";
+  const PAGE = 25;
   const cardTpl = (c, w, sn) => cardHtml(c, { owned: countOf(c.id) > 0, count: countOf(c.id), wish: w.has(c.id) && !countOf(c.id), isNew: countOf(c.id) > 0 && !sn.has(c.id), lv: lvOf(c.id) });
+  /** pagination : 25 cartes par page, boutons Précédent / Suivant */
+  function pagerHtml(attr, page, n) {
+    const pages = Math.ceil(n / PAGE); if (pages <= 1) return "";
+    return `<nav class="cg-pager" aria-label="Pages"><button type="button" class="cta-btn btn-ghost compact-btn" ${attr}="${page - 1}" ${page <= 0 ? "disabled" : ""}>Précédent</button><span class="cg-pg-n">Page ${page + 1} sur ${pages}</span><button type="button" class="cta-btn btn-ghost compact-btn" ${attr}="${page + 1}" ${page >= pages - 1 ? "disabled" : ""}>Suivant</button></nav>`;
+  }
   function appendChunk() {
     const el = document.getElementById("tcg-grid"); if (!el) return;
-    const old = el.querySelector(".tcg-sentinel"); if (old) old.remove();
-    const w = new Set(wish || []), sn = seenSet(), slice = curList.slice(shown, shown + CH);
-    shown += slice.length;
-    el.insertAdjacentHTML("beforeend", slice.map((c) => cardTpl(c, w, sn)).join(""));
-    if (shown < curList.length) {
-      const s = document.createElement("div"); s.className = "tcg-sentinel"; el.appendChild(s);
-      if ("IntersectionObserver" in window) {
-        io = io || new IntersectionObserver((ents) => { if (ents.some((x) => x.isIntersecting)) appendChunk(); }, { rootMargin: "900px" });
-        io.disconnect(); io.observe(s);
-      } else appendChunk();
-    }
+    const old = el.querySelector(".cg-pager"); if (old) old.remove();
+    const w = new Set(wish || []), sn = seenSet(), slice = curList.slice(gridPage * PAGE, (gridPage + 1) * PAGE);
+    el.insertAdjacentHTML("beforeend", slice.map((c) => cardTpl(c, w, sn)).join("") + pagerHtml("data-gpage", gridPage, curList.length));
   }
   function renderGrid() {
     const el = document.getElementById("tcg-grid"); if (!el || !doc) return;
-    if (io) io.disconnect();
-    curList = visibleList(); shown = 0;
+    curList = visibleList();
+    const sig = [filter, rarFilter, countryFilter, minPower, sortBy, query, view].join("|");
+    if (sig !== gridSig) { gridSig = sig; gridPage = 0; }
+    if (gridPage * PAGE >= curList.length) gridPage = Math.max(0, Math.ceil(curList.length / PAGE) - 1);
     const cnt = document.getElementById("tcg-count"); if (cnt) cnt.textContent = curList.length + " carte" + (curList.length > 1 ? "s" : "");
     el.className = "tcg-grid" + (view === "compact" ? " compact" : "");
     const sp = Array.from(specials.values()).filter((s) => (filter === "all" ? (countOf(s.id) > 0 || (s.claimable && s.active !== false)) : filter === "owned" ? countOf(s.id) > 0 : false) && rarFilter === "all" && countryFilter === "all" && !minPower && sortBy === "num");
@@ -698,6 +701,9 @@
   }
 
   // ------------------------------------------------------------------ profil public : collection et wishlist
+  function profPage(ids, page) {
+    return ids.slice(page * PAGE, (page + 1) * PAGE).map((id) => `<a href="${G.isSpecial(id) ? "#/jouer/cartes" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { cls: "tcg-mini" })}</a>`).join("") + pagerHtml("data-ppage", page, ids.length);
+  }
   async function renderProfile(uid) {
     let el = document.getElementById("pub-cards");
     if (!el) { const a = document.getElementById("pub-gamify") || document.getElementById("pub-badges-slot"); if (!a) return; el = document.createElement("div"); el.id = "pub-cards"; el.className = "game-zone"; a.insertAdjacentElement("afterend", el); }
@@ -718,10 +724,11 @@
       if (!ids.length && !wl.length && !vit.length) return;
       const vitHtml = vit.length || pubCars.length ? `<div class="panel-section-title">Vitrine</div><div class="cg-pshow">${vit.map((id) => `<div class="cg-pshow-i"><a href="${G.isSpecial(id) ? "#/jouer/cartes" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { owned: true, count: 0 })}</a>${mine && !(mine.owned[id] > 0) ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-wish-add="${C.esc(id)}">★ Je cherche cette carte</button>` : ""}</div>`).join("")}${pubCars.map((c) => `<div class="cg-pshow-i">${cardHtml(myCarObj(c), { owned: true, count: 0 })}<small class="tcg-hint">Sa voiture</small></div>`).join("")}</div>` : "";
       el.innerHTML = `${vitHtml}${ids.length ? `<div class="panel-section-title">Collection de cartes <span class="lap-meta">${(d.count || 0)} / ${C.cars.length}${d.specials ? " · ✦ " + d.specials : ""}</span></div>
-        <div class="tcg-strip">${ids.slice(0, 10).map((id) => `<a href="${G.isSpecial(id) ? "#/jouer/cartes" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { cls: "tcg-mini" })}</a>`).join("")}</div>` : ""}
+        <div class="tcg-strip" id="pub-cards-strip">${profPage(ids, 0)}</div>` : ""}
         ${wl.length ? `<div class="panel-section-title">★ Cartes recherchées <span class="lap-meta">${wl.length}</span></div>
         <div class="wish-list">${wl.slice(0, 12).map((id) => { const c = cardObj(id); return `<span class="wish-chip ${offer(id) ? "match" : ""}" title="${C.esc(c.brand + " " + c.model)}">${C.esc(String(c.model).replace(/\s*\(.*$/, "").slice(0, 26))}${offer(id) ? " · tu l'as en double" : ""}</span>`; }).join("")}</div>
         ${mine && wl.some(offer) ? `<a class="cta-btn fill-btn compact-btn" href="#/jouer/echanges" data-trade-with="${C.esc(uid)}">🔄 Proposer un échange</a>` : ""}` : ""}`;
+      el.onclick = (ev) => { const pp = ev.target.closest("[data-ppage]"); if (!pp) return; const st = el.querySelector("#pub-cards-strip"); if (st) st.innerHTML = profPage(ids, Math.max(0, Number(pp.dataset.ppage) || 0)); };
     } catch (e) { /* collection privée ou règles non publiées */ }
   }
   async function myCollection() { try { await load(); return doc; } catch (_) { return null; } }
@@ -763,6 +770,8 @@
       if (e.target.closest("#cards-root [data-set-claim]")) { claimAlbums(false); return; }
       const wa = e.target.closest("[data-wish-add]");
       if (wa) { addWish(wa.dataset.wishAdd, wa); return; }
+      const gp = e.target.closest("[data-gpage]");
+      if (gp) { gridPage = Math.max(0, Number(gp.dataset.gpage) || 0); renderGrid(); const g = document.getElementById("tcg-grid"); if (g) g.scrollIntoView({ block: "start", behavior: "smooth" }); return; }
       const cf = e.target.closest("[data-cf]");
       if (cf) { filter = cf.dataset.cf; syncToolbar(); renderGrid(); return; }
       const vw = e.target.closest("#cards-root [data-view]");
