@@ -133,3 +133,8 @@ a.dash-kpi:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .
 .app-header .pilot-chip { height: 40px; border-radius: 999px; padding: 0 1rem; border: 1px solid var(--h-line); background: color-mix(in srgb, var(--color-ink) 6%, transparent); }
 .app-header .pilot-chip:hover { background: color-mix(in srgb, var(--color-ink) 12%, transparent); transform: translateY(-1px); }
 .app-header .cta-btn, .app-header .btn { border-radius: 999px; }
+
+/* ===== petits boutons : toujours ronds (hors barre de navigation/dock) ===== */
+:where(:not(.app-header *, [class*="dock"] *)) :is(.dialog-close-btn,.cmt-del,.me-close,.notif-clear,.lightbox-close,.bar-close,.conv-del,.mini-add,.icon-btn,.tcg-nav button,.cg-nav,.copy-btn,.del-btn,.trash-btn,.close-btn,.modal-close,[class*="close-btn"],[class*="-close"]:is(button)) {
+  border-radius: 50%; aspect-ratio: 1; padding: 0; display: inline-grid; place-items: center; flex: none;
+}
