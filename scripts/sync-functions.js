@@ -21,3 +21,8 @@ const cars = new Function(src + ";return MOTORAUTO_DATABASE;")();
 const list = cars.map((c) => MA.normalizeCar(c)).map((c) => ({ id: c.id, power: c.stats.power, speed: c.stats.speed || 0, zero: c.stats.zero || 0, name: (c.brand + " " + c.model).trim(), brand: c.brand, category: c.category, year: require(path.join(root, "js/game-core.js")).yearOf(c), pics: require(path.join(root, "js/game-core.js")).picKeys(c) }));
 fs.writeFileSync(path.join(root, "functions/catalog-static.json"), JSON.stringify(list));
 console.log("functions/game-core.js copié · " + list.length + " voitures dans functions/catalog-static.json");
+
+// index léger des voitures pour les mentions « #bmw-m3-e46 » (messages, commentaires, bio) : identifiant, nom, années — chargé aussi par le chat
+const idx = cars.map((c) => [c.id, ((c.brand || "") + " " + (c.model || "")).replace(/\s+/g, " ").trim(), String(c.years || "")]);
+fs.writeFileSync(path.join(root, "js/car-index.js"), "/* généré par scripts/sync-functions.js : ne pas modifier à la main */\nwindow.MA_CAR_INDEX = " + JSON.stringify(idx) + ";\n");
+console.log("js/car-index.js · " + idx.length + " voitures");

@@ -703,6 +703,58 @@ service cloud.firestore {
       allow delete: if isOwner(wid);
     }
 
+    // --- Compteurs de jeu (fusions, marché, Plus ou moins, quiz) : lisibles par tous (classements, badges).
+    // Les Cloud Functions les écrivent ; en mode navigateur, le pilote n'écrit que les siens et ne progresse que d'un cran à la fois.
+    match /gstats/{gid} {
+      allow read: if true;
+      allow create: if isOwner(gid) && validGStats() && request.resource.data.get('fuse', 0) <= 1 && request.resource.data.get('quizDone', 0) <= 1
+        && request.resource.data.get('pmBest', 0) <= 1 && request.resource.data.get('sold', 0) == 0 && request.resource.data.get('bought', 0) == 0;
+      allow update: if isOwner(gid) && validGStats()
+        && request.resource.data.get('fuse', 0) <= resource.data.get('fuse', 0) + 1
+        && request.resource.data.get('quizDone', 0) <= resource.data.get('quizDone', 0) + 1
+        && request.resource.data.get('quizPerfect', 0) <= resource.data.get('quizPerfect', 0) + 1
+        && request.resource.data.get('quizL3', 0) <= resource.data.get('quizL3', 0) + 1
+        && request.resource.data.get('pmBest', 0) <= resource.data.get('pmBest', 0) + 1
+        && request.resource.data.get('sold', 0) == resource.data.get('sold', 0)
+        && request.resource.data.get('bought', 0) == resource.data.get('bought', 0)
+        || isAdmin();
+      allow delete: if false;
+    }
+    function validGStats() {
+      return request.resource.data.keys().hasOnly(['fuse', 'sold', 'bought', 'pmBest', 'pmStreak', 'pmPair', 'pmDay', 'quizDone', 'quizPerfect', 'quizL3', 'quizBest', 'quizPts', 'quizDay', 'wishAt', 'updatedAt'])
+        && request.resource.data.get('fuse', 0) is number && request.resource.data.get('fuse', 0) >= 0 && request.resource.data.get('fuse', 0) <= 1000000
+        && request.resource.data.get('quizDone', 0) is number && request.resource.data.get('quizDone', 0) >= 0 && request.resource.data.get('quizDone', 0) <= 1000000
+        && request.resource.data.get('quizPerfect', 0) is number && request.resource.data.get('quizL3', 0) is number
+        && request.resource.data.get('pmBest', 0) is number && request.resource.data.get('pmBest', 0) >= 0 && request.resource.data.get('pmBest', 0) <= 5000
+        && request.resource.data.get('pmStreak', 0) is number && request.resource.data.get('pmStreak', 0) <= 5000
+        && request.resource.data.get('quizPts', 0) is number && request.resource.data.get('quizPts', 0) >= 0 && request.resource.data.get('quizPts', 0) <= 120
+        && request.resource.data.get('quizBest', {}) is map && request.resource.data.get('pmDay', {}) is map && request.resource.data.get('quizDay', {}) is map
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // --- Marché de cartes : annonces écrites par le serveur (la carte est mise sous séquestre pendant la vente)
+    match /card_listings/{lid} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // --- Abonnements : les voitures et marques que je suis (notifications à chaque nouveauté)
+    match /follows/{fid} {
+      allow read: if true;
+      allow create, update: if isOwner(fid) && notMuted()
+        && request.resource.data.keys().hasOnly(['cars', 'brands', 'updatedAt'])
+        && request.resource.data.cars is list && request.resource.data.cars.size() <= 60
+        && request.resource.data.brands is list && request.resource.data.brands.size() <= 40
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isOwner(fid);
+    }
+
+    // --- Nouveautés : le journal des mises à jour (publié par l'administrateur)
+    match /news/{nid} {
+      allow read: if resource.data.published == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
     // --- Vitrine de profil : 6 cartes préférées + jusqu'à 3 de mes voitures affichées en carte (privées par défaut)
     match /showcases/{sid} {
       allow read: if true;

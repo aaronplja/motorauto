@@ -631,7 +631,183 @@
       return out;
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, _getPool: getPool };
+    // ---------------------------------------------------------------- compteurs de jeu supplémentaires (fusion, marché, Plus ou moins, quiz)
+    const blankStats = () => ({ fuse: 0, sold: 0, bought: 0, pmBest: 0, pmStreak: 0, pmPair: null, pmDay: { day: "", dust: 0 }, quizDone: 0, quizPerfect: 0, quizL3: 0, quizBest: {}, quizPts: 0, quizDay: { day: "", dust: 0 }, wishAt: 0 });
+    async function readStats(tx, uid) { const s = await tx.get(col("gstats").doc(uid)); return s.exists ? Object.assign(blankStats(), s.data()) : blankStats(); }
+    function writeStats(tx, uid, g) { g.updatedAt = ts(); tx.set(col("gstats").doc(uid), g); }
+    const dayOf = (g, key) => { const today = core.dayKey(now()); if (!g[key] || g[key].day !== today) g[key] = { day: today, dust: 0 }; return g[key]; };
+
+    // ---------------------------------------------------------------- fusion : 5 doublons d'une rareté → 1 carte de la rareté au-dessus
+    async function fuseCards(caller, data) {
+      const uid = caller.uid, from = str(data && data.rarity, 12), to = core.FUSE_NEXT[from], pool = await getPool();
+      if (!to) fail("invalid-argument", "Cette rareté ne peut pas être fusionnée.");
+      const chosen = Array.isArray(data && data.ids) ? data.ids.slice(0, 20).map((x) => str(x, 90)) : null;
+      const candidates = pool.list.filter((c) => pool.rar.get(c.id) === to).map((c) => c.id);
+      if (!candidates.length) fail("unavailable", "Aucune carte de cette rareté n'est disponible pour l'instant.");
+      return db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid), g = await readStats(tx, uid);
+        const spare = (id) => (core.isSpecial(id) || pool.rar.get(id) !== from ? 0 : Math.max(0, (d.owned[id] || 0) - 1));
+        let used = [];
+        if (chosen && chosen.length) {
+          if (chosen.length !== core.FUSE_COUNT) fail("invalid-argument", "Choisis exactement " + core.FUSE_COUNT + " doublons.");
+          const need = {}; chosen.forEach((id) => { need[id] = (need[id] || 0) + 1; });
+          Object.keys(need).forEach((id) => { if (need[id] > spare(id)) fail("failed-precondition", "Tu n'as pas assez de doublons de cette carte."); });
+          used = chosen;
+        } else {
+          const list = Object.keys(d.owned).map((id) => [id, spare(id)]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+          for (const [id, n] of list) { for (let i = 0; i < n && used.length < core.FUSE_COUNT; i++) used.push(id); if (used.length >= core.FUSE_COUNT) break; }
+          if (used.length < core.FUSE_COUNT) fail("failed-precondition", "Il te faut " + core.FUSE_COUNT + " doublons de rareté « " + core.RAR[from].label + " » (tu en as " + used.length + ").");
+        }
+        used.forEach((id) => { d.owned[id]--; });
+        const fresh = candidates.filter((id) => !(d.owned[id] > 0)), bag = fresh.length ? fresh : candidates;
+        const got = bag[Math.floor(rng() * bag.length)];
+        d.owned[got] = (d.owned[got] || 0) + 1; g.fuse++;
+        writeCol(tx, uid, d); writeStats(tx, uid, g);
+        return { from, to, used, got, isNew: fresh.length > 0, fuse: g.fuse, doc: view(d) };
+      });
+    }
+
+    // ---------------------------------------------------------------- Plus ou moins
+    async function pmPlay(caller, data) {
+      const uid = caller.uid, pool = await getPool(), answer = !!(data && data.action === "answer");
+      return db.runTransaction(async (tx) => {
+        const g = await readStats(tx, uid), d = await readCol(tx, uid);
+        let result = null, reward = 0;
+        if (answer) {
+          if (!g.pmPair) fail("failed-precondition", "Aucune question en cours : relance une partie.");
+          const pick = data.pick === "b" ? "b" : "a", win = core.pmWinner(g.pmPair, pool.byId), pair = g.pmPair;
+          if (!win) { g.pmPair = null; g.pmStreak = 0; writeStats(tx, uid, g); fail("failed-precondition", "Cette question n'est plus valable : relance une partie."); }
+          const ok = win === pick;
+          result = { ok, answer: win, pair };
+          if (ok) {
+            g.pmStreak++; if (g.pmStreak > g.pmBest) g.pmBest = g.pmStreak;
+            const step = core.PM_REWARDS.find((r) => r[0] === g.pmStreak);
+            if (step) { const day = dayOf(g, "pmDay"), gain = Math.min(step[1], core.PM_DAILY_CAP - day.dust); if (gain > 0) { day.dust += gain; reward = gain; dustMove(d, gain, "Plus ou moins"); } }
+          } else g.pmStreak = 0;
+          g.pmPair = null;
+        } else g.pmStreak = 0;
+        let next = null;
+        if (!answer || (result && result.ok)) { next = core.pmPair(pool.list, rng, result ? result.pair : null); g.pmPair = next; }
+        writeStats(tx, uid, g); if (reward) writeCol(tx, uid, d);
+        return { result, next, streak: g.pmStreak, best: g.pmBest, reward, doc: reward ? view(d) : null };
+      });
+    }
+
+    // ---------------------------------------------------------------- Quiz : le serveur rejoue les questions de la graine et corrige
+    async function quizSubmit(caller, data) {
+      const uid = caller.uid, pool = await getPool(), seed = str(data && data.seed, 40), cat = str(data && data.cat, 12), level = Math.max(1, Math.min(3, Number(data && data.level) | 0));
+      if (!/^[\w-]{4,40}$/.test(seed)) fail("invalid-argument", "Quiz invalide.");
+      if (!core.QCATS[cat]) fail("invalid-argument", "Catégorie inconnue.");
+      const answers = (Array.isArray(data && data.answers) ? data.answers : []).slice(0, core.QUIZ_N).map((x) => Number(x) | 0);
+      const questions = core.quizBuild(seed, cat, level, pool.list), score = core.quizScore(questions, answers);
+      return db.runTransaction(async (tx) => {
+        const g = await readStats(tx, uid), d = await readCol(tx, uid);
+        const key = cat + "_" + level, day = dayOf(g, "quizDay");
+        if (!g.quizBest || typeof g.quizBest !== "object") g.quizBest = {};
+        g.quizBest[key] = Math.max(g.quizBest[key] || 0, score);
+        g.quizPts = Object.keys(g.quizBest).reduce((t, k) => t + (g.quizBest[k] || 0), 0);
+        g.quizDone++; if (score === questions.length && questions.length >= core.QUIZ_N) { g.quizPerfect++; if (level === 3) g.quizL3++; }
+        const gain = Math.max(0, Math.min(score * core.QUIZ_REWARD, core.QUIZ_DAILY_CAP - day.dust));
+        if (gain > 0) { day.dust += gain; dustMove(d, gain, "Quiz"); writeCol(tx, uid, d); }
+        writeStats(tx, uid, g);
+        return { score, total: questions.length, reward: gain, best: g.quizBest[key], pts: g.quizPts, doc: gain > 0 ? view(d) : null };
+      });
+    }
+
+    // ---------------------------------------------------------------- marché de cartes (prix fixe en cristaux, 10 % de commission détruits)
+    async function marketList(caller, data) {
+      const uid = caller.uid, cardId = str(data && data.cardId, 90), price = Math.floor(Number(data && data.price)), pool = await getPool();
+      if (!pool.byId.has(cardId)) fail("not-found", "Cette carte n'existe pas.");
+      const rar = pool.rar.get(cardId);
+      if (rar === "mythic") fail("failed-precondition", "Une carte Légende ne se vend pas.");
+      const b = core.marketBounds(rar);
+      if (!(price >= b.min && price <= b.max)) fail("invalid-argument", "Prix autorisé pour cette carte : de " + b.min + " à " + b.max + " cristaux.");
+      if (await isMuted(uid)) fail("permission-denied", "Tu es en sourdine : le marché est suspendu pour toi.");
+      const mine = (await col("card_listings").where("uid", "==", uid).limit(60).get()).docs.filter((x) => x.data().status === "open");
+      if (mine.length >= core.MARKET_MAX_LISTINGS) fail("resource-exhausted", "Tu as déjà " + core.MARKET_MAX_LISTINGS + " cartes en vente.");
+      const name = (await nameOf(uid)) || caller.name || "Pilote", label = await cardLabel(pool, cardId), ref = col("card_listings").doc();
+      await db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid);
+        if ((d.owned[cardId] || 0) < 2) fail("failed-precondition", "Tu ne peux vendre qu'un doublon : tu n'as qu'un exemplaire de cette carte.");
+        d.owned[cardId]--; writeCol(tx, uid, d);
+        tx.set(ref, { uid, name, cardId, label, rar, price, status: "open", createdAt: ts() });
+      });
+      // alerte « une carte de ta liste de souhaits est en vente »
+      try {
+        const ws = await col("wishlists").where("ids", "array-contains", cardId).limit(25).get();
+        for (const w of ws.docs) if (w.id !== uid) await notify(w.id, { uid, name }, "🏷️ " + label + " (ta liste de souhaits) est en vente : " + price + " cristaux", "#/marche");
+      } catch (_) { /* alerte facultative */ }
+      return { id: ref.id };
+    }
+    async function marketBuy(caller, data) {
+      const uid = caller.uid, ref = col("card_listings").doc(str(data && data.id, 128));
+      let l = null, net = 0;
+      await db.runTransaction(async (tx) => {
+        const s = await tx.get(ref);
+        if (!s.exists) fail("not-found", "Cette annonce n'existe plus.");
+        l = s.data();
+        if (l.status !== "open") fail("failed-precondition", "Cette carte vient d'être vendue ou retirée.");
+        if (l.uid === uid) fail("failed-precondition", "C'est ta propre annonce : tu peux l'annuler.");
+        const buyer = await readCol(tx, uid), seller = await readCol(tx, l.uid), gb = await readStats(tx, uid), gs = await readStats(tx, l.uid);
+        if (buyer.dust < l.price) fail("failed-precondition", "Il te faut " + l.price + " cristaux (tu en as " + buyer.dust + ").");
+        net = core.marketNet(l.price);
+        dustMove(buyer, -l.price, "Marché : achat"); buyer.owned[l.cardId] = (buyer.owned[l.cardId] || 0) + 1; gb.bought++;
+        dustMove(seller, net, "Marché : vente"); gs.sold++;
+        writeCol(tx, uid, buyer); writeCol(tx, l.uid, seller); writeStats(tx, uid, gb); writeStats(tx, l.uid, gs);
+        tx.update(ref, { status: "sold", buyerUid: uid, soldAt: ts() });
+      });
+      const me = (await nameOf(uid)) || caller.name || "Pilote";
+      await notify(l.uid, { uid, name: me }, "💰 " + me + " t'a acheté " + l.label + " : +" + net + " cristaux", "#/marche");
+      return { ok: true, cardId: l.cardId, price: l.price };
+    }
+    async function marketCancel(caller, data) {
+      const uid = caller.uid, ref = col("card_listings").doc(str(data && data.id, 128));
+      await db.runTransaction(async (tx) => {
+        const s = await tx.get(ref);
+        if (!s.exists) fail("not-found", "Annonce introuvable.");
+        const l = s.data();
+        if (l.uid !== uid) fail("permission-denied", "Seul le vendeur peut retirer cette annonce.");
+        if (l.status !== "open") fail("failed-precondition", "Cette annonce n'est plus en vente.");
+        const d = await readCol(tx, uid);
+        d.owned[l.cardId] = (d.owned[l.cardId] || 0) + 1; writeCol(tx, uid, d);
+        tx.update(ref, { status: "cancelled", closedAt: ts() });
+      });
+      return { ok: true };
+    }
+
+    // ---------------------------------------------------------------- notifications pour les abonnés d'une voiture / d'une marque
+    /** brands : familles de marques (« Peugeot »), cars : identifiants ; exceptUid : l'auteur, qui n'est pas prévenu */
+    async function notifyFollowers(opts) {
+      const seen = new Set(), text = str(opts.text, 120), link = opts.link || "#/nouveautes", from = opts.from || { name: "MOTORAUTO" };
+      const run = async (field, val) => {
+        try {
+          const snap = await col("follows").where(field, "array-contains", val).limit(300).get();
+          for (const f of snap.docs) { if (f.id === opts.exceptUid || seen.has(f.id)) continue; seen.add(f.id); await notify(f.id, from, text, link); }
+        } catch (_) { /* abonnés facultatifs */ }
+      };
+      for (const b of (opts.brands || []).slice(0, 5)) await run("brands", b);
+      for (const c of (opts.cars || []).slice(0, 10)) await run("cars", c);
+      return seen.size;
+    }
+    /** chaque jour : prévient (au plus tous les 3 jours) les pilotes dont une carte de la liste de souhaits est en double chez un autre pilote */
+    async function wishDigest() {
+      const ws = (await col("wishlists").limit(300).get()).docs, cs = (await col("collections").limit(500).get()).docs;
+      const owned = new Map(), dups = new Map();
+      cs.forEach((c) => { const o = c.data().owned || {}; owned.set(c.id, o); Object.keys(o).forEach((id) => { if (o[id] >= 2) { if (!dups.has(id)) dups.set(id, []); dups.get(id).push(c.id); } }); });
+      let sent = 0;
+      for (const w of ws) {
+        const mine = owned.get(w.id) || {}, ids = (w.data().ids || []).filter((id) => !(mine[id] > 0) && (dups.get(id) || []).some((u) => u !== w.id));
+        if (!ids.length) continue;
+        const gs = await col("gstats").doc(w.id).get(), at = gs.exists ? Number(gs.data().wishAt) || 0 : 0;
+        if (now() - at < 3 * 86400000) continue;
+        await notify(w.id, { name: "MOTORAUTO" }, "🎴 " + ids.length + " carte" + (ids.length > 1 ? "s" : "") + " de ta liste de souhaits " + (ids.length > 1 ? "sont disponibles" : "est disponible") + " chez d'autres pilotes", "#/souhaits");
+        await col("gstats").doc(w.id).set({ wishAt: now() }, { merge: true });
+        sent++;
+      }
+      return sent;
+    }
+
+    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, _getPool: getPool };
   }
   return { createGame, GameError };
 });

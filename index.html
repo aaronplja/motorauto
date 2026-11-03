@@ -41,6 +41,7 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
 
+  <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -64,6 +65,7 @@
   <link rel="stylesheet" href="css/trades.css">
   <link rel="stylesheet" href="css/guides.css">
   <link rel="stylesheet" href="css/presence.css">
+  <link rel="stylesheet" href="css/plus.css">
 <style id="splash-css">#splash{display:none}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.1rem;background:var(--bg-core,#09090b);touch-action:manipulation;contain:strict;animation:spLife 1.5s linear forwards}
 #splash .sp-mark{width:min(30vw,120px);height:auto;overflow:visible;animation:spMark 1.5s cubic-bezier(.3,.7,.2,1) forwards}
@@ -806,6 +808,71 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   </div>
   </div>
 
+
+  <div class="page page-layer" id="page-fusion" data-page="fusion">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Fusion de cartes</h1><p class="page-sub">Transforme 5 doublons en une carte de rareté supérieure.</p></div></header>
+    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <div id="fusion-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-cardmarket" data-page="cardmarket">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Marché de cartes</h1><p class="page-sub">Vends tes doublons ou achète les cartes qui te manquent, en cristaux.</p></div></header>
+    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <div id="cardmarket-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-wishfeed" data-page="wishfeed">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Souhaits et échanges</h1><p class="page-sub">Qui cherche quoi, qui propose quoi : trouve ton prochain échange.</p></div></header>
+    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <div id="wishfeed-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-plusmoins" data-page="plusmoins">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Plus ou moins</h1><p class="page-sub">Deux voitures, une seule bonne réponse. Jusqu'où iras-tu sans faute ?</p></div></header>
+    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <div id="plusmoins-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-quizgame" data-page="quizgame">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Quiz</h1><p class="page-sub">Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.</p></div></header>
+    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <div id="quizgame-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-achievements" data-page="achievements">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Succès</h1><p class="page-sub">Tous tes badges et ta progression.</p></div></header>
+    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <div id="achievements-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-timeline" data-page="timeline">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Frise chronologique</h1><p class="page-sub">Toute l'histoire de l'automobile sur une ligne.</p></div></header>
+    <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
+    <div id="timeline-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-news" data-page="news">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Nouveautés</h1><p class="page-sub">Le journal des mises à jour de MOTORAUTO.</p></div></header>
+    <a class="back-link" href="#/" data-back="#/">← Accueil</a>
+    <div id="news-root"></div>
+  </div>
+  </div>
+
   <div class="page" id="page-contact" data-page="contact">
   <section class="stage-shell page-wrap contact-section" id="contact">
     <div class="contact-card">
@@ -1375,6 +1442,15 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/admin-rarity.js"></script>
   <script defer src="js/guides.js"></script>
   <script defer src="js/presence.js"></script>
+  <script defer src="js/i18n.js"></script>
+  <script defer src="js/car-index.js"></script>
+  <script defer src="js/mentions.js"></script>
+  <script defer src="js/news-seed.js"></script>
+  <script defer src="js/play-plus.js"></script>
+  <script defer src="js/minigames.js"></script>
+  <script defer src="js/frise.js"></script>
+  <script defer src="js/follow.js"></script>
+  <script defer src="js/news.js"></script>
   <script defer src="js/blocks.js"></script>
   <script defer src="js/native.js"></script>
   <script defer src="js/share.js"></script>

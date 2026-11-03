@@ -22,15 +22,19 @@
     if (loading) return loading;
     loading = (async () => {
       const app = window.MAApp;
-      const [laps, , usersSnap, streakSnap, colSnap, ev, entSnap, winSnap] = await Promise.all([
+      const [laps, , usersSnap, streakSnap, colSnap, ev, entSnap, winSnap, gsSnap, wlSnap, flSnap] = await Promise.all([
         safe(app.getLaps(), []), safe(window.MASocial ? window.MASocial.loadStats(force) : null, null), safe(C.db.collection("users").limit(400).get(), null),
         safe(C.db.collection("streaks").limit(500).get(), null), safe(C.db.collection("collections").limit(500).get(), null),
         safe(window.MACommunity ? window.MACommunity.loadEvents() : null, null),
-        safe(C.db.collection("contest_entries").where("status", "==", "approved").limit(500).get(), null), safe(C.db.collection("contests").limit(80).get(), null)
+        safe(C.db.collection("contest_entries").where("status", "==", "approved").limit(500).get(), null), safe(C.db.collection("contests").limit(80).get(), null),
+        safe(C.db.collection("gstats").limit(500).get(), null), safe(C.db.collection("wishlists").limit(500).get(), null), safe(C.db.collection("follows").limit(500).get(), null)
       ]);
+      if (window.MACards && window.MACards.loadRarOv) await safe(window.MACards.loadRarOv(), null);
       await safe(app.loadCommunityOnce ? app.loadCommunityOnce() : null, null);
       const map = new Map(), users = new Map();
-      const get = (uid) => { if (!map.has(uid)) map.set(uid, { uid, laps: 0, tracks: new Set(), records: 0, podiums: 0, comments: 0, likes: 0, cars: 0, events: 0, rsvps: 0, days: 0, best: 0, last: "", cards: 0, specials: 0, trades: 0, chal: 0, entries: 0, wins: 0 }); return map.get(uid); };
+      const get = (uid) => { if (!map.has(uid)) map.set(uid, Object.assign(G.BLANK_STATS(), { uid, tracks: new Set() })); return map.get(uid); };
+      const allSets = (() => { try { return G.setsOf(C.cars); } catch (_) { return []; } })();
+      G.setBrandsTotal(new Set(C.cars.map((c) => G.familyOf(c.brand))).size);
       if (usersSnap) usersSnap.forEach((d) => { users.set(d.id, d.data()); get(d.id); });
       // chronos
       const byTrack = new Map();
@@ -62,7 +66,22 @@
         window.MACommunity.rsvps().forEach((m) => m.forEach((r, uid) => { get(uid).rsvps++; }));
       }
       if (streakSnap) streakSnap.forEach((d) => { const x = d.data(); const s = get(d.id); s.days = x.days || 0; s.best = Math.max(x.best || 0, x.days || 0); s.last = x.last || ""; });
-      if (colSnap) colSnap.forEach((d) => { const x = d.data(), s = get(d.id); s.cards = Number(x.count) || 0; s.specials = Number(x.specials) || 0; s.trades = Number(x.trades) || 0; s.chal = Number(x.chal) || 0; });
+      if (colSnap) colSnap.forEach((d) => {
+        const x = d.data(), s = get(d.id); s.cards = Number(x.count) || 0; s.specials = Number(x.specials) || 0; s.trades = Number(x.trades) || 0; s.chal = Number(x.chal) || 0; s.opened = Number(x.opened) || 0;
+        const owned = x.owned || {}, MCa = window.MACards;
+        Object.keys(owned).forEach((id) => {
+          if (!(owned[id] > 0) || G.isSpecial(id)) return;
+          const car = C.carsById.get(id); if (!car) return;
+          const fam = G.familyOf(car.brand); s.byBrand[fam] = (s.byBrand[fam] || 0) + 1;
+          if (MCa && MCa.cardObj) { const co = MCa.cardObj(id); if (co) { const r = MCa.rarityOf(co); s.rar[r] = (s.rar[r] || 0) + 1; } }
+        });
+        s.brandsOwned = Object.keys(s.byBrand).length;
+        const lv = x.lv || {}; Object.keys(lv).forEach((id) => { if (lv[id] > 1) s.upgraded++; if (lv[id] > s.maxlv) s.maxlv = lv[id]; });
+        if (s.cards > 0) s.sets = allSets.filter((st) => st.ids.every((id) => owned[id] > 0)).length;
+      });
+      if (gsSnap) gsSnap.forEach((d) => { const x = d.data(), s = get(d.id); s.fuse = Number(x.fuse) || 0; s.sold = Number(x.sold) || 0; s.bought = Number(x.bought) || 0; s.pm = Number(x.pmBest) || 0; s.quizDone = Number(x.quizDone) || 0; s.quizPerfect = Number(x.quizPerfect) || 0; s.quizL3 = Number(x.quizL3) || 0; });
+      if (wlSnap) wlSnap.forEach((d) => { get(d.id).wish = ((d.data().ids) || []).length; });
+      if (flSnap) flSnap.forEach((d) => { const x = d.data(); get(d.id).follows = ((x.cars) || []).length + ((x.brands) || []).length; });
       if (entSnap) entSnap.forEach((d) => { const x = d.data(); if (x.uid) get(x.uid).entries++; });
       if (winSnap) winSnap.forEach((d) => { const x = d.data(); if (x.winnerUid) get(x.winnerUid).wins++; });
       map.forEach((s) => finish(s));

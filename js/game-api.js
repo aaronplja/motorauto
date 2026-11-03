@@ -15,7 +15,7 @@
     unavailable: "Le jeu est momentanément indisponible, réessaie dans un instant.",
     "deadline-exceeded": "Le serveur met trop de temps à répondre, réessaie."
   };
-  const SERVER_ONLY = { proposeTrade: 1, respondTrade: 1, cancelTrade: 1, claimSpecial: 1, adminBroadcast: 1, claimReferral: 1, claimSets: 1 };
+  const SERVER_ONLY = { proposeTrade: 1, respondTrade: 1, cancelTrade: 1, claimSpecial: 1, adminBroadcast: 1, claimReferral: 1, claimSets: 1, marketList: 1, marketBuy: 1, marketCancel: 1 };
   const FALLBACK_CODES = /^(not-found|internal|unavailable|failed-to-fetch|unknown|cancelled)$/;
   let localMode = false, engine = null;
 

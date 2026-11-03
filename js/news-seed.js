@@ -1,0 +1,16 @@
+/**
+ * MOTORAUTO — journal des mises à jour (page Nouveautés). Une entrée par mise à jour importante, la plus récente en premier.
+ * kind : site | car | card | event | fix.  Les annonces publiées depuis la page Nouveautés (administrateur) s'ajoutent à cette liste.
+ * Pour ajouter une entrée : copier un bloc, changer id (unique), date (AAAA-MM-JJ), textes fr et en.
+ */
+window.MA_NEWS_SEED = [
+  { id: "s-2026-11-03", date: "2026-11-03", kind: "site", brands: [], cars: [],
+    fr: { title: "Fusion, marché de cartes, Plus ou moins, quiz et frise", body: "Cinq doublons fusionnent en une carte de rareté supérieure. Tu peux vendre tes doublons contre des cristaux sur le marché (10 % de commission), publier ce que tu cherches dans le fil Souhaits et recevoir une alerte quand une carte de ta liste est en vente. Deux nouveaux jeux : Plus ou moins (séries de bonnes réponses) et Quiz (4 catégories, 3 niveaux, classement). 56 nouveaux succès, une frise chronologique de tout le catalogue, les mentions de voitures (#bmw-m3-e46) dans les messages et les commentaires, et la possibilité de suivre une voiture ou une marque. Le site existe désormais en français, anglais, espagnol, allemand et italien (Réglages › Ambiance)." },
+    en: { title: "Fusion, card market, Higher or lower, quiz and timeline", body: "Five duplicates fuse into a card of the next rarity. You can sell your duplicates for crystals on the market (10% fee), post what you are looking for in the Wishes feed and get an alert when a card from your wish list goes on sale. Two new games: Higher or lower (answer streaks) and Quiz (4 categories, 3 levels, leaderboard). 56 new achievements, a timeline of the whole catalogue, car mentions (#bmw-m3-e46) in messages and comments, and the ability to follow a car or a brand. The site is now available in French, English, Spanish, German and Italian (Settings › Ambiance)." } },
+  { id: "s-2026-10-28", date: "2026-10-28", kind: "site", brands: [], cars: [],
+    fr: { title: "En ligne / dernière connexion, historique des voitures, classement des collectionneurs", body: "Les profils et le chat indiquent « En ligne » ou « Vu il y a… » (désactivable dans Réglages › Confidentialité). Les voitures des pilotes gardent l'historique de leurs modifications. Le classement des collectionneurs se lit maintenant en cartes uniques, en valeur ou en cartes rares et plus. Le catalogue se filtre par rareté de carte." },
+    en: { title: "Online status, car edit history, collector rankings", body: "Profiles and chat now show “Online” or “Last seen…” (can be turned off in Settings › Privacy). Pilot cars keep the history of their edits. The collectors ranking can be read by unique cards, value, or rare cards and above. The catalogue can be filtered by card rarity." } },
+  { id: "s-2026-10-20", date: "2026-10-20", kind: "card", brands: [], cars: [],
+    fr: { title: "Nouveau dos de carte et aperçus de partage", body: "Les cartes ont un nouveau dos carbone à l'ouverture des packs. Chaque fiche voiture dispose d'une image de partage (photo, marque, modèle, chiffres clés) pour WhatsApp, Discord et X." },
+    en: { title: "New card back and share previews", body: "Cards have a new carbon back when opening packs. Every car page now has a share image (photo, brand, model, key figures) for WhatsApp, Discord and X." } }
+];

@@ -58,7 +58,49 @@ function callable(name) {
   });
 }
 ["syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "logAction", "weeklyStatus", "claimChallenge",
-  "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "claimSets", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest"].forEach((n) => { exports[n] = callable(n); });
+  "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "claimSets", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest",
+  "fuseCards", "pmPlay", "quizSubmit", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
+
+
+// ---- abonnements « voiture / marque » : notifications quand une fiche change, qu'une voiture arrive ou qu'une annonce « Nouveautés » est publiée
+const { onDocumentWritten, onDocumentCreated } = require("firebase-functions/v2/firestore");
+const quiet = async (key, ms) => { const ref = db.collection("follow_notify").doc(key), s = await ref.get(); if (s.exists && Date.now() - Number(s.data().at || 0) < ms) return true; await ref.set({ at: Date.now() }); return false; };
+exports.followCatalog = onDocumentWritten({ document: "motorauto_catalog/{id}", region: REGION }, async (ev) => {
+  const after = ev.data && ev.data.after.exists ? ev.data.after.data() : null, before = ev.data && ev.data.before.exists ? ev.data.before.data() : null;
+  if (!after) return;
+  const id = ev.params.id, label = ((after.brand || "") + " " + (after.model || "")).trim(), fam = gameCore.familyOf(after.brand);
+  try {
+    if (!before) { if (!(await quiet("new_" + fam, 3600000))) await game.notifyFollowers({ brands: [fam], cars: [id], text: "🆕 Nouvelle voiture au catalogue : " + label, link: "#/voiture/" + encodeURIComponent(id) }); }
+    else if (!(await quiet("car_" + id, 6 * 3600000))) await game.notifyFollowers({ cars: [id], text: "🔧 Fiche mise à jour : " + label, link: "#/voiture/" + encodeURIComponent(id) });
+  } catch (e) { logger.warn("followCatalog", e); }
+});
+async function brandsIn(text) {
+  const pool = await game._getPool(), fams = Array.from(new Set(pool.list.map((x) => gameCore.familyOf(x.brand)))).filter(Boolean), t = String(text || "").toLowerCase();
+  return fams.filter((f) => t.indexOf(f.toLowerCase()) >= 0).slice(0, 2);
+}
+exports.followPilotCar = onDocumentCreated({ document: "community_cars/{id}", region: REGION }, async (ev) => {
+  const c = ev.data && ev.data.data(); if (!c) return;
+  try {
+    const hit = await brandsIn(c.name); if (!hit.length) return;
+    await game.notifyFollowers({ brands: hit, text: "🚗 " + (c.pilot || "Un pilote") + " publie : " + String(c.name || "").slice(0, 60), link: "#/voiture-pilote/" + encodeURIComponent(ev.params.id), exceptUid: c.uid, from: { uid: c.uid, name: c.pilot } });
+  } catch (e) { logger.warn("followPilotCar", e); }
+});
+exports.followSpecialCard = onDocumentCreated({ document: "special_cards/{id}", region: REGION }, async (ev) => {
+  const c = ev.data && ev.data.data(); if (!c || c.active === false) return;
+  try {
+    const hit = await brandsIn((c.name || "") + " " + (c.edition || "")); if (!hit.length) return;
+    await game.notifyFollowers({ brands: hit, text: "✨ Nouvelle carte spéciale : " + String(c.name || "").slice(0, 60), link: "#/jouer/cartes" });
+  } catch (e) { logger.warn("followSpecialCard", e); }
+});
+exports.newsPublished = onDocumentWritten({ document: "news/{id}", region: REGION }, async (ev) => {
+  const after = ev.data && ev.data.after.exists ? ev.data.after.data() : null, before = ev.data && ev.data.before.exists ? ev.data.before.data() : null;
+  if (!after || after.published !== true || after.notified === true || (before && before.published === true && before.notified === true)) return;
+  try {
+    await ev.data.after.ref.update({ notified: true });
+    const n = await game.notifyFollowers({ brands: after.brands || [], cars: after.cars || [], text: "🆕 " + String(after.title || "").slice(0, 100), link: "#/nouveautes" });
+    logger.info("news notifiées", n);
+  } catch (e) { logger.warn("newsPublished", e); }
+});
 
 // suppression de compte demandée par le pilote (Mon garage → Réglages) : efface ses données puis son compte de connexion
 exports.deleteAccount = onCall({ region: REGION, maxInstances: 5, timeoutSeconds: 300 }, async (req) => {
@@ -80,6 +122,7 @@ exports.pushOnNotification = require("./push").createPush({ db, messaging: admin
 
 // le 1er de chaque mois : clôture du concours photo précédent (gagnant, carte spéciale) et ouverture du suivant
 exports.closeDueContests = onSchedule({ schedule: "20 0 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.closeDueContests(); });
+exports.wishDigest = onSchedule({ schedule: "40 9 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.wishDigest(); });
 exports.monthlyContest = onSchedule({ schedule: "10 0 1 * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.monthlyContest(); });
 
 // sauvegarde Firestore hebdomadaire (voir functions/backup.js : bucket + droits à configurer une fois)
