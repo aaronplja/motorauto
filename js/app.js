@@ -36,7 +36,7 @@
   let cloudIds = new Set();
   let cloudCars = [];
 
-  const filters = { noimg: false, category: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", verdict: "all", turbo: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
+  const filters = { noimg: false, category: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", verdict: "all", turbo: "all", rarity: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
 
   let modalStack = [];
   let allLaps = [];
@@ -194,6 +194,8 @@
     if (btn && id === noImageScan) btn.textContent = `Sans image (${noImageIds.size})`;
     if (filters.noimg) renderCatalog();
   }
+  const RARK = { mythic: 0, shiny: 1, legendary: 2, epic: 3, rare: 4, common: 5 };
+  const carRarity = (c) => (window.MACards && window.MACards.rarityOf ? window.MACards.rarityOf(c) : "common");
   function getFilteredCars() {
     let result = CATALOGUE;
     if (filters.query.trim()) result = result.filter((c) => matchesQuery(c, filters.query));
@@ -203,6 +205,7 @@
     if (filters.drive !== "all") result = result.filter((c) => (c.drives || []).includes(filters.drive));
     if (filters.verdict !== "all") result = result.filter((c) => c.track && c.track.verdict === filters.verdict);
     if (filters.turbo !== "all") result = result.filter((c) => MA.inCategory(c, filters.turbo));
+    if (filters.rarity !== "all") result = result.filter((c) => carRarity(c) === filters.rarity);
     if (filters.pmin != null) result = result.filter((c) => c.stats.power >= filters.pmin);
     if (filters.pmax != null) result = result.filter((c) => c.stats.power > 0 && c.stats.power <= filters.pmax);
     if (filters.zero != null) result = result.filter((c) => c.stats.zero != null && c.stats.zero <= filters.zero);
@@ -218,6 +221,7 @@
     else if (filters.sort === "year-desc") sorted.sort((a, b) => (b.yearRange ? b.yearRange[0] : 0) - (a.yearRange ? a.yearRange[0] : 0));
     else if (filters.sort === "year-asc") sorted.sort((a, b) => (a.yearRange ? a.yearRange[0] : 9999) - (b.yearRange ? b.yearRange[0] : 9999));
     else if (filters.sort === "likes-desc") sorted.sort((a, b) => socStat(b.id).likes - socStat(a.id).likes || a.model.localeCompare(b.model, "fr", { numeric: true }));
+    else if (filters.sort === "rarity-desc") sorted.sort((a, b) => (RARK[carRarity(a)] ?? 9) - (RARK[carRarity(b)] ?? 9) || b.stats.power - a.stats.power);
     else if (filters.sort === "rating-desc") sorted.sort((a, b) => socStat(b.id).avg - socStat(a.id).avg || socStat(b.id).votes - socStat(a.id).votes);
     else sorted.sort((a, b) => a.model.localeCompare(b.model, "fr", { numeric: true }));
     return sorted;
@@ -1394,6 +1398,13 @@
         data.createdAt = mcEditing.createdAt;
         data.updatedAt = FieldValue.serverTimestamp();
         await db.collection("community_cars").doc(mcEditing.id).set(data);
+        try {   // journal des modifications (non bloquant)
+          const L = { name: "nom", year: "année", engine: "moteur", drive: "transmission", power: "puissance", speed: "vitesse max", zero: "0-100", description: "description", mods: "modifications" };
+          const changes = Object.keys(L).filter((k) => String(mcEditing[k] == null ? "" : mcEditing[k]) !== String(data[k] == null ? "" : data[k])).map((k) => L[k]);
+          const pa = (mcEditing.photos || []).length, pb = data.photos.length;
+          if (pb !== pa || JSON.stringify(mcEditing.photos || []) !== JSON.stringify(data.photos)) changes.push(pb > pa ? "photo ajoutée" : pb < pa ? "photo retirée" : "photos");
+          if (changes.length) await db.collection("community_cars").doc(mcEditing.id).collection("history").add({ uid: currentUser.uid, by: String((profile && profile.username) || currentUser.displayName || "Pilote").slice(0, 40), at: FieldValue.serverTimestamp(), changes: changes.slice(0, 12) });
+        } catch (_) { /* le journal ne doit jamais bloquer l'enregistrement */ }
       } else {
         data.createdAt = FieldValue.serverTimestamp();
         data.updatedAt = FieldValue.serverTimestamp();
@@ -2862,7 +2873,7 @@
     // filtres avancés
     const numOrNull = (v) => { const n = parseFloat(String(v).replace(",", ".")); return Number.isFinite(n) ? n : null; };
     const advMap = { "adv-pmin": "pmin", "adv-pmax": "pmax", "adv-zero": "zero", "adv-vmax": "vmax", "adv-yfrom": "yfrom", "adv-yto": "yto" };
-    const advActive = () => ["drive", "verdict", "turbo"].filter((k) => filters[k] !== "all").length + Object.values(advMap).filter((k) => filters[k] != null).length;
+    const advActive = () => ["drive", "verdict", "turbo", "rarity"].filter((k) => filters[k] !== "all").length + Object.values(advMap).filter((k) => filters[k] != null).length;
     const advRefresh = () => {
       const n = advActive();
       $("adv-count").hidden = !n; $("adv-count").textContent = n;
@@ -2876,15 +2887,16 @@
     Object.entries(advMap).forEach(([id, key]) => $(id).addEventListener("input", (e) => { filters[key] = numOrNull(e.target.value); advRefresh(); }));
     $("adv-drive").addEventListener("change", (e) => { filters.drive = e.target.value; advRefresh(); });
     $("adv-turbo").addEventListener("change", (e) => { filters.turbo = e.target.value; advRefresh(); });
+    $("adv-rarity").addEventListener("change", async (e) => { filters.rarity = e.target.value; if (filters.rarity !== "all" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) {} } advRefresh(); });
     $("adv-verdict").addEventListener("change", (e) => { filters.verdict = e.target.value; advRefresh(); });
     $("adv-reset").addEventListener("click", () => {
       Object.entries(advMap).forEach(([id, key]) => { $(id).value = ""; filters[key] = null; });
-      $("adv-drive").value = "all"; $("adv-turbo").value = "all"; $("adv-verdict").value = "all"; filters.drive = "all"; filters.turbo = "all"; filters.verdict = "all";
+      $("adv-drive").value = "all"; $("adv-turbo").value = "all"; $("adv-verdict").value = "all"; $("adv-rarity").value = "all"; filters.drive = "all"; filters.turbo = "all"; filters.verdict = "all"; filters.rarity = "all";
       advRefresh();
     });
 
     $("brand-select").addEventListener("change", (e) => { filters.brand = e.target.value; filters.page = 1; renderCatalog(); });
-    $("sort-select").addEventListener("change", (e) => { filters.sort = e.target.value; filters.page = 1; renderCatalog(); });
+    $("sort-select").addEventListener("change", async (e) => { filters.sort = e.target.value; filters.page = 1; if (filters.sort === "rarity-desc" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) {} } renderCatalog(); });
     $("noimg-pill").addEventListener("click", () => {
       filters.noimg = !filters.noimg; filters.page = 1;
       $("noimg-pill").classList.toggle("active", filters.noimg); $("noimg-pill").setAttribute("aria-pressed", String(filters.noimg));

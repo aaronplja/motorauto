@@ -8,7 +8,7 @@
 const BY_UID = ["likes", "votes", "comments", "feed", "events", "rsvps", "reactions", "community_cars", "club_members", "club_posts",
   "listings", "contest_entries", "contest_votes", "suggestions", "contact_messages", "global_chat", "push_tokens", "pilot_locations"];
 const BY_OTHER = [["global_laps", "pilotUid"], ["reports", "reporterUid"], ["listing_reports", "reporterUid"], ["trades", "fromUid"], ["trades", "toUid"], ["referrals", "referrerUid"]];
-const BY_ID = ["collections", "streaks", "wishlists", "weekly", "referrals", "mail_state", "login_events", "mutes", "notif_prefs", "global_seen"];
+const BY_ID = ["collections", "streaks", "wishlists", "weekly", "referrals", "mail_state", "login_events", "mutes", "notif_prefs", "global_seen", "presence", "guides"];
 const STORAGE_PREFIXES = ["avatars/", "car_photos/", "chat_media/", "suggestions/"];
 
 async function deleteQuery(db, q) {

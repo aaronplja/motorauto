@@ -213,7 +213,7 @@
       }
       const preview = (mine ? "Toi : " : "") + (c.lastText || "…");
       return `<div class="conv-item dm ${isActive("private", c.other) ? "active" : ""} ${unread ? "has-unread" : ""}" role="button" tabindex="0" data-action="open" data-type="private" data-id="${esc(c.other)}" data-name="${esc(name)}">
-        <img class="avatar" src="${esc(avatarOf(c.other))}" alt="" data-fallback="avatar">
+        <img class="avatar" src="${esc(avatarOf(c.other))}" alt="" data-fallback="avatar" data-presence="${esc(c.other)}">
         <span class="dm-body">
           <span class="dm-top"><span class="conv-name">${esc(name)}</span><time class="dm-ago">${esc(meta)}</time></span>
           <span class="dm-preview">${esc(preview)}</span>
@@ -236,6 +236,7 @@
       </div>`).join("") : `<div class="empty-note small">${state.pilots.length ? "Aucun pilote trouvé." : "Aucun autre pilote pour l'instant."}</div>`);
     }
 
+    if (window.MAPresence) window.MAPresence.paint(document.getElementById("chat-private-list") || document);
     const dot = MA.unread.count() > 0;
     document.title = (dot && document.hidden ? "● " : "") + "Salon des pilotes | MOTORAUTO";
   }
@@ -263,6 +264,7 @@
       else badge.innerHTML = `<img class="avatar" data-uid="${esc(c.id)}" src="${esc(badgeSrc)}" alt="" data-fallback="avatar">`;
       $("chat-header-title").textContent = name;
       $("chat-header-sub").textContent = "Conversation privée entre vous deux";
+      if (window.MAPresence) window.MAPresence.get(c.id).then((pr) => { if (pr && state.conv === c) $("chat-header-sub").textContent = pr.text + " · conversation privée"; });
     } else if (c.type === "global") {
       badge.textContent = "🌐";
       $("chat-header-title").textContent = "Salon général";

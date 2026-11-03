@@ -1,0 +1,26 @@
+{
+  "name": "motorauto-ios",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application iPhone MOTORAUTO (Capacitor) : emballe le site dans une vraie app iOS.",
+  "scripts": {
+    "web": "node scripts/build-web.js",
+    "add-ios": "npx cap add ios",
+    "assets": "npx capacitor-assets generate --ios",
+    "sync": "node scripts/build-web.js && npx cap sync ios",
+    "open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "@capacitor-firebase/authentication": "^7.0.0",
+    "@capacitor-firebase/messaging": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.0",
+    "@capacitor/status-bar": "^7.0.0",
+    "firebase": "^11.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/assets": "^3.0.5"
+  }
+}

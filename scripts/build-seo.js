@@ -42,6 +42,7 @@ const EX = (() => { try { const w = {}; new Function("window", fs.readFileSync(p
 const slug = (s) => String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const nfr = (n, d) => Number(n).toLocaleString("fr-FR", { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
 const imgOf = (car) => (/^https?:\/\//.test(car.image) ? car.image : (car.image ? `${SITE}/${car.image}` : `${SITE}/assets/icon-512.png`));
+const shareOf = (car) => `${SITE}/share/${car.id}.jpg`;
 const CSS = `body{margin:0;background:#09090b;color:#f4f4f5;font:16px/1.6 system-ui,sans-serif}main{max-width:820px;margin:0 auto;padding:2rem 1.2rem}img{max-width:100%;border-radius:14px}a{color:#fca5a5}a.cta{display:inline-block;margin:1rem 0;padding:.8rem 1.4rem;border-radius:12px;background:#ef4444;color:#fff;font-weight:700;text-decoration:none}h1{font-size:2rem;margin:.4rem 0}h2{margin:2rem 0 .6rem}h3{margin:1.2rem 0 .3rem;color:#a1a1aa}li{margin:.2rem 0}.k{color:#ef4444;font-weight:800;letter-spacing:.08em}nav.bc{font-size:.85rem;color:#a1a1aa}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid #27272a;padding:.5rem .6rem;text-align:left}th{color:#a1a1aa;font-weight:600;width:45%}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.8rem;padding:0;list-style:none}.grid li{background:#18181b;border-radius:12px;padding:.8rem}.grid img{width:100%;aspect-ratio:16/9;object-fit:cover}`;
 const head = ({ title, desc, url, img, type, ld }) => `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
@@ -49,7 +50,7 @@ const head = ({ title, desc, url, img, type, ld }) => `<meta charset="UTF-8"><me
 <link rel="canonical" href="${esc(url)}">
 <meta property="og:type" content="${type}"><meta property="og:site_name" content="MOTORAUTO">
 <meta property="og:title" content="${esc(title.replace(/ \| MOTORAUTO$/, ""))}"><meta property="og:description" content="${esc(desc)}">
-<meta property="og:url" content="${esc(url)}"><meta property="og:image" content="${esc(img)}"><meta property="og:locale" content="fr_FR">
+<meta property="og:url" content="${esc(url)}"><meta property="og:image" content="${esc(img)}">${/\/share\//.test(img) ? '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">' : ""}<meta property="og:locale" content="fr_FR">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title.replace(/ \| MOTORAUTO$/, ""))}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${esc(img)}">
 <meta name="theme-color" content="#09090b">
 <script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>
@@ -89,7 +90,7 @@ cars.forEach((car) => {
   const engines = car.phases.map((p) => `<h3>${esc(p.phaseName)}</h3><ul>${p.engines.map((e) => `<li><b>${esc(e.name)}</b> — ${e.power} ch${e.torque ? ", " + e.torque + " Nm" : ""}${e.speed ? ", " + e.speed + " km/h" : ""}${e.zeroToHundred ? ", 0-100 en " + e.zeroToHundred + " s" : ""}</li>`).join("")}</ul>`).join("");
   const html = `<!DOCTYPE html>
 <html lang="fr"><head>
-${head({ title, desc, url, img, type: "article", ld })}
+${head({ title, desc, url, img: shareOf(car), type: "article", ld })}
 </head><body><main>
 <nav class="bc" aria-label="Fil d'Ariane"><a href="../index.html">MOTORAUTO</a> › <a href="../marque/${slug(car.brand)}.html">${esc(car.brand)}</a> › ${esc(car.model)}</nav>
 <div class="k">MOTORAUTO</div>

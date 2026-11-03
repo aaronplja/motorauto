@@ -410,7 +410,14 @@
       <div class="sheet-core-body">
         ${mods.length ? `<div class="sheet-section-head">Modifications</div><ul class="mods-list">${mods.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}
         <div class="sheet-section-head">Avis de la communauté</div><div class="social-mount"></div>
+        <div class="car-history" data-car-history hidden><div class="sheet-section-head">Historique des modifications</div><ul class="mods-list car-history-list"></ul></div>
       </div>`;
+    C.db.collection("community_cars").doc(id).collection("history").orderBy("at", "desc").limit(8).get().then((hs) => {
+      const box = root.querySelector("[data-car-history]"); if (!box || hs.empty) return;
+      const fmt = (t) => { try { return (t && t.toDate ? t.toDate() : new Date()).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }); } catch (_) { return ""; } };
+      box.querySelector("ul").innerHTML = hs.docs.map((d) => { const x = d.data(); return `<li><b>${esc(fmt(x.at))}</b> · ${esc(x.by || "Pilote")} : ${(x.changes || []).map(esc).join(", ")}</li>`; }).join("");
+      box.hidden = false;
+    }).catch(() => { /* historique indisponible */ });
     root.querySelector('[data-action="copy-link"]').addEventListener("click", async () => {
       try { await navigator.clipboard.writeText(location.origin + location.pathname + "#/voiture-pilote/" + id); C.toast("Lien copié.", "ok"); } catch (_) { C.toast(location.href); }
     });

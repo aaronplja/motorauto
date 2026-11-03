@@ -1,13 +1,5 @@
-# Ne pas envoyer à Vercel : dépendances et outils (le site est 100 % statique)
-node_modules
-**/node_modules
+app-ios
 functions
 tests
 scripts
-.git
-.env
-**/.env
-*.md
-firestore.rules
-storage.rules
-firebase.json
+*.rules

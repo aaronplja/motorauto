@@ -99,3 +99,21 @@
 .cg-block { padding: 1.15rem; gap: 1rem; }
 .cg-packs, .cg-albumgrid, .cg-mlist, .cg-mc-row { gap: .8rem; }
 .cg-tabs { margin-bottom: .2rem; }
+
+/* Dos des cartes à l'ouverture d'un pack */
+.tcg-flips .flip-back { --fbr: var(--ring, #ef4444); position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .35rem; overflow: hidden; border: 0; border-radius: 16px; text-align: center;
+  background: radial-gradient(120% 80% at 50% 0%, rgba(239,68,68,.22), transparent 55%), repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 3px, transparent 3px 6px), repeating-linear-gradient(-45deg, rgba(0,0,0,.35) 0 3px, transparent 3px 6px), linear-gradient(160deg, #1b1b21, #09090b 70%);
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,.16) inset, 0 12px 30px -12px rgba(0,0,0,.8); }
+.tcg-flips .flip-back::after { content: none; }
+.tcg-flips .flip-back .fb-frame { position: absolute; inset: 7%; border-radius: 11px; border: 1px solid rgba(239,68,68,.55); box-shadow: 0 0 0 1px rgba(0,0,0,.5), inset 0 0 22px -8px rgba(239,68,68,.5); pointer-events: none; }
+.tcg-flips .flip-back .fb-frame::before, .tcg-flips .flip-back .fb-frame::after { content: ""; position: absolute; width: 14%; height: 2px; background: #ef4444; left: 50%; transform: translateX(-50%); }
+.tcg-flips .flip-back .fb-frame::before { top: -1.5px; } .tcg-flips .flip-back .fb-frame::after { bottom: -1.5px; }
+.tcg-flips .flip-back .fb-mark { width: 46%; height: auto; fill: #ef4444; filter: drop-shadow(0 4px 14px rgba(239,68,68,.55)); }
+.tcg-flips .flip-back b { font-size: clamp(.62rem, 2.2vw, .95rem); letter-spacing: .14em; font-weight: 900; color: #fff; line-height: 1; }
+.tcg-flips .flip-back b span { color: #ef4444; }
+.tcg-flips .flip-back small { font-size: clamp(.44rem, 1.5vw, .62rem); letter-spacing: .16em; text-transform: uppercase; color: #8d8d99; font-weight: 700; }
+.tcg-flips .flip-back .fb-shine { position: absolute; inset: -20% 0; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.14), transparent); transform: skewX(-18deg); animation: fbShine 3.2s ease-in-out infinite; pointer-events: none; }
+.tcg-flips .flip:nth-child(2n) .fb-shine { animation-delay: .6s; } .tcg-flips .flip:nth-child(3n) .fb-shine { animation-delay: 1.2s; }
+@keyframes fbShine { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+.tcg-flips .flip:not(.on):hover .flip-in { transform: translateY(-4px); }
+@media (prefers-reduced-motion: reduce) { .tcg-flips .flip-back .fb-shine { animation: none; } }

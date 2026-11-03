@@ -82,4 +82,7 @@ exports.pushOnNotification = require("./push").createPush({ db, messaging: admin
 exports.closeDueContests = onSchedule({ schedule: "20 0 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.closeDueContests(); });
 exports.monthlyContest = onSchedule({ schedule: "10 0 1 * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.monthlyContest(); });
 
+// sauvegarde Firestore hebdomadaire (voir functions/backup.js : bucket + droits à configurer une fois)
+exports.weeklyBackup = require("./backup").createBackup({ region: REGION });
+
 if (process.env.MAIL_ENABLED === "true") Object.assign(exports, require("./mail-functions"));

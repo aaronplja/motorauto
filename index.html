@@ -63,6 +63,7 @@
   <link rel="stylesheet" href="css/homog.css">
   <link rel="stylesheet" href="css/trades.css">
   <link rel="stylesheet" href="css/guides.css">
+  <link rel="stylesheet" href="css/presence.css">
 <style id="splash-css">#splash{display:none}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.1rem;background:var(--bg-core,#09090b);touch-action:manipulation;contain:strict;animation:spLife 1.5s linear forwards}
 #splash .sp-mark{width:min(30vw,120px);height:auto;overflow:visible;animation:spMark 1.5s cubic-bezier(.3,.7,.2,1) forwards}
@@ -312,6 +313,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
             <option value="year-asc">Plus anciennes</option>
             <option value="likes-desc">Les plus aimées</option>
             <option value="rating-desc">Les mieux notées</option>
+            <option value="rarity-desc">Rareté de la carte</option>
           </select>
         </label>
         <button type="button" class="cta-btn btn-ghost adv-toggle" id="adv-toggle" aria-expanded="false" aria-controls="adv-panel">
@@ -329,6 +331,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <select id="adv-verdict" class="custom-select"><option value="all">Tous</option><option value="ideal">Idéale</option><option value="correct">Correcte</option><option value="watch">À surveiller</option><option value="avoid">Déconseillée</option><option value="race">Voiture de course</option></select></label>
         <label class="adv-field"><span>Moteur</span>
           <select id="adv-turbo" class="custom-select"><option value="all">Tous</option><option value="turbo">Turbo / compresseur</option><option value="atmo">Atmosphérique</option></select></label>
+        <label class="adv-field"><span>Rareté de la carte</span>
+          <select id="adv-rarity" class="custom-select"><option value="all">Toutes</option><option value="common">Commune</option><option value="rare">Rare</option><option value="epic">Épique</option><option value="legendary">Légendaire</option><option value="shiny">Shiny</option><option value="mythic">Légende</option></select></label>
         <label class="adv-field"><span>Puissance min. (ch)</span><input type="number" id="adv-pmin" min="0" max="2000" inputmode="numeric" placeholder="ex. 150"></label>
         <label class="adv-field"><span>Puissance max. (ch)</span><input type="number" id="adv-pmax" min="0" max="2000" inputmode="numeric" placeholder="ex. 300"></label>
         <label class="adv-field"><span>0-100 km/h max. (s)</span><input type="number" id="adv-zero" min="1" max="30" step="0.1" inputmode="decimal" placeholder="ex. 6.5"></label>
@@ -493,6 +497,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <span class="status-tag-verified" id="pub-profile-subtitle">Dossier pilote</span>
           <h1 class="page-title" id="pub-profile-name">Pilote</h1>
           <p class="page-sub" id="pub-profile-car">Projet : -</p>
+          <p class="presence-line" id="pub-presence" hidden></p>
         </div>
       </div>
       <div id="pub-socials"></div>
@@ -692,6 +697,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <fieldset class="priv-group"><legend>🔐 Confidentialité</legend>
             <label class="check-row"><input type="checkbox" id="settings-public-garage"><span>Garage public : les autres pilotes voient mes favoris et mes chronos</span></label>
             <label class="check-row"><input type="checkbox" id="settings-hide-following"><span>Masquer mes abonnements (les pilotes que je suis)</span></label>
+            <label class="check-row"><input type="checkbox" id="settings-show-presence" checked><span>Afficher quand je suis en ligne et ma dernière connexion (sur mon profil et dans le chat)</span></label>
             <label class="check-row"><input type="checkbox" id="settings-hide-followers"><span>Masquer mes abonnés (ceux qui me suivent)</span></label>
           </fieldset>
           <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
@@ -1368,6 +1374,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/admin-game.js"></script>
   <script defer src="js/admin-rarity.js"></script>
   <script defer src="js/guides.js"></script>
+  <script defer src="js/presence.js"></script>
   <script defer src="js/blocks.js"></script>
   <script defer src="js/native.js"></script>
   <script defer src="js/share.js"></script>

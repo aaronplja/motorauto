@@ -95,13 +95,15 @@
     if (!box) return;
     box.innerHTML = `<div class="dash-skel"><i></i><i></i><i></i></div>`;
     try {
-      const [st, views, usersS, lapsS, logS] = await Promise.all([
+      const [st, views, usersS, lapsS, logS, collS] = await Promise.all([
         window.MAAdminCache.get("stats", () => C.db.collection("stats").limit(120).get()),
         window.MAAdminCache.get("car_views", () => C.db.collection("car_views").limit(400).get()),
         window.MAAdminCache.get("users", () => C.db.collection("users").limit(500).get(), 60000).catch(() => ({ size: 0 })),
         window.MAAdminCache.get("laps", () => C.db.collection("global_laps").limit(500).get(), 60000).catch(() => ({ size: 0 })),
-        C.db.collection("admin_log").orderBy("createdAt", "desc").limit(8).get().catch(() => ({ docs: [] }))
+        C.db.collection("admin_log").orderBy("createdAt", "desc").limit(8).get().catch(() => ({ docs: [] })),
+        window.MAAdminCache.get("collections", () => C.db.collection("collections").limit(500).get(), 60000).catch(() => null)
       ]);
+      let packsN = 0, cardsN = 0, collectorsN = 0; if (collS) collS.forEach((d) => { const x = d.data() || {}; packsN += x.opened || 0; cardsN += x.count || 0; if ((x.count || 0) > 0) collectorsN++; });
       const usersN = usersS.size, lapsN = lapsS.size;
       const logHtml = (logS.docs || []).map((d) => { const x = d.data(), t = tsMs(x.createdAt); return `<li><time>${t ? new Date(t).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}</time><span><b>${esc(x.byName || "Admin")}</b> ${esc(ACTION_LABEL[x.action] || x.action)}${x.targetName ? " — " + esc(x.targetName) : ""}</span></li>`; }).join("");
       const days = new Map(); st.forEach((d) => days.set(d.id, d.data()));
@@ -124,6 +126,8 @@
           <div class="dash-kpi"><span>Pilotes</span><b>${nf(usersN)}</b><em class="dd flat">inscrits</em></div>
           <div class="dash-kpi"><span>Véhicules</span><b>${nf(C.carsById.size)}</b><em class="dd flat">fiches</em></div>
           <div class="dash-kpi"><span>Chronos</span><b>${nf(lapsN)}</b><em class="dd flat">enregistrés</em></div>
+          <div class="dash-kpi"><span>Packs ouverts</span><b>${nf(packsN)}</b><em class="dd flat">au total</em></div>
+          <div class="dash-kpi"><span>Cartes collectées</span><b>${nf(cardsN)}</b><em class="dd flat">${nf(collectorsN)} collectionneur${collectorsN > 1 ? "s" : ""}</em></div>
         </div>
         <section class="dash-card2">
           <header><div><h3>Visites par jour</h3><small id="dash-chart-total"></small></div>

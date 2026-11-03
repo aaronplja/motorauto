@@ -276,7 +276,7 @@
     function stage() {
       const box = o.querySelector("#pk3"); if (!box || overlay !== o) return;
       box.innerHTML = `<h2>Ton pack</h2><p class="tcg-hint" id="tcg-hint">Touche chaque carte pour la révéler</p>
-        <div class="tcg-flips">${results.map((r, i) => `<div class="flip deal" style="--i:${i}" data-i="${i}" data-r="${rarityOf(r.car)}" role="button" tabindex="0" aria-label="Révéler la carte ${i + 1}"><div class="flip-in"><div class="flip-face flip-back"><b>MOTOR<span>AUTO</span></b><small>CARTE</small></div><div class="flip-face flip-front">${cardHtml(r.car, r.newPic ? { image: r.image } : null)}<span class="tcg-tag ${r.fresh || r.newPic ? "new" : "dup"}">${r.fresh ? "NOUVELLE" : r.newPic ? "NOUVELLE IMAGE " + r.picN + "/" + r.picTotal + (r.reward ? " · +" + r.reward : "") : "DOUBLON +" + RAR[rarityOf(r.car)].dust}</span></div></div><i class="flip-ring" aria-hidden="true"></i></div>`).join("")}</div>
+        <div class="tcg-flips">${results.map((r, i) => `<div class="flip deal" style="--i:${i}" data-i="${i}" data-r="${rarityOf(r.car)}" role="button" tabindex="0" aria-label="Révéler la carte ${i + 1}"><div class="flip-in"><div class="flip-face flip-back"><span class="fb-frame" aria-hidden="true"></span><svg class="fb-mark" viewBox="180 280 660 466" aria-hidden="true"><polygon points="415,288 544,288 320,736 192,736"/><polygon points="703,288 832,288 608,736 480,736"/></svg><b>MOTOR<span>AUTO</span></b><small>Révéler</small><i class="fb-shine" aria-hidden="true"></i></div><div class="flip-face flip-front">${cardHtml(r.car, r.newPic ? { image: r.image } : null)}<span class="tcg-tag ${r.fresh || r.newPic ? "new" : "dup"}">${r.fresh ? "NOUVELLE" : r.newPic ? "NOUVELLE IMAGE " + r.picN + "/" + r.picTotal + (r.reward ? " · +" + r.reward : "") : "DOUBLON +" + RAR[rarityOf(r.car)].dust}</span></div></div><i class="flip-ring" aria-hidden="true"></i></div>`).join("")}</div>
         <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" id="tcg-all">Tout révéler</button></div>
         <div class="pk3-sum" id="tcg-sum" hidden></div>
         <div class="tcg-actions" id="tcg-end" hidden><button type="button" class="cta-btn fill-btn" id="tcg-done">Terminer</button></div>`;
@@ -753,7 +753,7 @@
   async function myCollection() { try { await load(); return doc; } catch (_) { return null; } }
 
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-sheet-card]"); if (b && C && C.user) showDetail(b.dataset.sheetCard, [], { peek: true }); else if (b) C && C.toast && C.toast("Connecte-toi pour voir la carte.", "err"); });
-  window.MACards = { sheetBadge, setRarOv: (m) => { rarOv = m || {}; }, rarOv: () => rarOv, autoRarity: (car) => { indexCars(); return rarityMap.get(car.id) || "common"; }, lvOf, pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
+  window.MACards = { loadRarOv, sheetBadge, setRarOv: (m) => { rarOv = m || {}; }, rarOv: () => rarOv, autoRarity: (car) => { indexCars(); return rarityMap.get(car.id) || "common"; }, lvOf, pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
