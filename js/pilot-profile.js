@@ -25,7 +25,8 @@
     { const pr = $("pub-presence"); if (pr) { pr.hidden = true; if (window.MAPresence) window.MAPresence.get(uid).then((v) => { if (my !== token || !v) return; pr.textContent = v.text; pr.className = "presence-line" + (v.online ? " on" : ""); pr.hidden = false; }); } }
     const soc = $("pub-socials"); if (soc) soc.innerHTML = window.MANets ? window.MANets.html(data, esc) : "";
     if (window.MAIcons) window.MAIcons.apply($("public-profile-modal"));
-    const vit = $("pub-vitrine"), sc = $("pub-stat-cards"), sl = $("pub-stat-level");
+    const vit = $("pub-vitrine"), sc = $("pub-stat-cards"), sl = $("pub-stat-level"), lc = $("pub-level-card");
+    if (lc) { lc.hidden = true; lc.innerHTML = ""; }
     if (sc) sc.querySelector("b").textContent = "–";
     if (sl) sl.querySelector("b").textContent = "–";
     if (vit) vit.innerHTML = `<div class="empty-note">Chargement de la vitrine…</div>`;
@@ -41,13 +42,32 @@
     const ids = Object.keys(owned).filter((k) => owned[k] > 0).map((id) => window.MACards.cardObj(id)).filter(Boolean);
     if (sc) sc.querySelector("b").textContent = String(col ? col.count || ids.length : 0);
     try {
-      if (window.MAGame) { await window.MAGame.loadAll(false); const s = window.MAGame.statsOf(uid); if (sl && s) sl.querySelector("b").textContent = String(G.levelOf(s.xp).level.n); }
+      if (window.MAGame) {
+        const all = await window.MAGame.loadAll(false), s = window.MAGame.statsOf(uid);
+        if (sl && s) sl.querySelector("b").textContent = String(G.levelOf(s.xp).level.n);
+        if (lc && s) {
+          const L = G.levelOf(s.xp), nf = (n) => Math.round(n).toLocaleString("fr-FR");
+          const ranked = Array.from(all.map.values()).filter((x) => all.users.has(x.uid) && x.xp > 0).sort((a, b) => b.xp - a.xp);
+          const rank = ranked.findIndex((x) => x.uid === uid) + 1;
+          lc.innerHTML = `<div class="lvl-ring" style="--p:${L.pct}%"><b>${L.level.n}</b><small>NIV.</small></div>
+            <div class="pv2-lv-main"><h3>${esc(L.level.name)}</h3><div class="xp-bar"><i style="width:${L.pct}%"></i></div>
+              <small>${nf(s.xp)} XP${L.next ? " · encore " + nf(L.toNext) + " pour « " + esc(L.next.name) + " »" : " · niveau maximum"}</small></div>
+            <ul class="pv2-facts"><li><b>${rank ? "n° " + rank : "–"}</b><span>classement</span></li><li><b>${s.badges.length}</b><span>succès</span></li><li><b>${nf(s.laps)}</b><span>chronos</span></li><li><b>${nf(s.records)}</b><span>records</span></li></ul>`;
+          lc.hidden = false;
+        }
+      }
     } catch (_) { /* niveau indisponible */ }
     if (my !== token) return;
     if (!ids.length) { vit.innerHTML = `<div class="empty-note">Ce pilote n'a pas encore ouvert de pack.</div>`; return; }
     ids.sort((a, b) => (WEIGHT[window.MACards.rarityOf(b)] - WEIGHT[window.MACards.rarityOf(a)]) || ((b.stats && b.stats.power) || 0) - ((a.stats && a.stats.power) || 0));
     const best = ids.slice(0, 6);
-    vit.innerHTML = `<div class="pro-vitrine-head"><h3 class="sec-title nomargin">Ses plus belles cartes</h3><a class="pro-link" href="#/classement/collection">Classement des collectionneurs →</a></div>
+    const RAR = [["mythic", "Légende"], ["special", "Édition limitée"], ["shiny", "Shiny"], ["legendary", "Légendaire"], ["epic", "Épique"], ["rare", "Rare"], ["common", "Commune"]], cnt = {};
+    ids.forEach((c) => { const r = window.MACards.rarityOf(c); cnt[r] = (cnt[r] || 0) + 1; });
+    const nCat = Math.max(1, ((C.cars || []).length) || 1), pct = Math.min(100, Math.round((ids.length / nCat) * 100));
+    const dist = `<div class="pv2-coll"><div class="pv2-ring" style="--p:${pct}%"><b>${pct}%</b><small>collection</small></div>
+      <div class="pv2-rar"><div class="pv2-rar-bar" role="img" aria-label="Répartition des raretés">${RAR.filter(([k]) => cnt[k]).map(([k]) => `<i class="r-${k}" style="flex:${cnt[k]}"></i>`).join("")}</div>
+        <ul>${RAR.filter(([k]) => cnt[k]).map(([k, l]) => `<li><i class="r-${k}"></i>${l}<b>${cnt[k]}</b></li>`).join("")}</ul></div></div>`;
+    vit.innerHTML = dist + `<div class="pro-vitrine-head"><h3 class="sec-title nomargin">Ses plus belles cartes</h3><a class="pro-link" href="#/classement/collection">Classement des collectionneurs →</a></div>
       <div class="tcg-grid pro-vitrine-grid">${best.map((c) => window.MACards.cardHtml(c, { owned: true, count: owned[c.id] })).join("")}</div>`;
     if (window.MAIcons) window.MAIcons.apply(vit);
   }

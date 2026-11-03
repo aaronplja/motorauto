@@ -145,20 +145,45 @@
   }
 
   // ====================================================================== SUCCÈS
-  let ac = { filter: "all" };
+  let ac = { filter: "all", tier: "all" };
+  const tierName = (t) => ({ "": T("Bronze"), silver: T("Argent"), gold: T("Or") }[t || ""]);
+  function acInfo(b, s, earned) {
+    const goal = typeof b.goal === "function" ? b.goal() : b.goal, cur = Math.min(goal, b.get(s) || 0);
+    return { on: earned.has(b.id), goal, cur, pct: goal ? Math.round((cur / goal) * 100) : 0 };
+  }
   async function acRender() {
     const root = rootOf("achievements"); if (!root) return;
     if (!C.user) { root.innerHTML = loginNote(T("voir tes succès")); return; }
     const s = window.MAGame.statsOf(C.user.uid), earned = new Set(s.badges), B = window.MAGame.BADGES;
-    const list = B.filter((b) => ac.filter === "all" || (ac.filter === "on") === earned.has(b.id));
-    const tiers = { "": T("Bronze"), silver: T("Argent"), gold: T("Or") };
+    const list = B.filter((b) => (ac.filter === "all" || (ac.filter === "on") === earned.has(b.id)) && (ac.tier === "all" || (b.tier || "bronze") === ac.tier));
     const count = (t) => `${B.filter((b) => b.tier === t && earned.has(b.id)).length} / ${B.filter((b) => b.tier === t).length}`;
+    const chip = (grp, k, l, cur) => `<button type="button" class="chip${cur === k ? " active" : ""}" data-ac-${grp}="${k}" aria-pressed="${cur === k}">${l}</button>`;
+    // obtenus d'abord, puis les plus proches d'être débloqués
+    const sorted = list.map((b) => ({ b, i: acInfo(b, s, earned) })).sort((x, y) => (y.i.on - x.i.on) || (y.i.pct - x.i.pct));
     root.innerHTML = `${window.MAGame.levelHtml(s)}
-      <div class="ac-sum"><span><b>${s.badges.length}</b> / ${B.length} ${T("succès")}</span>${["", "silver", "gold"].map((t) => `<span class="ac-t ${t}">${tiers[t]} <b>${count(t)}</b></span>`).join("")}</div>
-      <div class="chip-row" role="group" aria-label="${T("Filtrer")}">${[["all", T("Tous")], ["on", T("Obtenus")], ["off", T("À débloquer")]].map(([k, l]) => `<button type="button" class="chip${ac.filter === k ? " active" : ""}" data-ac-f="${k}" aria-pressed="${ac.filter === k}">${l}</button>`).join("")}</div>
-      <div class="badge-grid" role="list">${list.sort((a, b) => (earned.has(b.id) ? 1 : 0) - (earned.has(a.id) ? 1 : 0) ).map((b) => {
-        const on = earned.has(b.id), goal = typeof b.goal === "function" ? b.goal() : b.goal, cur = Math.min(goal, b.get(s));
-        return `<div class="badge-tile ${on ? "on " + b.tier : "off"}" role="listitem" title="${C.esc(b.desc)}"><i aria-hidden="true">${b.icon}</i><b>${C.esc(b.label)}</b><small>${on ? T("Obtenu") : `${window.MAGame.nf(cur)} / ${window.MAGame.nf(goal)}`}</small><em class="ac-desc">${C.esc(b.desc)}</em></div>`; }).join("")}</div>`;
+      <div class="ac-sum"><span><b>${s.badges.length}</b> / ${B.length} ${T("succès")}</span>${["", "silver", "gold"].map((t) => `<span class="ac-t ${t}">${tierName(t)} <b>${count(t)}</b></span>`).join("")}</div>
+      <div class="chip-row" role="group" aria-label="${T("Filtrer")}">${[["all", T("Tous")], ["on", T("Obtenus")], ["off", T("À débloquer")]].map(([k, l]) => chip("f", k, l, ac.filter)).join("")}</div>
+      <div class="chip-row" role="group" aria-label="${T("Palier")}">${[["all", T("Tous les paliers")], ["bronze", T("Bronze")], ["silver", T("Argent")], ["gold", T("Or")]].map(([k, l]) => chip("t", k, l, ac.tier)).join("")}</div>
+      <p class="ac-hint">${T("Touche un succès pour voir son détail.")}</p>
+      <div class="badge-grid" role="list">${sorted.map(({ b, i }) => `<button type="button" class="badge-tile ac-tile ${i.on ? "on " + b.tier : "off"}" role="listitem" data-ac-open="${C.esc(b.id)}" aria-label="${C.esc(b.label)}"><i aria-hidden="true">${b.icon}</i><b>${C.esc(b.label)}</b><span class="ac-bar" aria-hidden="true"><u style="width:${i.pct}%"></u></span><small>${i.on ? T("Obtenu") : `${window.MAGame.nf(i.cur)} / ${window.MAGame.nf(i.goal)}`}</small></button>`).join("") || `<p class="ac-hint">${T("Aucun succès dans cette sélection.")}</p>`}</div>`;
+  }
+  function acSheet(id) {
+    const s = window.MAGame.statsOf(C.user.uid), earned = new Set(s.badges), b = window.MAGame.BADGES.find((x) => x.id === id); if (!b) return;
+    const i = acInfo(b, s, earned), nf = window.MAGame.nf;
+    document.querySelectorAll(".ac-sheet").forEach((n) => n.remove());
+    const ov = document.createElement("div"); ov.className = "ac-sheet"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", b.label);
+    ov.innerHTML = `<div class="ac-card ${i.on ? "on " + (b.tier || "") : "off"}"><button type="button" class="ac-x" data-ac-x aria-label="${T("Fermer")}">×</button>
+      <i class="ac-big" aria-hidden="true">${b.icon}</i><h3>${C.esc(b.label)}</h3>
+      <p class="ac-state ${i.on ? "ok" : ""}">${i.on ? T("Succès obtenu") : T("À débloquer")} · ${tierName(b.tier)}</p>
+      <p class="ac-d">${C.esc(b.desc)}</p>
+      <div class="ac-prog"><span class="ac-bar big"><u style="width:${i.pct}%"></u></span><small>${nf(i.cur)} / ${nf(i.goal)} · ${i.pct} %</small></div>
+      ${i.on ? "" : `<p class="ac-left">${T("Encore")} <b>${nf(Math.max(0, i.goal - i.cur))}</b> ${T("pour le débloquer.")}</p>`}</div>`;
+    document.body.appendChild(ov);
+    const close = () => { ov.remove(); document.removeEventListener("keydown", key); };
+    const key = (e) => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", key);
+    ov.addEventListener("click", (e) => { if (e.target === ov || e.target.closest("[data-ac-x]")) close(); });
+    const x = ov.querySelector("[data-ac-x]"); if (x) x.focus();
   }
   async function acEnter() {
     const root = rootOf("achievements"); if (root && C.user) root.innerHTML = `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`;
@@ -180,6 +205,8 @@
       if (t.closest("[data-qz-next]")) { if (qz.i + 1 >= qz.qs.length) { qzFinish(); } else { qz.i++; qz.picked = -1; qzRender(); } return; }
       if (t.closest("[data-qz-menu]")) { qz.state = "menu"; qz.err = ""; qzRender(); return; }
       if ((b = t.closest("[data-ac-f]"))) { ac.filter = b.dataset.acF; acRender(); }
+      else if ((b = t.closest("[data-ac-t]"))) { ac.tier = b.dataset.acT; acRender(); }
+      else if ((b = t.closest("[data-ac-open]"))) { if (C.user) acSheet(b.dataset.acOpen); }
     });
     document.addEventListener("ma:auth", () => { pm.state = "idle"; pm.rows = null; qz.state = "menu"; qz.rows = null; const n = ctx.Router.current() && ctx.Router.current().name; if (n === "plusmoins") pmEnter(); else if (n === "quizgame") qzEnter(); else if (n === "achievements") acEnter(); });
   });

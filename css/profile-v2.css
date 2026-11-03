@@ -1,0 +1,74 @@
+/* MOTORAUTO — profil public (refonte) + fiche « Caractéristiques ». Les identifiants et actions existants sont conservés. */
+:root { --rc-common: #64748b; --rc-rare: #3b82f6; --rc-epic: #a855f7; --rc-legendary: #f59e0b; --rc-shiny: #14b8a6; --rc-mythic: #ef4444; --rc-special: #cbd5e1; }
+.pv2-ring i, .pv2-rar i, .sx-rar i { display: inline-block; }
+.r-common { --c: var(--rc-common); } .r-rare { --c: var(--rc-rare); } .r-epic { --c: var(--rc-epic); } .r-legendary { --c: var(--rc-legendary); }
+.r-shiny { --c: var(--rc-shiny); } .r-mythic { --c: var(--rc-mythic); } .r-special { --c: var(--rc-special); }
+
+/* ---- en-tête ---- */
+#public-profile-modal .pro-hero.pv2 { padding: 0 0 1.1rem; gap: .8rem; border-radius: 24px; overflow: hidden; }
+#public-profile-modal .pv2-cover { height: 118px; background: radial-gradient(120% 140% at 15% 0%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 60%), linear-gradient(135deg, color-mix(in srgb, var(--accent) 34%, var(--bg-elevated)), var(--bg-elevated)); border-bottom: 1px solid var(--stroke-line); }
+#public-profile-modal .pro-hero.pv2::before { display: none; }
+#public-profile-modal .pv2 > :not(.pv2-cover) { margin-inline: 1.2rem; }
+#public-profile-modal .pv2-id { margin-top: -52px; align-items: flex-end; gap: 1rem; }
+#public-profile-modal .pv2 .pro-avatar { width: 104px; height: 104px; border-radius: 28px; border: 4px solid var(--bg-surface); box-shadow: 0 14px 30px -12px rgba(0,0,0,.6); }
+#public-profile-modal .pv2 .pro-id-text { padding-bottom: .1rem; }
+#public-profile-modal .pv2 .page-title { font-size: clamp(1.55rem, 5.6vw, 2.3rem); }
+#public-profile-modal .pv2-actions { gap: .5rem; }
+#public-profile-modal .pv2-actions .cta-btn { min-height: 42px; }
+#public-profile-modal .pv2-bio { margin-top: 0; line-height: 1.55; max-width: 62ch; }
+#public-profile-modal .pv2-stats { grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+#public-profile-modal .pv2-stats .pro-stat { padding: .8rem .3rem; border-radius: 16px; background: var(--bg-elevated); }
+#public-profile-modal .pv2-stats .pro-stat b { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 420px) { #public-profile-modal .pv2-id { flex-direction: row; align-items: flex-end; } #public-profile-modal .pv2 .pro-avatar { width: 88px; height: 88px; } #public-profile-modal .pv2-stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* niveau */
+.pv2-level { display: grid; grid-template-columns: auto 1fr; gap: .9rem 1rem; align-items: center; padding: .9rem 1rem; border-radius: 18px; background: var(--bg-elevated); border: 1px solid var(--stroke-line); }
+.pv2-level[hidden] { display: none; }
+.pv2-lv-main h3 { margin: 0 0 .35rem; font-size: 1.05rem; } .pv2-lv-main small { color: var(--color-muted); }
+.pv2-facts { grid-column: 1 / -1; list-style: none; margin: 0; padding: .7rem 0 0; border-top: 1px solid var(--stroke-line); display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; text-align: center; }
+.pv2-facts b { display: block; font-size: 1.1rem; font-variant-numeric: tabular-nums; } .pv2-facts span { font-size: .72rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; }
+
+/* onglets */
+#public-profile-modal .pro-tabs { position: sticky; top: calc(var(--header-h, 64px) + 6px); z-index: 20; backdrop-filter: blur(10px); background: color-mix(in srgb, var(--bg-surface) 88%, transparent); }
+#public-profile-modal .pro-tab { transition: background .2s, color .2s; }
+
+/* vitrine : anneau de collection + raretés */
+.pv2-coll { display: flex; gap: 1.1rem; align-items: center; padding: 1rem; margin-bottom: 1.1rem; border-radius: 18px; background: var(--bg-surface); border: 1px solid var(--stroke-line); }
+.pv2-ring { --p: 0%; flex: none; width: 92px; height: 92px; border-radius: 50%; display: grid; place-content: center; text-align: center; position: relative; background: conic-gradient(var(--accent) var(--p), color-mix(in srgb, var(--color-muted) 24%, transparent) 0); }
+.pv2-ring::before { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--bg-surface); }
+.pv2-ring b, .pv2-ring small { position: relative; line-height: 1.1; } .pv2-ring b { font-size: 1.25rem; } .pv2-ring small { font-size: .64rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .06em; }
+.pv2-rar { flex: 1; min-width: 0; }
+.pv2-rar-bar { display: flex; height: 12px; border-radius: 99px; overflow: hidden; gap: 2px; background: var(--bg-elevated); }
+.pv2-rar-bar i { background: var(--c); min-width: 6px; }
+.pv2-rar ul { list-style: none; margin: .6rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .8rem; color: var(--color-secondary); }
+.pv2-rar li { display: inline-flex; align-items: center; gap: .35rem; } .pv2-rar li i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); } .pv2-rar li b { color: var(--color-primary, inherit); }
+@media (max-width: 420px) { .pv2-coll { flex-direction: column; align-items: stretch; } .pv2-ring { align-self: center; } }
+
+/* ---- fiche Caractéristiques ---- */
+.stats-box { width: min(720px, 100%); }
+#stats-body { display: grid; gap: .3rem; }
+.sx-hero { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; padding: 1rem; border-radius: 18px; background: radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--bg-elevated); border: 1px solid var(--stroke-line); }
+.sx-rank { text-align: center; padding: .55rem .9rem; border-radius: 14px; background: var(--bg-surface); border: 1px solid var(--stroke-line); }
+.sx-rank b { display: block; font-size: 1.3rem; color: var(--accent); } .sx-rank span { font-size: .72rem; color: var(--color-muted); }
+.sx-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .6rem; }
+.sx-kpi { display: grid; justify-items: center; gap: .15rem; padding: .85rem .3rem; border-radius: 14px; background: var(--bg-elevated); border: 1px solid var(--stroke-line); }
+.sx-kpi b { font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; } .sx-kpi span { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted); }
+.stats-sec { padding: .2rem 0 .6rem; }
+.stats-sec h3 { display: flex; align-items: center; gap: .5rem; }
+.stats-sec h3 i { display: inline-grid; place-items: center; width: 22px; height: 22px; color: var(--accent); }
+.stats-sec h3 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sx-coll { display: flex; gap: 1.1rem; align-items: center; margin-bottom: .7rem; padding: .9rem; border-radius: 16px; background: var(--bg-elevated); border: 1px solid var(--stroke-line); }
+.sx-rarlist { flex: 1; display: grid; gap: .45rem; min-width: 0; }
+.sx-rar { display: grid; grid-template-columns: 112px 1fr 56px; gap: .6rem; align-items: center; font-size: .8rem; }
+.sx-rar span { display: inline-flex; align-items: center; gap: .4rem; color: var(--color-secondary); } .sx-rar span i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
+.sx-track { height: 7px; border-radius: 99px; background: color-mix(in srgb, var(--color-muted) 24%, transparent); overflow: hidden; }
+.sx-track u { display: block; height: 100%; border-radius: inherit; background: var(--c); text-decoration: none; }
+.sx-rar b { text-align: right; font-variant-numeric: tabular-nums; } .sx-rar b small { color: var(--color-muted); font-weight: 600; }
+.sx-badges { display: flex; flex-wrap: wrap; gap: .4rem; }
+.sx-b { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .65rem .3rem .45rem; border-radius: 99px; background: var(--bg-elevated); border: 1px solid var(--stroke-line); font-size: .78rem; }
+.sx-b i { font-style: normal; } .sx-b em { font-style: normal; font-weight: 700; } .sx-b.gold { border-color: #f59e0b; } .sx-b.silver { border-color: #94a3b8; }
+.stat-tile { border-radius: 14px; } .stat-tile.wide { grid-column: span 2; }
+@media (max-width: 520px) { .sx-kpis { grid-template-columns: repeat(2, 1fr); } .sx-coll { flex-direction: column; align-items: stretch; } .sx-coll .pv2-ring { align-self: center; } .sx-rar { grid-template-columns: 96px 1fr 48px; } }
+.pv2-ring small { font-size: .56rem; letter-spacing: .02em; max-width: 64px; }
+.pv2-facts span { font-size: .66rem; letter-spacing: 0; }
+@media (max-width: 460px) { .pv2-facts { grid-template-columns: repeat(2, 1fr); row-gap: .6rem; } .pv2-level { grid-template-columns: auto 1fr; } }

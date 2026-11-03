@@ -66,6 +66,7 @@
   <link rel="stylesheet" href="css/guides.css">
   <link rel="stylesheet" href="css/presence.css">
   <link rel="stylesheet" href="css/plus.css">
+  <link rel="stylesheet" href="css/profile-v2.css">
 <style id="splash-css">#splash{display:none}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.1rem;background:var(--bg-core,#09090b);touch-action:manipulation;contain:strict;animation:spLife 1.5s linear forwards}
 #splash .sp-mark{width:min(30vw,120px);height:auto;overflow:visible;animation:spMark 1.5s cubic-bezier(.3,.7,.2,1) forwards}
@@ -497,8 +498,9 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="public-profile-modal" data-page="pilot">
   <div class="stage-shell page-wrap">
     <a class="back-link" href="#/communaute/pilotes" data-back="#/communaute/pilotes">← Tous les pilotes</a>
-    <section class="pro-hero" aria-labelledby="pub-profile-name">
-      <div class="pro-id">
+    <section class="pro-hero pv2" aria-labelledby="pub-profile-name">
+      <div class="pv2-cover" aria-hidden="true"></div>
+      <div class="pro-id pv2-id">
         <img id="pub-profile-avatar" src="" alt="Avatar du pilote" class="profile-avatar pro-avatar" data-fallback="avatar">
         <div class="pro-id-text">
           <span class="status-tag-verified" id="pub-profile-subtitle">Dossier pilote</span>
@@ -507,21 +509,22 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <p class="presence-line" id="pub-presence" hidden></p>
         </div>
       </div>
-      <div id="pub-socials"></div>
-      <p id="pub-profile-bio" class="profile-bio">Aucune bio renseignée.</p>
-      <div class="badge-row" id="pub-profile-badges"></div>
-      <div class="pro-stats" id="pub-social">
-        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b><span>abonnés</span></button>
-        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="following"><b data-sc="following">–</b><span>abonnements</span></button>
-        <div class="pro-stat" id="pub-stat-cards"><b>–</b><span>cartes</span></div>
-        <div class="pro-stat" id="pub-stat-level"><b>–</b><span>niveau</span></div>
-      </div>
-      <div class="pro-actions">
+      <div class="pro-actions pv2-actions">
         <button type="button" class="cta-btn fill-btn compact-btn follow-btn" data-action="toggle-follow" hidden>Suivre</button>
         <button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats">📊 Caractéristiques</button>
         <button type="button" class="cta-btn btn-ghost compact-btn" id="pub-block-btn" data-action="toggle-block" hidden>Bloquer</button>
         <button type="button" class="cta-btn btn-ghost compact-btn grade-btn" id="pub-admin-btn" data-action="toggle-admin" hidden>Nommer admin</button>
       </div>
+      <p id="pub-profile-bio" class="profile-bio pv2-bio">Aucune bio renseignée.</p>
+      <div id="pub-socials"></div>
+      <div class="badge-row" id="pub-profile-badges"></div>
+      <div class="pro-stats pv2-stats" id="pub-social">
+        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b><span>abonnés</span></button>
+        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="following"><b data-sc="following">–</b><span>abonnements</span></button>
+        <div class="pro-stat" id="pub-stat-cards"><b>–</b><span>cartes</span></div>
+        <div class="pro-stat" id="pub-stat-level"><b>–</b><span>niveau</span></div>
+      </div>
+      <div class="pv2-level" id="pub-level-card" hidden></div>
     </section>
     <div id="pub-profile-private-warning" class="private-warning" style="display:none">🔒 Ce pilote garde son garage privé.</div>
     <nav class="pro-tabs" id="pub-tabs" role="tablist" aria-label="Sections du profil">

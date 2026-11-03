@@ -22,7 +22,7 @@
 .page-head, .hero-stage { position: relative; }
 .guide-help { position: absolute; top: 0; right: 0; z-index: 6; width: 38px; height: 38px; display: grid; place-items: center; padding: 0; border-radius: 50%; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-secondary); font: 800 1rem/1 var(--font-display, inherit); cursor: pointer; transition: transform .2s, color .2s, border-color .2s; }
 .guide-help:hover { color: var(--accent); border-color: var(--accent); transform: scale(1.08); }
-.hero-stage > .guide-help { top: .9rem; right: 1rem; }
+.hero-stage > .guide-help { top: calc(70px + 1rem); right: 1rem; z-index: 8; background: color-mix(in srgb, var(--bg-surface) 88%, transparent); border-color: color-mix(in srgb, var(--accent) 55%, var(--stroke-line)); color: var(--accent); box-shadow: 0 4px 16px rgba(0,0,0,.35); backdrop-filter: blur(6px); }
 .guide-reset { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.2rem; padding: 1rem 1.1rem; border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--stroke-line); }
 .guide-reset > div { display: grid; gap: .1rem; }
 .guide-reset small { color: var(--color-muted); }

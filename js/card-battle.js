@@ -15,6 +15,8 @@
   const STATS = [["power", "Puissance", "ch", 1], ["speed", "Vitesse", "km/h", 1], ["zero", "0 à 100", "s", -1]];
   const val = (car, k) => Number(car.stats && car.stats[k]) || 0;
   const shuffle = (a) => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+  /** seules les cartes qui ont les trois caractéristiques (chevaux, vitesse max, 0 à 100) peuvent combattre */
+  const complete = (car) => STATS.every(([k]) => val(car, k) > 0);
   const card = (car) => window.MACards.cardHtml(car, { owned: true });
 
   /** classement de chaque voiture du catalogue sur chaque caractéristique (0 = faible … 1 = meilleure) */
@@ -33,12 +35,12 @@
 
   function newGame() {
     const doc = window.MACards.mine();
-    const mine = doc ? C.cars.filter((c) => (doc.owned[c.id] || 0) > 0) : [];
+    const mine = doc ? C.cars.filter((c) => (doc.owned[c.id] || 0) > 0 && complete(c)) : [];
     if (mine.length < 3) return null;
     const m = buildMeta();
     const hand = shuffle(mine).slice(0, 5), ids = new Set(hand.map((c) => c.id));
     // main adverse de même force : pour chaque carte, une voiture de notation proche (±6 %, puis on élargit)
-    let pool = shuffle(C.cars.filter((c) => !ids.has(c.id) && m.rating(c) > 0));
+    let pool = shuffle(C.cars.filter((c) => !ids.has(c.id) && complete(c)));
     const foes = [];
     hand.forEach((c) => {
       const r = m.rating(c);
@@ -116,7 +118,7 @@
   function open() {
     if (ov) return;
     st = newGame();
-    if (!st) { C.toast("Il te faut au moins 3 cartes pour lancer une bataille.", "err"); return; }
+    if (!st) { C.toast("Il te faut au moins 3 cartes complètes (chevaux, vitesse max et 0 à 100) pour lancer une bataille.", "err"); return; }
     ov = document.createElement("div");
     ov.className = "tcg-overlay"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "Bataille de cartes");
     ov.innerHTML = `<div class="tcg-stage"><div class="bt"></div><button type="button" class="cta-btn btn-ghost" data-bt="close">Quitter</button></div>`;

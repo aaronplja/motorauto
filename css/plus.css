@@ -260,3 +260,24 @@ body[data-page="news"] .news-btn,.news-btn[aria-current="page"]{box-shadow:0 0 0
   .mkt-note { font-size: .72rem; }
 }
 @media (max-width: 520px) { .mkt-tools { grid-template-columns: 1fr; } }
+
+/* succès : tuiles cliquables + fiche détail */
+.ac-tile { cursor: pointer; font: inherit; color: inherit; width: 100%; transition: transform .15s, border-color .15s; }
+.ac-tile:hover, .ac-tile:focus-visible { transform: translateY(-2px); border-color: var(--accent); }
+.ac-tile.off { opacity: .72; filter: grayscale(.7); }
+.ac-bar { display: block; width: 78%; height: 5px; border-radius: 99px; background: color-mix(in srgb, var(--color-muted) 28%, transparent); overflow: hidden; margin: .2rem 0; }
+.ac-bar u { display: block; height: 100%; background: var(--accent); border-radius: inherit; text-decoration: none; }
+.ac-bar.big { width: 100%; height: 9px; margin: .5rem 0 .3rem; }
+.ac-hint { color: var(--color-muted); font-size: .85rem; margin: .4rem 0; }
+.ac-sheet { position: fixed; inset: 0; z-index: 3200; display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.66); }
+.ac-card { position: relative; width: min(100%, 360px); text-align: center; padding: 1.6rem 1.3rem 1.3rem; border-radius: 18px; background: var(--bg-surface); color: var(--color-primary, inherit); border: 1px solid var(--stroke-line); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.ac-card.on.silver { border-color: #94a3b8; } .ac-card.on.gold { border-color: #f59e0b; }
+.ac-card.off .ac-big { filter: grayscale(1); opacity: .6; }
+.ac-big { display: block; font-style: normal; font-size: 3.2rem; line-height: 1.1; }
+.ac-card h3 { margin: .4rem 0 .1rem; font-size: 1.2rem; }
+.ac-state { margin: 0 0 .6rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); }
+.ac-state.ok { color: var(--accent); font-weight: 700; }
+.ac-d { margin: 0 0 .8rem; line-height: 1.4; }
+.ac-prog small, .ac-left { color: var(--color-muted); font-size: .85rem; }
+.ac-left { margin: .5rem 0 0; } .ac-left b { color: var(--color-primary, inherit); }
+.ac-x { position: absolute; top: .5rem; right: .5rem; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--stroke-line); background: transparent; color: inherit; font-size: 1.3rem; line-height: 1; cursor: pointer; }
