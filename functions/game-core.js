@@ -429,11 +429,11 @@
   const QCATS = { brands: "Marques", history: "Histoire", engines: "Moteurs", motorsport: "Sport auto", countries: "Pays et constructeurs", circuits: "Rallye et circuits", numbers: "Chiffres", trivia: "Anecdotes et records" };
   const QLEVELS = { 1: "Facile", 2: "Moyen", 3: "Expert" };
   // ---------------------------------------------------------------- saison : pass gratuit de 30 paliers, quêtes enchaînées, cosmétiques
-  const SEASON_LEN = 28, SEASON_EPOCH = Date.UTC(2026, 0, 5), DAY_MS = 86400000;
+  const SEASON_LEN = 31, DAY_MS = 86400000;   // une saison = un mois civil ; la saison 1 est novembre 2026
   const seasonInfo = (ms) => {
-    const t = ms === undefined ? Date.now() : ms, n = Math.max(1, Math.floor((t - SEASON_EPOCH) / (SEASON_LEN * DAY_MS)) + 1);
-    const start = SEASON_EPOCH + (n - 1) * SEASON_LEN * DAY_MS, end = start + SEASON_LEN * DAY_MS;
-    return { n, start, end, daysLeft: Math.max(0, Math.ceil((end - t) / DAY_MS)) };
+    const t = ms === undefined ? Date.now() : ms, d = new Date(t), y = d.getUTCFullYear(), m = d.getUTCMonth();
+    const n = Math.max(1, (y - 2026) * 12 + m - 9), start = Date.UTC(y, m, 1), end = Date.UTC(y, m + 1, 1);
+    return { n, start, end, daysLeft: Math.max(1, Math.ceil((end - t) / DAY_MS)) };
   };
   const PASS_TIERS = 30, PASS_STEP = 40;                       // 40 points de saison par palier : 1 200 points pour tout débloquer
   const SEASON_PTS = { pack: 10, quizOk: 2, quizPerfect: 10, pmOk: 2, visit: 5, upgrade: 8, fuse: 12, duel: 4 };

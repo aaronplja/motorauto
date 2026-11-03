@@ -269,7 +269,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   for (let q = 0; q < 4; q++) { const c = db.raw("collections", "s1"); c.season.act[core.SEASON_QUESTS[q].act] = (c.season.base ? c.season.base[core.SEASON_QUESTS[q].act] || 0 : 0) + 999; r = await G.seasonClaim(S1, { what: "quest" }); }
   ok(r.doc.cosm.includes("f:quest") && r.doc.cosm.includes("t:quest") && r.doc.season.q === 4, "chaîne de quêtes terminée : récompense finale");
   // nouvelle saison : remise à zéro mais cosmétiques conservés
-  NOW += core.SEASON_LEN * 86400000; r = await G.syncCollection(S1);
+  NOW += 32 * 86400000; r = await G.syncCollection(S1);
   ok(r.doc.season.pts === 0 && r.doc.season.claimed.length === 0 && r.doc.cosm.includes("t:t30"), "nouvelle saison : points remis à zéro, titres gardés");
   // gels de série
   NOW = Date.parse("2026-12-03T10:00:00+01:00"); const F = { uid: "f1" }; db.seed("users", "f1", { username: "Gel" }); db.seed("collections", "f1", Object.assign(core.blankCollection(), { dust: 1000 }));

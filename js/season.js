@@ -1,5 +1,5 @@
 /**
- * MOTORAUTO — saison de 4 semaines : pass gratuit de 30 paliers, quêtes enchaînées, gels de série,
+ * MOTORAUTO — saison d’un mois : pass gratuit de 30 paliers, quêtes enchaînées, gels de série,
  * cadres et titres, carte de bienvenue. Tout le décompte est tenu par le serveur (game.js).
  */
 (function () {
