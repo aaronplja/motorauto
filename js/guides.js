@@ -97,7 +97,18 @@
     const page = document.querySelector(".page.page-on"); if (!page) return;
     page.querySelectorAll(".guide-help").forEach((b) => b.remove());
     const key = keyOf(route); if (!key) return;
-    const host = page.querySelector(".page-head") || page.querySelector(".hero-stage"); if (!host) return;
+    const gauge = page.querySelector("#hero-gauge");
+    if (gauge) {   // accueil : le compteur ouvre le tutoriel (plus de bouton « ? » séparé)
+      if (!gauge.dataset.guide) {
+        gauge.dataset.guide = "1"; gauge.setAttribute("role", "button"); gauge.tabIndex = 0; gauge.title = "Toucher le compteur : afficher l'aide de l'accueil"; gauge.setAttribute("aria-label", "Compte-tours : toucher pour afficher l'aide de l'accueil");
+        const chip = document.createElement("i"); chip.className = "gauge-help"; chip.setAttribute("aria-hidden", "true"); chip.textContent = "?"; gauge.appendChild(chip);
+        const go = () => open("home", true);
+        gauge.addEventListener("click", go);
+        gauge.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+      }
+      return;
+    }
+    const host = page.querySelector(".page-head"); if (!host) return;
     const b = document.createElement("button"); b.type = "button"; b.className = "guide-help"; b.setAttribute("aria-label", "Afficher l'aide de cette page"); b.title = "Aide"; b.textContent = "?";
     b.addEventListener("click", () => open(keyOf((window.Router && window.Router.current()) || route) || key, true));
     host.appendChild(b);

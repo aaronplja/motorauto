@@ -148,9 +148,12 @@
 
   /** pastille sur « Boutique » quand le pack du jour est disponible */
   async function paintShopDot() {
-    const a = document.querySelector('.play-sub-tab[href="#/jouer/boutique"]'); if (!a || !C.user || !window.MACards) return;
+    const a = document.querySelector('.play-subtabs a[href="#/jouer/boutique"]'), pd = document.getElementById("touch-play-dot");
+    if (!C.user || !window.MACards) { if (pd) pd.hidden = true; return; }
     let d = null; try { d = await window.MACards.load(); } catch (_) { return; }
     const on = !!d && (d.lastPack !== G.dayKey() || d.bonus > 0);
+    if (pd) pd.hidden = !on;
+    if (!a) return;
     a.classList.toggle("has-dot", on); a.title = on ? "Ton pack du jour t'attend !" : "";
   }
 

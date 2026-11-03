@@ -2720,7 +2720,8 @@
   function updateChatBadges() {
     const on = MA.unread.count() > 0;
     const hb = $("header-chat-badge"); if (hb) hb.style.display = on ? "block" : "none";
-    const td = $("touch-chat-dot"); if (td) td.hidden = !on;
+    let nn = 0; try { nn = MA.notif && MA.notif.unreadCount ? MA.notif.unreadCount() : 0; } catch (_) { nn = 0; }
+    const td = $("touch-chat-dot"); if (td) td.hidden = !(on || nn > 0);
   }
 
   function handleDeepLinks() {
@@ -3056,6 +3057,8 @@
 
     // messages non lus (pastille du salon)
     MA.unread.onChange(updateChatBadges);
+    if (MA.notif && MA.notif.onChange) MA.notif.onChange(updateChatBadges);
+    document.addEventListener("ma:auth", () => setTimeout(updateChatBadges, 600));
 
     (window.MAModules || []).forEach((fn) => { try { fn(window.MAApp.ctx()); } catch (e) { console.error("Module :", e); } });
     Router.start();

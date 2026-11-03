@@ -743,5 +743,18 @@
 "complète": "complete",
 "collection": "collection",
 "Meilleurs succès": "Top achievements",
-"Mes succès": "My achievements"
+"Mes succès": "My achievements",
+"Les niveaux": "Levels",
+"Niveau maximum atteint.": "Maximum level reached.",
+"Voir tous les niveaux": "See all levels",
+"Prodige": "Prodigy",
+"Virtuose": "Virtuoso",
+"Colosse": "Colossus",
+"Titan": "Titan",
+"Phénomène": "Phenomenon",
+"Icône": "Icon",
+"Immortel": "Immortal",
+"Demi-dieu": "Demigod",
+"Divinité": "Deity",
+"Ultime": "Ultimate"
 }]);

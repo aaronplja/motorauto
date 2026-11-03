@@ -114,13 +114,33 @@
   function levelHtml(s) {
     const L = levelOf(s.xp);
     return `<div class="game-card" aria-label="Niveau ${L.level.n}, ${nf(s.xp)} points d'expérience">
-      <div class="lvl-ring" style="--p:${L.pct}%"><b>${L.level.n}</b><small>NIV.</small></div>
+      <div class="lvl-ring" style="--p:${L.pct}%" data-lv-open="${s.xp}" role="button" tabindex="0" aria-label="Voir tous les niveaux"><b>${L.level.n}</b><small>NIV.</small></div>
       <div class="lvl-main"><h3>${C.esc(L.level.name)}</h3>
         <div class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${L.pct}"><i style="width:${L.pct}%"></i></div>
         <small>${nf(s.xp)} XP${L.next ? ` · encore ${nf(L.toNext)} pour « ${C.esc(L.next.name)} »` : " · niveau maximum"}</small></div>
       <div class="streak-chip ${s.days >= 7 ? "hot" : ""} ${s.days >= 30 ? "blaze" : ""}" title="Série de visites : ${s.days} jour(s) d'affilée (record ${s.best})"><span aria-hidden="true">🔥</span><b>${s.days}</b><small>jour${s.days > 1 ? "s" : ""}</small></div>
     </div>`;
   }
+  /** fiche « tous les niveaux » : seuils d'XP, niveau atteint, prochain palier */
+  function levelsSheet(xp) {
+    xp = Number(xp) || 0;
+    const cur = levelOf(xp), esc = C ? C.esc : (x) => x;
+    document.querySelectorAll(".ac-sheet").forEach((n) => n.remove());
+    const ov = document.createElement("div"); ov.className = "ac-sheet lv-sheet"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "Niveaux");
+    ov.innerHTML = `<div class="ac-card lv-card"><button type="button" class="ac-x" data-ac-x aria-label="Fermer">×</button>
+      <h3>Les niveaux</h3><p class="ac-state ok">Niveau ${cur.level.n} · ${esc(cur.level.name)} · ${nf(xp)} XP</p>
+      <ol class="lv-list">${LEVELS.map((l) => { const st = l.n < cur.level.n ? "done" : l.n === cur.level.n ? "now" : "todo", nx = LEVELS[l.n];
+        const bar = st === "now" && nx ? `<span class="ac-bar" aria-hidden="true"><u style="width:${cur.pct}%"></u></span>` : "";
+        return `<li class="${st}"${st === "now" ? ' aria-current="true"' : ""}><i class="lv-n">${l.n}</i><span class="lv-t"><b>${esc(l.name)}</b>${bar}</span><em>${nf(l.xp)} XP</em></li>`; }).join("")}</ol>
+      <p class="ac-left">${cur.next ? `Encore <b>${nf(cur.toNext)}</b> XP pour « ${esc(cur.next.name)} ».` : "Niveau maximum atteint."}</p></div>`;
+    document.body.appendChild(ov);
+    const close = () => { ov.remove(); document.removeEventListener("keydown", key); }, key = (e) => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", key);
+    ov.addEventListener("click", (e) => { if (e.target === ov || e.target.closest("[data-ac-x]")) close(); });
+    const now = ov.querySelector("li.now"); if (now) now.scrollIntoView({ block: "center" });
+  }
+  document.addEventListener("click", (e) => { const t = e.target.closest && e.target.closest("[data-lv-open]"); if (t) levelsSheet(t.dataset.lvOpen); });
+  document.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches("[data-lv-open]")) { e.preventDefault(); levelsSheet(e.target.dataset.lvOpen); } });
   function badgeGridHtml(s) {
     const earned = new Set(s.badges);
     const list = BADGES.slice().sort((a, b) => (earned.has(b.id) ? 1 : 0) - (earned.has(a.id) ? 1 : 0));

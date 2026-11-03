@@ -26,3 +26,10 @@
 .guide-reset { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.2rem; padding: 1rem 1.1rem; border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--stroke-line); }
 .guide-reset > div { display: grid; gap: .1rem; }
 .guide-reset small { color: var(--color-muted); }
+
+/* accueil : le compteur ouvre le tutoriel */
+#hero-gauge[data-guide] { cursor: pointer; }
+#hero-gauge .gauge-help { position: absolute; top: 4%; right: 4%; z-index: 6; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; font-style: normal; font: 800 1rem/1 var(--font-display, inherit); color: var(--accent); background: color-mix(in srgb, var(--bg-surface) 88%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--stroke-line)); box-shadow: 0 4px 16px rgba(0,0,0,.35); animation: gaugeHelp 2.6s ease-in-out infinite; }
+#hero-gauge:hover .gauge-help, #hero-gauge:focus-visible .gauge-help { animation: none; transform: scale(1.1); }
+@keyframes gaugeHelp { 0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); } 50% { box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 0 0 8px transparent; } }
+@media (prefers-reduced-motion: reduce) { #hero-gauge .gauge-help { animation: none; } }

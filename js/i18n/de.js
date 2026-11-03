@@ -743,5 +743,18 @@
 "complète": "komplett",
 "collection": "Sammlung",
 "Meilleurs succès": "Beste Erfolge",
-"Mes succès": "Meine Erfolge"
+"Mes succès": "Meine Erfolge",
+"Les niveaux": "Level",
+"Niveau maximum atteint.": "Höchstes Level erreicht.",
+"Voir tous les niveaux": "Alle Level ansehen",
+"Prodige": "Wunderkind",
+"Virtuose": "Virtuose",
+"Colosse": "Koloss",
+"Titan": "Titan",
+"Phénomène": "Phänomen",
+"Icône": "Ikone",
+"Immortel": "Unsterblich",
+"Demi-dieu": "Halbgott",
+"Divinité": "Gottheit",
+"Ultime": "Ultimativ"
 }]);

@@ -743,5 +743,18 @@
 "complète": "completa",
 "collection": "colección",
 "Meilleurs succès": "Mejores logros",
-"Mes succès": "Mis logros"
+"Mes succès": "Mis logros",
+"Les niveaux": "Niveles",
+"Niveau maximum atteint.": "Nivel máximo alcanzado.",
+"Voir tous les niveaux": "Ver todos los niveles",
+"Prodige": "Prodigio",
+"Virtuose": "Virtuoso",
+"Colosse": "Coloso",
+"Titan": "Titán",
+"Phénomène": "Fenómeno",
+"Icône": "Icono",
+"Immortel": "Inmortal",
+"Demi-dieu": "Semidiós",
+"Divinité": "Deidad",
+"Ultime": "Definitivo"
 }]);

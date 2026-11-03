@@ -49,7 +49,7 @@
           const L = G.levelOf(s.xp), nf = (n) => Math.round(n).toLocaleString("fr-FR");
           const ranked = Array.from(all.map.values()).filter((x) => all.users.has(x.uid) && x.xp > 0).sort((a, b) => b.xp - a.xp);
           const rank = ranked.findIndex((x) => x.uid === uid) + 1;
-          lc.innerHTML = `<div class="lvl-ring" style="--p:${L.pct}%"><b>${L.level.n}</b><small>NIV.</small></div>
+          lc.innerHTML = `<div class="lvl-ring" style="--p:${L.pct}%" data-lv-open="${s.xp}" role="button" tabindex="0" aria-label="Voir tous les niveaux"><b>${L.level.n}</b><small>NIV.</small></div>
             <div class="pv2-lv-main"><h3>${esc(L.level.name)}</h3><div class="xp-bar"><i style="width:${L.pct}%"></i></div>
               <small>${nf(s.xp)} XP${L.next ? " · encore " + nf(L.toNext) + " pour « " + esc(L.next.name) + " »" : " · niveau maximum"}</small></div>
             <ul class="pv2-facts"><li><b>${rank ? "n° " + rank : "–"}</b><span>classement</span></li><li><b>${s.badges.length}</b><span>succès</span></li><li><b>${nf(s.laps)}</b><span>chronos</span></li><li><b>${nf(s.records)}</b><span>records</span></li></ul>`;

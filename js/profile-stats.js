@@ -47,7 +47,7 @@
     const kpi = (v, l, ico) => `<div class="sx-kpi"><b data-count="${Number(v) || 0}">${nf(v)}</b><span>${l}</span></div>`;
     const earned = new Set(s.badges), top = G.BADGES.filter((b) => earned.has(b.id)).sort((a, b) => ({ gold: 0, silver: 1 }[a.tier] ?? 2) - ({ gold: 0, silver: 1 }[b.tier] ?? 2)).slice(0, 12);
     document.getElementById("stats-body").innerHTML = `
-      <div class="sx-hero"><div class="lvl-ring" style="--p:${L.pct}%"><b>${L.level.n}</b><small>NIV.</small></div>
+      <div class="sx-hero"><div class="lvl-ring" style="--p:${L.pct}%" data-lv-open="${s.xp}" role="button" tabindex="0" aria-label="Voir tous les niveaux"><b>${L.level.n}</b><small>NIV.</small></div>
         <div class="lvl-main"><h3>${esc(L.level.name)}</h3><div class="xp-bar"><i style="width:${L.pct}%"></i></div><small>${nf(s.xp)} XP${L.next ? ` · encore ${nf(L.toNext)} pour « ${esc(L.next.name)} »` : " · niveau maximum"}</small></div>
         ${d.rank ? `<div class="sx-rank"><b>n° ${d.rank}</b><span>sur ${d.ranked} pilotes</span></div>` : ""}</div>
       <div class="sx-kpis">${kpi(col.count || 0, "cartes")}${kpi(s.badges.length, "succès")}${kpi(s.laps, "chronos")}${kpi(s.records, "records")}</div>

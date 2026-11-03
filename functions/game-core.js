@@ -38,9 +38,11 @@
 
   // ------------------------------------------------------------------ niveaux et badges
   const LEVELS = [
-    { n: 1, name: "Débutant", xp: 0 }, { n: 2, name: "Apprenti", xp: 30 }, { n: 3, name: "Pilote", xp: 80 }, { n: 4, name: "Confirmé", xp: 170 },
-    { n: 5, name: "Expert", xp: 300 }, { n: 6, name: "Élite", xp: 480 }, { n: 7, name: "Maître", xp: 750 }, { n: 8, name: "Champion", xp: 1100 },
-    { n: 9, name: "Légende", xp: 1600 }, { n: 10, name: "Mythique", xp: 2400 }
+    { n: 1, name: "Débutant", xp: 0 }, { n: 2, name: "Apprenti", xp: 150 }, { n: 3, name: "Pilote", xp: 450 }, { n: 4, name: "Confirmé", xp: 1000 },
+    { n: 5, name: "Expert", xp: 1800 }, { n: 6, name: "Élite", xp: 3000 }, { n: 7, name: "Maître", xp: 4800 }, { n: 8, name: "Champion", xp: 7200 },
+    { n: 9, name: "Légende", xp: 10500 }, { n: 10, name: "Mythique", xp: 15000 }, { n: 11, name: "Prodige", xp: 20500 }, { n: 12, name: "Virtuose", xp: 27500 },
+    { n: 13, name: "Colosse", xp: 36000 }, { n: 14, name: "Titan", xp: 46500 }, { n: 15, name: "Phénomène", xp: 59000 }, { n: 16, name: "Icône", xp: 74000 },
+    { n: 17, name: "Immortel", xp: 92000 }, { n: 18, name: "Demi-dieu", xp: 113000 }, { n: 19, name: "Divinité", xp: 138000 }, { n: 20, name: "Ultime", xp: 168000 }
   ];
   function levelOf(xp) {
     let cur = LEVELS[0];
