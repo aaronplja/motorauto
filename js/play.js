@@ -127,7 +127,7 @@
         ${tile("#/classement", "🏆", "Classements", "Chronos, circuits, pilotes", "")}
       </div>`;
     };
-    const st = { chal: "4 nouveaux défis chaque lundi", chalBadge: "", contest: "Thème du mois, vote de la communauté", cards: "Tes cartes, albums et vitrine", shop: "Pack du jour, packs par pays", shopBadge: "", trade: "Échange tes doublons avec les pilotes", tradeBadge: "" };
+    const st = { chal: G.weekChallenges(G.weekKey(Date.now())).length + " défis chaque lundi, plus la saison et ses quêtes", chalBadge: "", contest: "Thème du mois, vote de la communauté", cards: "Tes cartes, albums et vitrine", shop: "Pack du jour, packs par pays", shopBadge: "", trade: "Échange tes doublons avec les pilotes", tradeBadge: "" };
     draw(st);
     if (group === "minijeux") return;
     if (group === "cartes") {
@@ -141,7 +141,7 @@
     renderEvents(); if (window.MAReferral) window.MAReferral.mount(root);
     if (!C.user) return;
     const [wk, contest] = await Promise.all([loadWeekly(), C.db.collection("contests").doc(month).get().then((s) => (s.exists ? s.data() : null)).catch(() => null)]);
-    if (wk) { const done = wk.items.filter((x) => x.claimed).length, ready = wk.items.filter((x) => x.done && !x.claimed).length; st.chal = `${done} / ${wk.items.length} validés · fin dans ${remaining(wk.endsAt - Date.now())}`; st.chalBadge = ready ? String(ready) : ""; }
+    if (wk) { const done = wk.items.filter((x) => x.claimed).length, ready = wk.items.filter((x) => x.done && !x.claimed).length; st.chal = `${done} / ${wk.items.length} validés · fin dans ${remaining(wk.endsAt - Date.now())}`; const sd = window.MACards && window.MACards.mine && window.MACards.mine(), sx = sd ? (() => { try { const sn = sd.season && sd.season.n === G.seasonInfo().n ? sd.season : G.blankSeason(G.seasonInfo().n), t = G.passTier(sn), q = G.questState(sn); return (t - sn.claimed.length > 0 ? t - sn.claimed.length : 0) + (q.ready ? 1 : 0); } catch (_) { return 0; } })() : 0; st.chalBadge = ready + sx ? String(ready + sx) : ""; }
     if (contest) st.contest = contest.status === "open" ? `Thème : « ${contest.theme} »` : `Concours de ${G.monthLabel(month)} terminé`;
     if (C.Router.is("play", { tab: "communaute" })) { draw(st); renderEvents(); if (window.MAReferral) window.MAReferral.mount(root); }
   }

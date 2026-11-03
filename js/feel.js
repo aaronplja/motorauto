@@ -48,7 +48,7 @@
     document.addEventListener("touchend", () => {
       if (!on || !bar) { on = false; return; }
       const go = pull > 80; on = false;
-      if (go) { H.ok(); bar.classList.add("spin"); setTimeout(() => { try { window.Router && Router.refresh(); document.dispatchEvent(new CustomEvent("ma:pull-refresh")); } catch (_) { /* ignoré */ } }, 50); setTimeout(() => { if (bar) { bar.remove(); bar = null; } }, 900); }
+      if (go) { bar.classList.add("spin"); setTimeout(() => { try { window.Router && Router.refresh(); document.dispatchEvent(new CustomEvent("ma:pull-refresh")); } catch (_) { /* ignoré */ } }, 50); setTimeout(() => { if (bar) { bar.remove(); bar = null; } }, 900); }
       else { bar.remove(); bar = null; }
     });
   }
