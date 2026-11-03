@@ -39,7 +39,7 @@
   function pmCar(id, side, res) {
     const c = car(id), win = res && res.answer === side, img = c && C.safeUrl(c.image || "");
     return `<button type="button" class="pm-car${res ? (win ? " win" : " lose") : ""}" data-pm-pick="${side}" ${res || pm.busy ? "disabled" : ""} aria-label="${C.esc(carName(c))}">
-      <span class="pm-img">${img ? `<img src="${C.esc(img)}" alt="" loading="lazy" data-fallback="car">` : ""}</span><b>${C.esc(carName(c))}</b><small>${C.esc((c && c.years) || "")}</small>
+      <span class="pm-img">${img ? `<img src="${C.esc(img)}" alt="" loading="lazy" data-fallback="car">` : ""}</span><b>${C.esc(carName(c))}</b><small>${pm.pair && pm.pair.stat === "year" && !res ? "" : C.esc((c && c.years) || "")}</small>
       <span class="pm-val">${res ? C.esc(statVal(c, res.pair.stat)) : "?"}</span></button>`;
   }
   async function pmRender() {

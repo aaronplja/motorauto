@@ -13,7 +13,7 @@
     { name: "car", re: /^\/voiture\/([^/]+)\/?$/, keys: ["id"] },
     { name: "commcar", re: /^\/voiture-pilote\/([^/]+)\/?$/, keys: ["id"] },
     { name: "community", re: /^\/communaute(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["fil", "voitures", "pilotes", "evenements"] },
-    { name: "play", re: /^\/jouer(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["apercu", "cartes", "echanges", "defis", "concours"] },
+    { name: "play", re: /^\/jouer(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["cartes", "boutique", "echanges", "minijeux", "communaute", "defis", "concours"] },
     { name: "leaderboard", re: /^\/classement(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["chronos", "circuits", "voitures", "pilotes", "collection"] },
     { name: "circuit", re: /^\/circuit\/([^/]+)\/?$/, keys: ["key"] },
     { name: "pilot", re: /^\/pilote\/([^/]+)\/?$/, keys: ["uid"] },
@@ -52,9 +52,9 @@
     admin: "Administration | MOTORAUTO", legal: "Informations légales | MOTORAUTO", engine: "Moteur | MOTORAUTO", contact: "Contact | MOTORAUTO", commcar: "Voiture de pilote | MOTORAUTO", compare: "Comparateur | MOTORAUTO", duel: "Duel | MOTORAUTO", quiz: "Quiz | MOTORAUTO", club: "Club | MOTORAUTO", clubs: "Clubs | MOTORAUTO", market: "Annonces | MOTORAUTO", car: "Fiche véhicule | MOTORAUTO",
     fusion: "Fusion de cartes | MOTORAUTO", cardmarket: "Marché de cartes | MOTORAUTO", wishfeed: "Souhaits et échanges | MOTORAUTO", plusmoins: "Plus ou moins | MOTORAUTO", quizgame: "Quiz | MOTORAUTO", achievements: "Succès | MOTORAUTO", timeline: "Frise chronologique | MOTORAUTO", news: "Nouveautés | MOTORAUTO"
   };
-  const DEFAULT_TAB = { settings: "profil", community: "fil", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "apercu" };
+  const DEFAULT_TAB = { settings: "profil", community: "fil", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "cartes" };
   // anciennes adresses (liens partagés, favoris) → adresse actuelle
-  const REDIRECTS = { "/garage/parametres": "/reglages/profil", "/garage/cartes": "/jouer/cartes", "/garage/entretien": "/garage/suivi", "/garage/budget": "/garage/suivi", "/garage/projets": "/garage/suivi", "/admin/traiter": "/admin/tableau" };
+  const REDIRECTS = { "/jouer/apercu": "/jouer/cartes", "/garage/parametres": "/reglages/profil", "/garage/cartes": "/jouer/cartes", "/garage/entretien": "/garage/suivi", "/garage/budget": "/garage/suivi", "/garage/projets": "/garage/suivi", "/admin/traiter": "/admin/tableau" };
   // barres d'onglets : une seule définition, dessinée dans chaque page de la section (nav[data-section])
   const SECTIONS = {
     play: { page: "play", items: [["apercu", "Jouer"], ["cartes", "Cartes"], ["echanges", "Échanges"], ["defis", "Défis"], ["concours", "Concours"]] },
@@ -144,15 +144,30 @@
     document.body.dataset.page = name;
   }
 
+  // ----- Jouer : trois onglets (Cartes / Mini-jeux / Communauté) et, dessous, les sous-onglets du groupe ; la même barre est posée sur chaque sous-page
+  const PLAY_GROUPS = [["cartes", "Cartes"], ["minijeux", "Mini-jeux"], ["communaute", "Communauté"]];
+  const PLAY_SUBS = {
+    cartes: [["Collection", "#/jouer/cartes", (r) => r.name === "play" && r.params.tab === "cartes"], ["Échanges", "#/jouer/echanges", (r) => r.name === "play" && r.params.tab === "echanges"], ["Fusion", "#/fusion", (r) => r.name === "fusion"], ["Marché", "#/marche", (r) => r.name === "cardmarket"], ["Souhaits", "#/souhaits", (r) => r.name === "wishfeed"], ["Boutique", "#/jouer/boutique", (r) => r.name === "play" && r.params.tab === "boutique"]],
+    minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Bataille IA", "#/jouer/minijeux", () => false, "data-battle-tile"]],
+    communaute: [["Défis", "#/jouer/defis", (r) => r.name === "play" && r.params.tab === "defis"], ["Concours photo", "#/jouer/concours", (r) => r.name === "play" && r.params.tab === "concours"], ["Succès", "#/succes", (r) => r.name === "achievements"], ["Classements", "#/classement", () => false]]
+  };
+  function playGroup(r) {
+    if (r.name === "play") return { cartes: "cartes", boutique: "cartes", echanges: "cartes", minijeux: "minijeux", communaute: "communaute", defis: "communaute", concours: "communaute" }[r.params.tab] || "cartes";
+    return { fusion: "cartes", cardmarket: "cartes", wishfeed: "cartes", plusmoins: "minijeux", quizgame: "minijeux", duel: "minijeux", achievements: "communaute" }[r.name] || "cartes";
+  }
+  function renderPlayBar(nav, route) {
+    const g = playGroup(route);
+    nav.removeAttribute("aria-label"); nav.removeAttribute("role"); nav.classList.add("play-bar"); nav.classList.remove("page-tabs", "fit");
+    nav.innerHTML = `<div class="page-tabs fit" role="tablist" aria-label="Jouer" style="--n:3">${PLAY_GROUPS.map(([k, l]) => `<a role="tab" class="page-tab${k === g ? " active" : ""}" href="#/jouer/${k}" aria-selected="${k === g}"${k === g ? ' aria-current="page"' : ""}><span class="tl" data-s="${l}">${l}</span></a>`).join("")}</div>
+      <div class="play-sub" role="tablist" aria-label="${PLAY_GROUPS.find((x) => x[0] === g)[1]}">${PLAY_SUBS[g].map((s) => { const on = s[2](route); return `<a role="tab" class="play-sub-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}>${s[0]}</a>`; }).join("")}</div>`;
+    const act = nav.querySelector(".play-sub-tab.active"); if (act && act.parentElement.scrollWidth > act.parentElement.clientWidth) act.parentElement.scrollLeft = Math.max(0, act.offsetLeft - 24);
+  }
+
   function renderSectionTabs(pageEl, route) {
     if (!pageEl) return;
     pageEl.querySelectorAll("nav[data-section]").forEach((nav) => {
       const sec = SECTIONS[nav.dataset.section]; if (!sec) return;
-      if (nav.dataset.section === "play") {   // Jouer : plus d'onglets, les jeux s'ouvrent depuis les tuiles ; un retour sur les sous-pages
-        nav.classList.remove("page-tabs"); nav.removeAttribute("role"); nav.removeAttribute("aria-label");
-        nav.innerHTML = route.params.tab && route.params.tab !== "apercu" ? `<a class="back-link play-back" href="#/jouer">← Jouer</a>` : "";
-        return;
-      }
+      if (nav.dataset.section === "play") { renderPlayBar(nav, route); return; }
       nav.setAttribute("role", "tablist"); nav.classList.add("page-tabs", "fit"); nav.style.setProperty("--n", sec.items.length); nav.setAttribute("aria-label", "Sections");
       nav.innerHTML = sec.items.map((it) => {
         const custom = !!it[2], href = "#" + (custom ? it[2] : PREFIX[nav.dataset.section] + "/" + it[0]);
@@ -167,11 +182,12 @@
   function showTab(pageEl, tab) {
     if (!pageEl) return;
     pageEl.querySelectorAll(":scope .page-tab").forEach((a) => {
+      if (a.closest(".play-bar")) return;
       const on = a.dataset.tab === tab;
       a.classList.toggle("active", on);
       a.setAttribute("aria-selected", on ? "true" : "false");
     });
-    pageEl.querySelectorAll(":scope .tab-panel").forEach((p) => { p.hidden = p.dataset.tab !== tab; });
+    pageEl.querySelectorAll(":scope .tab-panel").forEach((p) => { p.hidden = (" " + p.dataset.tab + " ").indexOf(" " + tab + " ") < 0; });
   }
 
   async function dispatch() {

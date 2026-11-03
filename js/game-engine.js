@@ -687,7 +687,7 @@
           g.pmPair = null;
         } else g.pmStreak = 0;
         let next = null;
-        if (!answer || (result && result.ok)) { next = core.pmPair(pool.list, rng, result ? result.pair : null); g.pmPair = next; }
+        if (!answer || (result && result.ok)) { next = core.pmPair(pool.list, rng, result ? result.pair : null, g.pmStreak); g.pmPair = next; }
         writeStats(tx, uid, g); if (reward) writeCol(tx, uid, d);
         return { result, next, streak: g.pmStreak, best: g.pmBest, reward, doc: reward ? view(d) : null };
       });

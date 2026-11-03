@@ -624,6 +624,7 @@
 "Logos, pays, constructeurs": "Loghi, paesi, costruttori",
 "Cartes à collectionner, échanges, défis de la semaine et concours photo.": "Carte da collezione, scambi, sfide settimanali e concorso fotografico.",
 "Rassemble": "Raccogli",
+"doublons de la même rareté : ils fusionnent en une carte de la rareté supérieure, tirée au hasard (une carte que tu n'as pas encore en priorité).": "doppioni della stessa rarità: si fondono in una carta della rarità superiore, scelta a caso (prima una che non hai ancora).",
 "doublons": "doppioni",
 "de la même rareté : ils fusionnent en une carte de la rareté supérieure, tirée au hasard (une carte que tu n'as pas encore en priorité).": "della stessa rarità: si fondono in una carta della rarità superiore, scelta a caso (prima una che non hai ancora).",
 "Tu gardes toujours un exemplaire de chaque carte. Les raretés Shiny et Légende ne se fusionnent pas : elles se gagnent en packs et en albums.": "Tieni sempre un esemplare di ogni carta. Le rarità Shiny e Leggenda non si fondono: si ottengono nei pacchetti e negli album.",
@@ -703,5 +704,15 @@
 "← Retour": "← Indietro",
 "← Garage": "← Garage",
 "← Classement": "← Classifica",
-"← Communauté": "← Community"
+"← Communauté": "← Community",
+"Mini-jeux": "Minigiochi",
+"Collection": "Collezione",
+"Boutique": "Negozio",
+"Bataille IA": "Battaglia contro l'IA",
+"Bataille contre l'IA": "Battaglia contro l'IA",
+"Classements": "Classifiche",
+"Duel": "Duello",
+"Cartes à collectionner, mini-jeux, défis de la semaine et concours photo.": "Carte da collezione, minigiochi, sfide settimanali e concorso fotografico.",
+"0-100 km/h et 400 m en course": "0-100 km/h e 400 m in gara",
+"Ton pack du jour t'attend !": "Il tuo pacchetto del giorno ti aspetta!"
 }]);

@@ -120,7 +120,7 @@
 /* ---------- frise ---------- */
 .fr-tools { margin-bottom: .6rem; }
 .fr-zoom { display: inline-flex; align-items: center; gap: .5rem; color: var(--color-muted); font-size: .85rem; }
-.fr-scroll { overflow-x: auto; overflow-y: hidden; border-radius: 16px; border: 1px solid var(--stroke-line); background: var(--bg-surface); padding-bottom: .8rem; scroll-behavior: smooth; }
+.fr-scroll { overflow: auto; max-height: 68vh; overscroll-behavior: contain; border-radius: 16px; border: 1px solid var(--stroke-line); background: var(--bg-surface); padding-bottom: .8rem; scroll-behavior: smooth; }
 .fr-ruler { position: relative; height: 28px; border-bottom: 2px solid var(--stroke-line); }
 .fr-tick { position: absolute; bottom: 0; transform: translateX(-50%); font-size: .7rem; color: var(--color-muted); padding-bottom: 6px; }
 .fr-tick::after { content: ""; position: absolute; left: 50%; bottom: 0; width: 1px; height: 5px; background: var(--color-muted); }
@@ -165,3 +165,26 @@ a.car-mention:hover, a.car-mention:focus-visible { background: color-mix(in srgb
 .mention-pop button { display: grid; gap: .05rem; text-align: left; padding: .55rem .8rem; border: 0; background: transparent; color: var(--color-ink); font: inherit; cursor: pointer; }
 .mention-pop button.on, .mention-pop button:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); }
 .mention-pop small { color: var(--color-muted); font-size: .72rem; }
+
+/* bouton Nouveautés (barre du haut) : rond, mis en évidence */
+#news-btn.news-btn{position:relative;color:#fff;background:var(--accent,#ef4444);border-color:transparent;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#ef4444) 28%,transparent)}
+#news-btn.news-btn svg{stroke:#fff}
+.news-btn:hover,.news-btn:focus-visible{filter:brightness(1.1)}
+.news-btn .news-dot{top:-4px;right:-4px}
+body[data-page="news"] .news-btn,.news-btn[aria-current="page"]{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#ef4444) 55%,transparent)}
+
+.fr-chip.fr-mini{width:12px;height:12px;padding:0;border-radius:50%;background:var(--accent);border:0;box-shadow:0 0 0 1px var(--bg-surface)}
+.fr-chip.fr-mini:hover,.fr-chip.fr-mini:focus-visible{transform:scale(1.9);z-index:6}
+.fr-ruler{position:sticky;top:0;z-index:3;background:var(--bg-surface)}
+.cat-frise-btn{display:inline-flex;align-items:center;gap:.5rem;margin:.2rem 0 .8rem}
+.cat-frise-btn svg{width:18px;height:18px}
+
+/* Jouer : onglets + sous-onglets */
+.play-bar{display:grid;gap:.55rem;margin:.2rem 0 1rem}
+.play-sub{display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;padding:.1rem 0 .2rem;-webkit-overflow-scrolling:touch}
+.play-sub::-webkit-scrollbar{display:none}
+.play-sub-tab{flex:none;position:relative;padding:.4rem .85rem;border-radius:999px;border:1px solid var(--stroke-line);background:var(--bg-surface);color:var(--color-muted);font-size:.84rem;font-weight:600;text-decoration:none;white-space:nowrap}
+.play-sub-tab:hover{color:var(--color-ink);border-color:var(--accent)}
+.play-sub-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.play-sub-tab.has-dot::after{content:"";position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg-core,#09090b)}
+.play-sub-tab.active.has-dot::after{background:#fff}

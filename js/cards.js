@@ -438,7 +438,7 @@
   }
 
   // ------------------------------------------------------------------ page « Cartes » : deux onglets (Boutique / Mes cartes)
-  let ctab = store.get("ma_cards_tab", "shop"), albumKind = store.get("ma_cards_albums", "country"), countryFilter = "all", minPower = 0;
+  let ctab = "mine", albumKind = store.get("ma_cards_albums", "country"), countryFilter = "all", minPower = 0;
   let claims = null, claimsUid = "", showcase = null, showcaseUid = "", setsSig = "", setsList = [];
   const dust$ = (n) => `${n} ${window.MA.dustIcon(14)}`;
   const lvOf = (id) => (doc && doc.lv && doc.lv[id]) || 1;
@@ -702,7 +702,6 @@
     if (!document.getElementById("cg-top")) {
       const countries = (G.COUNTRIES || []).map((k) => `<option value="${k.id}">${C.esc(k.label)}</option>`).join("");
       root.innerHTML = `<div class="cg"><div class="cg-top" id="cg-top"></div>
-        <div class="cg-tabs" role="tablist" aria-label="Cartes"><button type="button" role="tab" class="cg-tab" data-ctab="shop">Boutique</button><button type="button" role="tab" class="cg-tab" data-ctab="mine">Mes cartes</button></div>
         <div id="cg-shop" role="tabpanel"></div>
         <div id="cg-mine" role="tabpanel" hidden><div id="cg-mine-top"></div>
           <section class="cg-block" aria-label="Collection"><header class="cg-bh"><h3>Collection</h3><span class="tcg-count" id="tcg-count" aria-live="polite"></span></header>
@@ -758,7 +757,8 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     ctx.Router.register("play", { enter: async (p) => {
-      if (p.tab !== "cartes") return;
+      if (p.tab !== "cartes" && p.tab !== "boutique") return;
+      ctab = p.tab === "boutique" ? "shop" : "mine";
       render();
       await load().catch(() => {});
       await Promise.all([loadClaims(), loadMyShowcase()]).catch(() => {});
@@ -771,7 +771,7 @@
       }
     } });
     ctx.Router.register("pilot", { enter: (p) => renderProfile(p.uid) });
-    document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (ctx.Router.is("play", { tab: "cartes" })) { render(); load(true).then(render).catch(() => {}); } });
+    document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (ctx.Router.is("play", { tab: "cartes" }) || ctx.Router.is("play", { tab: "boutique" })) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-dust-log]")) { showDustLog(); return; }
       const pk = e.target.closest("[data-pack]");

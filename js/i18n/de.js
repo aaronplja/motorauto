@@ -624,6 +624,7 @@
 "Logos, pays, constructeurs": "Logos, Länder, Hersteller",
 "Cartes à collectionner, échanges, défis de la semaine et concours photo.": "Sammelkarten, Tausche, Wochenherausforderungen und Fotowettbewerb.",
 "Rassemble": "Sammle",
+"doublons de la même rareté : ils fusionnent en une carte de la rareté supérieure, tirée au hasard (une carte que tu n'as pas encore en priorité).": "Doppelte derselben Seltenheit: Sie verschmelzen zu einer zufälligen Karte der nächsthöheren Seltenheit (eine, die du noch nicht hast, hat Vorrang).",
 "doublons": "Doppelte",
 "de la même rareté : ils fusionnent en une carte de la rareté supérieure, tirée au hasard (une carte que tu n'as pas encore en priorité).": "derselben Seltenheit: Sie verschmelzen zu einer zufälligen Karte der nächsthöheren Seltenheit (eine, die du noch nicht hast, hat Vorrang).",
 "Tu gardes toujours un exemplaire de chaque carte. Les raretés Shiny et Légende ne se fusionnent pas : elles se gagnent en packs et en albums.": "Du behältst immer ein Exemplar jeder Karte. Shiny und Legende lassen sich nicht verschmelzen: Sie werden in Packs und Alben gewonnen.",
@@ -703,5 +704,15 @@
 "← Retour": "← Zurück",
 "← Garage": "← Garage",
 "← Classement": "← Rangliste",
-"← Communauté": "← Community"
+"← Communauté": "← Community",
+"Mini-jeux": "Minispiele",
+"Collection": "Sammlung",
+"Boutique": "Shop",
+"Bataille IA": "KI-Schlacht",
+"Bataille contre l'IA": "Schlacht gegen die KI",
+"Classements": "Ranglisten",
+"Duel": "Duell",
+"Cartes à collectionner, mini-jeux, défis de la semaine et concours photo.": "Sammelkarten, Minispiele, Wochenherausforderungen und Fotowettbewerb.",
+"0-100 km/h et 400 m en course": "0–100 km/h und 400 m im Rennen",
+"Ton pack du jour t'attend !": "Dein Tages-Pack wartet!"
 }]);

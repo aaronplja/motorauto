@@ -74,7 +74,7 @@
 
   // ------------------------------------------------------------------ événements saisonniers (cartes à récupérer pendant une période)
   async function renderEvents() {
-    const root = document.getElementById("play-hub"); if (!root || !C.user) return;
+    const root = document.getElementById("play-hub-communaute"); if (!root || !C.user) return;
     let list = [];
     try {
       const snap = await C.db.collection("special_cards").where("claimable", "==", true).limit(10).get(), t = Date.now();
@@ -82,7 +82,7 @@
       const own = await Promise.all(list.map((c) => C.db.collection("special_grants").doc(c.id + "_" + C.user.uid).get().then((s) => s.exists && (s.data().serials || []).length).catch(() => false)));
       list = list.filter((c, i) => !own[i] && !(c.supply > 0 && (c.granted || 0) >= c.supply));
     } catch (_) { return; }
-    if (!list.length || !C.Router.is("play", { tab: "apercu" })) return;
+    if (!list.length || !C.Router.is("play", { tab: "communaute" })) return;
     root.querySelectorAll(".event-banner").forEach((n) => n.remove());
     const box = document.createElement("div"); box.className = "event-banner-wrap";
     box.innerHTML = list.map((c) => `<div class="event-banner" data-ev="${C.esc(c.id)}"><div class="event-txt"><small>Événement en cours</small><b>${C.esc(c.name)}</b><span>${C.esc(c.edition || "Carte spéciale")}${c.endsAtMs ? " · jusqu'au " + new Date(c.endsAtMs).toLocaleDateString("fr-FR") : ""}${c.supply ? " · " + Math.max(0, c.supply - (c.granted || 0)) + " restantes" : ""}</span></div><button type="button" class="cta-btn fill-btn" data-claim-ev="${C.esc(c.id)}">Récupérer ma carte</button></div>`).join("");
@@ -101,43 +101,42 @@
   // ------------------------------------------------------------------ vue d'ensemble
   const SVI = (d) => `<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
   const HUBI = {fusion: SVI('<circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M7 10v2c0 2 5 2 5 6M17 10v2c0 2-5 2-5 6"/><circle cx="12" cy="20" r="1.4"/>'),market: SVI('<path d="M3 10l2-5h14l2 5"/><path d="M4 10v10h16V10"/><path d="M9 20v-6h6v6"/>'),wish: SVI('<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/>'),pm: SVI('<path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/>'),quiz: SVI('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1 1-1.1 1.8"/><circle cx="12" cy="17" r=".6"/>'),ach: SVI('<circle cx="12" cy="9" r="5.5"/><path d="M8.5 14L7 21l5-3 5 3-1.5-7"/>'),time: SVI('<path d="M3 12h18"/><circle cx="7" cy="12" r="2"/><circle cx="14" cy="12" r="2"/><path d="M7 10V6M14 14v4"/>'),news: SVI('<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 8h3v9a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/>')};
-  async function renderHub() {
-    const root = document.getElementById("play-hub"); if (!root) return;
-    const month = G.monthKey(), canDaily = (d) => d && d.lastPack !== G.dayKey();
+  /** pages d'accueil des onglets « Mini-jeux » et « Communauté » (les « Cartes » ont leur propre page) */
+  async function renderHub(group) {
+    group = group === "minijeux" ? "minijeux" : "communaute";
+    const root = document.getElementById("play-hub-" + group); if (!root) return;
+    const month = G.monthKey();
     const tile = (href, ico, title, sub, badge, cls) => `<a class="hub-tile ${cls || ""}" href="${href}"><i class="hub-ico" aria-hidden="true">${ico}</i><b>${title}</b><small>${sub}</small>${badge ? `<span class="hub-badge">${badge}</span>` : ""}</a>`;
     const draw = (st) => {
-      root.innerHTML = `<div class="hub-grid">
-        ${tile("#/jouer/cartes", "🎴", "Cartes", st.cards, st.cardsBadge, "hub-feature")}
-        ${tile("#/jouer/defis", "🎯", "Défis", st.chal, st.chalBadge)}
-        ${tile("#/jouer/echanges", "🔄", "Échanges", st.trade, st.tradeBadge)}
-        ${tile("#/jouer/concours", "📸", "Concours photo", st.contest, "")}
-        <a class="hub-tile" href="#/jouer/cartes" data-battle-tile role="button"><i class="hub-ico hub-ico-svg" aria-hidden="true"><svg viewBox="0 0 48 48" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="9" width="21" height="30" rx="4" transform="rotate(-14 15.5 24)"/><rect x="22" y="9" width="21" height="30" rx="4" transform="rotate(14 32.5 24)" fill="var(--accent)" stroke="var(--accent)"/><path d="M26.5 14l-5 10h6l-4 10" stroke="#fff" stroke-width="2.6"/></svg></i><b>Bataille contre l'IA</b><small>Entraînement avec tes cartes, sans récompense</small></a>
-        ${tile("#/duel", "🏁", "Duel", "0-100 km/h et 400 m en course", "")}
-        ${tile("#/classement", "🏆", "Classements", "Chronos, circuits, pilotes", "")}
-        ${tile("#/fusion", HUBI.fusion, T("Fusion"), T("5 doublons → 1 carte au-dessus"), "")}
-        ${tile("#/marche", HUBI.market, T("Marché"), T("Vends et achète des cartes"), st.mkBadge)}
-        ${tile("#/souhaits", HUBI.wish, T("Souhaits"), T("Qui cherche quoi, qui propose quoi"), "")}
-        ${tile("#/plusmoins", HUBI.pm, T("Plus ou moins"), T("Séries sans faute = cristaux"), "")}
+      root.innerHTML = group === "minijeux" ? `<div class="hub-grid">
         ${tile("#/quiz", HUBI.quiz, T("Quiz"), T("4 catégories, 3 niveaux"), "")}
+        ${tile("#/plusmoins", HUBI.pm, T("Plus ou moins"), T("Séries sans faute = cristaux"), "")}
+        ${tile("#/duel", "🏁", "Duel", "0-100 km/h et 400 m en course", "")}
+        <a class="hub-tile" href="#/jouer/minijeux" data-battle-tile role="button"><i class="hub-ico hub-ico-svg" aria-hidden="true"><svg viewBox="0 0 48 48" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="9" width="21" height="30" rx="4" transform="rotate(-14 15.5 24)"/><rect x="22" y="9" width="21" height="30" rx="4" transform="rotate(14 32.5 24)" fill="var(--accent)" stroke="var(--accent)"/><path d="M26.5 14l-5 10h6l-4 10" stroke="#fff" stroke-width="2.6"/></svg></i><b>Bataille contre l'IA</b><small>Entraînement avec tes cartes, sans récompense</small></a>
+      </div>` : `<div class="hub-grid">
+        ${tile("#/jouer/defis", "🎯", "Défis", st.chal, st.chalBadge)}
+        ${tile("#/jouer/concours", "📸", "Concours photo", st.contest, "")}
         ${tile("#/succes", HUBI.ach, T("Succès"), T("Tes badges et ta progression"), "")}
-        ${tile("#/frise", HUBI.time, T("Frise"), T("Toute l'histoire sur une ligne"), "")}
-        ${tile("#/nouveautes", HUBI.news, T("Nouveautés"), T("Le journal des mises à jour"), st.newsBadge)}
+        ${tile("#/classement", "🏆", "Classements", "Chronos, circuits, pilotes", "")}
       </div>`;
     };
-    const st = { cards: C.user ? "Pack du jour, collection, wishlist" : "Un pack gratuit par jour", cardsBadge: "", chal: "4 nouveaux défis chaque lundi", chalBadge: "", trade: "Échange tes doublons avec les pilotes", tradeBadge: "", contest: "Thème du mois, vote de la communauté" };
+    const st = { chal: "4 nouveaux défis chaque lundi", chalBadge: "", contest: "Thème du mois, vote de la communauté" };
     draw(st);
+    if (group === "minijeux") return;
+    renderEvents(); if (window.MAReferral) window.MAReferral.mount(root);
     if (!C.user) return;
-    const [col, wk, trades, contest] = await Promise.all([
-      window.MACards.load().catch(() => null), loadWeekly(),
-      C.db.collection("trades").where("toUid", "==", C.user.uid).limit(60).get().then((s) => s.docs.filter((d) => d.data().status === "open").length).catch(() => 0),
-      C.db.collection("contests").doc(month).get().then((s) => (s.exists ? s.data() : null)).catch(() => null)
-    ]);
-    if (col) { st.cards = canDaily(col) ? "Ton pack du jour t'attend !" : `${col.count} / ${C.cars.length} cartes · ${window.MA.dustIcon(13)} ${col.dust}`; st.cardsBadge = canDaily(col) ? "1" : col.bonus ? String(col.bonus) : ""; }
+    const [wk, contest] = await Promise.all([loadWeekly(), C.db.collection("contests").doc(month).get().then((s) => (s.exists ? s.data() : null)).catch(() => null)]);
     if (wk) { const done = wk.items.filter((x) => x.claimed).length, ready = wk.items.filter((x) => x.done && !x.claimed).length; st.chal = `${done} / ${wk.items.length} validés · fin dans ${remaining(wk.endsAt - Date.now())}`; st.chalBadge = ready ? String(ready) : ""; }
-    st.trade = trades ? `${trades} proposition${trades > 1 ? "s" : ""} à traiter` : "Échange tes doublons avec les pilotes"; st.tradeBadge = trades ? String(trades) : "";
     if (contest) st.contest = contest.status === "open" ? `Thème : « ${contest.theme} »` : `Concours de ${G.monthLabel(month)} terminé`;
-    if (window.MANews) { try { const n = await window.MANews.unread(); st.newsBadge = n ? String(n) : ""; } catch (_) { /* pastille facultative */ } }
-    if (C.Router.is("play", { tab: "apercu" })) { draw(st); renderEvents(); if (window.MAReferral) window.MAReferral.mount(root); }
+    if (C.Router.is("play", { tab: "communaute" })) { draw(st); renderEvents(); if (window.MAReferral) window.MAReferral.mount(root); }
+  }
+
+  /** pastille sur « Boutique » quand le pack du jour est disponible */
+  async function paintShopDot() {
+    const a = document.querySelector('.play-sub-tab[href="#/jouer/boutique"]'); if (!a || !C.user || !window.MACards) return;
+    let d = null; try { d = await window.MACards.load(); } catch (_) { return; }
+    const on = !!d && (d.lastPack !== G.dayKey() || d.bonus > 0);
+    a.classList.toggle("has-dot", on); a.title = on ? "Ton pack du jour t'attend !" : "";
   }
 
   // ------------------------------------------------------------------ actions signalées au serveur (duel, quiz, partage)
@@ -163,14 +162,16 @@
     ctx.Router.register("car", { enter: (p) => { setTimeout(() => logFeatView(p.id), 1500); } });
     ctx.Router.register("play", { enter: async (p) => {
       clearInterval(tick);
-      if (p.tab === "apercu") renderHub();
+      setTimeout(paintShopDot, 80);
+      if (p.tab === "minijeux" || p.tab === "communaute") renderHub(p.tab);
       else if (p.tab === "defis") { renderChallenges(); await loadWeekly(true); renderChallenges(); tick = setInterval(() => { const el = document.getElementById("chal-left"); if (el && weekly) el.textContent = remaining(weekly.endsAt - Date.now()); else clearInterval(tick); }, 30000); }
     } });
-    document.addEventListener("ma:auth", () => { weekly = null; weeklyAt = 0; if (ctx.Router.is("play", { tab: "apercu" })) renderHub(); else if (ctx.Router.is("play", { tab: "defis" })) { renderChallenges(); loadWeekly(true).then(renderChallenges); } });
+    document.addEventListener("ma:auth", () => { weekly = null; weeklyAt = 0; if (ctx.Router.is("play", { tab: "minijeux" }) || ctx.Router.is("play", { tab: "communaute" })) renderHub(ctx.Router.is("play", { tab: "minijeux" }) ? "minijeux" : "communaute"); else if (ctx.Router.is("play", { tab: "defis" })) { renderChallenges(); loadWeekly(true).then(renderChallenges); } });
     document.addEventListener("click", (e) => { const c = e.target.closest("[data-chal-claim]"); if (c) claim(c.dataset.chalClaim); });
     document.addEventListener("ma:duel-done", () => log("duel"));
     document.addEventListener("ma:shared", () => log("share"));
-    document.addEventListener("ma:cards", () => { weeklyAt = 0; });
+    document.addEventListener("ma:cards", () => { weeklyAt = 0; paintShopDot(); });
+    document.addEventListener("ma:route", () => setTimeout(paintShopDot, 120));
   });
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-battle-tile]"); if (!b) return;

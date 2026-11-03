@@ -392,15 +392,24 @@
     year: { q: "Laquelle est la plus récente ?", get: (c) => Number(c.year) || 0, unit: "", better: 1 }
   };
   const PM_KEYS = Object.keys(PM_STATS);
-  /** tire une paire de voitures aux valeurs assez différentes ; renvoie { a, b, stat } (identifiants) */
-  function pmPair(list, rng, prev) {
-    const stat = PM_KEYS[Math.floor(rng() * PM_KEYS.length)], S = PM_STATS[stat];
+  /** tire une paire de voitures ; plus la série est longue, plus les deux valeurs sont proches (et de même catégorie).
+   *  Renvoie { a, b, stat } (identifiants). */
+  const PM_REL = [[0.08, 0.3], [0.07, 0.25], [0.035, 0.12], [0.015, 0.06], [0.006, 0.03]];   // écart relatif min/max par palier
+  const PM_YEAR = [[8, 40], [5, 20], [3, 10], [2, 6], [1, 3]];                                  // écart d'années min/max par palier
+  function pmLevel(streak) { const s = Number(streak) || 0; return s < 3 ? 0 : s < 6 ? 1 : s < 10 ? 2 : s < 15 ? 3 : 4; }
+  function pmPair(list, rng, prev, streak) {
+    const lv = pmLevel(streak), stat = PM_KEYS[Math.floor(rng() * PM_KEYS.length)], S = PM_STATS[stat], yr = stat === "year";
     const ok = list.filter((c) => S.get(c) > 0 && (!prev || (c.id !== prev.a && c.id !== prev.b)));
-    for (let i = 0; i < 80 && ok.length > 1; i++) {
-      const a = ok[Math.floor(rng() * ok.length)], b = ok[Math.floor(rng() * ok.length)];
-      const va = S.get(a), vb = S.get(b);
-      if (a.id === b.id || va === vb) continue;
-      if (Math.abs(va - vb) / Math.max(va, vb) < (stat === "year" ? 0.004 : 0.06)) continue;
+    if (ok.length < 2) return null;
+    const lim = yr ? PM_YEAR[lv] : PM_REL[lv];
+    const gap = (va, vb) => (yr ? Math.abs(va - vb) : Math.abs(va - vb) / Math.max(va, vb));
+    for (let i = 0; i < 160; i++) {
+      const a = ok[Math.floor(rng() * ok.length)], va = S.get(a);
+      // à partir du palier 1, on cherche un adversaire de même catégorie (moins de repères évidents) ; on relâche si la liste est vide
+      const sameCat = lv >= 1 && i < 100;
+      const cand = ok.filter((c) => { if (c.id === a.id) return false; const vb = S.get(c); if (vb === va) return false; const g = gap(va, vb); return g >= lim[0] && g <= lim[1] && (!sameCat || (c.category && c.category === a.category)); });
+      if (!cand.length) continue;
+      const b = cand[Math.floor(rng() * cand.length)];
       return { a: a.id, b: b.id, stat };
     }
     return null;

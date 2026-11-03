@@ -624,6 +624,7 @@
 "Logos, pays, constructeurs": "Logos, countries, manufacturers",
 "Cartes à collectionner, échanges, défis de la semaine et concours photo.": "Collectible cards, trades, weekly challenges and photo contest.",
 "Rassemble": "Gather",
+"doublons de la même rareté : ils fusionnent en une carte de la rareté supérieure, tirée au hasard (une carte que tu n'as pas encore en priorité).": "duplicates of the same rarity: they merge into a card of the next rarity, drawn at random (a card you do not own yet comes first).",
 "doublons": "duplicates",
 "de la même rareté : ils fusionnent en une carte de la rareté supérieure, tirée au hasard (une carte que tu n'as pas encore en priorité).": "of the same rarity: they merge into a card of the next rarity, drawn at random (a card you do not own yet comes first).",
 "Tu gardes toujours un exemplaire de chaque carte. Les raretés Shiny et Légende ne se fusionnent pas : elles se gagnent en packs et en albums.": "You always keep one copy of each card. Shiny and Legend rarities cannot be merged: they are won in packs and albums.",
@@ -703,5 +704,15 @@
 "← Retour": "← Back",
 "← Garage": "← Garage",
 "← Classement": "← Ranking",
-"← Communauté": "← Community"
+"← Communauté": "← Community",
+"Mini-jeux": "Mini-games",
+"Collection": "Collection",
+"Boutique": "Shop",
+"Bataille IA": "AI battle",
+"Bataille contre l'IA": "Battle against the AI",
+"Classements": "Rankings",
+"Duel": "Duel",
+"Cartes à collectionner, mini-jeux, défis de la semaine et concours photo.": "Collectible cards, mini-games, weekly challenges and photo contest.",
+"0-100 km/h et 400 m en course": "0-100 km/h and 400 m races",
+"Ton pack du jour t'attend !": "Your daily pack is waiting!"
 }]);

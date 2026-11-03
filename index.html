@@ -108,6 +108,10 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
       <div class="header-actions">
         <div id="admin-gear-container"></div>
+        <a class="icon-btn news-btn" id="news-btn" href="#/nouveautes" aria-label="Nouveautés" title="Nouveautés">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h7M9 8.5h3"/></svg>
+          <span class="notif-badge news-dot" id="news-dot" hidden>0</span>
+        </a>
         <button type="button" class="icon-btn notif-btn" id="notif-btn" aria-label="Notifications" title="Notifications" hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
           <span class="notif-badge" hidden>0</span>
@@ -282,6 +286,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         </div>
         
       </header>
+    <a class="cta-btn btn-ghost cat-frise-btn" id="catalog-frise-btn" href="#/frise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><circle cx="7" cy="12" r="2"/><circle cx="14" cy="12" r="2"/><path d="M7 10V6M14 14v4"/></svg>Frise chronologique</a>
     <p class="count-stream" id="results-count" aria-live="polite">Calcul de l'archive en cours…</p>
     <div class="catalog-search search-container" id="catalog-search-container">
       <div class="command-search-wrapper">
@@ -643,13 +648,14 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       <div class="page-head-text">
         <span class="status-tag-verified">Jouer</span>
         <h1 class="page-title">Jouer</h1>
-        <p class="page-sub">Cartes à collectionner, échanges, défis de la semaine et concours photo.</p>
+        <p class="page-sub">Cartes à collectionner, mini-jeux, défis de la semaine et concours photo.</p>
       </div>
     </header>
     <nav data-section="play"></nav>
-    <section class="tab-panel" data-tab="apercu" hidden><div id="play-hub"></div></section>
-    <section class="tab-panel" data-tab="cartes" hidden><div id="cards-root"></div></section>
+    <section class="tab-panel" data-tab="cartes boutique" hidden><div id="cards-root"></div></section>
     <section class="tab-panel" data-tab="echanges" hidden><div id="trades-root"></div></section>
+    <section class="tab-panel" data-tab="minijeux" hidden><div id="play-hub-minijeux"></div></section>
+    <section class="tab-panel" data-tab="communaute" hidden><div id="play-hub-communaute"></div></section>
     <section class="tab-panel" data-tab="defis" hidden><div id="challenges-root"></div></section>
     <section class="tab-panel" data-tab="concours" hidden><div id="contest-root"></div></section>
   </div>
@@ -718,7 +724,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-duel" data-page="duel">
   <div class="stage-shell page-wrap">
-    <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
+    <nav data-section="play"></nav>
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Mode duel</h1><p class="page-sub">Choisis n'importe quelles deux voitures (catalogue, communauté, les tiennes) : 0-100, 0-200, 400 m ou 1000 m, sol sec ou mouillé. Le calcul tient compte de la boîte, de l'adhérence, de l'aérodynamique et du poids.</p></div></header>
     <div id="duel-root"></div>
   </div>
@@ -812,7 +818,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-fusion" data-page="fusion">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Fusion de cartes</h1><p class="page-sub">Transforme 5 doublons en une carte de rareté supérieure.</p></div></header>
-    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <nav data-section="play"></nav>
     <div id="fusion-root"></div>
   </div>
   </div>
@@ -820,7 +826,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-cardmarket" data-page="cardmarket">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Marché de cartes</h1><p class="page-sub">Vends tes doublons ou achète les cartes qui te manquent, en cristaux.</p></div></header>
-    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <nav data-section="play"></nav>
     <div id="cardmarket-root"></div>
   </div>
   </div>
@@ -828,7 +834,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-wishfeed" data-page="wishfeed">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Souhaits et échanges</h1><p class="page-sub">Qui cherche quoi, qui propose quoi : trouve ton prochain échange.</p></div></header>
-    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <nav data-section="play"></nav>
     <div id="wishfeed-root"></div>
   </div>
   </div>
@@ -836,7 +842,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-plusmoins" data-page="plusmoins">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Plus ou moins</h1><p class="page-sub">Deux voitures, une seule bonne réponse. Jusqu'où iras-tu sans faute ?</p></div></header>
-    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <nav data-section="play"></nav>
     <div id="plusmoins-root"></div>
   </div>
   </div>
@@ -844,7 +850,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-quizgame" data-page="quizgame">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Quiz</h1><p class="page-sub">Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.</p></div></header>
-    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <nav data-section="play"></nav>
     <div id="quizgame-root"></div>
   </div>
   </div>
@@ -852,7 +858,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-achievements" data-page="achievements">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Succès</h1><p class="page-sub">Tous tes badges et ta progression.</p></div></header>
-    <a class="back-link" href="#/jouer" data-back="#/jouer">← Jouer</a>
+    <nav data-section="play"></nav>
     <div id="achievements-root"></div>
   </div>
   </div>

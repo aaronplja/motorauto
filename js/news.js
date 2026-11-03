@@ -83,11 +83,21 @@
     if (latest) seenSet(latest);
     document.dispatchEvent(new CustomEvent("ma:news-seen"));
   }
-  window.MANews = { unread };
+  async function paintDot() {
+    const dot = document.getElementById("news-dot"), btn = document.getElementById("news-btn"); if (!dot || !btn) return;
+    let n = 0; try { n = await unread(); } catch (_) { /* pastille facultative */ }
+    dot.hidden = !n; dot.textContent = n > 9 ? "9+" : String(n);
+    btn.setAttribute("aria-label", n ? `${T("Nouveautés")} (${n})` : T("Nouveautés"));
+    if (/^#\/nouveautes/.test(location.hash)) btn.setAttribute("aria-current", "page"); else btn.removeAttribute("aria-current");
+  }
+  window.MANews = { unread, paint: paintDot };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     ctx.Router.register("news", { enter: () => render() });
+    setTimeout(paintDot, 1200);
+    document.addEventListener("ma:news-seen", paintDot);
+    document.addEventListener("ma:route", () => setTimeout(paintDot, 50));
     document.addEventListener("submit", async (e) => {
       const f = e.target.closest("[data-nw-form]"); if (!f) return;
       e.preventDefault();
