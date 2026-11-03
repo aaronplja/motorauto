@@ -453,8 +453,9 @@
     try { const s = await C.db.collection("set_claims").doc(C.user.uid).get(); claims = s.exists ? (s.data().done || {}) : {}; } catch (_) { claims = {}; }
     claimsUid = C.user.uid;
   }
+  const SC_BG = { carbon: "Carbone", sunset: "Coucher de soleil", night: "Nuit étoilée", garage: "Garage", neon: "Néon", gold: "Or" };
   async function loadShowcase(uid) {
-    try { const s = await C.db.collection("showcases").doc(uid).get(); const d = s.exists ? s.data() : {}; return { ids: Array.isArray(d.ids) ? d.ids : [], cars: Array.isArray(d.cars) ? d.cars : [] }; } catch (_) { return { ids: [], cars: [] }; }
+    try { const s = await C.db.collection("showcases").doc(uid).get(); const d = s.exists ? s.data() : {}; return { ids: Array.isArray(d.ids) ? d.ids : [], cars: Array.isArray(d.cars) ? d.cars : [], bg: SC_BG[d.bg] ? d.bg : "" }; } catch (_) { return { ids: [], cars: [] }; }
   }
   async function loadMyShowcase(force) {
     if (!C.user) { showcase = null; return; }
@@ -462,8 +463,12 @@
     showcase = await loadShowcase(C.user.uid); showcaseUid = C.user.uid;
   }
   async function saveShowcase(next) {
-    const prev = showcase; showcase = Object.assign({ ids: [], cars: [] }, showcase, next);
-    try { await C.db.collection("showcases").doc(C.user.uid).set({ ids: showcase.ids.slice(0, 6), cars: showcase.cars.slice(0, 3), updatedAt: C.FieldValue.serverTimestamp() }); return true; }
+    const prev = showcase; showcase = Object.assign({ ids: [], cars: [], bg: "" }, showcase, next);
+    const base = { ids: showcase.ids.slice(0, 6), cars: showcase.cars.slice(0, 3), updatedAt: C.FieldValue.serverTimestamp() }, ref = C.db.collection("showcases").doc(C.user.uid);
+    try {
+      if (SC_BG[showcase.bg]) { try { await ref.set(Object.assign({ bg: showcase.bg }, base)); return true; } catch (_) { C.toast("Fond non enregistré : règles Firestore à publier.", "err"); showcase.bg = ""; } }
+      await ref.set(base); return true;
+    }
     catch (e) { showcase = prev; C.toast("Vitrine indisponible : " + e.message + " (règles Firestore à publier ?)", "err"); return false; }
   }
   function allSets() { indexCars(); if (setsSig !== sig) { setsSig = sig; setsList = G.setsOf(C.cars); } return setsList; }
@@ -507,12 +512,24 @@
       <button type="button" class="cta-btn fill-btn compact-btn" data-offer-card="${C.esc(car.id)}" ${can ? "" : "disabled"}>${owned ? "Tu l'as déjà" : used.card ? "Offre utilisée" : "Acheter"}</button></div></div>` : "";
     return `<section class="cg-block cg-offers" aria-label="Offres du jour"><header class="cg-bh"><h3>Offres du jour</h3><span class="cg-sub">changent chaque jour à minuit</span></header><div class="cg-offer-row">${packOffer}${cardOffer}</div></section>`;
   }
+  /** compteurs de chance garantie + historique des ouvertures */
+  function packStatsHtml() {
+    const op = doc.opened || 0, toRare = 10 - (op % 10), toEpic = 30 - (op % 30), all = Math.max(doc.packsAll || 0, op);
+    const best = String(doc.best || "").split("|"), bc = best[0] && cardObj(best[0]), br = best[1] && RAR[best[1]];
+    const log = (doc.log || []).slice(-8).reverse();
+    const kinds = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté" };
+    const bar = (n, tot, lbl, cls) => `<div class="pity ${cls}"><div class="pity-t"><b>${n === 1 ? "Le prochain pack" : "Plus que " + n + " packs"}</b><small>${lbl}</small></div><span class="pity-bar" aria-hidden="true"><u style="width:${Math.round(100 * (tot - n) / tot)}%"></u></span></div>`;
+    return `<section class="cg-block cg-pity" aria-label="Chance garantie et historique"><header class="cg-bh"><h3>Chance garantie</h3><span class="cg-sub">sur les packs du jour et les packs bonus</span></header>
+      ${bar(toRare, 10, "contient une carte rare ou mieux, garantie", "rare")}${bar(toEpic, 30, "contient une carte épique ou mieux, garantie", "epic")}
+      <div class="pity-stats"><div><b>${all}</b><small>packs ouverts</small></div>${bc && br ? `<div class="pity-best"><b class="${best[1]}">${br.label}</b><small>meilleure pioche : ${C.esc((bc.brand || "") + " " + (bc.model || ""))}</small></div>` : `<div><b>–</b><small>meilleure pioche</small></div>`}</div>
+      ${log.length ? `<details class="pity-log"><summary>Historique des derniers packs</summary><ul>${log.map((l) => { const c = cardObj(l.id), rr = RAR[l.r]; return `<li><span class="pl-d">${C.esc(String(l.t || "").slice(5).split("-").reverse().join("/"))}</span><span class="pl-k">${kinds[l.k] || "Pack"}</span><span class="pl-r tcg-rar-chip ${l.r}">${rr ? rr.label : l.r}</span><span class="pl-c">${c ? C.esc((c.brand || "") + " " + (c.model || "")) : ""}</span></li>`; }).join("")}</ul></details>` : ""}</section>`;
+  }
   function shopHtml() {
     const rows = packRows(), canDaily = doc.lastPack !== day();
         return `<div class="cg-free">
         <button type="button" class="cg-gift ${canDaily ? "ready" : "off"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="cg-gi">🎁</span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
-      </div>${offersHtml(rows)}${missionsHtml()}
+      </div>${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
       <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">2 voitures du pays, dont 1 rare ou mieux · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
   }
 
@@ -524,7 +541,7 @@
     const ids = ((showcase && showcase.ids) || []).filter((id) => isOwned(id) && cardObj(id)).slice(0, 6);
     const slots = [];
     for (let i = 0; i < 6; i++) slots.push(ids[i] ? `<div class="cg-slot" data-card="${C.esc(ids[i])}">${cardHtml(cardObj(ids[i]), { owned: true, count: 0, lv: lvOf(ids[i]) })}</div>` : `<button type="button" class="cg-slot empty" data-show-edit aria-label="Ajouter une carte à ma vitrine"><span>+</span></button>`);
-    return `<section class="cg-block cg-showcase" aria-label="Ma vitrine"><header class="cg-bh"><h3>Ma vitrine</h3><span class="cg-sub">tes 6 cartes préférées, visibles sur ton profil</span><button type="button" class="cta-btn btn-ghost compact-btn" data-show-edit>Modifier</button></header><div class="cg-slots">${slots.join("")}</div></section>`;
+    return `<section class="cg-block cg-showcase" aria-label="Ma vitrine"><header class="cg-bh"><h3>Ma vitrine</h3><span class="cg-sub">tes 6 cartes préférées, visibles sur ton profil</span><button type="button" class="cta-btn btn-ghost compact-btn" data-show-edit>Modifier</button></header><div class="cg-slots" data-bg="${(showcase && showcase.bg) || ""}">${slots.join("")}</div></section>`;
   }
   function myCarObj(c) {
     const photos = (c.photos || []).filter((u) => C.safeUrl(u));
@@ -539,30 +556,48 @@
   const kindLabel = { country: "Pays", decade: "Décennies", brand: "Marques", category: "Familles" };
   function albumsHtml() {
     const sets = allSets().map((s) => { const have = s.ids.filter((id) => countOf(id) > 0).length; return Object.assign({ have, done: !!(claims && claims[s.id]), full: have === s.ids.length }, s); });
-    const ready = sets.filter((s) => s.full && !s.done), list = sets.filter((s) => s.kind === albumKind);
+    const ready = sets.filter((s) => s.full && !s.done), list = sets.filter((s) => s.kind === albumKind).sort((a, b) => (b.full && !b.done) - (a.full && !a.done) || (a.done - b.done) || (b.have / b.ids.length) - (a.have / a.ids.length));
     const tile = (s) => {
-      const leg = s.legend && cardObj(s.legend), got = leg && countOf(leg.id) > 0;
-      return `<button type="button" class="cg-album${s.done ? " done" : ""}${s.full && !s.done ? " ready" : ""}" data-album="${C.esc(s.id)}"><span class="ab-top"><b>${C.esc(s.name)}</b><small>${s.have} / ${s.ids.length}</small></span>${gauge(s.have, s.ids.length, s.done ? "full" : "")}
-        <span class="ab-foot">${s.done ? "✓ Terminé" : s.full ? "À récupérer !" : "+" + s.reward + " ◆"}${leg ? `<span class="ab-leg${got ? " got" : ""}" title="Carte Légende : ${got ? C.esc(leg.brand + " " + leg.model) : "à découvrir"}">${got ? "Légende obtenue" : "Légende à gagner"}</span>` : ""}</span></button>`;
+      const leg = s.legend && cardObj(s.legend), got = leg && countOf(leg.id) > 0, p = pct(s.have, s.ids.length), left = s.ids.length - s.have;
+      return `<button type="button" class="cg-album ab2${s.done ? " done" : ""}${s.full && !s.done ? " ready" : ""}" data-album="${C.esc(s.id)}" style="--ab:${p}%">
+        <span class="ab-top"><b>${C.esc(s.name)}</b><em class="ab-pct">${p}<small>%</small></em></span>
+        <span class="ab-track" aria-hidden="true"><u style="width:${p}%"></u></span>
+        <span class="ab-sub"><span>${s.have} / ${s.ids.length}</span><span>${s.done ? "✓ Terminé" : s.full ? "À récupérer !" : "encore " + left}</span></span>
+        <span class="ab-foot"><span>${s.done ? "" : "+" + s.reward + " ◆"}</span>${leg ? `<span class="ab-leg${got ? " got" : ""}" title="Carte Légende : ${got ? C.esc(leg.brand + " " + leg.model) : "à découvrir"}">${got ? "Légende obtenue" : "Légende à gagner"}</span>` : ""}</span></button>`;
     };
     return `<section class="cg-block cg-albums" aria-label="Albums"><header class="cg-bh"><h3>Albums</h3><span class="cg-sub">${sets.filter((s) => s.done).length} / ${sets.length} terminés · complète un album pour des cristaux (et une carte Légende)</span>${ready.length ? `<button type="button" class="cta-btn fill-btn compact-btn" data-set-claim ${busy ? "disabled" : ""}>Récupérer ${dust$(ready.reduce((t, s) => t + s.reward, 0))}</button>` : ""}</header>
       <div class="seg cg-seg" role="group" aria-label="Type d'album">${Object.keys(kindLabel).map((k) => `<button type="button" data-akind="${k}" aria-pressed="${k === albumKind}">${kindLabel[k]}</button>`).join("")}</div>
       <div id="cg-titles" class="cg-titles"></div>
       <div class="cg-albumgrid">${list.map(tile).join("") || `<p class="lap-meta">Aucun album de ce type.</p>`}</div></section>`;
   }
+  let albumFilt = "all";
+  const albumCars = (cars) => albumFilt === "owned" ? cars.filter((c) => countOf(c.id) > 0) : albumFilt === "missing" ? cars.filter((c) => !(countOf(c.id) > 0)) : cars;
+  function albumHead(cars, s, done, leg) {
+    const have = cars.filter((c) => countOf(c.id) > 0).length, p = pct(have, cars.length);
+    const rows = ORDER.map((r) => { const all = cars.filter((c) => rarityOf(c) === r); if (!all.length) return ""; const h = all.filter((c) => countOf(c.id) > 0).length;
+      return `<div class="ab-rar ${r}"><span>${RAR[r].label}</span><span class="ab-track"><u style="width:${pct(h, all.length)}%"></u></span><b>${h}/${all.length}</b></div>`; }).join("");
+    const marks = [25, 50, 75, 100].map((m) => `<i class="${p >= m ? "on" : ""}" style="left:${m}%"><small>${m}</small></i>`).join("");
+    return `<div class="ab-hero"><div class="ab-big"><b>${p}<small>%</small></b><span>${have} / ${cars.length} cartes</span></div>
+      <div class="ab-meter"><span class="ab-track big" aria-hidden="true"><u style="width:${p}%"></u>${marks}</span><small>${done ? "Album terminé : récompense récupérée" : have === cars.length ? "Complet : récupère ta récompense" : "Il te manque " + (cars.length - have) + " carte" + (cars.length - have > 1 ? "s" : "") + " · récompense " + s.reward + " cristaux" + (leg ? " + carte Légende" : "")}</small></div></div>
+      <div class="ab-rars">${rows}</div>
+      <div class="chip-row ab-filt" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["missing", "Manquantes"], ["owned", "Possédées"]].map(([k, l]) => `<button type="button" class="chip${albumFilt === k ? " active" : ""}" data-afilt="${k}" aria-pressed="${albumFilt === k}">${l}</button>`).join("")}</div>`;
+  }
   function albumPage(cars, page) {
+    cars = albumCars(cars);
     return cars.slice(page * PAGE, (page + 1) * PAGE).map((c) => cardHtml(c, { owned: countOf(c.id) > 0, count: countOf(c.id), lv: lvOf(c.id) })).join("") + pagerHtml("data-apage", page, cars.length);
   }
   function showAlbum(id) {
     const s = allSets().find((x) => x.id === id); if (!s) return;
+    albumFilt = "all";
     const cars = s.ids.map((i) => C.carsById.get(i)).filter(Boolean).sort((a, b) => numberOf(a) - numberOf(b));
     const have = cars.filter((c) => countOf(c.id) > 0).length, done = !!(claims && claims[s.id]), full = have === cars.length, leg = s.legend && cardObj(s.legend);
-    const o = mountOverlay("album", "Album " + s.name, `<div class="tcg-stage cg-album-ov"><h2>${C.esc(s.name)}</h2><p class="tcg-hint">${have} / ${cars.length} cartes · récompense ${dust$(s.reward)}${leg ? " + carte Légende" : ""}</p>${gauge(have, cars.length, done ? "full" : "")}
+    const o = mountOverlay("album", "Album " + s.name, `<div class="tcg-stage cg-album-ov"><h2>${C.esc(s.name)}</h2><div id="ab-head">${albumHead(cars, s, done, leg)}</div>
       <div class="tcg-grid compact cg-album-grid" id="cg-album-grid">${albumPage(cars, 0)}</div>
       ${leg ? `<h3 class="cg-legend-title">Récompense : carte Légende</h3><div class="cg-legend-slot">${cardHtml(leg, { owned: countOf(leg.id) > 0, count: 0, lv: lvOf(leg.id) })}</div>` : ""}
       <div class="tcg-actions">${full && !done ? `<button type="button" class="cta-btn fill-btn" data-set-claim>Récupérer la récompense</button>` : ""}<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div>`);
     o.addEventListener("click", (e) => {
       if (e.target === o || e.target.closest("[data-close]")) { closeOverlay(); return; }
+      const af = e.target.closest("[data-afilt]"); if (af) { albumFilt = af.dataset.afilt; const g = o.querySelector("#cg-album-grid"), h = o.querySelector("#ab-head"); if (g) g.innerHTML = albumPage(cars, 0); if (h) h.innerHTML = albumHead(cars, s, done, leg); return; }
       const ap = e.target.closest("[data-apage]"); if (ap) { const g = o.querySelector("#cg-album-grid"); if (g) { g.innerHTML = albumPage(cars, Math.max(0, Number(ap.dataset.apage) || 0)); g.scrollIntoView({ block: "nearest" }); } return; }
       const cd = e.target.closest("[data-card]"); if (cd) { showDetail(cd.dataset.card, cars.map((c) => c.id)); return; }
       if (e.target.closest("[data-set-claim]")) claimAlbums(true);
@@ -583,21 +618,26 @@
   }
   function editShowcase() {
     if (!doc || !C.requireLogin()) return;
-    let sel = ((showcase && showcase.ids) || []).filter(isOwned).slice(0, 6), q = "";
+    let sel = ((showcase && showcase.ids) || []).filter(isOwned).slice(0, 6), q = "", bg = (showcase && showcase.bg) || "";
     const owned = Object.keys(doc.owned).filter((id) => doc.owned[id] > 0 && cardObj(id)).map(cardObj).sort((a, b) => ORDER.indexOf(rarityOf(a)) - ORDER.indexOf(rarityOf(b)) || (b.stats.power || 0) - (a.stats.power || 0));
-    const o = mountOverlay("showcase", "Choisir ma vitrine", `<div class="tcg-stage cg-pick"><h2>Ma vitrine</h2><p class="tcg-hint" id="sc-count"></p><input type="search" id="sc-q" placeholder="Rechercher parmi tes cartes…" aria-label="Rechercher une carte" autocomplete="off"><div class="tcg-grid compact" id="sc-grid"></div><div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-sc-save>Enregistrer</button><button type="button" class="cta-btn btn-ghost" data-close>Annuler</button></div></div>`);
+    const o = mountOverlay("showcase", "Choisir ma vitrine", `<div class="tcg-stage cg-pick"><h2>Ma vitrine</h2><p class="tcg-hint" id="sc-count"></p><input type="search" id="sc-q" placeholder="Rechercher parmi tes cartes…" aria-label="Rechercher une carte" autocomplete="off"><div class="sc-order" id="sc-order"></div><div class="sc-bgs" id="sc-bgs" role="group" aria-label="Fond de la vitrine"></div><div class="tcg-grid compact" id="sc-grid"></div><div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-sc-save>Enregistrer</button><button type="button" class="cta-btn btn-ghost" data-close>Annuler</button></div></div>`);
     const paint = () => {
       const nq = C.normalize(q), list = owned.filter((c) => !nq || C.normalize(c.brand + " " + c.model).includes(nq)).slice(0, 150);
-      o.querySelector("#sc-count").textContent = sel.length + " / 6 cartes choisies";
+      o.querySelector("#sc-count").textContent = sel.length + " / 6 cartes choisies · utilise les flèches pour changer l'ordre";
+      o.querySelector("#sc-order").innerHTML = sel.map((id, i) => { const c = cardObj(id); return `<div class="sc-ord"><span>${i + 1}</span><b>${C.esc(c ? (c.brand + " " + c.model).slice(0, 22) : id)}</b><button type="button" data-sc-mv="${i}" data-d="-1" ${i ? "" : "disabled"} aria-label="Avancer">◀</button><button type="button" data-sc-mv="${i}" data-d="1" ${i < sel.length - 1 ? "" : "disabled"} aria-label="Reculer">▶</button></div>`; }).join("");
+      o.querySelector("#sc-bgs").innerHTML = `<button type="button" class="sc-bg${bg ? "" : " on"}" data-sc-bg="">Aucun</button>` + Object.keys(SC_BG).map((k) => `<button type="button" class="sc-bg${bg === k ? " on" : ""}" data-sc-bg="${k}" data-bg="${k}">${SC_BG[k]}</button>`).join("");
       o.querySelector("#sc-grid").innerHTML = list.map((c) => `<div class="cg-pickcard${sel.indexOf(c.id) >= 0 ? " on" : ""}" data-pick="${C.esc(c.id)}">${cardHtml(c, { owned: true, count: 0 })}<span class="cg-tick" aria-hidden="true">${sel.indexOf(c.id) >= 0 ? sel.indexOf(c.id) + 1 : ""}</span></div>`).join("") || `<p class="lap-meta">Aucune carte.</p>`;
     };
     paint();
     o.addEventListener("input", (e) => { if (e.target.id === "sc-q") { q = e.target.value; paint(); } });
     o.addEventListener("click", async (e) => {
       if (e.target === o || e.target.closest("[data-close]")) { closeOverlay(); return; }
+      const mv = e.target.closest("[data-sc-mv]");
+      if (mv) { const i = Number(mv.dataset.scMv), j = i + Number(mv.dataset.d); if (j >= 0 && j < sel.length) { const t = sel[i]; sel[i] = sel[j]; sel[j] = t; paint(); } return; }
+      const gb = e.target.closest("[data-sc-bg]"); if (gb) { bg = gb.dataset.scBg; paint(); return; }
       const pk = e.target.closest("[data-pick]");
       if (pk) { const id = pk.dataset.pick, i = sel.indexOf(id); if (i >= 0) sel.splice(i, 1); else if (sel.length < 6) sel.push(id); else C.toast("6 cartes maximum.", "err"); paint(); return; }
-      if (e.target.closest("[data-sc-save]")) { if (await saveShowcase({ ids: sel })) { C.toast("Vitrine enregistrée.", "ok"); closeOverlay(); } }
+      if (e.target.closest("[data-sc-save]")) { if (await saveShowcase({ ids: sel, bg })) { C.toast("Vitrine enregistrée.", "ok"); closeOverlay(); } }
     });
   }
   async function toggleMyCar(id) {
@@ -733,17 +773,19 @@
       const d = snap.exists ? snap.data() : { owned: {} };
       const ids = Object.keys(d.owned || {}).filter((k) => d.owned[k] > 0 && cardObj(k));
       const wl = w.filter((id) => cardObj(id) && !(d.owned && d.owned[id] > 0));
+      const give = Object.keys(d.owned || {}).filter((id) => d.owned[id] > 1 && cardObj(id)).sort((a, b) => ORDER.indexOf(rarityOf(cardObj(a))) - ORDER.indexOf(rarityOf(cardObj(b))));
       ids.sort((a, b) => (G.isSpecial(b) ? 1 : 0) - (G.isSpecial(a) ? 1 : 0) || ORDER.indexOf(rarityOf(cardObj(a))) - ORDER.indexOf(rarityOf(cardObj(b))));
       const mine = C.user && C.user.uid !== uid ? await myCollection() : null;
       const offer = (id) => mine && (mine.owned[id] || 0) > 1;
       const sc = await loadShowcase(uid), vit = (sc.ids || []).filter((id) => (d.owned || {})[id] > 0 && cardObj(id)).slice(0, 6);
       const carDocs = await Promise.all((sc.cars || []).slice(0, 3).map((cid) => C.db.collection("community_cars").doc(cid).get().then((x) => (x.exists && x.data().uid === uid ? Object.assign({ id: x.id }, x.data()) : null)).catch(() => null)));
       const pubCars = carDocs.filter(Boolean);
-      if (!ids.length && !wl.length && !vit.length) return;
-      const vitHtml = vit.length || pubCars.length ? `<div class="panel-section-title">Vitrine</div><div class="cg-pshow">${vit.map((id) => `<div class="cg-pshow-i"><a href="${G.isSpecial(id) ? "#/jouer/collection" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { owned: true, count: 0 })}</a>${mine && !(mine.owned[id] > 0) ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-wish-add="${C.esc(id)}">★ Je cherche cette carte</button>` : ""}</div>`).join("")}${pubCars.map((c) => `<div class="cg-pshow-i">${cardHtml(myCarObj(c), { owned: true, count: 0 })}<small class="tcg-hint">Sa voiture</small></div>`).join("")}</div>` : "";
+      if (!ids.length && !wl.length && !vit.length && !give.length) return;
+      const vitHtml = vit.length || pubCars.length ? `<div class="panel-section-title">Vitrine</div><div class="cg-pshow" data-bg="${sc.bg || ""}">${vit.map((id) => `<div class="cg-pshow-i"><a href="${G.isSpecial(id) ? "#/jouer/collection" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { owned: true, count: 0 })}</a>${mine && !(mine.owned[id] > 0) ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-wish-add="${C.esc(id)}">★ Je cherche cette carte</button>` : ""}</div>`).join("")}${pubCars.map((c) => `<div class="cg-pshow-i">${cardHtml(myCarObj(c), { owned: true, count: 0 })}<small class="tcg-hint">Sa voiture</small></div>`).join("")}</div>` : "";
       el.innerHTML = `${vitHtml}${ids.length ? `<div class="panel-section-title">Collection de cartes <span class="lap-meta">${(d.count || 0)} / ${C.cars.length}${d.specials ? " · ✦ " + d.specials : ""}</span></div>
         <div class="tcg-strip" id="pub-cards-strip">${profPage(ids, 0)}</div>` : ""}
-        ${wl.length ? `<div class="panel-section-title">★ Cartes recherchées <span class="lap-meta">${wl.length}</span></div>
+        ${give.length ? `<div class="panel-section-title">🔁 Je donne <span class="lap-meta">${give.length} doublon${give.length > 1 ? "s" : ""}</span></div><div class="wish-list give-list">${give.slice(0, 12).map((id) => { const c = cardObj(id); return `<span class="wish-chip give">${C.esc(String(c.model).replace(/\s*\(.*$/, "").slice(0, 26))} ×${(d.owned || {})[id]}</span>`; }).join("")}</div>` : ""}
+        ${wl.length ? `<div class="panel-section-title">★ Je cherche <span class="lap-meta">${wl.length}</span></div>
         <div class="wish-list">${wl.slice(0, 12).map((id) => { const c = cardObj(id); return `<span class="wish-chip ${offer(id) ? "match" : ""}" title="${C.esc(c.brand + " " + c.model)}">${C.esc(String(c.model).replace(/\s*\(.*$/, "").slice(0, 26))}${offer(id) ? " · tu l'as en double" : ""}</span>`; }).join("")}</div>
         ${mine && wl.some(offer) ? `<a class="cta-btn fill-btn compact-btn" href="#/jouer/echanges" data-trade-with="${C.esc(uid)}">🔄 Proposer un échange</a>` : ""}` : ""}`;
       el.onclick = (ev) => { const pp = ev.target.closest("[data-ppage]"); if (!pp) return; const st = el.querySelector("#pub-cards-strip"); if (st) st.innerHTML = profPage(ids, Math.max(0, Number(pp.dataset.ppage) || 0)); };

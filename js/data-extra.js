@@ -46,9 +46,14 @@
     const row = T[car.id];
     if (row) return { drive: row[0], kg: row[1], band: row[2], est: false };
     const power = (car.stats && car.stats.power) || 100;
-    const base = { Berline: 1200, "Coupé": 1250, Break: 1350, Supercar: 1400, "Le Mans": 950 }[car.category] || 1250;
+    const base = { Berline: 1180, "Coupé": 1230, Break: 1350, Supercar: 1380, "Le Mans": 940 }[car.category] || 1250;
     const band = power < 120 ? 1 : power < 200 ? 2 : power < 300 ? 3 : power < 450 ? 4 : 5;
-    return { drive: "", kg: base, band, est: true };
+    // estimation : les voitures récentes sont plus lourdes, les très puissantes aussi (gros moteurs, freins, transmission)
+    const y = parseInt(String(car.years || "").replace(/[^\d]/g, " ").trim().split(/\s+/)[0], 10) || 1995;
+    let kg = base + Math.max(-180, Math.min(320, (y - 1990) * 7));
+    if (car.category === "Le Mans") kg = Math.max(850, Math.min(1100, 900 + (y - 1990) * 3));
+    else if (power > 250) kg += Math.min(260, (power - 250) * 0.28);
+    return { drive: "", kg: Math.round(kg / 5) * 5, band, est: true };
   }
   const powerToWeight = (car) => { const x = carExtra(car), p = (car.stats && car.stats.power) || 0; return p > 0 ? { kgPerHp: x.kg / p, hpPerTon: (p / x.kg) * 1000, kg: x.kg, est: x.est } : null; };
 

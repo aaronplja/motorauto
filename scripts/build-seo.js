@@ -60,14 +60,42 @@ const byBrand = new Map();
 cars.forEach((c) => { if (!byBrand.has(c.brand)) byBrand.set(c.brand, []); byBrand.get(c.brand).push(c); });
 const carUrl = (c) => `${SITE}/voiture/${c.id}.html`, brandUrl = (b) => `${SITE}/marque/${slug(b)}.html`;
 
+
+// ---- contenu unique par fiche : classements, générations voisines, rivales d'époque (calculés à partir des données)
+const yrs = (c) => { const m = String(c.years || "").match(/(\d{4})(?:\D+(\d{4}))?/); return m ? [Number(m[1]), m[2] ? Number(m[2]) : Number(m[1]) + (/pr[ée]sent|aujourd/i.test(c.years) ? 15 : 6)] : [0, 0]; };
+const famKey = (c) => { let t = String(c.id).split("-"); if (["rally", "lm", "mb", "kit"].indexOf(t[0]) >= 0) t = t.slice(1); return t.slice(0, ["alfa", "aston", "land", "rolls", "de"].indexOf(t[0]) >= 0 ? 3 : 2).join("-"); };
+const byPower = cars.slice().sort((a, b) => b.stats.power - a.stats.power), rankAll = new Map(byPower.map((c, i) => [c.id, i + 1]));
+const catList = new Map(); cars.forEach((c) => { if (!catList.has(c.category)) catList.set(c.category, []); catList.get(c.category).push(c); });
+const rankCat = new Map(); catList.forEach((l) => l.slice().sort((a, b) => b.stats.power - a.stats.power).forEach((c, i) => rankCat.set(c.id, [i + 1, l.length])));
+const famList = new Map(); cars.forEach((c) => { const k = famKey(c); if (!famList.has(k)) famList.set(k, []); famList.get(k).push(c); });
+const nameOnly = (c) => `${c.brand} ${c.model}`.replace(/\s*\(.*$/, "");
+function extras(car) {
+  const out = [], [rc, nc] = rankCat.get(car.id) || [0, 0], s = car.stats;
+  const parts = [];
+  if (s.power) parts.push(`Avec ${s.power} ch, cette voiture se place ${rankAll.get(car.id)}e sur ${cars.length} fiches du catalogue pour la puissance` + (nc > 3 ? ` et ${rc}e sur ${nc} dans la catégorie « ${car.category} ».` : "."));
+  if (s.zero) { const faster = cars.filter((c) => c.stats.zero && c.stats.zero < s.zero).length; parts.push(`Son 0 à 100 km/h de ${nfr(s.zero, 1)} s ${faster < cars.length * 0.15 ? "la range parmi les plus rapides du catalogue" : faster > cars.length * 0.6 ? "est celui d'une voiture plus sage que la moyenne des sportives du catalogue" : "est dans la moyenne haute du catalogue"}.`);}
+  if (parts.length) out.push(`<h2>En chiffres</h2><p>${esc(parts.join(" "))}</p>`);
+  const fam = (famList.get(famKey(car)) || []).slice().sort((a, b) => yrs(a)[0] - yrs(b)[0]);
+  if (fam.length >= 2 && fam.length <= 14) out.push(`<h2>Les générations</h2><p>La famille ${esc(nameOnly(car).split(" ").slice(0, 2).join(" "))} compte ${fam.length} fiches au catalogue :</p><ul>${fam.map((c) => `<li>${c.id === car.id ? "<b>" + esc(nameOnly(c)) + "</b>" : `<a href="${esc(c.id)}.html">${esc(nameOnly(c))}</a>`} — ${esc(c.years)}, ${c.stats.power} ch</li>`).join("")}</ul>`);
+  const [a0, a1] = yrs(car), fk = famKey(car);
+  const riv = cars.filter((c) => c.id !== car.id && famKey(c) !== fk && c.category === car.category && c.brand !== car.brand && yrs(c)[0] && Math.min(a1, yrs(c)[1]) >= Math.max(a0, yrs(c)[0]) && s.power && Math.abs(c.stats.power - s.power) / Math.max(c.stats.power, s.power) < 0.2)
+    .sort((a, b) => Math.abs(a.stats.power - s.power) - Math.abs(b.stats.power - s.power)).slice(0, 4);
+  if (riv.length) out.push(`<h2>Rivales d'époque</h2><p>Produites à la même période avec une puissance proche :</p><ul>${riv.map((c) => `<li><a href="${esc(c.id)}.html">${esc(nameOnly(c))}</a> — ${esc(c.years)}, ${c.stats.power} ch</li>`).join("")}</ul>`);
+  const hist = Array.isArray(car.history) ? car.history : String(car.history || "").split(/\n+/);
+  const h = hist.slice(0, 2).map((x) => (typeof x === "string" ? x : x && typeof x === "object" ? [x.title, x.text || x.description].filter(Boolean).join(" : ") : "")).filter(Boolean);
+  if (h.length) out.push(`<h2>Histoire</h2>${h.map((t) => `<p>${esc(t)}</p>`).join("")}`);
+  return { html: out.join("\n"), rank: parts[0] || "" };
+}
+
 cars.forEach((car) => {
   const name = `${car.brand} ${car.model}`.trim();
+  const ex = extras(car);
   const s = car.stats, engs = car.phases.flatMap((p) => p.engines);
   const tq = Math.max(0, ...engs.map((e) => e.torque || 0));
   const x = EX ? EX.carExtra(car) : null, ptw = EX ? EX.powerToWeight(car) : null;
   const title = `${name} (${car.years}) : ${s.power} ch${s.zero ? ", 0-100 en " + s.zero + " s" : ""} — fiche technique | MOTORAUTO`;
   const sentence = `${name} : jusqu'à ${s.power} ch${tq ? " et " + tq + " Nm" : ""}, ${s.speed} km/h en pointe${s.zero ? ", 0 à 100 km/h en " + s.zero + " s" : ""}. ${engs.length} motorisation${engs.length > 1 ? "s" : ""} sur ${car.phases.length} génération${car.phases.length > 1 ? "s" : ""}. `;
-  const desc = (sentence + (car.description || "")).replace(/\s+/g, " ").trim().slice(0, 300);
+  const desc = (sentence + ex.rank + " " + (car.description || "")).replace(/\s+/g, " ").trim().slice(0, 300);
   const url = carUrl(car), app = `${SITE}/index.html?car=${encodeURIComponent(car.id)}`, img = imgOf(car);
   const sameBrand = (byBrand.get(car.brand) || []).filter((c) => c.id !== car.id);
   const related = (car.related || []).map((id) => cars.find((c) => c.id === id)).filter(Boolean).concat(sameBrand).filter((c, i, a) => a.indexOf(c) === i).slice(0, 8);
@@ -98,6 +126,7 @@ ${head({ title, desc, url, img: shareOf(car), type: "article", ld })}
 <p>${esc(car.years)} · ${esc(car.category)}</p>
 <img src="${esc(img)}" alt="${esc(name)}" width="760" loading="eager">
 <p>${esc(car.description)}</p>
+${ex.html}
 <a class="cta" href="${esc(app)}">Ouvrir la fiche interactive (comparateur, duel, chronos)</a>
 <h2>Fiche technique</h2><table><tbody>${specs.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</tbody></table>
 <h2>Motorisations</h2>${engines}

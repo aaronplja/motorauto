@@ -8,7 +8,7 @@
   "use strict";
   let C = null;
   const FEED_ICON = { member: "🧑‍✈️", car: "🚗", record: "🏁", catalog: "📖", event: "📅" };
-  const KIND_LABEL = { circuit: "Journée circuit", rassemblement: "Rassemblement", balade: "Balade", autre: "Autre" };
+  const KIND_LABEL = { circuit: "Journée circuit", rassemblement: "Rassemblement", balade: "Balade / road trip", salon: "Salon, course ou événement officiel", autre: "Autre" };
   const MONTHS = ["JAN", "FÉV", "MAR", "AVR", "MAI", "JUN", "JUI", "AOÛ", "SEP", "OCT", "NOV", "DÉC"];
   const tsMs = (t) => (t && t.toMillis ? t.toMillis() : t && t.seconds ? t.seconds * 1000 : typeof t === "number" ? t : Date.now());
 

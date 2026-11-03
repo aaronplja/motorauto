@@ -38,7 +38,7 @@
     async function isKnownCard(pool, id) { return pool.byId.has(id) || (core.isSpecial(id) && !!(await specialCard(id))); }
 
     // ---------------------------------------------------------------- petits utilitaires
-    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 } });
+    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()) });
     /** historique des cristaux (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
     function dustMove(d, n, why) {
       if (!n) return;
@@ -121,6 +121,16 @@
       return { doc: view(out), freshBadges: fresh };
     }
 
+    /** historique des packs : 30 derniers (date, type, meilleure rareté, nombre) + meilleure pioche de tous les temps */
+    function packLog(d, kind, cards, today) {
+      const rk = (r) => { const i = core.ORDER.indexOf(r); return i < 0 ? 99 : i; };
+      let top = null; (cards || []).forEach((c) => { if (!top || rk(c.rarity) < rk(top.rarity)) top = c; });
+      if (!top) return;
+      d.log = (d.log || []).concat([{ t: today, k: kind, r: top.rarity, id: top.id, n: cards.length }]).slice(-30);
+      const cur = String(d.best || "").split("|"), curR = cur[1] || "";
+      if (!d.best || rk(top.rarity) < rk(curR)) d.best = top.id + "|" + top.rarity;
+      d.packsAll = (d.packsAll || 0) + 1;
+    }
     async function openPack(caller, data) {
       const uid = caller.uid, kind = data && data.kind;
       if (kind !== "daily" && kind !== "bonus" && kind !== "test" && kind !== "shop") fail("invalid-argument", "Type de pack inconnu.");
@@ -175,6 +185,8 @@
           const m1 = bump(d, "open"), m2 = kind === "shop" ? bump(d, "shop", def.country || "world") : { gain: 0, names: [] }, m3 = offerUsed ? bump(d, "offer") : { gain: 0, names: [] };
           missions = { gain: m1.gain + m2.gain + m3.gain, names: m1.names.concat(m2.names, m3.names) };
         }
+        if (kind !== "test") packLog(d, kind, cards, today);
+        if (kind !== "test") { core.seasonAdd(d, core.SEASON_PTS.pack, { packs: 1 }, now()); }
         if (kind === "shop") { writeCol(tx, uid, d); return { cards, dust, bonus, missions, doc: view(d) }; }   // n'entre ni dans les packs ouverts, ni dans les défis
         if (kind === "test") { core.recount(d); writeCol(tx, uid, d); return { cards, dust, bonus, doc: view(d), test: true }; }
         if (kind === "daily") { d.lastPack = today; if (w.dailyDays.indexOf(today) < 0) w.dailyDays.push(today); } else d.bonus--;
@@ -251,14 +263,128 @@
 
     // ---------------------------------------------------------------- série de visites
     async function touchStreak(caller) {
-      const uid = caller.uid, today = core.dayKey(now()), yesterday = core.dayKey(now() - 86400000);
+      const uid = caller.uid, today = core.dayKey(now()), yesterday = core.dayKey(now() - 86400000), month = core.monthKey(now());
       return db.runTransaction(async (tx) => {
-        const ref = col("streaks").doc(uid), s = await tx.get(ref), cur = s.exists ? s.data() : null;
-        if (cur && cur.last === today) return { days: cur.days || 1, best: Math.max(cur.best || 0, cur.days || 1), fresh: false };
-        const days = cur && cur.last === yesterday ? (cur.days || 0) + 1 : 1, best = Math.max(days, (cur && cur.best) || 0);
-        tx.set(ref, { days, best, last: today, updatedAt: ts() });
-        return { days, best, fresh: true };
+        const ref = col("streaks").doc(uid), s = await tx.get(ref), cur = s.exists ? s.data() : null, d = await readCol(tx, uid);
+        let freezes = Math.max(0, Math.min(core.FREEZE_MAX, (cur && cur.freezes) || 0)), fzMonth = (cur && cur.fzMonth) || "";
+        if (fzMonth !== month) { fzMonth = month; if (freezes < core.FREEZE_MAX) freezes++; }     // 1 gel offert par mois
+        if (cur && cur.last === today) {
+          if (freezes !== ((cur && cur.freezes) || 0) || fzMonth !== (cur.fzMonth || "")) tx.set(ref, Object.assign({}, cur, { freezes, fzMonth, updatedAt: ts() }));
+          return { days: cur.days || 1, best: Math.max(cur.best || 0, cur.days || 1), fresh: false, freezes, saved: 0 };
+        }
+        let days, saved = 0;
+        if (cur && cur.last === yesterday) days = (cur.days || 0) + 1;
+        else if (cur && cur.last) {
+          const missed = core.dayDiff(cur.last, today) - 1;       // jours entièrement ratés
+          if (missed > 0 && missed <= freezes) { freezes -= missed; saved = missed; days = (cur.days || 0) + 1; }
+          else days = 1;
+        } else days = 1;
+        const best = Math.max(days, (cur && cur.best) || 0);
+        tx.set(ref, { days, best, last: today, freezes, fzMonth, updatedAt: ts() });
+        const sn = core.seasonOf(d, now());
+        if (sn.dayLog !== today) { sn.dayLog = today; core.seasonAdd(d, core.SEASON_PTS.visit, { days: 1 }, now()); writeCol(tx, uid, d); }
+        return { days, best, fresh: true, freezes, saved, doc: view(d) };
       });
+    }
+    /** achat d'un gel de série en cristaux (2 gels en stock au maximum) */
+    async function buyFreeze(caller) {
+      const uid = caller.uid;
+      return db.runTransaction(async (tx) => {
+        const ref = col("streaks").doc(uid), s = await tx.get(ref), cur = s.exists ? s.data() : { days: 0, best: 0, last: "" }, d = await readCol(tx, uid);
+        const freezes = cur.freezes || 0;
+        if (freezes >= core.FREEZE_MAX) fail("failed-precondition", "Tu as déjà " + core.FREEZE_MAX + " gels en stock.");
+        if (d.dust < core.FREEZE_COST) fail("failed-precondition", "Il te faut " + core.FREEZE_COST + " cristaux (tu en as " + d.dust + ").");
+        dustMove(d, -core.FREEZE_COST, "Gel de série");
+        tx.set(ref, Object.assign({}, cur, { freezes: freezes + 1, updatedAt: ts() }));
+        writeCol(tx, uid, d);
+        return { freezes: freezes + 1, doc: view(d) };
+      });
+    }
+    /** récupération d'un palier du pass ou d'une étape de quête de saison */
+    async function seasonClaim(caller, data) {
+      const uid = caller.uid, what = data && data.what;
+      return db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid), sn = core.seasonOf(d, now());
+        let text = "";
+        if (what === "tier") {
+          const t = Number(data.tier) | 0;
+          if (t < 1 || t > core.PASS_TIERS) fail("invalid-argument", "Palier inconnu.");
+          if (core.passTier(sn) < t) fail("failed-precondition", "Palier pas encore atteint.");
+          if (sn.claimed.indexOf(t) >= 0) fail("failed-precondition", "Palier déjà récupéré.");
+          const r = core.passReward(t);
+          sn.claimed.push(t);
+          if (r.dust) dustMove(d, r.dust, "Pass de saison");
+          if (r.bonus) d.bonus = (d.bonus || 0) + r.bonus;
+          if (r.frame && d.cosm.indexOf("f:" + r.frame) < 0) d.cosm.push("f:" + r.frame);
+          if (r.title && d.cosm.indexOf("t:" + r.title) < 0) d.cosm.push("t:" + r.title);
+          text = core.passLabel(r);
+        } else if (what === "quest") {
+          const qs = core.questState(sn);
+          if (qs.done) fail("failed-precondition", "Toutes les quêtes sont terminées.");
+          if (!qs.ready) fail("failed-precondition", "Objectif pas encore atteint.");
+          dustMove(d, qs.quest.dust, "Quête de saison");
+          text = qs.quest.dust + " cristaux";
+          sn.base = Object.assign({}, sn.act);          // l'étape suivante repart de zéro
+          sn.q++;
+          if (sn.q >= core.SEASON_QUESTS.length) {
+            const f = core.SEASON_QUEST_FINAL; dustMove(d, f.dust, "Quête de saison : récompense finale");
+            if (d.cosm.indexOf("f:" + f.frame) < 0) d.cosm.push("f:" + f.frame);
+            if (d.cosm.indexOf("t:" + f.title) < 0) d.cosm.push("t:" + f.title);
+            text += " + récompense finale exclusive (cadre et titre)";
+          }
+        } else fail("invalid-argument", "Demande inconnue.");
+        writeCol(tx, uid, d);
+        return { text, doc: view(d) };
+      });
+    }
+    /** pack de bienvenue : une seule fois par compte */
+    async function claimWelcome(caller) {
+      const uid = caller.uid;
+      return db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid);
+        if (d.welcome) fail("failed-precondition", "Le cadeau de bienvenue a déjà été récupéré.");
+        d.welcome = true; d.bonus = (d.bonus || 0) + core.WELCOME.bonus; dustMove(d, core.WELCOME.dust, "Cadeau de bienvenue");
+        writeCol(tx, uid, d);
+        return { doc: view(d) };
+      });
+    }
+
+    // ---------------------------------------------------------------- défi de clubs de la semaine
+    const CLASH_PRIZE = 60;
+    const mix = (str) => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+    async function clubClash(caller) {
+      const wk = core.weekKey(now()), prev = core.weekKey(now() - 7 * 86400000);
+      const [cs, ms] = await Promise.all([col("clubs").limit(300).get(), col("club_members").limit(3000).get()]);
+      const byClub = new Map(); ms.forEach((m) => { const x = m.data(); if (!byClub.has(x.clubId)) byClub.set(x.clubId, []); byClub.get(x.clubId).push(x.uid); });
+      const clubs = []; cs.forEach((c) => { const n = (byClub.get(c.id) || []).length; if (n >= 2) clubs.push({ id: c.id, name: String(c.data().name || c.id).slice(0, 40), n }); });
+      // 1) appariement de la semaine : clubs de taille proche, créé une seule fois
+      const ref = col("club_clash").doc(wk);
+      await db.runTransaction(async (tx) => {
+        const s = await tx.get(ref); if (s.exists) return;
+        const order = clubs.slice().sort((a, b) => a.n - b.n || mix(wk + a.id) - mix(wk + b.id)), pairs = [];
+        for (let i = 0; i + 1 < order.length; i += 2) pairs.push({ a: order[i].id, b: order[i + 1].id, an: order[i].name, bn: order[i + 1].name });
+        tx.set(ref, { week: wk, pairs, done: false, createdAt: ts() });
+      });
+      // 2) clôture de la semaine précédente : points cumulés des membres, récompense aux membres actifs du club gagnant
+      const pref = col("club_clash").doc(prev), psnap = await pref.get();
+      if (psnap.exists && !psnap.data().done) {
+        const claimed = await db.runTransaction(async (tx) => { const s = await tx.get(pref); if (!s.exists || s.data().done) return null; tx.update(pref, { done: true }); return s.data(); });
+        if (claimed) {
+          const results = [];
+          for (const p of claimed.pairs || []) {
+            const score = async (cid) => { let t = 0; const act = []; for (const uid of (byClub.get(cid) || []).slice(0, 60)) { const s = await col("collections").doc(uid).get(); const w = s.exists && s.data().wpts; const v = w && w.w === prev ? w.p || 0 : 0; t += v; if (v > 0) act.push(uid); } return { t, act }; };
+            const A = await score(p.a), B = await score(p.b);
+            const win = A.t === B.t ? "" : A.t > B.t ? p.a : p.b, act = win === p.a ? A.act : win === p.b ? B.act : [];
+            results.push({ a: p.a, b: p.b, an: p.an, bn: p.bn, as: A.t, bs: B.t, win });
+            for (const uid of act) {
+              await db.runTransaction(async (tx) => { const d = await readCol(tx, uid); if (d.cosm.indexOf("t:clubwin") < 0) d.cosm.push("t:clubwin"); dustMove(d, CLASH_PRIZE, "Défi de clubs"); writeCol(tx, uid, d); });
+            }
+          }
+          await pref.update({ results });
+        }
+      }
+      const cur = (await ref.get()).data() || {}, last = (await pref.get()).data() || {};
+      return { week: wk, pairs: cur.pairs || [], prev: { week: prev, results: last.results || [] }, prize: CLASH_PRIZE };
     }
 
     // ---------------------------------------------------------------- défis de la semaine
@@ -688,7 +814,8 @@
         } else g.pmStreak = 0;
         let next = null;
         if (!answer || (result && result.ok)) { next = core.pmPair(pool.list, rng, result ? result.pair : null, g.pmStreak); g.pmPair = next; }
-        writeStats(tx, uid, g); if (reward) writeCol(tx, uid, d);
+        if (result && result.ok) core.seasonAdd(d, core.SEASON_PTS.pmOk, { pm: 1 }, now());
+        writeStats(tx, uid, g); if ((result && result.ok) || reward) writeCol(tx, uid, d);
         return { result, next, streak: g.pmStreak, best: g.pmBest, reward, doc: reward ? view(d) : null };
       });
     }
@@ -708,9 +835,11 @@
         g.quizPts = Object.keys(g.quizBest).reduce((t, k) => t + (g.quizBest[k] || 0), 0);
         g.quizDone++; if (score === questions.length && questions.length >= core.QUIZ_N) { g.quizPerfect++; if (level === 3) g.quizL3++; }
         const gain = Math.max(0, Math.min(score * core.QUIZ_REWARD, core.QUIZ_DAILY_CAP - day.dust));
-        if (gain > 0) { day.dust += gain; dustMove(d, gain, "Quiz"); writeCol(tx, uid, d); }
+        core.seasonAdd(d, score * core.SEASON_PTS.quizOk + (score === questions.length ? core.SEASON_PTS.quizPerfect : 0), score >= 6 ? { quiz: 1 } : null, now());
+        if (gain > 0) day.dust += gain, dustMove(d, gain, "Quiz");
+        writeCol(tx, uid, d);
         writeStats(tx, uid, g);
-        return { score, total: questions.length, reward: gain, best: g.quizBest[key], pts: g.quizPts, doc: gain > 0 ? view(d) : null };
+        return { score, total: questions.length, reward: gain, best: g.quizBest[key], pts: g.quizPts, doc: view(d) };
       });
     }
 
@@ -807,7 +936,7 @@
       return sent;
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, _getPool: getPool };
+    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, _getPool: getPool };
   }
   return { createGame, GameError };
 });

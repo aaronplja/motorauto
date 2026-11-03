@@ -240,3 +240,16 @@ button.tcg-dust b { display: inline-flex; align-items: center; gap: .3rem; }
 .set-row span { display: flex; justify-content: space-between; gap: .6rem; }
 .set-row small { color: var(--color-secondary); }
 .set-row.full .xp-bar i { background: linear-gradient(90deg, #f5b301, #ffd95a); }
+
+/* hologramme des raretés hautes : le reflet arc-en-ciel suit le pointeur / l'inclinaison du téléphone */
+.tcg .tcg-holo { position: absolute; inset: 0; z-index: 6; pointer-events: none; border-radius: inherit; opacity: .42; mix-blend-mode: color-dodge;
+  --px: var(--hx, 50%); --py: var(--hy, 30%);
+  background:
+    radial-gradient(circle at var(--px) var(--py), rgba(255,255,255,.75), transparent 34%),
+    linear-gradient(115deg, #ff5f6d 0%, #ffc371 18%, #7bffb2 36%, #5ac8fa 54%, #a78bfa 72%, #ff5f6d 90%);
+  background-size: 100% 100%, 240% 240%; background-position: 0 0, var(--px) var(--py); transition: opacity .25s; }
+.has-tilt .tcg .tcg-holo { --px: var(--tilt-x, 50%); --py: var(--tilt-y, 30%); }
+.tcg-legendary .tcg-holo { opacity: .28; } .tcg-special .tcg-holo { opacity: .3; filter: saturate(.7); } .tcg-mythic .tcg-holo { opacity: .46; } .tcg-shiny .tcg-holo { opacity: .5; }
+.tcg:hover .tcg-holo, .tcg-big .tcg-holo { opacity: .62; }
+.tcg.locked .tcg-holo { display: none; }
+@media (prefers-reduced-motion: reduce) { .tcg .tcg-holo { transition: none; opacity: .25; } }

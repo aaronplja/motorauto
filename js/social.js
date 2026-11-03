@@ -23,7 +23,7 @@
   const votes = new Map();     // "kind:target" -> Map(uid -> {fun,reliability,cost})
   const comments = new Map();  // "kind:target" -> [{id,...}]
   const reacts = new Map();    // "kind:target" -> Map(uid -> emojiId)
-  const EMOJIS = [["fire", "🔥", "Canon"], ["flag", "🏁", "À piloter"], ["love", "😍", "Coup de cœur"]];
+  const EMOJIS = [["up", "👍", "J'aime"], ["fire", "🔥", "Canon"], ["wow", "😮", "Impressionnant"]];
   let loaded = false, loading = null, C = null;
 
   const key = (kind, target) => kind + ":" + target;
@@ -460,7 +460,7 @@
 
   window.MASocial = { carStats, badge, loadStats, mount, relatedOf,
     raw: () => ({ likes, votes, comments, reacts }),
-    reactionsOf: (kind, target) => { const m = reacts.get(key(kind, target)); const out = { fire: 0, flag: 0, love: 0 }; if (m) m.forEach((e) => { if (out[e] != null) out[e]++; }); return out; } };
+    reactionsOf: (kind, target) => { const m = reacts.get(key(kind, target)); const out = { fire: 0, flag: 0, love: 0, up: 0, wow: 0 }; if (m) m.forEach((e) => { if (out[e] != null) out[e]++; }); return out; } };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx;

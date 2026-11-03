@@ -123,6 +123,7 @@
   function onRoute(route) {
     decorate(route); settingsReset(route);
     const key = keyOf(route); current = key; clearTimeout(pending);
+    return;   // les aides ne s'ouvrent plus toutes seules : on les ouvre avec le bouton (?)
     if (!key || off.__all || off[key] || shown.has(key)) return;
     const tryShow = (n) => {
       if (current !== key) return;

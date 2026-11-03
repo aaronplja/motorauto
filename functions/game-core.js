@@ -84,14 +84,14 @@
     ["lvl5", "🎖️", "Expert", "Atteindre le niveau 5", (s) => s.level, 5, "silver"]
   ].map((b) => ({ id: b[0], icon: b[1], label: b[2], desc: b[3], get: b[4], goal: b[5], tier: b[6] }));
   const goalOf = (b) => (typeof b.goal === "function" ? b.goal() : b.goal);
-  const BLANK_STATS = () => ({ byBrand: {}, rar: {}, brandsOwned: 0, opened: 0, sets: 0, upgraded: 0, maxlv: 0, wish: 0, follows: 0, fuse: 0, sold: 0, bought: 0, pm: 0, quizDone: 0, quizPerfect: 0, quizL3: 0, laps: 0, tracks: 0, records: 0, podiums: 0, comments: 0, likes: 0, cars: 0, events: 0, rsvps: 0, days: 0, best: 0, last: "", cards: 0, specials: 0, trades: 0, chal: 0, entries: 0, wins: 0 });
+  const BLANK_STATS = () => ({ byBrand: {}, rar: {}, brandsOwned: 0, opened: 0, sets: 0, upgraded: 0, maxlv: 0, wish: 0, follows: 0, fuse: 0, sold: 0, bought: 0, pm: 0, quizDone: 0, quizPerfect: 0, quizL3: 0, laps: 0, tracks: 0, records: 0, podiums: 0, comments: 0, likes: 0, cars: 0, events: 0, rsvps: 0, days: 0, best: 0, last: "", cards: 0, specials: 0, trades: 0, chal: 0, entries: 0, wins: 0, mentored: 0 });
 
   /** calcule xp, niveau et badges à partir des compteurs d'un pilote */
   function finish(s, total) {
     if (total) TOTAL = Math.max(1, total | 0);
     s.tracks = s.tracks instanceof Set ? s.tracks.size : s.tracks;
     const base = s.laps * 15 + s.records * 50 + s.podiums * 20 + s.comments * 4 + s.likes + s.cars * 25 + s.events * 20 + s.rsvps * 4 + s.best * 3 + s.cards * 2
-      + s.trades * 8 + s.chal * 6 + s.entries * 10 + s.wins * 150 + s.specials * 30;
+      + s.trades * 8 + s.chal * 6 + s.entries * 10 + s.wins * 150 + s.specials * 30 + (Number(s.mentored) || 0) * 40;
     s.level = 1;
     let earned = BADGES.filter((b) => b.id !== "lvl5" && b.get(s) >= goalOf(b));   // le badge « niveau 5 » dépend de l'XP : deux passes
     s.xp = base + earned.length * 10; s.level = levelOf(s.xp).level.n;
@@ -218,7 +218,7 @@
     out.push(second);
     return out;
   }
-  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [], pics: {}, picClaims: {}, lv: {}, mis: { day: "", p: {}, done: [] }, offers: { day: "", pack: 0, card: 0 } });
+  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [], pics: {}, picClaims: {}, lv: {}, mis: { day: "", p: {}, done: [] }, offers: { day: "", pack: 0, card: 0 }, log: [], best: "", welcome: false, season: null, cosm: [] });
 
   // ------------------------------------------------------------------ cartes à plusieurs images
   /** clé courte et stable d'une image (ne change pas si l'administrateur réordonne la galerie) */
@@ -426,8 +426,98 @@
   const PM_DAILY_CAP = 150;
 
   // ------------------------------------------------------------------ quiz par niveau : questions automatiques (catalogue) + questions écrites
-  const QCATS = { brands: "Marques", history: "Histoire", engines: "Moteurs", motorsport: "Sport auto" };
+  const QCATS = { brands: "Marques", history: "Histoire", engines: "Moteurs", motorsport: "Sport auto", countries: "Pays et constructeurs", circuits: "Rallye et circuits", numbers: "Chiffres", trivia: "Anecdotes et records" };
   const QLEVELS = { 1: "Facile", 2: "Moyen", 3: "Expert" };
+  // ---------------------------------------------------------------- saison : pass gratuit de 30 paliers, quêtes enchaînées, cosmétiques
+  const SEASON_LEN = 28, SEASON_EPOCH = Date.UTC(2026, 0, 5), DAY_MS = 86400000;
+  const seasonInfo = (ms) => {
+    const t = ms === undefined ? Date.now() : ms, n = Math.max(1, Math.floor((t - SEASON_EPOCH) / (SEASON_LEN * DAY_MS)) + 1);
+    const start = SEASON_EPOCH + (n - 1) * SEASON_LEN * DAY_MS, end = start + SEASON_LEN * DAY_MS;
+    return { n, start, end, daysLeft: Math.max(0, Math.ceil((end - t) / DAY_MS)) };
+  };
+  const PASS_TIERS = 30, PASS_STEP = 40;                       // 40 points de saison par palier : 1 200 points pour tout débloquer
+  const SEASON_PTS = { pack: 10, quizOk: 2, quizPerfect: 10, pmOk: 2, visit: 5, upgrade: 8, fuse: 12, duel: 4 };
+  /** cosmétiques : cadres d'avatar et titres. src = niveau d'XP, succès, saison (paliers), top (classement mensuel) */
+  const FRAMES = {
+    bronze:   { name: "Bronze",       src: "level", v: 3,  color: "#c58a4a" },
+    silver:   { name: "Argent",       src: "level", v: 6,  color: "#cfd6df" },
+    gold:     { name: "Or",           src: "level", v: 10, color: "#f4c542" },
+    neon:     { name: "Néon",         src: "level", v: 14, color: "#37e6ff" },
+    flame:    { name: "Flamme",       src: "level", v: 18, color: "#ff5a1f" },
+    platinum: { name: "Platine",      src: "level", v: 20, color: "#b9f2ff" },
+    collector:{ name: "Collectionneur", src: "badge", v: "card100", color: "#b86bff" },
+    s_gold:   { name: "Saison",       src: "tier", v: 15, color: "#ffb300" },
+    s_royal:  { name: "Royal de saison", src: "tier", v: 30, color: "#ff3d81" },
+    quest:    { name: "Quête de saison", src: "quest", v: 4, color: "#38ef7d" },
+    podium:   { name: "Podium du mois", src: "top", v: 3, color: "#ffd700" }
+  };
+  const TITLES = {
+    rookie:   { name: "Novice des circuits", src: "level", v: 2 },
+    pilot:    { name: "Pilote confirmé",     src: "level", v: 5 },
+    ace:      { name: "As du volant",        src: "level", v: 8 },
+    legend:   { name: "Légende vivante",     src: "level", v: 12 },
+    titan:    { name: "Titan de la route",   src: "level", v: 16 },
+    ultimate: { name: "Ultime",              src: "level", v: 20 },
+    curator:  { name: "Conservateur",        src: "badge", v: "card100" },
+    quizzer:  { name: "Maître du quiz",      src: "badge", v: "quizP10" },
+    t10:      { name: "Habitué de la saison", src: "tier", v: 10 },
+    t20:      { name: "Vétéran de la saison", src: "tier", v: 20 },
+    t30:      { name: "Champion du pass",     src: "tier", v: 30 },
+    quest:    { name: "Briseur de quêtes",    src: "quest", v: 4 },
+    top1:     { name: "Numéro 1 du mois",     src: "top", v: 1 },
+    top3:     { name: "Sur le podium",        src: "top", v: 3 },
+    clubwin:  { name: "Champion de club",     src: "clash", v: 1 }
+  };
+  /** récompense d'un palier : cristaux, ou pack bonus tous les 5 paliers, ou cosmétique */
+  function passReward(t) {
+    const r = { dust: 20 + Math.floor(t / 3) * 10, bonus: 0, frame: "", title: "" };
+    if (t % 5 === 0) { r.bonus = 1; r.dust = 0; }
+    if (t === 10) r.title = "t10"; if (t === 15) r.frame = "s_gold"; if (t === 20) r.title = "t20"; if (t === 30) { r.title = "t30"; r.frame = "s_royal"; r.dust = 150; }
+    return r;
+  }
+  const passLabel = (r) => [r.dust ? r.dust + " cristaux" : "", r.bonus ? "1 pack bonus" : "", r.frame ? "cadre " + FRAMES[r.frame].name : "", r.title ? "titre « " + TITLES[r.title].name + " »" : ""].filter(Boolean).join(" + ");
+  /** quêtes de saison enchaînées : on ne passe à l'étape suivante qu'après avoir terminé la précédente */
+  const SEASON_QUESTS = [
+    { id: "q1", label: "Ouvrir 10 packs", act: "packs", goal: 10, dust: 60 },
+    { id: "q2", label: "Réussir 8 quiz", act: "quiz", goal: 8, dust: 80 },
+    { id: "q3", label: "Réussir 25 bonnes réponses au Plus ou moins", act: "pm", goal: 25, dust: 100 },
+    { id: "q4", label: "Te connecter 14 jours", act: "days", goal: 14, dust: 120 }
+  ];
+  const SEASON_QUEST_FINAL = { dust: 300, frame: "quest", title: "quest" };
+  const blankSeason = (n) => ({ n, pts: 0, claimed: [], act: { packs: 0, quiz: 0, pm: 0, days: 0 }, q: 0, qDone: false, dayLog: "" });
+  /** met à jour (et remet à zéro si nouvelle saison) l'état de saison du joueur ; retourne l'état */
+  function seasonOf(d, ms) {
+    const cur = seasonInfo(ms).n;
+    if (!d.season || d.season.n !== cur) d.season = blankSeason(cur);
+    if (!d.cosm) d.cosm = [];
+    return d.season;
+  }
+  function seasonAdd(d, pts, act, ms) {
+    const s = seasonOf(d, ms);
+    s.pts = Math.min(PASS_TIERS * PASS_STEP, s.pts + Math.max(0, pts | 0));
+    const wk = weekKey(ms === undefined ? Date.now() : ms); if (!d.wpts || d.wpts.w !== wk) d.wpts = { w: wk, p: 0 }; d.wpts.p += Math.max(0, pts | 0);   // points de la semaine (défi de clubs)
+    if (act) Object.keys(act).forEach((k) => { s.act[k] = (s.act[k] || 0) + act[k]; });
+    return s;
+  }
+  const passTier = (s) => Math.min(PASS_TIERS, Math.floor((s.pts || 0) / PASS_STEP));
+  /** étape de quête en cours : la progression est plafonnée à l'objectif, et ne compte qu'à partir de l'étape ouverte */
+  function questState(s) {
+    const q = SEASON_QUESTS[s.q];
+    if (!q) return { done: true, step: SEASON_QUESTS.length };
+    const base = (s.base && s.base[q.act]) || 0, prog = Math.min(q.goal, Math.max(0, (s.act[q.act] || 0) - base));
+    return { done: false, step: s.q, quest: q, prog, ready: prog >= q.goal };
+  }
+  // gel de série : un gel offert par mois, jamais plus de 2 en stock
+  const FREEZE_MAX = 2, FREEZE_COST = 150;
+  const dayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / DAY_MS);
+  const WELCOME = { dust: 100, bonus: 1 };
+  /** éléments de cosmétique que le serveur seul peut accorder (saison) */
+  function seasonCosm(d, ms) {
+    const s = seasonOf(d, ms), have = d.cosm.slice(), t = passTier(s);
+    for (let i = 1; i <= t; i++) { const r = passReward(i); if (s.claimed.indexOf(i) >= 0) { if (r.frame && have.indexOf("f:" + r.frame) < 0) have.push("f:" + r.frame); if (r.title && have.indexOf("t:" + r.title) < 0) have.push("t:" + r.title); } }
+    return have;
+  }
+
   const QUIZ_N = 10, QUIZ_REWARD = 4, QUIZ_DAILY_CAP = 80;       // 4 cristaux par bonne réponse, 80 par jour au maximum
   // [catégorie, niveau, question FR, [bonne, faux, faux, faux], question EN, [good, wrong, wrong, wrong]]
   const QBANK = [
@@ -480,6 +570,47 @@
     ["motorsport", 3, "Quelle voiture a gagné de justesse les 24 Heures du Mans 1969 ?", ["Ford GT40", "Ferrari 330 P4", "Matra MS670", "Jaguar D-Type"], "Which car narrowly won the 1969 24 Hours of Le Mans?", ["Ford GT40", "Ferrari 330 P4", "Matra MS670", "Jaguar D-Type"]],
     ["motorsport", 3, "Comment s'appelait la célèbre ligne droite de 6 km du circuit du Mans ?", ["Les Hunaudières", "Le Mulsanne Arrow", "La Sarthe Express", "Tertre Rouge"], "What was the famous 6 km straight of the Le Mans circuit called?", ["The Hunaudières", "The Mulsanne Arrow", "The Sarthe Express", "Tertre Rouge"]]
   ];
+  // questions écrites ajoutées : pays, circuits et rallye, anecdotes (codes moteurs, records)
+  QBANK.push(
+    ["trivia", 1, "Que signifie le sigle « GTI » ?", ["Gran Turismo Injection", "Grand Tourer International", "Gran Touring Italia", "Gas Turbine Injection"], "What does “GTI” stand for?", ["Gran Turismo Injection", "Grand Tourer International", "Gran Touring Italia", "Gas Turbine Injection"]],
+    ["trivia", 1, "Combien d'heures dure la course des 24 Heures du Mans ?", ["24 heures", "12 heures", "48 heures", "6 heures"], "How long does the Le Mans 24 Hours race last?", ["24 hours", "12 hours", "48 hours", "6 hours"]],
+    ["trivia", 1, "Où est placé le moteur d'une Porsche 911 classique ?", ["À l'arrière", "À l'avant", "Au centre", "Sous le plancher"], "Where is the engine of a classic Porsche 911?", ["At the rear", "At the front", "In the middle", "Under the floor"]],
+    ["trivia", 1, "Combien de cylindres compte le moteur de la Bugatti Veyron ?", ["16", "12", "10", "8"], "How many cylinders does the Bugatti Veyron engine have?", ["16", "12", "10", "8"]],
+    ["trivia", 1, "Quel type de moteur équipe la Mazda RX-7 ?", ["Un moteur rotatif", "Un V8", "Un diesel", "Un moteur électrique"], "What kind of engine powers the Mazda RX-7?", ["A rotary engine", "A V8", "A diesel", "An electric motor"]],
+    ["trivia", 2, "Quel moteur équipe la Peugeot 205 GTI 1.9 ?", ["XU9JA", "TU5", "DW8", "EP6"], "Which engine powers the Peugeot 205 GTI 1.9?", ["XU9JA", "TU5", "DW8", "EP6"]],
+    ["trivia", 2, "Quel moteur six cylindres en ligne équipe la Toyota Supra A80 turbo ?", ["2JZ-GTE", "1JZ-GE", "4A-GE", "3S-GTE"], "Which inline-six powers the turbocharged Toyota Supra A80?", ["2JZ-GTE", "1JZ-GE", "4A-GE", "3S-GTE"]],
+    ["trivia", 2, "Quel code moteur équipe la Nissan Skyline GT-R R34 ?", ["RB26DETT", "SR20DET", "VQ35", "2JZ-GTE"], "Which engine code powers the Nissan Skyline GT-R R34?", ["RB26DETT", "SR20DET", "VQ35", "2JZ-GTE"]],
+    ["trivia", 2, "En quelle année la première Volkswagen Golf GTI est-elle commercialisée ?", ["1976", "1968", "1983", "1990"], "In which year did the first Volkswagen Golf GTI go on sale?", ["1976", "1968", "1983", "1990"]],
+    ["trivia", 2, "En quelle année la Citroën 2CV est-elle présentée au public ?", ["1948", "1939", "1955", "1960"], "In which year was the Citroën 2CV unveiled?", ["1948", "1939", "1955", "1960"]],
+    ["trivia", 2, "Quel roadster est le deux places le plus vendu au monde ?", ["Mazda MX-5", "Porsche Boxster", "BMW Z3", "Fiat Barchetta"], "Which roadster is the world's best-selling two-seater?", ["Mazda MX-5", "Porsche Boxster", "BMW Z3", "Fiat Barchetta"]],
+    ["trivia", 2, "Dans quelle ville est assemblée l'Alpine A110 moderne ?", ["Dieppe", "Flins", "Sandouville", "Maubeuge"], "In which town is the modern Alpine A110 built?", ["Dieppe", "Flins", "Sandouville", "Maubeuge"]],
+    ["trivia", 2, "Qui a dessiné la Mini originale de 1959 ?", ["Alec Issigonis", "Colin Chapman", "Ferdinand Porsche", "Marcello Gandini"], "Who designed the original 1959 Mini?", ["Alec Issigonis", "Colin Chapman", "Ferdinand Porsche", "Marcello Gandini"]],
+    ["trivia", 3, "Environ combien de Ford RS200 ont été construites ?", ["Environ 200", "Environ 2 000", "Environ 20 000", "Environ 20"], "Roughly how many Ford RS200s were built?", ["About 200", "About 2,000", "About 20,000", "About 20"]],
+    ["trivia", 3, "Quel régime moteur maximal la Honda S2000 atteint-elle environ ?", ["9 000 tr/min", "7 000 tr/min", "6 000 tr/min", "12 000 tr/min"], "Roughly what maximum engine speed does the Honda S2000 reach?", ["9,000 rpm", "7,000 rpm", "6,000 rpm", "12,000 rpm"]],
+    ["circuits", 1, "Quelle voiture a gagné les 24 Heures du Mans 1991 avec un moteur rotatif ?", ["Mazda 787B", "Peugeot 905", "Porsche 962", "Jaguar XJR-9"], "Which car won the 1991 Le Mans 24 Hours with a rotary engine?", ["Mazda 787B", "Peugeot 905", "Porsche 962", "Jaguar XJR-9"]],
+    ["circuits", 1, "Dans quel pays se trouve le circuit de Monza ?", ["Italie", "Espagne", "France", "Allemagne"], "In which country is the Monza circuit?", ["Italy", "Spain", "France", "Germany"]],
+    ["circuits", 1, "Dans quel pays se trouve le circuit de Spa-Francorchamps ?", ["Belgique", "Pays-Bas", "Luxembourg", "Suisse"], "In which country is the Spa-Francorchamps circuit?", ["Belgium", "Netherlands", "Luxembourg", "Switzerland"]],
+    ["circuits", 1, "Quel est le nom du circuit des 24 Heures du Mans ?", ["Circuit de la Sarthe", "Circuit Paul Ricard", "Circuit de Magny-Cours", "Circuit de Nevers"], "What is the circuit of the Le Mans 24 Hours called?", ["Circuit de la Sarthe", "Circuit Paul Ricard", "Magny-Cours circuit", "Nevers circuit"]],
+    ["circuits", 2, "Quel pilote a remporté neuf titres mondiaux de rallye consécutifs ?", ["Sébastien Loeb", "Sébastien Ogier", "Tommi Mäkinen", "Carlos Sainz"], "Which driver won nine consecutive world rally titles?", ["Sébastien Loeb", "Sébastien Ogier", "Tommi Mäkinen", "Carlos Sainz"]],
+    ["circuits", 2, "Quel groupe de rallye a été supprimé après la saison 1986 ?", ["Le Groupe B", "Le Groupe A", "Le Groupe N", "Le Groupe C"], "Which rally group was banned after the 1986 season?", ["Group B", "Group A", "Group N", "Group C"]],
+    ["circuits", 2, "Quelle Peugeot a dominé le championnat du monde des rallyes en 1985 et 1986 ?", ["205 Turbo 16", "306 Maxi", "106 Rallye", "405 Break"], "Which Peugeot dominated the World Rally Championship in 1985 and 1986?", ["205 Turbo 16", "306 Maxi", "106 Rallye", "405 Estate"]],
+    ["circuits", 2, "Quel constructeur a gagné les 24 Heures du Mans en 1992 et 1993 ?", ["Peugeot", "Toyota", "Jaguar", "Mercedes"], "Which manufacturer won the Le Mans 24 Hours in 1992 and 1993?", ["Peugeot", "Toyota", "Jaguar", "Mercedes"]],
+    ["circuits", 2, "Quelle marque française remporte le premier championnat du monde des rallyes en 1973 ?", ["Alpine-Renault", "Peugeot", "Citroën", "Simca"], "Which French brand won the first World Rally Championship in 1973?", ["Alpine-Renault", "Peugeot", "Citroën", "Simca"]],
+    ["circuits", 3, "Quelle est la longueur approximative de la Nordschleife du Nürburgring ?", ["20,8 km", "13 km", "5,8 km", "25 km"], "Roughly how long is the Nürburgring Nordschleife?", ["20.8 km", "13 km", "5.8 km", "25 km"]],
+    ["countries", 1, "De quel pays vient la marque Lamborghini ?", ["Italie", "Allemagne", "Espagne", "France"], "Which country does the Lamborghini brand come from?", ["Italy", "Germany", "Spain", "France"]],
+    ["countries", 2, "De quel pays vient la marque Škoda ?", ["République tchèque", "Pologne", "Autriche", "Suède"], "Which country does the Škoda brand come from?", ["Czech Republic", "Poland", "Austria", "Sweden"]],
+    ["countries", 2, "De quel pays vient la marque Volvo ?", ["Suède", "Norvège", "Finlande", "Danemark"], "Which country does the Volvo brand come from?", ["Sweden", "Norway", "Finland", "Denmark"]],
+    ["countries", 2, "De quel pays vient la marque Hyundai ?", ["Corée du Sud", "Japon", "Chine", "Taïwan"], "Which country does the Hyundai brand come from?", ["South Korea", "Japan", "China", "Taiwan"]],
+    ["countries", 1, "De quel pays vient la marque Mazda ?", ["Japon", "Corée du Sud", "Chine", "Thaïlande"], "Which country does the Mazda brand come from?", ["Japan", "South Korea", "China", "Thailand"]],
+    ["countries", 2, "De quel pays vient la marque SEAT ?", ["Espagne", "Italie", "Portugal", "France"], "Which country does the SEAT brand come from?", ["Spain", "Italy", "Portugal", "France"]],
+    ["countries", 1, "De quel pays vient la marque Ford ?", ["États-Unis", "Royaume-Uni", "Canada", "Allemagne"], "Which country does the Ford brand come from?", ["United States", "United Kingdom", "Canada", "Germany"]],
+    ["countries", 2, "De quel pays vient la marque Bentley ?", ["Royaume-Uni", "États-Unis", "Allemagne", "France"], "Which country does the Bentley brand come from?", ["United Kingdom", "United States", "Germany", "France"]],
+    ["countries", 2, "De quel pays vient la marque Dacia ?", ["Roumanie", "Bulgarie", "Hongrie", "Turquie"], "Which country does the Dacia brand come from?", ["Romania", "Bulgaria", "Hungary", "Turkey"]],
+    ["countries", 1, "De quel pays vient la marque Alfa Romeo ?", ["Italie", "France", "Espagne", "Allemagne"], "Which country does the Alfa Romeo brand come from?", ["Italy", "France", "Spain", "Germany"]],
+    ["countries", 1, "De quel pays vient la marque Porsche ?", ["Allemagne", "Autriche", "Suisse", "Italie"], "Which country does the Porsche brand come from?", ["Germany", "Austria", "Switzerland", "Italy"]],
+    ["countries", 2, "De quel pays vient la marque Subaru ?", ["Japon", "Corée du Sud", "États-Unis", "Chine"], "Which country does the Subaru brand come from?", ["Japan", "South Korea", "United States", "China"]]
+  );
+
   /** nom propre d'une voiture : le catalogue répète parfois la marque (« Nissan Nissan GT-R ») */
   const cleanName = (c) => { const b = String(c.brand || "").trim(); let n = String(c.name || "").trim(); if (b) { const rx = new RegExp("^(" + b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s+){2,}", "i"); n = n.replace(rx, b + " "); } return n; };
   const modelOf = (c) => { const n = cleanName(c), b = String(c.brand || ""); return n.indexOf(b) === 0 ? n.slice(b.length).trim() || n : n; };
@@ -532,8 +663,9 @@
       add(mk(fr ? b[2] : b[4], opts, 0, "written"));
     }
     // questions automatiques
-    const g = gens[cat];
-    for (let tries = 0; tries < 400 && out.length < QUIZ_N && cars.length > 8; tries++) { let q = null; try { q = pick(g)(); } catch (e) { q = null; } add(q); }
+    gens.countries = [gens.brands[1], gens.brands[0]]; gens.circuits = gens.motorsport; gens.numbers = gens.engines.concat(gens.history); gens.trivia = [];
+    const g = gens[cat] || [];
+    for (let tries = 0; tries < 400 && g.length && out.length < QUIZ_N && cars.length > 8; tries++) { let q = null; try { q = pick(g)(); } catch (e) { q = null; } add(q); }
     // complète avec des questions écrites restantes si le catalogue ne suffit pas
     for (let i = nWritten; i < wanted.length && out.length < QUIZ_N; i++) { const b = wanted[i], fr = lang === "fr"; add(mk(fr ? b[2] : b[4], fr ? b[3] : b[5], 0, "written")); }
     return shuffle(out).slice(0, QUIZ_N);
@@ -589,6 +721,8 @@
     ["wish5", "💭", "Rêveur", "Mettre 5 cartes dans sa liste de souhaits", (s) => _n(s.wish), 5, ""],
     ["wish20", "🌠", "Grande liste", "Mettre 20 cartes dans sa liste de souhaits", (s) => _n(s.wish), 20, "silver"],
     ["follow1", "🔔", "Sur écoute", "Suivre une voiture ou une marque", (s) => _n(s.follows), 1, ""],
+    ["mentor1", "🎓", "Mentor", "Accompagner 1 pilote en tant que mentor", (s) => _n(s.mentored), 1, "silver"],
+    ["mentor5", "🧑‍🏫", "Grand frère de la route", "Accompagner 5 pilotes en tant que mentor", (s) => _n(s.mentored), 5, "gold"],
     ["follow10", "📡", "Radar", "Suivre 10 voitures ou marques", (s) => _n(s.follows), 10, "silver"],
     ["swap50", "🕴️", "Courtier", "Réaliser 50 échanges de cartes", (s) => s.trades, 50, "gold"],
     ["streak100", "🌋", "Cent jours", "Visiter le site 100 jours de suite", (s) => s.best, 100, "gold"],
@@ -610,7 +744,7 @@
     setsOf, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
-    FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
+    FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
     SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

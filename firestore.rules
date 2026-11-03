@@ -579,7 +579,7 @@ service cloud.firestore {
         && request.resource.data.get('lng', 0) >= -180 && request.resource.data.get('lng', 0) <= 180
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 80
-        && request.resource.data.kind in ['circuit', 'rassemblement', 'balade', 'autre']
+        && request.resource.data.kind in ['circuit', 'rassemblement', 'balade', 'salon', 'autre']
         && request.resource.data.place is string && request.resource.data.place.size() >= 2 && request.resource.data.place.size() <= 120
         && request.resource.data.dateMs is number
         && request.resource.data.get('description', '').size() <= 600
@@ -759,7 +759,8 @@ service cloud.firestore {
     match /showcases/{sid} {
       allow read: if true;
       allow create, update: if isOwner(sid) && notMuted()
-        && request.resource.data.keys().hasOnly(['ids', 'cars', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['ids', 'cars', 'bg', 'updatedAt'])
+        && request.resource.data.get('bg', '') in ['', 'carbon', 'sunset', 'night', 'garage', 'neon', 'gold']
         && request.resource.data.ids is list && request.resource.data.ids.size() <= 6
         && request.resource.data.get('cars', []) is list && request.resource.data.get('cars', []).size() <= 3
         && request.resource.data.updatedAt == request.time;
@@ -855,7 +856,7 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/contests/$(resource.data.contest)).data.status == 'open';
     }
 
-    // --- Réactions rapides (🔥 🏁 😍) : une par pilote et par cible, modifiable
+    // --- Réactions rapides (👍 🔥 😮 ; 🏁 et 😍 restent acceptés pour les anciennes réactions) : une par pilote et par cible, modifiable
     match /reactions/{rid} {
       allow read: if true;
       allow create, update: if signedIn() && notMuted()
@@ -863,7 +864,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'emoji', 'createdAt'])
         && request.resource.data.kind in ['cat', 'com']
         && request.resource.data.uid == request.auth.uid
-        && request.resource.data.emoji in ['fire', 'flag', 'love']
+        && request.resource.data.emoji in ['fire', 'flag', 'love', 'up', 'wow']
         && request.resource.data.target is string && request.resource.data.target.size() <= 80
         && request.resource.data.createdAt == request.time;
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
@@ -1067,6 +1068,84 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['weeks'])
         && request.resource.data.weeks is map
         && request.resource.data.weeks.size() <= 60;
+    }
+
+    // --- Cadres d'avatar et titres équipés (décoratifs) : lecture publique, écriture par le pilote
+    match /cosmetics/{uid} {
+      allow read: if true;
+      allow create, update: if isOwner(uid) && notMuted()
+        && request.resource.data.keys().hasOnly(['frame', 'title', 'top', 'updatedAt'])
+        && request.resource.data.get('frame', '') is string && request.resource.data.get('frame', '').size() <= 24
+        && request.resource.data.get('title', '') is string && request.resource.data.get('title', '').size() <= 24
+        && request.resource.data.get('top', 0) is int && request.resource.data.get('top', 0) >= 0 && request.resource.data.get('top', 0) <= 3
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isOwner(uid) || isAdmin();
+    }
+
+    // --- Signalements d'erreur sur une fiche : un par pilote et par fiche ; relus par l'administration
+    match /car_reports/{rid} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create, update: if signedIn() && notMuted()
+        && (request.resource.data.uid == request.auth.uid
+            && rid == request.resource.data.carId + '__' + request.auth.uid
+            && request.resource.data.keys().hasOnly(['carId', 'carName', 'uid', 'pilot', 'field', 'text', 'status', 'createdAt'])
+            && request.resource.data.status == 'open'
+            && request.resource.data.text is string && request.resource.data.text.size() >= 5 && request.resource.data.text.size() <= 300
+            && request.resource.data.field is string && request.resource.data.field.size() <= 40
+            && request.resource.data.carName is string && request.resource.data.carName.size() <= 80
+            && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
+            && request.resource.data.createdAt == request.time
+          || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // --- Recherches sans résultat (compteur anonyme, lu par l'admin)
+    match /search_misses/{mid} {
+      allow read: if isAdmin();
+      allow create: if mid.matches('^[a-z0-9_]{1,40}$')
+        && request.resource.data.keys().hasOnly(['q', 'n', 'last'])
+        && request.resource.data.n == 1 && request.resource.data.q is string && request.resource.data.q.size() <= 40;
+      allow update: if mid.matches('^[a-z0-9_]{1,40}$')
+        && request.resource.data.keys().hasOnly(['q', 'n', 'last'])
+        && request.resource.data.n == resource.data.n + 1 && request.resource.data.q is string && request.resource.data.q.size() <= 40;
+      allow delete: if isAdmin();
+    }
+
+    // --- Voiture du jour : { days: { "AAAA-MM-JJ": "id-de-la-voiture" } }
+    match /site_settings/carOfDay {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['days'])
+        && request.resource.data.days is map
+        && request.resource.data.days.size() <= 80;
+    }
+
+    // --- Mentorat : pilotes volontaires (niveau 4 et plus, vérifié côté appli) et demandes
+    match /mentors/{uid} {
+      allow read: if true;
+      allow create, update: if isOwner(uid) && notMuted()
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'avatar', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 40
+        && request.resource.data.get('avatar', '').size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow delete: if isOwner(uid) || isAdmin();
+    }
+    match /mentor_requests/{rid} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && rid == request.resource.data.mentorUid + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['mentorUid', 'uid', 'name', 'status', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.mentorUid != request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.name is string && request.resource.data.name.size() <= 40
+        && request.resource.data.createdAt == request.time
+        && exists(/databases/$(database)/documents/mentors/$(request.resource.data.mentorUid));
+      allow update: if signedIn() && resource.data.mentorUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status == 'accepted';
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
     // --- Réponses toutes prêtes de la messagerie (admins) ---

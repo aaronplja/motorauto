@@ -59,13 +59,16 @@
       ${t.message ? `<p class="trade-msg">« ${esc(t.message)} »</p>` : ""}<div class="trade-actions">${actions}<a class="cta-btn btn-ghost compact-btn" href="${dm(other)}">💬 Discuter</a></div></article>`;
   }
 
+  const lotMode = {};      // uid -> true quand l'échange en lot est ouvert
   function composer(o, m) {
-    const p = picks[o.uid] || {}, esc = C.esc;
-    const pick = (kind, ids, chosen) => `<div class="pick-row" role="radiogroup" aria-label="${kind === "give" ? "Carte que tu donnes" : "Carte que tu reçois"}">${ids.map((id) => `<button type="button" class="pick ${chosen === id ? "on" : ""}" role="radio" aria-checked="${chosen === id}" data-pick="${kind}" data-id="${esc(id)}" data-uid="${esc(o.uid)}">${mini(id)}</button>`).join("")}</div>`;
+    const p = picks[o.uid] || {}, esc = C.esc, lotOn = !!lotMode[o.uid];
+    const pick = (kind, ids, chosen) => `<div class="pick-row" role="radiogroup" aria-label="${kind === "give" ? "Carte que tu donnes" : "Carte que tu reçois"}">${ids.map((id) => `<button type="button" class="pick ${(lotOn ? (p[kind + "L"] || []).indexOf(id) >= 0 : chosen === id) ? "on" : ""}" role="radio" aria-checked="${lotOn ? (p[kind + "L"] || []).indexOf(id) >= 0 : chosen === id}" data-pick="${kind}" data-id="${esc(id)}" data-uid="${esc(o.uid)}">${mini(id)}</button>`).join("")}</div>`;
     const give = p.give || (m.theyWantMine[0] || (prefillGive && m.give.includes(prefillGive) ? prefillGive : "")), want = p.want || (m.iWantTheirs[0] || "");
     return `<div class="trade-composer"><div class="comp-col"><h4>Tu donnes <small>(un de tes doublons)</small></h4>${m.give.length ? pick("give", m.give, give) : `<p class="lap-meta">Tu n'as aucun doublon : ouvre des packs !</p>`}</div>
       <div class="comp-col"><h4>Tu reçois <small>(un de ses doublons)</small></h4>${m.want.length ? pick("want", m.want, want) : `<p class="lap-meta">Il n'a aucun doublon qui te manque.</p>`}</div>
-      <div class="comp-send"><input type="text" maxlength="140" placeholder="Un petit mot (facultatif)" aria-label="Message" data-trade-msg="${esc(o.uid)}"><button type="button" class="cta-btn fill-btn" data-trade-send="${esc(o.uid)}" ${give && want ? "" : "disabled"}>Envoyer la proposition</button></div></div>`;
+      <div class="comp-send"><input type="text" maxlength="140" placeholder="Un petit mot (facultatif)" aria-label="Message" data-trade-msg="${esc(o.uid)}">${lotOn ? (() => { const n = Math.min((p.giveL || []).length, (p.wantL || []).length); return `<button type="button" class="cta-btn fill-btn" data-trade-sendlot="${esc(o.uid)}" ${n ? "" : "disabled"}>Envoyer ${n || ""} proposition${n > 1 ? "s" : ""}</button>`; })() : `<button type="button" class="cta-btn fill-btn" data-trade-send="${esc(o.uid)}" ${give && want ? "" : "disabled"}>Envoyer la proposition</button>`}
+        <button type="button" class="cta-btn btn-ghost compact-btn" data-trade-lot="${esc(o.uid)}" aria-pressed="${lotOn}">${lotOn ? "Quitter le lot" : "Échange en lot"}</button></div>
+      ${lotOn ? `<p class="lap-meta trade-lotnote">Choisis plusieurs cartes de chaque côté (5 maximum) : elles seront associées dans l'ordre et envoyées en <b>autant de propositions séparées</b>. L'autre pilote peut en accepter certaines et pas d'autres.</p>` : ""}</div>`;
   }
   /** échange rapide : en priorité ce que l'autre cherche, puis ce que je cherche, puis les cartes les plus rares */
   function quickPair(m) {
@@ -132,7 +135,21 @@
       const t = e.target;
       const tt = t.closest("[data-trtab]"); if (tt) { tab = tt.dataset.trtab; render(); return; }
       const op = t.closest("[data-trade-open]"); if (op) { openRow = openRow === op.dataset.tradeOpen ? "" : op.dataset.tradeOpen; render(); return; }
-      const pk = t.closest("[data-pick]"); if (pk) { const u = pk.dataset.uid; picks[u] = Object.assign(picks[u] || {}, { [pk.dataset.pick]: pk.dataset.id }); const msg = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`), v = msg ? msg.value : ""; render(); const m2 = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`); if (m2) m2.value = v; return; }
+      const pk = t.closest("[data-pick]"); if (pk) { const u = pk.dataset.uid; if (lotMode[u]) { const key = pk.dataset.pick + "L", cur = (picks[u] = picks[u] || {})[key] = (picks[u][key] || []).slice(), ix = cur.indexOf(pk.dataset.id); if (ix >= 0) cur.splice(ix, 1); else if (cur.length < 5) cur.push(pk.dataset.id); render(); return; } picks[u] = Object.assign(picks[u] || {}, { [pk.dataset.pick]: pk.dataset.id }); const msg = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`), v = msg ? msg.value : ""; render(); const m2 = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`); if (m2) m2.value = v; return; }
+      const lt = t.closest("[data-trade-lot]"); if (lt) { const u = lt.dataset.tradeLot; lotMode[u] = !lotMode[u]; render(); return; }
+      const sl = t.closest("[data-trade-sendlot]");
+      if (sl) {
+        const uid = sl.dataset.tradeSendlot, p = picks[uid] || {}, n = Math.min((p.giveL || []).length, (p.wantL || []).length);
+        if (!n) return;
+        act(async () => {
+          let ok = 0, last = "";
+          for (let i = 0; i < n; i++) { try { await window.MAGameAPI.call("proposeTrade", { toUid: uid, give: p.giveL[i], want: p.wantL[i], message: "Échange en lot (" + (i + 1) + "/" + n + ")" }); ok++; } catch (e) { last = e.message; break; } }
+          if (!ok) throw new Error(last || "Aucune proposition envoyée.");
+          lotMode[uid] = false; delete picks[uid];
+          return { ok, n, last };
+        }, (r) => r.ok + " proposition" + (r.ok > 1 ? "s" : "") + " envoyée" + (r.ok > 1 ? "s" : "") + (r.ok < r.n ? " (arrêt : " + r.last + ")" : "") + " 📨");
+        return;
+      }
       const qk = t.closest("[data-trade-quick]");
       if (qk) {
         const uid = qk.dataset.tradeQuick, o = others.find((x) => x.uid === uid); if (!o) return;

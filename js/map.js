@@ -7,7 +7,14 @@
   let C = null, view = "list", lastList = [], map = null, geoBusy = false;
   const TILE = "https://tile.openstreetmap.org/";
   const MONTHS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
-  const KIND = { circuit: "🏁", rassemblement: "🚗", balade: "🛣", autre: "📍" };
+  const KIND = { circuit: "🏁", rassemblement: "🚗", balade: "🛣", salon: "🏆", autre: "📍" };
+  // régions : on rattache une sortie à la région dont le centre est le plus proche (au-delà de 380 km : « Hors de France »)
+  const REGIONS = { "Île-de-France": [48.7, 2.5], "Hauts-de-France": [50.0, 2.8], "Normandie": [49.1, 0.3], "Bretagne": [48.2, -2.9], "Pays de la Loire": [47.5, -0.8], "Centre-Val de Loire": [47.5, 1.7], "Grand Est": [48.7, 5.8], "Bourgogne-Franche-Comté": [47.0, 4.8], "Nouvelle-Aquitaine": [45.0, 0.3], "Occitanie": [43.7, 2.2], "Auvergne-Rhône-Alpes": [45.4, 4.8], "Provence-Alpes-Côte d'Azur": [43.9, 6.0], "Corse": [42.1, 9.1] };
+  function regionOf(lat, lng) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return "";
+    let best = "", bd = 1e9; Object.entries(REGIONS).forEach(([n, [a, b]]) => { const dy = (lat - a) * 111, dx = (lng - b) * 111 * Math.cos(lat * Math.PI / 180), d = Math.hypot(dx, dy); if (d < bd) { bd = d; best = n; } });
+    return bd > 380 ? "Hors de France" : best;
+  }
 
   // ------------------------------------------------------------------ géocodage (avec cache navigateur)
   const cacheGet = () => { try { return JSON.parse(localStorage.getItem("ma_geo") || "{}"); } catch (_) { return {}; } };
@@ -111,7 +118,7 @@
 
   // ------------------------------------------------------------------ position approximative des pilotes (opt-in)
   // pilot_locations/{uid} = { uid, name, avatar, city, lat, lng, updatedAt } : ville seulement, coordonnées arrondies + décalées (~5 km)
-  let layers = { events: true, pilots: true }, kindOn = null, pilotsCache = { at: 0, list: [] };
+  let layers = { events: true, pilots: true }, kindOn = null, regionOn = "", pilotsCache = { at: 0, list: [] };
   const fuzz = (v) => Math.round(v * 20) / 20 + (Math.random() - 0.5) * 0.03;
   async function myLocation() { if (!C || !C.user) return null; try { const d = await C.db.collection("pilot_locations").doc(C.user.uid).get(); return d.exists ? d.data() : null; } catch (_) { return null; } }
   async function saveMyLocation(city) {
@@ -134,8 +141,8 @@
 
   // ------------------------------------------------------------------ carte des sorties
   function barHtml() {
-    const kinds = [["circuit", "🏁 Circuit"], ["rassemblement", "🚗 Rassemblement"], ["balade", "🛣 Balade"], ["autre", "📍 Autre"]];
-    return `<div class="mm-bar" role="group" aria-label="Filtres de la carte"><button type="button" class="chip ${layers.events ? "on" : ""}" data-mm-layer="events">📅 Sorties</button><button type="button" class="chip ${layers.pilots ? "on" : ""}" data-mm-layer="pilots">🧑 Pilotes</button>${layers.events ? kinds.map(([k, l]) => `<button type="button" class="chip small ${!kindOn || kindOn === k ? "on" : ""}" data-mm-kind="${k}">${l}</button>`).join("") : ""}</div>`;
+    const kinds = [["circuit", "🏁 Circuit / roulage"], ["rassemblement", "🚗 Rassemblement / expo"], ["balade", "🛣 Balade / road trip"], ["salon", "🏆 Salon / course / officiel"], ["autre", "📍 Autre"]];
+    return `<div class="mm-bar" role="group" aria-label="Filtres de la carte"><button type="button" class="chip ${layers.events ? "on" : ""}" data-mm-layer="events">📅 Sorties</button><button type="button" class="chip ${layers.pilots ? "on" : ""}" data-mm-layer="pilots">🧑 Pilotes</button>${layers.events ? kinds.map(([k, l]) => `<button type="button" class="chip small ${!kindOn || kindOn === k ? "on" : ""}" data-mm-kind="${k}">${l}</button>`).join("") : ""}${layers.events ? `<select class="mm-region" data-mm-region aria-label="Région"><option value="">Toutes les régions</option>${Object.keys(REGIONS).concat(["Hors de France"]).map((r) => `<option${regionOn === r ? " selected" : ""}>${r}</option>`).join("")}</select>` : ""}</div>`;
   }
   async function drawEvents() {
     const box = document.getElementById("events-map"); if (!box || view !== "map") return;
@@ -145,8 +152,9 @@
     bar.innerHTML = barHtml();
     const now = Date.now() - 6 * 3600 * 1000, list = layers.events ? lastList.filter((e) => e.dateMs >= now && (!kindOn || e.kind === kindOn)) : [];
     if (!map || !box.contains(map.el)) { box.innerHTML = `<div class="mm" tabindex="0" role="application" aria-label="Carte des sorties et des pilotes"></div>`; map = createMap(box.firstChild); }
-    const pts = [], missing = [];
+    let pts = [], missing = [];
     list.forEach((ev) => { if (Number.isFinite(ev.lat) && Number.isFinite(ev.lng) && (ev.lat || ev.lng)) pts.push(ev); else { const c = cacheGet()[key(evQuery(ev))]; if (c) pts.push(Object.assign({}, ev, c)); else missing.push(ev); } });
+    if (regionOn) pts = pts.filter((e) => regionOf(e.lat, e.lng) === regionOn);
     const pilots = layers.pilots ? await loadPilots() : [];
     if (view !== "map") return;
     const render = () => map.setMarkers(pts.map((ev) => { const d = new Date(ev.dateMs); return { lat: ev.lat, lng: ev.lng, icon: KIND[ev.kind] || "📍", label: ev.title,
@@ -182,6 +190,7 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     document.addEventListener("ma:events-rendered", (e) => { lastList = e.detail.list; if (view === "map") drawEvents(); });
+    document.addEventListener("change", (e) => { const r = e.target.closest && e.target.closest("[data-mm-region]"); if (r) { regionOn = r.value; drawEvents(); } });
     document.addEventListener("click", (e) => {
       const b = e.target.closest("[data-ev-view]"); if (b) { setView(b.dataset.evView); return; }
       const ly = e.target.closest("[data-mm-layer]"); if (ly) { layers[ly.dataset.mmLayer] = !layers[ly.dataset.mmLayer]; drawEvents(); return; }

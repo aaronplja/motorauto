@@ -1,0 +1,18 @@
+/* MOTORAUTO — recentrage : toutes les croix de fermeture sont dessinées (pas de caractère « × » décalé par la police) et les boutons centrent leur contenu. */
+.ac-x, .guide-x, .me-close, .lightbox-x, .spot-x, .adm-thumb-del, [data-sheet-close], .fz-x, .sx-close {
+  display: inline-grid !important; place-items: center; align-content: center; justify-content: center; padding: 0 !important; font-size: 0 !important; line-height: 0 !important; text-align: center;
+}
+.ac-x::before, .guide-x::before, .me-close::before, .lightbox-x::before, .spot-x::before, .adm-thumb-del::before, [data-sheet-close]::before {
+  content: ""; display: block; width: 16px; height: 16px; background: currentColor;
+  -webkit-mask: var(--x-mask) center / contain no-repeat; mask: var(--x-mask) center / contain no-repeat;
+}
+.adm-thumb-del::before { width: 12px; height: 12px; } .lightbox-x::before { width: 20px; height: 20px; }
+.ac-x, .guide-x, .me-close, .spot-x { width: 38px; height: 38px; border-radius: 50%; }
+/* contenu centré partout où un bouton ou une pastille porte du texte court */
+.cta-btn, .chip, .seg-btn, .filter-pill, .quick-chip, .pro-tab, .page-tab, .touch-bar-item, .icon-btn { text-align: center; }
+.cta-btn:not(.compact-btn):not([class*="block"]) { align-items: center; justify-content: center; }
+.dialog-close-btn, .conv-del, .bar-close, .lightbox-close, .compare-clear { align-self: center; flex: none; }
+.dialog-header { align-items: center; }
+.tcg-actions, .pro-actions.pv2-actions { align-items: center; }
+.badge-tile, .stat-tile, .sx-kpi, .pro-stat { text-align: center; justify-items: center; }
+.empty-note { text-align: center; }

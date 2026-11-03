@@ -45,6 +45,7 @@
       <div class="stat-bars" role="img" aria-label="Pages vues par jour">${views.map((v, i) => `<i style="--h:${Math.round(v / max * 100)}%" title="${days[i]} : ${v} vues"></i>`).join("")}</div>
       <div class="stat-cols"><div><h4>Pages les plus vues</h4><ol>${top(pages, 8).map(([k, v]) => `<li><span>${esc(k)}</span><b>${v}</b></li>`).join("") || "<li>—</li>"}</ol></div><div><h4>Fiches les plus consultées</h4><ol>${top(cars, 10).map(([k, v]) => `<li><span>${esc(carName(k))}</span><b>${v}</b></li>`).join("") || "<li>—</li>"}</ol></div></div>
       <p class="lap-meta">Compteurs anonymes : aucune donnée personnelle, aucun cookie.</p>`;
+    if (window.MAFichePlus) window.MAFichePlus.adminPanel(box, C);
   }
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx; setTimeout(track, 1200); window.addEventListener("hashchange", () => setTimeout(track, 400));

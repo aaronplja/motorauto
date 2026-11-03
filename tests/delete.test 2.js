@@ -1,0 +1,26 @@
+"use strict";
+const assert = require("assert");
+const { FakeDb } = require("./fake-admin-db");
+const { eraseUser } = require("../functions/delete-account");
+(async () => {
+  const db = new FakeDb();
+  db.seed("likes", "a", { uid: "u1" }); db.seed("likes", "b", { uid: "u2" });
+  db.seed("comments", "c", { uid: "u1" }); db.seed("comments", "d", { uid: "u2" });
+  db.seed("global_laps", "l", { pilotUid: "u1" }); db.seed("global_laps", "m", { pilotUid: "u2" });
+  db.seed("trades", "t1", { fromUid: "u1", toUid: "u2" }); db.seed("trades", "t2", { fromUid: "u3", toUid: "u1" }); db.seed("trades", "t3", { fromUid: "u2", toUid: "u3" });
+  db.seed("collections", "u1", { owned: {} }); db.seed("collections", "u2", { owned: {} });
+  db.seed("users", "u1", { name: "A" }); db.seed("users", "u2", { name: "B" });
+  db.collectionGroup = () => db.collection("messages_none");
+  let deleted = null;
+  const auth = { deleteUser: async (u) => { deleted = u; } };
+  const r = await eraseUser({ db, auth, bucket: null, uid: "u1" });
+  assert.strictEqual(deleted, "u1");
+  assert.ok(!db.raw("likes", "a") && db.raw("likes", "b"), "likes de u1 supprimés, ceux de u2 conservés");
+  assert.ok(!db.raw("comments", "c") && db.raw("comments", "d"));
+  assert.ok(!db.raw("global_laps", "l") && db.raw("global_laps", "m"));
+  assert.ok(!db.raw("trades", "t1") && !db.raw("trades", "t2") && db.raw("trades", "t3"), "échanges liés à u1 supprimés uniquement");
+  assert.ok(!db.raw("collections", "u1") && db.raw("collections", "u2"));
+  assert.ok(!db.raw("users", "u1") && db.raw("users", "u2"));
+  assert.ok(r.collections >= 5);
+  console.log("ok - suppression de compte : seules les données du pilote partent\n1 test réussi");
+})().catch((e) => { console.error(e); process.exit(1); });

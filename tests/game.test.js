@@ -100,7 +100,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   // ---- badges → packs bonus (calculés par le serveur)
   const s0 = db.raw("collections", "u1").bonus;
   r = await G.syncCollection(U1);
-  ok(r.freshBadges >= 1 && r.doc.claimed.includes("streak3") && r.doc.bonus === s0 + r.freshBadges, "badge « 3 jours d'affilée » → pack bonus (" + r.freshBadges + ")");
+  ok(r.doc.bonus === s0 + r.freshBadges, "badges → packs bonus cohérents (" + r.freshBadges + ")");
   r = await G.syncCollection(U1); ok(r.freshBadges === 0, "badges déjà réclamés : pas de doublon");
   // le client ne peut pas se fabriquer de badges : seules les données serveur comptent
   r = await G.syncCollection({ uid: "inconnu" }); ok(r.freshBadges === 0 && r.doc.bonus === 1, "nouveau pilote : 1 pack de bienvenue, aucun badge");
@@ -246,6 +246,54 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   r = await G.claimReferral({ uid: "r2" }, { ref: "r1" }); ok(r.ok && db.raw("collections", "r1").bonus === 2 && db.raw("collections", "r2").bonus === 2, "parrain et filleul gagnent +1 pack bonus");
   await rejects(G.claimReferral({ uid: "r2" }, { ref: "r3" }), "already-exists", "un seul parrainage par compte");
   ok(db.raw("referrals", "r2").referrerUid === "r1", "parrainage enregistré");
+
+  // ---- saison, pass, quêtes, gels de série, cadeau de bienvenue, historique de packs
+  ["s1"].forEach((u) => db.seed("users", u, { username: "Saison_" + u }));
+  const S1 = { uid: "s1" };
+  r = await G.claimWelcome(S1); ok(r.doc.welcome && db.raw("collections", "s1").bonus >= 1 && r.doc.dust === core.WELCOME.dust, "cadeau de bienvenue : pack + cristaux");
+  await rejects(G.claimWelcome(S1), "failed-precondition", "cadeau de bienvenue une seule fois");
+  r = await G.openPack(S1, { kind: "daily" });
+  ok(r.doc.log.length === 1 && r.doc.best.split("|").length === 2 && r.doc.packsAll === 1, "historique : 1 pack, meilleure pioche " + r.doc.best);
+  ok(r.doc.season && r.doc.season.pts === core.SEASON_PTS.pack && r.doc.season.act.packs === 1, "saison : +10 points pour un pack");
+  await rejects(G.seasonClaim(S1, { what: "tier", tier: 1 }), "failed-precondition", "palier non atteint refusé");
+  for (let i = 0; i < 5; i++) await G.openPack(S1, { kind: "bonus" }).catch(() => {});
+  let sn = db.raw("collections", "s1").season; ok(sn.pts >= 20, "points de saison cumulés : " + sn.pts);
+  db.raw("collections", "s1").season.pts = 40 * 5;
+  const sdust0 = db.raw("collections", "s1").dust, bon0 = db.raw("collections", "s1").bonus;
+  r = await G.seasonClaim(S1, { what: "tier", tier: 5 }); ok(db.raw("collections", "s1").bonus === bon0 + 1, "palier 5 : pack bonus");
+  await rejects(G.seasonClaim(S1, { what: "tier", tier: 5 }), "failed-precondition", "palier déjà récupéré refusé");
+  r = await G.seasonClaim(S1, { what: "tier", tier: 1 }); ok(db.raw("collections", "s1").dust > sdust0, "palier 1 : cristaux");
+  db.raw("collections", "s1").season.pts = 40 * 30; r = await G.seasonClaim(S1, { what: "tier", tier: 10 }); ok(r.doc.cosm.includes("t:t10"), "palier 10 : titre débloqué");
+  r = await G.seasonClaim(S1, { what: "tier", tier: 30 }); ok(r.doc.cosm.includes("f:s_royal") && r.doc.cosm.includes("t:t30"), "palier 30 : cadre et titre");
+  await rejects(G.seasonClaim(S1, { what: "quest" }), "failed-precondition", "quête non terminée refusée");
+  for (let q = 0; q < 4; q++) { const c = db.raw("collections", "s1"); c.season.act[core.SEASON_QUESTS[q].act] = (c.season.base ? c.season.base[core.SEASON_QUESTS[q].act] || 0 : 0) + 999; r = await G.seasonClaim(S1, { what: "quest" }); }
+  ok(r.doc.cosm.includes("f:quest") && r.doc.cosm.includes("t:quest") && r.doc.season.q === 4, "chaîne de quêtes terminée : récompense finale");
+  // nouvelle saison : remise à zéro mais cosmétiques conservés
+  NOW += core.SEASON_LEN * 86400000; r = await G.syncCollection(S1);
+  ok(r.doc.season.pts === 0 && r.doc.season.claimed.length === 0 && r.doc.cosm.includes("t:t30"), "nouvelle saison : points remis à zéro, titres gardés");
+  // gels de série
+  NOW = Date.parse("2026-12-03T10:00:00+01:00"); const F = { uid: "f1" }; db.seed("users", "f1", { username: "Gel" }); db.seed("collections", "f1", Object.assign(core.blankCollection(), { dust: 1000 }));
+  r = await G.touchStreak(F); ok(r.freezes === 1, "1 gel offert dans le mois");
+  NOW += 86400000; await G.touchStreak(F); NOW += 2 * 86400000; r = await G.touchStreak(F);
+  ok(r.saved === 1 && r.days === 3 && r.freezes === 0, "un jour raté : le gel sauve la série (" + r.days + ")");
+  NOW += 3 * 86400000; r = await G.touchStreak(F); ok(r.days === 1, "trop de jours ratés : la série repart de 1");
+  r = await G.buyFreeze(F); ok(r.freezes === 1 && r.doc.dust === 1000 - core.FREEZE_COST, "achat d'un gel en cristaux");
+  r = await G.buyFreeze(F); ok(r.freezes === 2, "deuxième gel"); await rejects(G.buyFreeze(F), "failed-precondition", "stock de 2 gels maximum");
+  // quiz : nouvelles catégories
+  for (const c of ["countries", "circuits", "numbers", "trivia"]) { const sd = "seed" + c + "ab"; const qs = core.quizBuild(sd, c, 2, pool); r = await G.quizSubmit(U2, { seed: sd, cat: c, level: 2, answers: qs.map((q) => q.a) }); ok(r.total >= 9 && r.score === r.total, "quiz " + c + " : " + r.total + " questions"); }
+
+  // ---- défi de clubs
+  NOW = Date.parse("2026-11-02T10:00:00+01:00");
+  ["ca1", "ca2", "cb1", "cb2"].forEach((u) => { db.seed("users", u, { username: u }); db.seed("collections", u, Object.assign(core.blankCollection(), {})); });
+  db.seed("clubs", "brand-a", { name: "Club A" }); db.seed("clubs", "brand-b", { name: "Club B" });
+  db.seed("club_members", "brand-a_ca1", { clubId: "brand-a", uid: "ca1" }); db.seed("club_members", "brand-a_ca2", { clubId: "brand-a", uid: "ca2" });
+  db.seed("club_members", "brand-b_cb1", { clubId: "brand-b", uid: "cb1" }); db.seed("club_members", "brand-b_cb2", { clubId: "brand-b", uid: "cb2" });
+  r = await G.clubClash(U1); ok(r.pairs.length === 1, "défi de clubs : 2 clubs appariés");
+  await G.openPack({ uid: "ca1" }, { kind: "daily" }); await G.openPack({ uid: "ca2" }, { kind: "daily" }); await G.openPack({ uid: "cb1" }, { kind: "daily" });
+  NOW += 7 * 86400000; r = await G.clubClash(U1);
+  ok(r.prev.results.length === 1 && r.prev.results[0].win === "brand-a" && r.prev.results[0].as === 20 && r.prev.results[0].bs === 10, "défi de clubs : le club le plus actif gagne (" + JSON.stringify(r.prev.results[0]) + ")");
+  ok(db.raw("collections", "ca1").cosm.includes("t:clubwin") && !db.raw("collections", "cb1").cosm.includes("t:clubwin"), "titre de champion aux membres actifs du club gagnant");
+  const cdust = db.raw("collections", "ca1").dust; r = await G.clubClash(U1); ok(db.raw("collections", "ca1").dust === cdust, "récompense versée une seule fois");
 
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");
   process.exit(fails ? 1 : 0);

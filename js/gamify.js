@@ -22,12 +22,12 @@
     if (loading) return loading;
     loading = (async () => {
       const app = window.MAApp;
-      const [laps, , usersSnap, streakSnap, colSnap, ev, entSnap, winSnap, gsSnap, wlSnap, flSnap] = await Promise.all([
+      const [laps, , usersSnap, streakSnap, colSnap, ev, entSnap, winSnap, gsSnap, wlSnap, flSnap, mentSnap] = await Promise.all([
         safe(app.getLaps(), []), safe(window.MASocial ? window.MASocial.loadStats(force) : null, null), safe(C.db.collection("users").limit(400).get(), null),
         safe(C.db.collection("streaks").limit(500).get(), null), safe(C.db.collection("collections").limit(500).get(), null),
         safe(window.MACommunity ? window.MACommunity.loadEvents() : null, null),
         safe(C.db.collection("contest_entries").where("status", "==", "approved").limit(500).get(), null), safe(C.db.collection("contests").limit(80).get(), null),
-        safe(C.db.collection("gstats").limit(500).get(), null), safe(C.db.collection("wishlists").limit(500).get(), null), safe(C.db.collection("follows").limit(500).get(), null)
+        safe(C.db.collection("gstats").limit(500).get(), null), safe(C.db.collection("wishlists").limit(500).get(), null), safe(C.db.collection("follows").limit(500).get(), null), safe(C.db.collection("mentor_requests").where("status", "==", "accepted").limit(500).get(), null)
       ]);
       if (window.MACards && window.MACards.loadRarOv) await safe(window.MACards.loadRarOv(), null);
       await safe(app.loadCommunityOnce ? app.loadCommunityOnce() : null, null);
@@ -81,6 +81,7 @@
       });
       if (gsSnap) gsSnap.forEach((d) => { const x = d.data(), s = get(d.id); s.fuse = Number(x.fuse) || 0; s.sold = Number(x.sold) || 0; s.bought = Number(x.bought) || 0; s.pm = Number(x.pmBest) || 0; s.quizDone = Number(x.quizDone) || 0; s.quizPerfect = Number(x.quizPerfect) || 0; s.quizL3 = Number(x.quizL3) || 0; });
       if (wlSnap) wlSnap.forEach((d) => { get(d.id).wish = ((d.data().ids) || []).length; });
+      if (mentSnap) mentSnap.forEach((d) => { const x = d.data(); if (x.mentorUid) get(x.mentorUid).mentored++; });
       if (flSnap) flSnap.forEach((d) => { const x = d.data(); get(d.id).follows = ((x.cars) || []).length + ((x.brands) || []).length; });
       if (entSnap) entSnap.forEach((d) => { const x = d.data(); if (x.uid) get(x.uid).entries++; });
       if (winSnap) winSnap.forEach((d) => { const x = d.data(); if (x.winnerUid) get(x.winnerUid).wins++; });
@@ -105,7 +106,8 @@
       const r = await window.MAGameAPI.call("touchStreak");
       try { localStorage.setItem(k, today); } catch (_) { /* ignoré */ }
       cache.at = 0;
-      if (r.fresh && r.days === 7) C.toast("🔥 7 jours d'affilée ! Un badge t'attend.", "ok");
+      if (r.saved) C.toast(`❄ ${r.saved > 1 ? r.saved + " gels ont" : "Un gel a"} protégé ta série de visites !`, "ok");
+      else if (r.fresh && r.days === 7) C.toast("🔥 7 jours d'affilée ! Un badge t'attend.", "ok");
       else if (r.fresh && r.days > 1) C.toast(`🔥 ${r.days} jours d'affilée sur MOTORAUTO !`, "ok");
     } catch (e) { console.warn("Série de visites :", e.message); }
   }
@@ -178,6 +180,7 @@
     let data;
     try { data = await loadAll(true); } catch (e) { box.innerHTML = `<li class="empty-note error">Classement indisponible.</li>`; return; }
     const rows = Array.from(data.map.values()).filter((s) => s.xp > 0 && data.users.has(s.uid)).sort((a, b) => b.xp - a.xp).slice(0, 50);
+    if (C.user && window.MACosm) { const mi = rows.findIndex((s) => s.uid === C.user.uid); if (mi >= 0 && mi < 3) window.MACosm.noteTop(C.user.uid, mi + 1); }
     box.innerHTML = rows.length ? rows.map((s, i) => {
       const u = data.users.get(s.uid) || {}, L = levelOf(s.xp).level;
       return `<li><a class="rank-row" href="#/pilote/${encodeURIComponent(s.uid)}"><span class="rank-pos">${i + 1}</span>${C.avatarImg(u.avatar, "pilot-row-avatar")}<span class="rank-main"><b>${C.esc(u.username || "Pilote")}${C.MA.admins ? C.MA.admins.tag(s.uid) : ""}</b><small>Niv. ${L.n} ${C.esc(L.name)} · ${s.badges.length} badge${s.badges.length > 1 ? "s" : ""}${s.days ? " · 🔥 " + s.days + " j" : ""}</small></span><span class="rank-score">${nf(s.xp)}<small>XP</small></span></a></li>`;

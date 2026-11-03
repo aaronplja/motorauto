@@ -57,7 +57,7 @@ function callable(name) {
     }
   });
 }
-["syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "logAction", "weeklyStatus", "claimChallenge",
+["syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "buyFreeze", "seasonClaim", "claimWelcome", "clubClash", "logAction", "weeklyStatus", "claimChallenge",
   "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "claimSets", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest",
   "fuseCards", "pmPlay", "quizSubmit", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
 
