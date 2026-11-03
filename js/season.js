@@ -64,7 +64,15 @@
       <h3>${T("Cadres et titres")}</h3>${window.MACosm ? cosmHtml() : ""}
     </section>`;
   }
-  const refresh = () => { if (root() && C && C.Router.is("play", { tab: "defis" })) draw(); };
+  function drawCta() {
+    const el = document.getElementById("season-cta"); if (!el) return;
+    if (!C || !C.user || !window.MACards || !doc()) { el.innerHTML = ""; return; }
+    const sn = seasonState(), tier = G.passTier(sn);
+    const pct = tier >= G.PASS_TIERS ? 100 : Math.round(100 * (sn.pts % G.PASS_STEP) / G.PASS_STEP);
+    const cl = sn.claimed || []; let ready = 0; for (let i = 1; i <= tier; i++) if (cl.indexOf(i) < 0) ready++;
+    el.innerHTML = '<a class="ssn-cta" href="#/jouer/defis"><span class="ssn-cta-ic">🏆</span><span class="ssn-cta-tx"><b>' + T("Pass de saison") + '</b><small>' + T("Niveau") + " " + tier + " / " + G.PASS_TIERS + '</small><i class="ssn-cta-bar"><u style="width:' + pct + '%"></u></i></span>' + (ready ? '<em class="ssn-cta-badge">' + ready + "</em>" : '<span class="ssn-cta-go">›</span>') + "</a>";
+  }
+  const refresh = () => { drawCta(); if (root() && C && C.Router.is("play", { tab: "defis" })) draw(); };
 
   async function claim(what, extra) {
     if (busy) return; busy = true;
@@ -116,6 +124,8 @@
     C = Object.create(ctx);
     ctx.Router.register("play", { enter: (p) => { if (p.tab === "defis") { freezes = null; setTimeout(draw, 120); } } });
     document.addEventListener("ma:cards", refresh);
+    document.addEventListener("ma:route", () => setTimeout(drawCta, 150));
+    setTimeout(drawCta, 1500);
     document.addEventListener("ma:auth", () => { freezes = null; welcomeShown = false; setTimeout(maybeWelcome, 2500); refresh(); });
     document.addEventListener("click", (e) => {
       const t = e.target.closest("[data-ssn-claim]"); if (t) return claim("tier", { tier: Number(t.dataset.ssnClaim) });
