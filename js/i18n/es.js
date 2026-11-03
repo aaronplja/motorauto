@@ -854,5 +854,12 @@
 "Filtre la carte par type et par région": "Filtra el mapa por tipo y región",
 "Cherche une voiture, au clavier ou à la voix sur mobile": "Busca un coche, con el teclado o por voz en el móvil",
 "Découvre la voiture du jour": "Descubre el coche del día",
-"Touche le compte-tours pour rouvrir cette aide": "Toca el cuentarrevoluciones para reabrir esta ayuda"
+"Touche le compte-tours pour rouvrir cette aide": "Toca el cuentarrevoluciones para reabrir esta ayuda",
+"Des défis chaque lundi et un défi du jour, avec des packs bonus à la clé.": "Desafíos cada lunes y un desafío diario, con packs extra de premio.",
+"Les défis changent chaque lundi": "Los desafíos cambian cada lunes",
+"Une saison de 4 semaines avec un pass gratuit de 30 paliers, des quêtes enchaînées, des gels de série, des cadres et des titres.": "Una temporada de 4 semanas con un pase gratis de 30 niveles, misiones encadenadas, congeladores de racha, marcos y títulos.",
+"Récupère chaque palier gagné, ou tout d'un coup": "Recoge cada nivel ganado, o todos de una vez",
+"Défis de la semaine": "Desafíos de la semana",
+"Gagne des points en jouant, débloque 30 paliers gratuits, enchaîne les quêtes et équipe tes cadres et titres.": "Gana puntos jugando, desbloquea 30 niveles gratis, encadena misiones y equipa tus marcos y títulos.",
+"Des défis chaque lundi et un défi du jour": "Desafíos cada lunes y un desafío diario"
 }]);

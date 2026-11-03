@@ -792,7 +792,7 @@
 "Mentor": "Mentore",
 "Ne plus être mentor": "Non essere più mentore",
 "Pas d'adversaire cette semaine : il faut au moins 2 membres et un autre club de taille proche.": "Nessun avversario questa settimana: servono almeno 2 membri e un altro club di dimensioni simili.",
-"Pass de saison": "Pass stagionale",
+"Pass de saison": "Pass stagione",
 "Pass terminé : bravo !": "Pass completato: bravo!",
 "Plus tard": "Più tardi",
 "Points : pack ouvert +10 · bonne réponse au quiz +2 (quiz parfait +10) · bonne réponse au Plus ou moins +2 · visite du jour +5": "Punti: pack aperto +10 · risposta corretta al quiz +2 (quiz perfetto +10) · risposta corretta a Più o meno +2 · visita giornaliera +5",
@@ -854,5 +854,12 @@
 "Filtre la carte par type et par région": "Filtra la mappa per tipo e regione",
 "Cherche une voiture, au clavier ou à la voix sur mobile": "Cerca un'auto, con la tastiera o a voce su mobile",
 "Découvre la voiture du jour": "Scopri l'auto del giorno",
-"Touche le compte-tours pour rouvrir cette aide": "Tocca il contagiri per riaprire questo aiuto"
+"Touche le compte-tours pour rouvrir cette aide": "Tocca il contagiri per riaprire questo aiuto",
+"Des défis chaque lundi et un défi du jour, avec des packs bonus à la clé.": "Sfide ogni lunedì e una sfida giornaliera, con pack bonus in palio.",
+"Les défis changent chaque lundi": "Le sfide cambiano ogni lunedì",
+"Une saison de 4 semaines avec un pass gratuit de 30 paliers, des quêtes enchaînées, des gels de série, des cadres et des titres.": "Una stagione di 4 settimane con pass gratuito di 30 livelli, missioni a catena, congelamenti serie, cornici e titoli.",
+"Récupère chaque palier gagné, ou tout d'un coup": "Riscatta ogni livello guadagnato, o tutti insieme",
+"Défis de la semaine": "Sfide della settimana",
+"Gagne des points en jouant, débloque 30 paliers gratuits, enchaîne les quêtes et équipe tes cadres et titres.": "Guadagna punti giocando, sblocca 30 livelli gratuiti, concatena le missioni ed equipaggia cornici e titoli.",
+"Des défis chaque lundi et un défi du jour": "Sfide ogni lunedì e una sfida giornaliera"
 }]);

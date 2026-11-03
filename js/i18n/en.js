@@ -854,5 +854,12 @@
 "Filtre la carte par type et par région": "Filter the map by type and region",
 "Cherche une voiture, au clavier ou à la voix sur mobile": "Search for a car, by keyboard or by voice on mobile",
 "Découvre la voiture du jour": "Discover the car of the day",
-"Touche le compte-tours pour rouvrir cette aide": "Tap the rev counter to reopen this help"
+"Touche le compte-tours pour rouvrir cette aide": "Tap the rev counter to reopen this help",
+"Des défis chaque lundi et un défi du jour, avec des packs bonus à la clé.": "Challenges every Monday and a daily challenge, with bonus packs to win.",
+"Les défis changent chaque lundi": "Challenges change every Monday",
+"Une saison de 4 semaines avec un pass gratuit de 30 paliers, des quêtes enchaînées, des gels de série, des cadres et des titres.": "A 4-week season with a free 30-tier pass, chained quests, streak freezes, frames and titles.",
+"Récupère chaque palier gagné, ou tout d'un coup": "Claim each tier you earn, or all at once",
+"Défis de la semaine": "Weekly challenges",
+"Gagne des points en jouant, débloque 30 paliers gratuits, enchaîne les quêtes et équipe tes cadres et titres.": "Earn points by playing, unlock 30 free tiers, chain quests and equip your frames and titles.",
+"Des défis chaque lundi et un défi du jour": "Challenges every Monday and a daily challenge"
 }]);

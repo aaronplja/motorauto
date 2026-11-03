@@ -70,9 +70,9 @@
     const sn = seasonState(), tier = G.passTier(sn);
     const pct = tier >= G.PASS_TIERS ? 100 : Math.round(100 * (sn.pts % G.PASS_STEP) / G.PASS_STEP);
     const cl = sn.claimed || []; let ready = 0; for (let i = 1; i <= tier; i++) if (cl.indexOf(i) < 0) ready++;
-    el.innerHTML = '<a class="ssn-cta" href="#/jouer/defis"><span class="ssn-cta-ic">🏆</span><span class="ssn-cta-tx"><b>' + T("Pass de saison") + '</b><small>' + T("Niveau") + " " + tier + " / " + G.PASS_TIERS + '</small><i class="ssn-cta-bar"><u style="width:' + pct + '%"></u></i></span>' + (ready ? '<em class="ssn-cta-badge">' + ready + "</em>" : '<span class="ssn-cta-go">›</span>') + "</a>";
+    el.innerHTML = '<a class="ssn-cta" href="#/pass"><span class="ssn-cta-ic">🏆</span><span class="ssn-cta-tx"><b>' + T("Pass de saison") + '</b><small>' + T("Niveau") + " " + tier + " / " + G.PASS_TIERS + '</small><i class="ssn-cta-bar"><u style="width:' + pct + '%"></u></i></span>' + (ready ? '<em class="ssn-cta-badge">' + ready + "</em>" : '<span class="ssn-cta-go">›</span>') + "</a>";
   }
-  const refresh = () => { drawCta(); if (root() && C && C.Router.is("play", { tab: "defis" })) draw(); };
+  const refresh = () => { drawCta(); if (root() && C && C.Router.is("pass")) draw(); };
 
   async function claim(what, extra) {
     if (busy) return; busy = true;
@@ -122,7 +122,7 @@
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
-    ctx.Router.register("play", { enter: (p) => { if (p.tab === "defis") { freezes = null; setTimeout(draw, 120); } } });
+    ctx.Router.register("pass", { enter: () => { freezes = null; setTimeout(draw, 120); } });
     document.addEventListener("ma:cards", refresh);
     document.addEventListener("ma:route", () => setTimeout(drawCta, 150));
     setTimeout(drawCta, 1500);

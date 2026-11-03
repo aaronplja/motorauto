@@ -854,5 +854,12 @@
 "Filtre la carte par type et par région": "Filtere die Karte nach Typ und Region",
 "Cherche une voiture, au clavier ou à la voix sur mobile": "Suche ein Auto, per Tastatur oder mobil per Sprache",
 "Découvre la voiture du jour": "Entdecke das Auto des Tages",
-"Touche le compte-tours pour rouvrir cette aide": "Tippe auf den Drehzahlmesser, um diese Hilfe erneut zu öffnen"
+"Touche le compte-tours pour rouvrir cette aide": "Tippe auf den Drehzahlmesser, um diese Hilfe erneut zu öffnen",
+"Des défis chaque lundi et un défi du jour, avec des packs bonus à la clé.": "Jeden Montag Herausforderungen und eine Tagesaufgabe, mit Bonus-Packs.",
+"Les défis changent chaque lundi": "Die Herausforderungen wechseln jeden Montag",
+"Une saison de 4 semaines avec un pass gratuit de 30 paliers, des quêtes enchaînées, des gels de série, des cadres et des titres.": "Eine 4-wöchige Saison mit kostenlosem 30-Stufen-Pass, verketteten Quests, Serien-Freezes, Rahmen und Titeln.",
+"Récupère chaque palier gagné, ou tout d'un coup": "Hole jede verdiente Stufe ab, oder alle auf einmal",
+"Défis de la semaine": "Wochen-Herausforderungen",
+"Gagne des points en jouant, débloque 30 paliers gratuits, enchaîne les quêtes et équipe tes cadres et titres.": "Sammle Punkte beim Spielen, schalte 30 kostenlose Stufen frei, verkette Quests und rüste Rahmen und Titel aus.",
+"Des défis chaque lundi et un défi du jour": "Jeden Montag Herausforderungen und eine Tagesaufgabe"
 }]);
