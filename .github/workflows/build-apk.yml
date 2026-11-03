@@ -18,7 +18,22 @@ jobs:
           java-version: 17
       - run: npm install
       - run: npx cap add android
-      - run: npx capacitor-assets generate --android || true
+      - name: Icone de l'application
+        run: |
+          python3 -m pip install pillow
+          python3 - <<'PY'
+          from PIL import Image
+          import os
+          src = Image.open('../assets/icon-512.png').convert('RGBA')
+          base = 'android/app/src/main/res'
+          for d, s in {'mdpi':48,'hdpi':72,'xhdpi':96,'xxhdpi':144,'xxxhdpi':192}.items():
+              p = base + '/mipmap-' + d
+              os.makedirs(p, exist_ok=True)
+              im = src.resize((s, s), Image.LANCZOS)
+              for n in ('ic_launcher.png', 'ic_launcher_round.png', 'ic_launcher_foreground.png'):
+                  im.save(p + '/' + n)
+          PY
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
       - run: npx cap sync android
       - name: Compiler l'APK
         working-directory: apk/android
