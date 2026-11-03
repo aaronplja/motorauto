@@ -1,0 +1,140 @@
+/* ==========================================================================
+   MOTORAUTO — HARMONISATION : boutons en pilules, champs, cartes, fenêtres, alignements et effets homogènes sur tout le site.
+   Chargé en dernier. Ne touche NI la barre haute, NI la navigation (menu, dock, onglets), NI les cartes à collectionner (.tcg), NI les circuits.
+   ========================================================================== */
+:root { --h-pill: 999px; --h-field: 14px; --h-card: 18px; --h-modal: 24px; --h-line: var(--stroke-line, rgba(255,255,255,.1)); --h-ease: cubic-bezier(.22,.8,.3,1);
+  --h-shadow: 0 1px 2px rgba(0,0,0,.14), 0 10px 26px -16px rgba(0,0,0,.45); --h-shadow-up: 0 2px 4px rgba(0,0,0,.18), 0 20px 40px -20px rgba(0,0,0,.55); }
+.cta-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.secondary-destructive-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.grade-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.mute-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: 44px; padding: 0 1.25rem; border-radius: var(--h-pill); font-size: .92rem; font-weight: 700; line-height: 1.1; letter-spacing: -.005em; text-align: center; text-decoration: none; cursor: pointer;
+  transition: transform .2s var(--h-ease), box-shadow .2s var(--h-ease), background-color .2s, border-color .2s, color .2s, filter .2s; }
+.compact-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.cta-btn.compact-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.grade-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.mute-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { min-height: 36px; padding: 0 1rem; font-size: .84rem; }
+.fill-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.btn-primary:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { box-shadow: 0 8px 20px -12px var(--accent); }
+.fill-btn:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.btn-primary:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { transform: translateY(-1px); box-shadow: 0 12px 26px -12px var(--accent); filter: brightness(1.05); }
+.btn-ghost:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { border: 1px solid var(--h-line); }
+.btn-ghost:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { transform: translateY(-1px); border-color: color-mix(in srgb, var(--color-ink) 22%, transparent); }
+.cta-btn:active:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.btn:active:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.secondary-destructive-btn:active:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.grade-btn:active:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.mute-btn:active:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { transform: scale(.98); }
+.cta-btn:disabled:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.btn:disabled:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.secondary-destructive-btn:disabled:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.grade-btn:disabled:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.mute-btn:disabled:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)), .cta-btn[disabled] { opacity: .5; transform: none; box-shadow: none; cursor: not-allowed; filter: none; }
+.cta-btn:focus-visible:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.btn:focus-visible:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.secondary-destructive-btn:focus-visible:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.grade-btn:focus-visible:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.mute-btn:focus-visible:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { outline: 2px solid var(--accent); outline-offset: 3px; }
+.filter-pill:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.chip:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.quick-chip:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.seg-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.wish-chip:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.link-chip:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-height: 34px; padding: 0 .95rem; border-radius: var(--h-pill); font-size: .84rem; font-weight: 600; line-height: 1; transition: background-color .2s, border-color .2s, color .2s, transform .2s var(--h-ease); }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+select:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+textarea:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.custom-select:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { border-radius: var(--h-field); transition: border-color .2s, box-shadow .2s, background-color .2s; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+select:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { min-height: 44px; padding-inline: .95rem; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):focus:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+select:focus:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+textarea:focus:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
+textarea:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { padding: .75rem .95rem; line-height: 1.45; }
+.car-box:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.comm-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.feed-item:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.panel:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.stat-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.dash-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.dash-card2:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.hub-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.trade-row:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.pilot-row:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.event-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.listing-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.club-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.contest-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.telemetry-row:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.page-box:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.mini-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.rank-row:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.history-box:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.comments-box:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.chart-box:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.cost-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.circuit-card:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.admin-msg:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.err-row:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.todo-tile:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.dash-kpi:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { border-radius: var(--h-card); box-shadow: var(--h-shadow); transition: transform .25s var(--h-ease), box-shadow .25s var(--h-ease), border-color .25s; }
+a.feed-item:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.car-box:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.comm-card:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.club-card:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.listing-card:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.event-card:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.telemetry-row.clickable:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+a.rank-row:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+a.todo-tile:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+a.dash-kpi:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.mini-card:hover:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { transform: translateY(-2px); box-shadow: var(--h-shadow-up); }
+.modal-dialog:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { border-radius: var(--h-modal); }
+.dialog-close-btn:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.cmt-del:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { border-radius: 50%; }
+.toast:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.notif-panel:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.search-suggestions-dropdown:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.empty-note:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { border-radius: 16px; }
+.status-tag-verified:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.msg-type:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.admin-tag:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.pin-tag:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)),
+.tcg-new-pill:where(:not(.app-header *, [class*="dock"] *, #page-circuit *, .tcg *)) { border-radius: var(--h-pill); }
+
+/* ----- alignements : mêmes écarts et mêmes lignes de base partout */
+.page-head-actions, .admin-quick, .chip-row, .filter-row, .tcg-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.toolbar-cluster, .cg-tools { align-items: center; gap: .5rem; }
+.panel-section-title { margin: 1.2rem 0 .6rem; }
+.telemetry-row, .rank-row, .mini-row, .feed-item { align-items: center; }
+.telemetry-row .lap-right, .telemetry-row .pilot-row-right { align-items: center; gap: .5rem; }
+
+/* ----- effets : « réduire les animations » désactive les survols animés */
+@media (prefers-reduced-motion: reduce) {
+  .cta-btn, .btn, .car-box, .comm-card, .feed-item, .club-card, .listing-card, .event-card, .telemetry-row { transition: none !important; transform: none !important; }
+}
+
+/* ----- liens-boutons : mêmes pilules que les boutons */
+.link-more:where(:not(.app-header *, [class*="dock"] *)), .back-link:where(:not(.app-header *, [class*="dock"] *)), .page-back:where(:not(.app-header *, [class*="dock"] *)), .see-profile:where(:not(.app-header *, [class*="dock"] *)) {
+  display: inline-flex; align-items: center; gap: .35rem; min-height: 34px; padding: 0 .95rem; border-radius: 999px; border: 1px solid var(--h-line); background: color-mix(in srgb, var(--color-ink) 5%, transparent); font-size: .84rem; font-weight: 700; text-decoration: none; transition: background-color .2s, border-color .2s, transform .2s var(--h-ease); }
+.link-more:hover, .back-link:hover, .page-back:hover, .see-profile:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--color-ink) 22%, transparent); }
+
+/* ----- mobile : actions pleine largeur, pas de débordement, cibles tactiles confortables */
+@media (max-width: 640px) {
+  .page-head-actions, .admin-quick { width: 100%; }
+  .page-head-actions > .cta-btn, .admin-quick > .cta-btn, .admin-quick > a.cta-btn { flex: 1 1 calc(50% - .5rem); }
+  img, video, canvas { max-width: 100%; }
+  .stage-shell { width: calc(100% - 2rem); }
+}
+
+/* ----- boutons de la barre haute : ronds et pilules (le menu et la disposition de la barre ne changent pas) */
+.app-header .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--h-line); background: color-mix(in srgb, var(--color-ink) 6%, transparent); display: inline-grid; place-items: center; padding: 0; transition: background-color .2s, border-color .2s, transform .2s var(--h-ease); }
+.app-header .icon-btn:hover { background: color-mix(in srgb, var(--color-ink) 12%, transparent); border-color: color-mix(in srgb, var(--color-ink) 22%, transparent); transform: translateY(-1px); }
+.app-header .pilot-chip { height: 40px; border-radius: 999px; padding: 0 1rem; border: 1px solid var(--h-line); background: color-mix(in srgb, var(--color-ink) 6%, transparent); }
+.app-header .pilot-chip:hover { background: color-mix(in srgb, var(--color-ink) 12%, transparent); transform: translateY(-1px); }
+.app-header .cta-btn, .app-header .btn { border-radius: 999px; }
+
+/* ===== petits boutons : toujours ronds (hors barre de navigation/dock) ===== */
+:where(:not(.app-header *, [class*="dock"] *)) :is(.dialog-close-btn,.cmt-del,.me-close,.notif-clear,.lightbox-close,.bar-close,.conv-del,.mini-add,.icon-btn,.tcg-nav button,.cg-nav,.copy-btn,.del-btn,.trash-btn,.close-btn,.modal-close,[class*="close-btn"],[class*="-close"]:is(button)) {
+  border-radius: 50%; aspect-ratio: 1; padding: 0; display: inline-grid; place-items: center; flex: none;
+}

@@ -1,0 +1,610 @@
+/**
+ * MOTORAUTO — règles du jeu PARTAGÉES entre le navigateur et les Cloud Functions.
+ * Ce fichier est chargé tel quel par le site (window.MAGameCore) et copié dans functions/ par
+ * `node scripts/sync-functions.js` : une seule définition des niveaux, badges, raretés et défis,
+ * pour que le serveur et l'écran ne puissent jamais se contredire.
+ */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api; else root.MAGameCore = api;
+})(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+  const TZ = "Europe/Paris";
+  const dayFmt = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" });
+
+  // ------------------------------------------------------------------ calendrier (toujours heure de Paris)
+  const dayKey = (ms) => dayFmt.format(new Date(ms === undefined ? Date.now() : ms));
+  const monthKey = (ms) => dayKey(ms).slice(0, 7);
+  function parisMidnight(day) {
+    const p = day.split("-").map(Number);
+    for (const h of [1, 2]) { const ms = Date.UTC(p[0], p[1] - 1, p[2]) - h * 3600000; if (dayKey(ms) === day && dayKey(ms - 1) !== day) return ms; }
+    return Date.UTC(p[0], p[1] - 1, p[2]);
+  }
+  function mondayOf(ms) {
+    const p = dayKey(ms).split("-").map(Number), dt = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+    dt.setUTCDate(dt.getUTCDate() - ((dt.getUTCDay() + 6) % 7));
+    return dt;
+  }
+  function weekKey(ms) {
+    const dt = mondayOf(ms); dt.setUTCDate(dt.getUTCDate() + 3);            // le jeudi de la semaine ISO
+    const jan4 = new Date(Date.UTC(dt.getUTCFullYear(), 0, 4));
+    const wk = 1 + Math.round(((dt - jan4) / 86400000 - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
+    return dt.getUTCFullYear() + "-W" + String(wk).padStart(2, "0");
+  }
+  const weekStart = (ms) => parisMidnight(mondayOf(ms).toISOString().slice(0, 10));
+  const weekEnd = (ms) => weekStart(ms) + 7 * 86400000;
+  const MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  const monthLabel = (key) => { const p = String(key).split("-"); return (MONTHS[Number(p[1]) - 1] || "") + " " + p[0]; };
+
+  // ------------------------------------------------------------------ niveaux et badges
+  const LEVELS = [
+    { n: 1, name: "Débutant", xp: 0 }, { n: 2, name: "Apprenti", xp: 30 }, { n: 3, name: "Pilote", xp: 80 }, { n: 4, name: "Confirmé", xp: 170 },
+    { n: 5, name: "Expert", xp: 300 }, { n: 6, name: "Élite", xp: 480 }, { n: 7, name: "Maître", xp: 750 }, { n: 8, name: "Champion", xp: 1100 },
+    { n: 9, name: "Légende", xp: 1600 }, { n: 10, name: "Mythique", xp: 2400 }
+  ];
+  function levelOf(xp) {
+    let cur = LEVELS[0];
+    LEVELS.forEach((l) => { if (xp >= l.xp) cur = l; });
+    const next = LEVELS[cur.n] || null;
+    return { level: cur, next, pct: next ? Math.round(((xp - cur.xp) / (next.xp - cur.xp)) * 100) : 100, toNext: next ? next.xp - xp : 0 };
+  }
+  let TOTAL = 111;                                          // nombre de cartes du catalogue (réglé par finish)
+  /** id, icône, titre, description, valeur actuelle, objectif, palier visuel */
+  const BADGES = [
+    ["lap1", "🏁", "Premier chrono", "Enregistrer un premier chrono", (s) => s.laps, 1, ""],
+    ["lap10", "⏱️", "10 chronos", "Enregistrer 10 chronos", (s) => s.laps, 10, "silver"],
+    ["lap50", "🔥", "50 chronos", "Enregistrer 50 chronos", (s) => s.laps, 50, "gold"],
+    ["record", "🥇", "Record battu", "Détenir le record d'un circuit (au moins 2 pilotes)", (s) => s.records, 1, "gold"],
+    ["podium", "🥉", "Sur le podium", "Finir dans le top 3 d'un circuit", (s) => s.podiums, 1, "silver"],
+    ["globe", "🗺️", "Globe-trotter", "Rouler sur 5 circuits différents", (s) => s.tracks, 5, "silver"],
+    ["cmt1", "💬", "Première prise de parole", "Poster un premier commentaire", (s) => s.comments, 1, ""],
+    ["cmt10", "🗣️", "Bavard", "Poster 10 commentaires", (s) => s.comments, 10, "silver"],
+    ["cmt50", "📣", "Porte-voix", "Poster 50 commentaires", (s) => s.comments, 50, "gold"],
+    ["like10", "❤️", "Passionné", "Aimer 10 voitures", (s) => s.likes, 10, ""],
+    ["like50", "💘", "Cœur d'or", "Aimer 50 voitures", (s) => s.likes, 50, "silver"],
+    ["car1", "🚗", "Projet publié", "Publier sa première voiture", (s) => s.cars, 1, ""],
+    ["car3", "🏠", "Garage rempli", "Publier 3 voitures", (s) => s.cars, 3, "silver"],
+    ["event1", "📅", "Organisateur", "Proposer une sortie", (s) => s.events, 1, "silver"],
+    ["rsvp3", "🤝", "Toujours partant", "Participer à 3 sorties", (s) => s.rsvps, 3, ""],
+    ["streak3", "🔥", "3 jours d'affilée", "Visiter le site 3 jours de suite", (s) => s.best, 3, ""],
+    ["streak7", "⚡", "Semaine parfaite", "Visiter le site 7 jours de suite", (s) => s.best, 7, "silver"],
+    ["streak30", "👑", "Mois sans faute", "Visiter le site 30 jours de suite", (s) => s.best, 30, "gold"],
+    ["card10", "🃏", "Collectionneur", "Posséder 10 cartes différentes", (s) => s.cards, 10, ""],
+    ["card50", "🎴", "Grand collectionneur", "Posséder 50 cartes différentes", (s) => s.cards, 50, "silver"],
+    ["cardall", "🏆", "Collection complète", "Posséder toutes les cartes du catalogue", (s) => s.cards, () => TOTAL, "gold"],
+    ["swap1", "🔄", "Premier échange", "Réaliser un échange de cartes avec un pilote", (s) => s.trades, 1, ""],
+    ["swap10", "🤝", "Négociateur", "Réaliser 10 échanges de cartes", (s) => s.trades, 10, "silver"],
+    ["chal4", "🎯", "Relève le défi", "Valider 4 défis hebdomadaires", (s) => s.chal, 4, ""],
+    ["chal20", "🏅", "Infatigable", "Valider 20 défis hebdomadaires", (s) => s.chal, 20, "gold"],
+    ["photo1", "📸", "Photographe", "Participer au concours photo du mois", (s) => s.entries, 1, ""],
+    ["photoWin", "🌟", "Photographe du mois", "Gagner le concours photo mensuel", (s) => s.wins, 1, "gold"],
+    ["special1", "✨", "Édition limitée", "Posséder une carte spéciale", (s) => s.specials, 1, "gold"],
+    ["lvl5", "🎖️", "Expert", "Atteindre le niveau 5", (s) => s.level, 5, "silver"]
+  ].map((b) => ({ id: b[0], icon: b[1], label: b[2], desc: b[3], get: b[4], goal: b[5], tier: b[6] }));
+  const goalOf = (b) => (typeof b.goal === "function" ? b.goal() : b.goal);
+  const BLANK_STATS = () => ({ byBrand: {}, rar: {}, brandsOwned: 0, opened: 0, sets: 0, upgraded: 0, maxlv: 0, wish: 0, follows: 0, fuse: 0, sold: 0, bought: 0, pm: 0, quizDone: 0, quizPerfect: 0, quizL3: 0, laps: 0, tracks: 0, records: 0, podiums: 0, comments: 0, likes: 0, cars: 0, events: 0, rsvps: 0, days: 0, best: 0, last: "", cards: 0, specials: 0, trades: 0, chal: 0, entries: 0, wins: 0 });
+
+  /** calcule xp, niveau et badges à partir des compteurs d'un pilote */
+  function finish(s, total) {
+    if (total) TOTAL = Math.max(1, total | 0);
+    s.tracks = s.tracks instanceof Set ? s.tracks.size : s.tracks;
+    const base = s.laps * 15 + s.records * 50 + s.podiums * 20 + s.comments * 4 + s.likes + s.cars * 25 + s.events * 20 + s.rsvps * 4 + s.best * 3 + s.cards * 2
+      + s.trades * 8 + s.chal * 6 + s.entries * 10 + s.wins * 150 + s.specials * 30;
+    s.level = 1;
+    let earned = BADGES.filter((b) => b.id !== "lvl5" && b.get(s) >= goalOf(b));   // le badge « niveau 5 » dépend de l'XP : deux passes
+    s.xp = base + earned.length * 10; s.level = levelOf(s.xp).level.n;
+    earned = BADGES.filter((b) => b.get(s) >= goalOf(b));
+    s.xp = base + earned.length * 10; s.level = levelOf(s.xp).level.n;
+    s.badges = earned.map((b) => b.id);
+    return s;
+  }
+
+  // ------------------------------------------------------------------ cartes
+  const RAR = {
+    common: { id: "common", label: "Commune", dust: 5, craft: 30, odds: 0.615 },
+    rare: { id: "rare", label: "Rare", dust: 15, craft: 90, odds: 0.26 },
+    epic: { id: "epic", label: "Épique", dust: 40, craft: 240, odds: 0.09 },
+    legendary: { id: "legendary", label: "Légendaire", dust: 100, craft: 600, odds: 0.03 },
+    shiny: { id: "shiny", label: "Shiny", dust: 400, craft: 2400, odds: 0.005 },
+    mythic: { id: "mythic", label: "Légende", dust: 600, craft: 0, odds: 0 },
+    special: { id: "special", label: "Édition limitée", dust: 150, craft: 0, odds: 0 }
+  };
+  const ORDER = ["mythic", "shiny", "legendary", "epic", "rare", "common"];          // raretés tirables, de la plus haute à la plus basse
+  const isSpecial = (id) => String(id).indexOf("sp-") === 0;
+  /** puissance « de classement » : les voitures de course du Mans (identifiants lm-…) pèsent 60 % de leur puissance, pour ne pas écraser les voitures de route */
+  const rankPower = (c) => (String(c.id).indexOf("lm-") === 0 ? c.power * 0.6 : c.power);
+  /** cartes « Shiny » (arc-en-ciel, ≈ 0,5 % par carte tirée) : voitures mythiques choisies à la main */
+  const SHINY = ["peugeot-205-t16", "peugeot-206-wrc", "nissan-skyline-gtr-r34", "nissan-gt-r-r35", "toyota-supra-a80-mk4", "ford-rs200", "ford-escort-rs-cosworth-t35", "audi-r8-v10", "honda-civic-ek9-type-r",
+    "lm-ford-gt40", "lm-porsche-917k", "lm-porsche-956", "lm-porsche-962c", "lm-mazda-787b", "lm-mclaren-f1-gtr", "lm-porsche-919"];
+  /** cartes « Légende » : une par album pays / décennie, gagnée en complétant l'album (jamais tirée en pack, jamais fabriquée) */
+  const LEGENDS = {
+    "country:fr": "alpine-a110-classic", "country:de": "mb-300-slr", "country:it": "rally-lancia-037", "country:gb": "lm-mirage-gr8",
+    "country:jp": "rally-subaru-impreza-gc8", "country:us": "lm-chevrolet-corvette-c5r", "country:se": "rally-saab-96", "country:xx": "rally-i20-n-rally1",
+    "decade:1940": "mb-w125", "decade:1950": "mb-300-sl-gullwing", "decade:1960": "rally-citroen-ds-monte", "decade:1970": "rally-lancia-stratos", "decade:1980": "rally-lancia-delta-s4",
+    "decade:1990": "mb-clk-gtr", "decade:2000": "lm-audi-r8-lmp", "decade:2010": "mb-f1-hybrid", "decade:2020": "fiat-1000tipla"
+  };
+  const LEGEND_IDS = Object.keys(LEGENDS).map((k) => LEGENDS[k]);
+  const PRESTIGE = /ferrari|lamborghini|porsche|mclaren|bugatti|aston martin|maserati|pagani|koenigsegg|lotus|bentley|rolls|de tomaso|shelby|jaguar|alpine|lancia|abarth/i;
+  const SPORTY = /\b(gt|gti|gtr|gt-r|gto|gts|gt3|gt2|gt4|rs ?\d{0,2}|type[ -]?r|m[1-8]\d{0,2}i?|amg|cosworth|turbo|quadrifoglio|integrale|nismo|sti|evo|evolution|cup|trophy|stratos|csl|black series|competition|lightweight|clubsport|speedster|roadster|v12|v10|wrc|r5|group b|groupe b|supra|nsx|rx-7|skyline|mustang|corvette|viper|cayman|boxster|elise|exige|evora|z4|mx-5|gr ?\w*|r32|vr6|16s|s[2-8])\b/i;
+  const pct = (sortedAsc, v) => { let lo = 0, hi = sortedAsc.length; while (lo < hi) { const m = (lo + hi) >> 1; if (sortedAsc[m] < v) lo = m + 1; else hi = m; } return sortedAsc.length > 1 ? lo / (sortedAsc.length - 1) : 0; };
+  /**
+   * Score de prestige d'une voiture (0 à ~100) : performances relatives (puissance, vitesse, 0 à 100) + catégorie + marque + version sportive + âge de collection.
+   * Une Ferrari 250 GTO ou une Delta Integrale ne finit donc plus « commune » parce que sa puissance est modeste.
+   */
+  function computeRarities(list) {
+    const pw = list.map(rankPower).sort((a, b) => a - b), sp = list.map((c) => Number(c.speed) || 0).filter((v) => v > 0).sort((a, b) => a - b), zr = list.map((c) => Number(c.zero) || 0).filter((v) => v > 0).sort((a, b) => b - a);
+    const score = (c) => {
+      const pp = pct(pw, rankPower(c)), ps = c.speed > 0 ? pct(sp, c.speed) : pp, pz = c.zero > 0 ? pct(zr, c.zero) : pp, id = String(c.id), name = String(c.name || ""), y = Number(c.year) || 0, cat = String(c.category || "");
+      let s = (pp * 0.5 + ps * 0.25 + pz * 0.25) * 70;
+      s += cat === "Supercar" ? 14 : cat === "Le Mans" || id.indexOf("lm-") === 0 ? 12 : id.indexOf("rally-") === 0 ? 12 : cat === "Coupé" ? 3 : cat === "Break" ? -4 : cat === "Berline" && !SPORTY.test(name) ? -6 : 0;
+      if (PRESTIGE.test(c.brand || name)) s += 10;
+      if (SPORTY.test(name)) s += 10;
+      if (y && y <= 1960) s += 16; else if (y && y <= 1975) s += 12; else if (y && y <= 1990) s += 8;
+      return s;
+    };
+    const sorted = list.map((c) => ({ id: c.id, s: score(c), p: rankPower(c) })).sort((a, b) => (b.s - a.s) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const map = new Map();
+    sorted.forEach((c, i) => {
+      const p = i / Math.max(1, sorted.length - 1);
+      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : SHINY.indexOf(c.id) >= 0 ? "shiny" : p < 0.06 ? "legendary" : p < 0.23 ? "epic" : p < 0.55 ? "rare" : "common");
+    });
+    return map;
+  }
+  function pickRarity(rng, min) {
+    const x = rng(); let acc = 0;
+    for (const id of ["common", "rare", "epic", "legendary", "shiny"]) {
+      acc += RAR[id].odds;
+      if (x < acc) return min && ORDER.indexOf(id) > ORDER.indexOf(min) ? min : id;
+    }
+    return "common";
+  }
+  /** tire un pack de 3 cartes ; tous les 10 packs, une carte au moins « rare » est garantie, tous les 30 une « épique » */
+  function drawPack(rarities, ids, rng, pity, epicPity) {
+    ids = ids.filter((id) => rarities.get(id) !== "mythic");
+    const by = {}; ORDER.forEach((r) => { by[r] = []; });
+    ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
+    const pick = (r) => { const list = by[r].length ? by[r] : (r === "shiny" && by.legendary.length ? by.legendary : ids); return list[Math.floor(rng() * list.length)]; };
+    const out = [];
+    for (let i = 0; i < 3; i++) out.push(pick(pickRarity(rng, epicPity && i === 2 ? "epic" : pity && i === 2 ? "rare" : null)));
+    if (pity && !out.some((id) => rarities.get(id) !== "common")) out[2] = pick("rare");
+    return out;
+  }
+
+  // ------------------------------------------------------------------ boutique : packs par pays
+  /** pays des constructeurs (le drapeau sert de décor au pack) ; c = couleurs, f = motif du drapeau */
+  const COUNTRIES = [
+    { id: "fr", label: "France", cost: 250, f: "v", c: ["#0055a4", "#ffffff", "#ef4135"] },
+    { id: "de", label: "Allemagne", cost: 200, f: "h", c: ["#111111", "#dd0000", "#ffce00"] },
+    { id: "it", label: "Italie", cost: 250, f: "v", c: ["#009246", "#ffffff", "#ce2b37"] },
+    { id: "gb", label: "Royaume-Uni", cost: 350, f: "gb", c: ["#012169", "#ffffff", "#c8102e"] },
+    { id: "jp", label: "Japon", cost: 250, f: "jp", c: ["#ffffff", "#bc002d", "#ffffff"] },
+    { id: "us", label: "États-Unis", cost: 300, f: "us", c: ["#b22234", "#ffffff", "#3c3b6e"] },
+    { id: "se", label: "Suède", cost: 350, f: "se", c: ["#006aa7", "#fecc00", "#fecc00"] },
+    { id: "xx", label: "Autres pays", cost: 350, f: "world", c: ["#0f766e", "#6366f1", "#f59e0b"] }
+  ];
+  const BRAND_COUNTRY = [
+    [/^(renault|alpine|peugeot|citro|ds\b|matra|bugatti|delahaye|talbot|lorraine|chenard|rondeau|vilebrequin|simca|venturi)/i, "fr"],
+    [/^(mercedes|sauber|bmw|audi|auto union|volkswagen|vw\b|opel|porsche|dauer|ruf|smart|maybach)/i, "de"],
+    [/^(alfa|ferrari|lancia|fiat|abarth|lamborghini|maserati|pagani)/i, "it"],
+    [/^(bentley|jaguar|aston|mini\b|lagonda|mclaren|mg\b|prodrive|mirage|lotus|rover|land rover|tvr|caterham|morgan)/i, "gb"],
+    [/^(toyota|nissan|datsun|honda|mazda|mitsubishi|subaru|suzuki|lexus|acura|infiniti|daihatsu)/i, "jp"],
+    [/^(ford|chevrolet|cadillac|dodge|chrysler|tesla|jeep|buick|pontiac|shelby|gmc)/i, "us"],
+    [/^(volvo|saab|koenigsegg|polestar)/i, "se"]
+  ];
+  function countryOf(brand) {
+    const b = String(brand || "").trim();
+    for (const [rx, id] of BRAND_COUNTRY) if (rx.test(b)) return id;
+    return "xx";
+  }
+  /** packs de la boutique : « world » (toutes les voitures) et un pack par pays ; 2 cartes dont 1 « rare » ou mieux */
+  const PACKS = { world: { id: "world", label: "Pack mondial", cost: 200, cards: 2, min: "rare", country: "" } };
+  COUNTRIES.forEach((k) => { PACKS[k.id] = { id: k.id, label: "Pack " + k.label, cost: k.cost, cards: 2, min: "rare", country: k.id }; });
+  const SHOP_PACK = { cost: PACKS.world.cost, cards: 2 };
+  function drawShopPack(rarities, ids, rng, min) {
+    ids = ids.filter((id) => rarities.get(id) !== "mythic");
+    const by = {}; ORDER.forEach((r) => { by[r] = []; });
+    ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
+    const pick = (r) => { const list = by[r] && by[r].length ? by[r] : ids; return list[Math.floor(rng() * list.length)]; };
+    // rareté minimale : si le pays n'a aucune carte assez rare, on prend la meilleure rareté disponible
+    let first = pick(pickRarity(rng, min || "rare"));
+    if ((rarities.get(first) === "common") && ids.some((id) => rarities.get(id) !== "common")) {
+      const better = ids.filter((id) => rarities.get(id) !== "common"); first = better[Math.floor(rng() * better.length)];
+    }
+    const out = [first];
+    let second = pick(pickRarity(rng, null));
+    for (let k = 0; k < 6 && second === out[0] && ids.length > 2; k++) second = pick(pickRarity(rng, null));   // évite le doublon dans le même pack quand c'est possible
+    out.push(second);
+    return out;
+  }
+  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [], pics: {}, picClaims: {}, lv: {}, mis: { day: "", p: {}, done: [] }, offers: { day: "", pack: 0, card: 0 } });
+
+  // ------------------------------------------------------------------ cartes à plusieurs images
+  /** clé courte et stable d'une image (ne change pas si l'administrateur réordonne la galerie) */
+  const picKey = (u) => { let h = 5381; const t = String(u); for (let i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return h.toString(36); };
+  /** images réelles d'une voiture (adresses https, sans doublon, 12 maximum) ; les images génériques locales ne comptent pas */
+  const picUrls = (car) => {
+    const out = []; [car && car.image].concat((car && car.images) || []).forEach((u) => { if (typeof u === "string" && /^https:\/\//i.test(u) && out.indexOf(u) < 0) out.push(u); });
+    return out.slice(0, 12);
+  };
+  const picKeys = (car) => picUrls(car).map(picKey);
+  /** clés des images débloquées pour une carte possédée (la première image est acquise dès la 1re carte) */
+  function picsHave(d, id, keys) {
+    const set = (d.pics && d.pics[id]) || [], out = keys.filter((k) => set.indexOf(k) >= 0);
+    if (!out.length && keys.length && (d.owned && d.owned[id] > 0)) out.push(keys[0]);
+    return out;
+  }
+  /** récompenses de la courbe de progression : palier 50 % (si 4 images ou plus) puis 100 %. mask : paliers déjà encaissés (1 = 50 %, 2 = 100 %) */
+  function picReward(rar, n, total, mask) {
+    let gain = 0, m = mask || 0, R = RAR[rar] || RAR.common;
+    if (total >= 4 && n >= Math.ceil(total / 2) && !(m & 1)) { gain += R.dust * 4; m |= 1; }
+    if (total >= 2 && n >= total && !(m & 2)) { gain += R.craft; m |= 2; }
+    return { gain, mask: m };
+  }
+  /** recompte cartes distinctes (hors éditions spéciales) et éditions spéciales */
+  function recount(doc) {
+    let c = 0, s = 0;
+    Object.keys(doc.owned || {}).forEach((k) => { if (doc.owned[k] > 0) { if (isSpecial(k)) s++; else c++; } });
+    doc.count = c; doc.specials = s; return doc;
+  }
+
+  // ------------------------------------------------------------------ défis de la semaine
+  /** src : counter:* (compté par le serveur), log:* (action signalée, 3 par jour maximum), q:* (compté dans les données du site) */
+  const CHALLENGES = [
+    { id: "packs3", icon: "🎴", label: "Ouvre 3 packs", goal: 3, src: "counter:packs", reward: { dust: 40 } },
+    { id: "packs5", icon: "📦", label: "Ouvre 5 packs", goal: 5, src: "counter:packs", reward: { dust: 70 } },
+    { id: "daily3", icon: "📆", label: "Ouvre ton pack du jour 3 jours", goal: 3, src: "counter:daily", reward: { dust: 60 } },
+    { id: "comment2", icon: "💬", label: "Commente 2 fiches", goal: 2, src: "q:comments", reward: { dust: 30 } },
+    { id: "comment5", icon: "🗨️", label: "Commente 5 fiches", goal: 5, src: "q:comments", reward: { dust: 60 } },
+    { id: "duel1", icon: "🏁", label: "Fais un duel", goal: 1, src: "log:duel", reward: { dust: 25 } },
+    { id: "duel3", icon: "⚔️", label: "Fais 3 duels", goal: 3, src: "log:duel", reward: { dust: 50 } },
+    { id: "share1", icon: "↗️", label: "Partage une fiche", goal: 1, src: "log:share", reward: { dust: 20 } },
+    { id: "share3", icon: "📣", label: "Partage 3 fiches", goal: 3, src: "log:share", reward: { dust: 45 } },
+    { id: "lap1", icon: "⏱️", label: "Enregistre un chrono", goal: 1, src: "q:laps", reward: { bonus: 1 } },
+    { id: "like5", icon: "❤️", label: "Aime 5 voitures", goal: 5, src: "q:likes", reward: { dust: 30 } },
+    { id: "like15", icon: "💖", label: "Aime 15 voitures", goal: 15, src: "q:likes", reward: { dust: 60 } },
+    { id: "react3", icon: "🔥", label: "Réagis à 3 fiches (🔥 🏁 😍)", goal: 3, src: "q:reacts", reward: { dust: 25 } },
+    { id: "rsvp1", icon: "📅", label: "Rejoins une sortie", goal: 1, src: "q:rsvps", reward: { dust: 40 } },
+    { id: "vote1", icon: "📸", label: "Vote au concours photo", goal: 1, src: "q:votes", reward: { dust: 30 } },
+    { id: "chat5", icon: "💭", label: "Écris 5 messages dans le salon", goal: 5, src: "q:chat", reward: { dust: 30 } },
+    { id: "trade1", icon: "🔄", label: "Réalise un échange de cartes", goal: 1, src: "counter:trades", reward: { bonus: 1 } },
+    { id: "wish3", icon: "⭐", label: "Mets 3 cartes dans ta wishlist", goal: 3, src: "state:wish", reward: { dust: 20 } }
+  ];
+  /** défi du jour (1 par jour, identique pour tous) : actions simples comptées depuis minuit (heure de Paris) */
+  const DAILY = [
+    { id: "d-pack", icon: "🎁", label: "Ouvre ton pack du jour", goal: 1, src: "counter:daily", reward: { dust: 15 } },
+    { id: "d-like3", icon: "❤️", label: "Aime 3 voitures", goal: 3, src: "q:likes", reward: { dust: 15 } },
+    { id: "d-comment1", icon: "💬", label: "Commente une fiche", goal: 1, src: "q:comments", reward: { dust: 15 } },
+    { id: "d-duel1", icon: "🏁", label: "Fais un duel", goal: 1, src: "log:duel", reward: { dust: 15 } },
+    { id: "d-share1", icon: "↗️", label: "Partage une fiche", goal: 1, src: "log:share", reward: { dust: 15 } },
+    { id: "d-react2", icon: "🔥", label: "Réagis à 2 fiches", goal: 2, src: "q:reacts", reward: { dust: 15 } },
+    { id: "d-chat3", icon: "💭", label: "Écris 3 messages dans le salon", goal: 3, src: "q:chat", reward: { dust: 15 } }
+  ];
+  const hashStr = (s) => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h; };
+  function mulberry(a) { return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  /** les 10 défis d'une semaine : identiques pour tous les pilotes, tirés au sort à partir du numéro de semaine */
+  function weekChallenges(wk) {
+    const rnd = mulberry(hashStr("motorauto-" + wk)), pool = CHALLENGES.slice();
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+    return pool.slice(0, 10);
+  }
+  function dailyChallenge(day) { return DAILY[hashStr("motorauto-day-" + day) % DAILY.length]; }
+  /** défis « voiture de la semaine » : mêmes 3 défis chaque semaine, sur la voiture mise en avant (auto ou choisie par l'admin) */
+  const FEATURED = [
+    { id: "f-react", icon: "🔥", label: (n) => "Réagis à « " + n + " » (j'aime ou 🔥 🏁 😍)", goal: 1, src: "feat:react", reward: { dust: 35 } },
+    { id: "f-comment", icon: "✍️", label: (n) => "Donne ton avis sur « " + n + " » (commentaire)", goal: 1, src: "feat:comment", reward: { dust: 45 } },
+    { id: "f-view", icon: "🔎", label: (n) => "Découvre la fiche de « " + n + " »", goal: 1, src: "feat:view", reward: { dust: 25 } }
+  ];
+  const featuredItems = (name) => FEATURED.map((f) => Object.assign({}, f, { label: f.label(name) }));
+  /** voiture mise en avant par défaut : tirage déterministe sur la liste triée du catalogue */
+  const autoFeatured = (wk, ids) => { const l = ids.slice().sort(); return l.length ? l[hashStr("motorauto-feat-" + wk) % l.length] : ""; };
+  const PERFECT_WEEK_BONUS = 1;
+  const THEMES = ["Ma voiture au lever du soleil", "Détail mécanique", "Mon garage", "Route de rêve", "Voiture en mouvement", "Noir & blanc", "Mon plus beau reflet", "Sortie entre pilotes", "Voiture sous la pluie", "Intérieur et cockpit", "Avant / après", "Ma voiture de collection"];
+
+  /** année de début d'une voiture (champ « year » du serveur, ou « 1984 - 1994 » côté site) */
+  const yearOf = (c) => { if (c && Number(c.year) > 1800) return Number(c.year); const m = String((c && c.years) || "").match(/\d{4}/); return m ? Number(m[0]) : 0; };
+  const decadeOf = (c) => { const y = yearOf(c); return !y ? 0 : y < 1950 ? 1940 : Math.floor(y / 10) * 10; };
+  const decadeLabel = (d) => d === 1940 ? "Avant 1950" : "Années " + d;
+  /** albums : un par pays, par décennie (avec une carte « Légende » à la clé), par marque et par carrosserie ; récompense en cristaux selon la taille */
+  function setReward(n) { return Math.min(600, 20 + n * 10); }
+  function setsOf(list) {
+    const out = [], skip = new Set(LEGEND_IDS);
+    const add = (id, name, kind, ids, legend) => {
+      ids = ids.filter((x) => !skip.has(x));
+      if (ids.length >= (kind === "category" ? 3 : kind === "brand" ? 3 : 2)) out.push({ id, name: kind === "category" ? "Famille " + name : name, kind, ids, reward: setReward(ids.length) + (legend ? 100 : 0), legend: legend || "" });
+    };
+    const group = (keyFn, prefix, kind, min, max, nameFn) => {
+      const m = new Map();
+      (list || []).forEach((c) => { const v = keyFn(c); if (!v && v !== 0) return; if (!m.has(v)) m.set(v, []); m.get(v).push(c.id); });
+      m.forEach((ids, v) => { if (ids.length >= min && ids.length <= max) add(prefix + ":" + v, nameFn ? nameFn(v) : v, kind, ids, LEGENDS[prefix + ":" + v]); });
+    };
+    group((c) => countryOf(c.brand), "country", "country", 2, 400, (v) => (COUNTRIES.find((k) => k.id === v) || {}).label || v);
+    group((c) => decadeOf(c) || "", "decade", "decade", 2, 400, (v) => decadeLabel(Number(v)));
+    group((c) => String(c.brand || "").trim(), "brand", "brand", 3, 30);
+    group((c) => String(c.category || "").trim(), "cat", "category", 3, 80);
+    const rank = { country: 0, decade: 1, brand: 2, category: 3 };
+    return out.sort((a, b) => rank[a.kind] - rank[b.kind] || a.ids.length - b.ids.length || (a.name < b.name ? -1 : 1));
+  }
+
+  // ------------------------------------------------------------------ niveaux de carte (cadre et effets, purement visuels)
+  const LV_MAX = 5, LV_NAMES = ["", "Série", "Bronze", "Argent", "Or", "Platine"];
+  const LV_BASE = [0, 0, 60, 150, 320, 650], LV_MUL = { common: 1, rare: 1.5, epic: 2, legendary: 3, shiny: 4, mythic: 4, special: 3 };
+  /** coût en cristaux pour passer au niveau « to » (2 à 5) */
+  const upgradeCost = (rar, to) => to >= 2 && to <= LV_MAX ? Math.round((LV_BASE[to] * (LV_MUL[rar] || 1)) / 5) * 5 : 0;
+
+  // ------------------------------------------------------------------ boutique du jour et missions (identiques pour tous, tirées de la date)
+  const OFFER_PCT = 30;
+  /** offres du jour : un pack par pays à -30 % et une carte à prix réduit ; listes triées pour que site et serveur obtiennent le même résultat */
+  function dailyOffers(day, list, rarities) {
+    const h = hashStr("motorauto-offer-" + day), cs = COUNTRIES.map((k) => k.id);
+    const ids = (list || []).map((c) => c.id).filter((id) => { const r = rarities.get(id); return r === "rare" || r === "epic" || r === "legendary"; }).sort();
+    const cid = ids.length ? ids[hashStr("motorauto-offer-card-" + day) % ids.length] : "";
+    const cost = cid ? Math.max(5, Math.round(RAR[rarities.get(cid)].craft * 0.7 / 5) * 5) : 0;
+    return { pack: cs[h % cs.length], pct: OFFER_PCT, card: cid, cardCost: cost, cardFull: cid ? RAR[rarities.get(cid)].craft : 0 };
+  }
+  const offerPackCost = (id, pct) => Math.round((PACKS[id].cost * (100 - (pct || OFFER_PCT))) / 100 / 5) * 5;
+  /** 3 missions courtes par jour : un pack de pays + deux autres */
+  function dailyMissions(day) {
+    const h = hashStr("motorauto-mission-" + day), k = COUNTRIES[h % COUNTRIES.length];
+    const others = [
+      { id: "m-open", type: "open", goal: 2, label: "Ouvre 2 packs (jour, bonus ou boutique)", reward: 30 },
+      { id: "m-upgrade", type: "upgrade", goal: 1, label: "Améliore une carte", reward: 30 },
+      { id: "m-offer", type: "offer", goal: 1, label: "Profite d'une offre du jour", reward: 25 },
+      { id: "m-trade", type: "trade", goal: 1, label: "Réalise un échange de cartes", reward: 40 }
+    ];
+    const a = others.splice(Math.floor(h / 8) % others.length, 1)[0], b = others[Math.floor(h / 64) % others.length];
+    return [{ id: "m-shop-" + k.id, type: "shop", country: k.id, goal: 1, label: "Ouvre un pack " + k.label, reward: 40 }, a, b];
+  }
+
+  // ------------------------------------------------------------------ fusion de cartes (5 doublons d'une rareté → 1 carte de la rareté au-dessus)
+  const FUSE_COUNT = 5;
+  const FUSE_NEXT = { common: "rare", rare: "epic", epic: "legendary" };
+
+  // ------------------------------------------------------------------ marché de cartes entre pilotes (prix fixe, commission détruite)
+  const MARKET_FEE = 0.10, MARKET_MAX_LISTINGS = 8;
+  /** fourchette de prix autorisée par rareté (cristaux) : empêche les ventes à 1 cristal et les prix absurdes */
+  const marketBounds = (rar) => { const r = RAR[rar] || RAR.common; return { min: Math.max(2, Math.round(r.dust * 0.8)), max: Math.max(50, (r.craft || r.dust * 6) * 3) }; };
+  const marketNet = (price) => Math.floor(price * (1 - MARKET_FEE));
+
+  // ------------------------------------------------------------------ familles de marques (badges) : « Peugeot Sport » compte pour Peugeot, etc.
+  function familyOf(brand) {
+    const b = String(brand || "").trim();
+    if (/^(mercedes|sauber)/i.test(b)) return "Mercedes";
+    if (/^peugeot/i.test(b)) return "Peugeot";
+    if (/^renault/i.test(b)) return "Renault";
+    if (/^citro/i.test(b)) return "Citroën";
+    if (/^(nissan|datsun)/i.test(b)) return "Nissan";
+    if (/^seat/i.test(b)) return "SEAT";
+    return b;
+  }
+
+  // ------------------------------------------------------------------ aléa déterministe (le serveur rejoue le quiz pour vérifier les réponses)
+  function seeded(seed) {
+    let a = hashStr(String(seed)) >>> 0;
+    return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  const fmt = (s, a) => String(s).replace(/\{(\d)\}/g, (m, i) => (a && a[i] !== undefined ? a[i] : m));
+
+  // ------------------------------------------------------------------ Plus ou moins : deux voitures, laquelle a la plus grande valeur ?
+  const PM_STATS = {
+    power: { q: "Qui a le plus de chevaux ?", get: (c) => Number(c.power) || 0, unit: "ch", better: 1 },
+    speed: { q: "Qui va le plus vite ? (vitesse maximale)", get: (c) => Number(c.speed) || 0, unit: "km/h", better: 1 },
+    zero: { q: "Qui accélère le plus fort ? (0 à 100 km/h)", get: (c) => Number(c.zero) || 0, unit: "s", better: -1 },
+    year: { q: "Laquelle est la plus récente ?", get: (c) => Number(c.year) || 0, unit: "", better: 1 }
+  };
+  const PM_KEYS = Object.keys(PM_STATS);
+  /** tire une paire de voitures ; plus la série est longue, plus les deux valeurs sont proches (et de même catégorie).
+   *  Renvoie { a, b, stat } (identifiants). */
+  const PM_REL = [[0.08, 0.3], [0.07, 0.25], [0.035, 0.12], [0.015, 0.06], [0.006, 0.03]];   // écart relatif min/max par palier
+  const PM_YEAR = [[8, 40], [5, 20], [3, 10], [2, 6], [1, 3]];                                  // écart d'années min/max par palier
+  function pmLevel(streak) { const s = Number(streak) || 0; return s < 3 ? 0 : s < 6 ? 1 : s < 10 ? 2 : s < 15 ? 3 : 4; }
+  function pmPair(list, rng, prev, streak) {
+    const lv = pmLevel(streak), stat = PM_KEYS[Math.floor(rng() * PM_KEYS.length)], S = PM_STATS[stat], yr = stat === "year";
+    const ok = list.filter((c) => S.get(c) > 0 && (!prev || (c.id !== prev.a && c.id !== prev.b)));
+    if (ok.length < 2) return null;
+    const lim = yr ? PM_YEAR[lv] : PM_REL[lv];
+    const gap = (va, vb) => (yr ? Math.abs(va - vb) : Math.abs(va - vb) / Math.max(va, vb));
+    for (let i = 0; i < 160; i++) {
+      const a = ok[Math.floor(rng() * ok.length)], va = S.get(a);
+      // à partir du palier 1, on cherche un adversaire de même catégorie (moins de repères évidents) ; on relâche si la liste est vide
+      const sameCat = lv >= 1 && i < 100;
+      const cand = ok.filter((c) => { if (c.id === a.id) return false; const vb = S.get(c); if (vb === va) return false; const g = gap(va, vb); return g >= lim[0] && g <= lim[1] && (!sameCat || (c.category && c.category === a.category)); });
+      if (!cand.length) continue;
+      const b = cand[Math.floor(rng() * cand.length)];
+      return { a: a.id, b: b.id, stat };
+    }
+    return null;
+  }
+  /** 'a' ou 'b' : la voiture gagnante de la paire */
+  function pmWinner(pair, byId) {
+    const S = PM_STATS[pair.stat], a = byId.get(pair.a), b = byId.get(pair.b);
+    if (!a || !b) return null;
+    return (S.get(a) - S.get(b)) * S.better > 0 ? "a" : "b";
+  }
+  const PM_REWARDS = [[5, 10], [10, 25], [20, 60], [30, 100]];     // série atteinte → cristaux (une fois par série)
+  const PM_DAILY_CAP = 150;
+
+  // ------------------------------------------------------------------ quiz par niveau : questions automatiques (catalogue) + questions écrites
+  const QCATS = { brands: "Marques", history: "Histoire", engines: "Moteurs", motorsport: "Sport auto" };
+  const QLEVELS = { 1: "Facile", 2: "Moyen", 3: "Expert" };
+  const QUIZ_N = 10, QUIZ_REWARD = 4, QUIZ_DAILY_CAP = 80;       // 4 cristaux par bonne réponse, 80 par jour au maximum
+  // [catégorie, niveau, question FR, [bonne, faux, faux, faux], question EN, [good, wrong, wrong, wrong]]
+  const QBANK = [
+    ["brands", 1, "Quelle marque utilise un logo à quatre anneaux ?", ["Audi", "BMW", "Peugeot", "Toyota"], "Which brand uses a four-ring logo?", ["Audi", "BMW", "Peugeot", "Toyota"]],
+    ["brands", 1, "Quel animal figure sur le logo de Peugeot ?", ["Un lion", "Un taureau", "Un cheval", "Un jaguar"], "Which animal appears on the Peugeot logo?", ["A lion", "A bull", "A horse", "A jaguar"]],
+    ["brands", 1, "Quelle marque française a pour emblème un losange ?", ["Renault", "Citroën", "Peugeot", "Alpine"], "Which French brand has a diamond as its emblem?", ["Renault", "Citroën", "Peugeot", "Alpine"]],
+    ["brands", 1, "De quel pays vient la marque Toyota ?", ["Japon", "Corée du Sud", "Chine", "Taïwan"], "Which country does Toyota come from?", ["Japan", "South Korea", "China", "Taiwan"]],
+    ["brands", 2, "Quelle marque produit les modèles « M » (M3, M5…) ?", ["BMW", "Mercedes-Benz", "Audi", "Alfa Romeo"], "Which brand makes the “M” models (M3, M5…)?", ["BMW", "Mercedes-Benz", "Audi", "Alfa Romeo"]],
+    ["brands", 2, "Que signifie l'acronyme BMW ?", ["Bayerische Motoren Werke", "Bayerische Mobil Werke", "Berliner Motoren Werke", "Baden Motoren Werke"], "What does BMW stand for?", ["Bayerische Motoren Werke", "Bayerische Mobil Werke", "Berliner Motoren Werke", "Baden Motoren Werke"]],
+    ["brands", 2, "Quelle marque porte sur son logo le Biscione, un serpent couronné ?", ["Alfa Romeo", "Lancia", "Fiat", "Maserati"], "Which brand shows the Biscione, a crowned serpent, on its badge?", ["Alfa Romeo", "Lancia", "Fiat", "Maserati"]],
+    ["brands", 2, "Quelle marque a lancé la 205 GTI ?", ["Peugeot", "Renault", "Citroën", "Opel"], "Which brand launched the 205 GTI?", ["Peugeot", "Renault", "Citroën", "Opel"]],
+    ["brands", 3, "Quelle marque est née en 1932 de la fusion de Horch, DKW, Wanderer et Audi ?", ["Auto Union", "Mercedes-Benz", "Opel", "Škoda"], "Which company was created in 1932 by merging Horch, DKW, Wanderer and Audi?", ["Auto Union", "Mercedes-Benz", "Opel", "Škoda"]],
+    ["brands", 3, "Sous quel nom Nissan vendait-il ses voitures avant 1986 en Europe et au Japon ?", ["Datsun", "Subaru", "Isuzu", "Daihatsu"], "Under which name did Nissan sell many of its cars before 1986?", ["Datsun", "Subaru", "Isuzu", "Daihatsu"]],
+    ["brands", 3, "Dans quelle ville est installée la marque Porsche ?", ["Stuttgart", "Munich", "Wolfsburg", "Ingolstadt"], "In which city is Porsche based?", ["Stuttgart", "Munich", "Wolfsburg", "Ingolstadt"]],
+    ["brands", 3, "Quel constructeur a produit la Dauphine ?", ["Renault", "Simca", "Citroën", "Peugeot"], "Which carmaker built the Dauphine?", ["Renault", "Simca", "Citroën", "Peugeot"]],
+    ["history", 1, "Quelle voiture française de 1948 à 1990 était surnommée « deux-chevaux » ?", ["Citroën 2CV", "Renault 4L", "Peugeot 203", "Simca 1000"], "Which French car built from 1948 to 1990 was nicknamed the “deux-chevaux”?", ["Citroën 2CV", "Renault 4L", "Peugeot 203", "Simca 1000"]],
+    ["history", 1, "En quelle année est sortie la première Renault Twingo ?", ["1992", "1985", "1998", "2001"], "In which year did the first Renault Twingo appear?", ["1992", "1985", "1998", "2001"]],
+    ["history", 1, "Sur quelle base est construite la première BMW M3 de 1986 ?", ["Série 3 E30", "Série 5 E28", "2002", "Z1"], "Which car is the original 1986 BMW M3 based on?", ["3 Series E30", "5 Series E28", "2002", "Z1"]],
+    ["history", 1, "Quelle voiture a lancé la mode des compactes sportives « GTI » en 1976 ?", ["Volkswagen Golf", "Peugeot 205", "Renault 5", "Ford Fiesta"], "Which car started the “GTI” hot hatch craze in 1976?", ["Volkswagen Golf", "Peugeot 205", "Renault 5", "Ford Fiesta"]],
+    ["history", 2, "Quelle voiture a gagné les 24 Heures du Mans 1991 avec un moteur rotatif ?", ["Mazda 787B", "Porsche 962", "Jaguar XJR-12", "Sauber C11"], "Which car won the 1991 24 Hours of Le Mans with a rotary engine?", ["Mazda 787B", "Porsche 962", "Jaguar XJR-12", "Sauber C11"]],
+    ["history", 2, "Quelle marque a remporté le premier championnat du monde des rallyes constructeurs en 1973 ?", ["Alpine-Renault", "Lancia", "Ford", "Fiat"], "Which brand won the first World Rally Championship for manufacturers in 1973?", ["Alpine-Renault", "Lancia", "Ford", "Fiat"]],
+    ["history", 2, "Quel modèle Mercedes de 1954 est célèbre pour ses portes papillon ?", ["300 SL", "190 SL", "220", "600"], "Which 1954 Mercedes model is famous for its gullwing doors?", ["300 SL", "190 SL", "220", "600"]],
+    ["history", 2, "Qui a conçu la Mini originale de 1959 ?", ["Alec Issigonis", "Colin Chapman", "Gordon Murray", "Adrian Newey"], "Who designed the original 1959 Mini?", ["Alec Issigonis", "Colin Chapman", "Gordon Murray", "Adrian Newey"]],
+    ["history", 3, "Quel pilote a été champion du monde des rallyes 1985 sur Peugeot 205 T16 ?", ["Timo Salonen", "Ari Vatanen", "Juha Kankkunen", "Walter Röhrl"], "Which driver won the 1985 World Rally Championship in a Peugeot 205 T16?", ["Timo Salonen", "Ari Vatanen", "Juha Kankkunen", "Walter Röhrl"]],
+    ["history", 3, "Quelle voiture Renault a remplacé la Super 5 en 1990 ?", ["Clio", "Twingo", "Mégane", "Safrane"], "Which Renault replaced the Supercinq in 1990?", ["Clio", "Twingo", "Mégane", "Safrane"]],
+    ["history", 3, "Qui a fondé la marque Alpine en 1955 ?", ["Jean Rédélé", "Amédée Gordini", "Louis Renault", "Ettore Bugatti"], "Who founded Alpine in 1955?", ["Jean Rédélé", "Amédée Gordini", "Louis Renault", "Ettore Bugatti"]],
+    ["history", 3, "Quelle catégorie de rallye, la plus puissante de son temps, a été arrêtée après 1986 ?", ["Groupe B", "Groupe A", "Groupe N", "Groupe C"], "Which rally category, the most powerful of its time, was stopped after 1986?", ["Group B", "Group A", "Group N", "Group C"]],
+    ["engines", 1, "Combien de cylindres a un moteur V8 ?", ["8", "6", "10", "12"], "How many cylinders does a V8 engine have?", ["8", "6", "10", "12"]],
+    ["engines", 1, "Qu'utilise un turbocompresseur pour fonctionner ?", ["Les gaz d'échappement", "La batterie", "L'huile moteur", "L'eau de refroidissement"], "What does a turbocharger use to work?", ["Exhaust gases", "The battery", "Engine oil", "Coolant"]],
+    ["engines", 1, "Que mesure-t-on dans « 0 à 100 km/h » ?", ["Le temps d'accélération", "La consommation", "La vitesse maximale", "La distance de freinage"], "What does “0 to 100 km/h” measure?", ["Acceleration time", "Fuel consumption", "Top speed", "Braking distance"]],
+    ["engines", 1, "Quelle unité mesure le couple d'un moteur ?", ["Le newton-mètre", "Le kilowatt", "Le litre", "Le décibel"], "Which unit measures an engine's torque?", ["Newton-metre", "Kilowatt", "Litre", "Decibel"]],
+    ["engines", 2, "Combien de cylindres a le moteur « flat-six » d'une Porsche 911 ?", ["6", "4", "8", "12"], "How many cylinders does the flat-six of a Porsche 911 have?", ["6", "4", "8", "12"]],
+    ["engines", 2, "Quelle marque est célèbre pour son moteur rotatif Wankel ?", ["Mazda", "Honda", "Subaru", "Toyota"], "Which brand is famous for its Wankel rotary engine?", ["Mazda", "Honda", "Subaru", "Toyota"]],
+    ["engines", 2, "Que fait le système VTEC de Honda ?", ["Il fait varier le calage et la levée des soupapes", "Il varie la géométrie du turbo", "Il injecte directement l'essence", "Il répartit la transmission intégrale"], "What does Honda's VTEC system do?", ["It varies valve timing and lift", "It varies the turbo geometry", "It injects fuel directly", "It splits the four-wheel drive"]],
+    ["engines", 2, "Quelle disposition de moteur Subaru utilise-t-il sur la plupart de ses modèles ?", ["Boxer (à plat)", "V6", "En ligne", "Rotatif"], "Which engine layout does Subaru use on most of its models?", ["Boxer (flat)", "V6", "Inline", "Rotary"]],
+    ["engines", 3, "Comment sont disposés les cylindres d'un moteur W12 ?", ["En W (deux V étroits accolés)", "En V à 60°", "À plat", "En ligne"], "How are the cylinders of a W12 engine arranged?", ["In a W (two narrow Vs side by side)", "In a 60° V", "Flat", "Inline"]],
+    ["engines", 3, "Quel moteur équipait la Nissan Skyline GT-R R34 ?", ["RB26DETT", "2JZ-GTE", "4G63", "EJ207"], "Which engine powered the Nissan Skyline GT-R R34?", ["RB26DETT", "2JZ-GTE", "4G63", "EJ207"]],
+    ["engines", 3, "Quel moteur équipait la Toyota Supra A80 Turbo ?", ["2JZ-GTE", "RB26DETT", "1JZ-GTE", "4A-GE"], "Which engine powered the Toyota Supra A80 Turbo?", ["2JZ-GTE", "RB26DETT", "1JZ-GTE", "4A-GE"]],
+    ["engines", 3, "Que signifie « DOHC » ?", ["Double arbre à cames en tête", "Injection directe haute compression", "Hybride à double sortie", "Distribution hydraulique centralisée"], "What does “DOHC” stand for?", ["Double overhead camshaft", "Direct high-compression injection", "Dual-output hybrid", "Central hydraulic timing"]],
+    ["motorsport", 1, "Quelle course d'endurance a lieu chaque année dans la Sarthe ?", ["Les 24 Heures du Mans", "Les Mille Miglia", "Le Dakar", "La Targa Florio"], "Which endurance race takes place every year in the Sarthe?", ["24 Hours of Le Mans", "Mille Miglia", "Dakar", "Targa Florio"]],
+    ["motorsport", 1, "Quel drapeau annonce la fin d'une course ?", ["À damier", "Jaune", "Vert", "Bleu"], "Which flag signals the end of a race?", ["Chequered", "Yellow", "Green", "Blue"]],
+    ["motorsport", 1, "Que signifie WRC ?", ["Championnat du monde des rallyes", "Coupe des routes de campagne", "Course mondiale des records", "Rallye des circuits"], "What does WRC stand for?", ["World Rally Championship", "Country Roads Cup", "World Records Contest", "Circuit Rally"]],
+    ["motorsport", 1, "Combien de roues motrices a une voiture « intégrale » ?", ["4", "2", "3", "6"], "How many driven wheels does an all-wheel-drive car have?", ["4", "2", "3", "6"]],
+    ["motorsport", 2, "Quel constructeur a le plus de victoires au classement général des 24 Heures du Mans ?", ["Porsche", "Audi", "Ferrari", "Jaguar"], "Which manufacturer has the most overall wins at the 24 Hours of Le Mans?", ["Porsche", "Audi", "Ferrari", "Jaguar"]],
+    ["motorsport", 2, "Quel pilote français a été neuf fois champion du monde des rallyes ?", ["Sébastien Loeb", "Sébastien Ogier", "Didier Auriol", "Bruno Saby"], "Which French driver won nine World Rally Championships?", ["Sébastien Loeb", "Sébastien Ogier", "Didier Auriol", "Bruno Saby"]],
+    ["motorsport", 2, "Quel circuit est surnommé « l'Enfer vert » ?", ["Nürburgring Nordschleife", "Spa-Francorchamps", "Monza", "Suzuka"], "Which circuit is nicknamed the “Green Hell”?", ["Nürburgring Nordschleife", "Spa-Francorchamps", "Monza", "Suzuka"]],
+    ["motorsport", 2, "Qu'est-ce que le Groupe B en rallye ?", ["Les voitures très puissantes des années 1980", "Les voitures de série", "Les prototypes d'endurance", "Les monoplaces"], "What was Group B in rallying?", ["Very powerful cars of the 1980s", "Standard road cars", "Endurance prototypes", "Single-seaters"]],
+    ["motorsport", 3, "Quelle voiture a gagné les 24 Heures du Mans 1995 ?", ["McLaren F1 GTR", "Porsche 911 GT1", "Ferrari F40", "Nissan R390"], "Which car won the 1995 24 Hours of Le Mans?", ["McLaren F1 GTR", "Porsche 911 GT1", "Ferrari F40", "Nissan R390"]],
+    ["motorsport", 3, "Sur quelle voiture Sébastien Loeb a-t-il décroché ses premiers titres mondiaux ?", ["Citroën Xsara WRC", "Peugeot 206 WRC", "Subaru Impreza", "Ford Focus WRC"], "Which car did Sébastien Loeb use for his first world titles?", ["Citroën Xsara WRC", "Peugeot 206 WRC", "Subaru Impreza", "Ford Focus WRC"]],
+    ["motorsport", 3, "Quelle voiture a gagné de justesse les 24 Heures du Mans 1969 ?", ["Ford GT40", "Ferrari 330 P4", "Matra MS670", "Jaguar D-Type"], "Which car narrowly won the 1969 24 Hours of Le Mans?", ["Ford GT40", "Ferrari 330 P4", "Matra MS670", "Jaguar D-Type"]],
+    ["motorsport", 3, "Comment s'appelait la célèbre ligne droite de 6 km du circuit du Mans ?", ["Les Hunaudières", "Le Mulsanne Arrow", "La Sarthe Express", "Tertre Rouge"], "What was the famous 6 km straight of the Le Mans circuit called?", ["The Hunaudières", "The Mulsanne Arrow", "The Sarthe Express", "Tertre Rouge"]]
+  ];
+  /** nom propre d'une voiture : le catalogue répète parfois la marque (« Nissan Nissan GT-R ») */
+  const cleanName = (c) => { const b = String(c.brand || "").trim(); let n = String(c.name || "").trim(); if (b) { const rx = new RegExp("^(" + b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s+){2,}", "i"); n = n.replace(rx, b + " "); } return n; };
+  const modelOf = (c) => { const n = cleanName(c), b = String(c.brand || ""); return n.indexOf(b) === 0 ? n.slice(b.length).trim() || n : n; };
+  const ctryLabel = (id) => (COUNTRIES.find((k) => k.id === id) || {}).label || "";
+  /** construit les 10 questions d'un quiz (mêmes questions, même ordre de réponses pour une même graine : le serveur peut donc corriger) */
+  function quizBuild(seed, cat, level, list, opt) {
+    opt = opt || {};
+    cat = QCATS[cat] ? cat : "brands"; level = Math.max(1, Math.min(3, level | 0 || 1));
+    const rng = seeded("quiz|" + seed + "|" + cat + "|" + level), T = opt.t || ((s) => s), lang = opt.lang || "fr";
+    const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const x = a[i]; a[i] = a[j]; a[j] = x; } return a; };
+    const pick = (arr) => arr[Math.floor(rng() * arr.length)];
+    const cars = (list || []).filter((c) => c && c.name && c.brand).map((c) => Object.assign({}, c, { name: cleanName(c) })).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const mk = (q, opts, ans, k) => { const order = shuffle(opts.map((_, i) => i)); return { q, o: order.map((i) => opts[i]), a: order.indexOf(ans), k }; };
+    const distinct = (arr) => new Set(arr).size === arr.length;
+    const gapOk = (vals, ratio) => { const s = vals.slice().sort((x, y) => y - x); return s[1] > 0 ? s[0] / s[1] >= ratio : s[0] > 0; };
+    const RATIO = [0, 1.35, 1.12, 1.03][level];
+    const four = (get, pred) => { for (let i = 0; i < 60; i++) { const c = []; for (let j = 0; j < 4; j++) c.push(pick(cars.filter(pred || (() => true)))); if (!distinct(c.map((x) => x.id)) || c.some((x) => !(get(x) > 0))) continue; if (!distinct(c.map(get))) continue; return c; } return null; };
+    const fams = Array.from(new Set(cars.map((c) => familyOf(c.brand)))).filter((f) => cars.filter((c) => familyOf(c.brand) === f).length >= 2);
+    const gens = {
+      brands: [
+        () => { const c = pick(cars), fam = familyOf(c.brand), pool = level >= 2 ? fams.filter((f) => f !== fam && countryOf(f) === countryOf(fam)) : fams.filter((f) => f !== fam); const w = shuffle(pool.length >= 3 ? pool : fams.filter((f) => f !== fam)).slice(0, 3); if (w.length < 3) return null; return mk(fmt(T("Quelle marque fabrique la {0} ?"), [modelOf(c)]), [fam].concat(w), 0, "brand-of"); },
+        () => { const f = pick(fams.filter((x) => countryOf(x) !== "xx")); const ids = shuffle(COUNTRIES.filter((k) => k.id !== "xx").map((k) => k.id).filter((i) => i !== countryOf(f))).slice(0, 3); return mk(fmt(T("De quel pays vient la marque {0} ?"), [f]), [ctryLabel(countryOf(f))].concat(ids.map(ctryLabel)), 0, "brand-country"); },
+        () => { const f = pick(fams), good = pick(cars.filter((c) => familyOf(c.brand) === f)); const others = shuffle(cars.filter((c) => familyOf(c.brand) !== f && (level < 3 || countryOf(c.brand) === countryOf(f)))).slice(0, 3); if (others.length < 3) return null; return mk(fmt(T("Laquelle de ces voitures est signée {0} ?"), [f]), [good.name].concat(others.map((c) => c.name)), 0, "which-brand"); }
+      ],
+      engines: [
+        () => { const c = four((x) => x.power, (x) => x.power > 0); if (!c || !gapOk(c.map((x) => x.power), RATIO)) return null; const b = c.reduce((m, x) => (x.power > m.power ? x : m)); return mk(T("Laquelle est la plus puissante ?"), c.map((x) => x.name), c.indexOf(b), "most-power"); },
+        () => { const c = four((x) => x.speed, (x) => x.speed > 0); if (!c || !gapOk(c.map((x) => x.speed), RATIO)) return null; const b = c.reduce((m, x) => (x.speed > m.speed ? x : m)); return mk(T("Laquelle atteint la vitesse maximale la plus élevée ?"), c.map((x) => x.name), c.indexOf(b), "top-speed"); },
+        () => { const c = four((x) => x.zero, (x) => x.zero > 0); if (!c) return null; const z = c.map((x) => x.zero).sort((p, q) => p - q); if (!(z[1] / z[0] >= [0, 1.3, 1.1, 1.03][level])) return null; const b = c.reduce((m, x) => (x.zero < m.zero ? x : m)); return mk(T("Laquelle est la plus rapide de 0 à 100 km/h ?"), c.map((x) => x.name), c.indexOf(b), "fastest-zero"); },
+        () => { const c = pick(cars.filter((x) => x.power > 0)), w = [0, 100, 50, 25][level], base = Math.floor(c.power / w) * w; const labs = [base]; [-1, 1, -2, 2, 3].forEach((d) => { if (labs.length < 4 && base + d * w >= 0) labs.push(base + d * w); }); if (labs.length < 4) return null; return mk(fmt(T("Environ combien de chevaux pour la {0} ?"), [c.name]), labs.map((l) => l + " – " + (l + w) + " ch"), 0, "power-range"); }
+      ],
+      history: [
+        () => { const c = four((x) => x.year, (x) => x.year > 0); if (!c) return null; const ys = c.map((x) => x.year).sort((p, q) => p - q); if (ys[1] - ys[0] < [0, 25, 10, 3][level]) return null; const b = c.reduce((m, x) => (x.year < m.year ? x : m)); return mk(T("Laquelle est la plus ancienne ?"), c.map((x) => x.name), c.indexOf(b), "oldest"); },
+        () => { const c = four((x) => x.year, (x) => x.year > 0); if (!c) return null; const ys = c.map((x) => x.year).sort((p, q) => q - p); if (ys[0] - ys[1] < [0, 25, 10, 3][level]) return null; const b = c.reduce((m, x) => (x.year > m.year ? x : m)); return mk(T("Laquelle est la plus récente ?"), c.map((x) => x.name), c.indexOf(b), "newest"); },
+        () => { const c = pick(cars.filter((x) => x.year > 1900)), d = Math.floor(c.year / 10) * 10, ds = [d]; [-10, 10, -20, 20, 30, -30].forEach((k) => { if (ds.length < 4 && d + k >= 1900 && d + k <= 2020) ds.push(d + k); }); return mk(fmt(T("Dans quelle décennie est sortie la {0} ?"), [c.name]), ds.map((x) => fmt(T("années {0}"), [x])), 0, "decade"); }
+      ],
+      motorsport: [
+        () => { const lm = cars.filter((c) => c.category === "Le Mans"), rest = cars.filter((c) => c.category !== "Le Mans" && String(c.id).indexOf("rally-") !== 0); if (!lm.length) return null; return mk(T("Laquelle de ces voitures a couru aux 24 Heures du Mans ?"), [pick(lm).name].concat(shuffle(rest).slice(0, 3).map((c) => c.name)), 0, "lemans"); },
+        () => { const ra = cars.filter((c) => String(c.id).indexOf("rally-") === 0), rest = cars.filter((c) => String(c.id).indexOf("rally-") !== 0 && c.category !== "Le Mans"); if (!ra.length) return null; return mk(T("Laquelle de ces voitures est une voiture de rallye ?"), [pick(ra).name].concat(shuffle(rest).slice(0, 3).map((c) => c.name)), 0, "rally"); },
+        () => { const sc = cars.filter((c) => c.category === "Supercar"), rest = cars.filter((c) => c.category === "Break" || c.category === "Berline"); if (!sc.length) return null; return mk(T("Laquelle de ces voitures est une supercar ?"), [pick(sc).name].concat(shuffle(rest).slice(0, 3).map((c) => c.name)), 0, "supercar"); }
+      ]
+    };
+    const out = [], seen = new Set();
+    const add = (q) => { if (q && !seen.has(q.q) && distinct(q.o)) { seen.add(q.q); out.push(q); return true; } return false; };
+    // questions écrites : niveau demandé d'abord, puis niveaux voisins
+    const bank = QBANK.filter((b) => b[0] === cat);
+    const wanted = shuffle(bank.filter((b) => b[1] === level)).concat(shuffle(bank.filter((b) => Math.abs(b[1] - level) === 1)));
+    const nWritten = Math.min(wanted.length, QUIZ_N / 2);
+    for (let i = 0; i < nWritten; i++) {
+      const b = wanted[i], fr = lang === "fr", opts = fr ? b[3] : b[5];
+      add(mk(fr ? b[2] : b[4], opts, 0, "written"));
+    }
+    // questions automatiques
+    const g = gens[cat];
+    for (let tries = 0; tries < 400 && out.length < QUIZ_N && cars.length > 8; tries++) { let q = null; try { q = pick(g)(); } catch (e) { q = null; } add(q); }
+    // complète avec des questions écrites restantes si le catalogue ne suffit pas
+    for (let i = nWritten; i < wanted.length && out.length < QUIZ_N; i++) { const b = wanted[i], fr = lang === "fr"; add(mk(fr ? b[2] : b[4], fr ? b[3] : b[5], 0, "written")); }
+    return shuffle(out).slice(0, QUIZ_N);
+  }
+  /** corrige un quiz : renvoie le nombre de bonnes réponses (answers = indices choisis) */
+  function quizScore(questions, answers) { let n = 0; (answers || []).forEach((a, i) => { if (questions[i] && Number(a) === questions[i].a) n++; }); return n; }
+
+  // ------------------------------------------------------------------ succès supplémentaires (comptent dans l'XP comme les autres badges)
+  const _n = (v) => Number(v) || 0;
+  const rarAtLeast = (s, r) => ORDER.slice(0, ORDER.indexOf(r) + 1).reduce((t, k) => t + _n(s.rar && s.rar[k]), 0);
+  const brandN = (s, f) => _n(s.byBrand && s.byBrand[f]);
+  let BRANDS_TOTAL = 40;
+  const BRAND_BADGES = [["Peugeot", "🦁", "Fan du Lion"], ["Renault", "◆", "Ça roule en Losange"], ["BMW", "🌀", "Hélice bavaroise"], ["Mercedes", "⭐", "Étoile à trois branches"], ["Audi", "⭕", "Quatre anneaux"], ["Alfa Romeo", "🐍", "Biscione"], ["Toyota", "🌅", "Soleil levant"], ["Nissan", "🗾", "Samouraï"], ["Ford", "🔵", "Ovale bleu"], ["Porsche", "🏁", "Cap sur Stuttgart"], ["Citroën", "⚙️", "Double chevron"]];
+  const EXTRA = [
+    ["epic1", "💜", "Première Épique", "Posséder une carte Épique ou mieux", (s) => rarAtLeast(s, "epic"), 1, ""],
+    ["epic10", "💎", "Pile d'Épiques", "Posséder 10 cartes Épique ou mieux", (s) => rarAtLeast(s, "epic"), 10, "silver"],
+    ["leg1", "🟡", "Première Légendaire", "Posséder une carte Légendaire ou mieux", (s) => rarAtLeast(s, "legendary"), 1, "silver"],
+    ["leg5", "👑", "Cinq Légendaires", "Posséder 5 cartes Légendaire ou mieux", (s) => rarAtLeast(s, "legendary"), 5, "gold"],
+    ["shiny1", "🌈", "Premier Shiny", "Posséder une carte Shiny", (s) => rarAtLeast(s, "shiny"), 1, "gold"],
+    ["shiny5", "✨", "Chasseur de Shiny", "Posséder 5 cartes Shiny ou mieux", (s) => rarAtLeast(s, "shiny"), 5, "gold"],
+    ["mythic1", "🔱", "Légende vivante", "Posséder une carte Légende (album complété)", (s) => _n(s.rar && s.rar.mythic), 1, "gold"],
+    ["card100", "💯", "Centenaire", "Posséder 100 cartes différentes", (s) => s.cards, 100, "silver"],
+    ["card250", "📚", "Bibliothécaire", "Posséder 250 cartes différentes", (s) => s.cards, 250, "gold"],
+    ["card400", "🏛️", "Conservateur", "Posséder 400 cartes différentes", (s) => s.cards, 400, "gold"],
+    ["brands10", "🧭", "Tour du monde", "Posséder des cartes de 10 marques différentes", (s) => _n(s.brandsOwned), 10, "silver"],
+    ["brandsAll", "🌍", "Une de chaque marque", "Posséder au moins une carte de chaque marque du catalogue", (s) => _n(s.brandsOwned), () => BRANDS_TOTAL, "gold"],
+    ["opened10", "📦", "Déballeur", "Ouvrir 10 packs", (s) => _n(s.opened), 10, ""],
+    ["opened100", "🎁", "Passionné de packs", "Ouvrir 100 packs", (s) => _n(s.opened), 100, "silver"],
+    ["opened500", "🧨", "Boulimique de packs", "Ouvrir 500 packs", (s) => _n(s.opened), 500, "gold"],
+    ["sets1", "🗂️", "Premier album", "Compléter un album", (s) => _n(s.sets), 1, ""],
+    ["sets5", "📒", "Cinq albums", "Compléter 5 albums", (s) => _n(s.sets), 5, "silver"],
+    ["sets10", "📗", "Dix albums", "Compléter 10 albums", (s) => _n(s.sets), 10, "silver"],
+    ["sets25", "📘", "Archiviste", "Compléter 25 albums", (s) => _n(s.sets), 25, "gold"],
+    ["up1", "⬆️", "Carte améliorée", "Améliorer une carte", (s) => _n(s.upgraded), 1, ""],
+    ["up10", "🔧", "Préparateur", "Améliorer 10 cartes", (s) => _n(s.upgraded), 10, "silver"],
+    ["lvmax", "🏔️", "Au sommet", "Monter une carte au niveau maximum", (s) => _n(s.maxlv), LV_MAX, "gold"],
+    ["fuse1", "⚗️", "Alchimiste", "Réaliser une fusion de cartes", (s) => _n(s.fuse), 1, ""],
+    ["fuse10", "🧪", "Maître fondeur", "Réaliser 10 fusions", (s) => _n(s.fuse), 10, "silver"],
+    ["fuse50", "🔥", "Haut fourneau", "Réaliser 50 fusions", (s) => _n(s.fuse), 50, "gold"],
+    ["sell1", "🏷️", "Premier vendeur", "Vendre une carte sur le marché", (s) => _n(s.sold), 1, ""],
+    ["sell10", "💼", "Marchand", "Vendre 10 cartes sur le marché", (s) => _n(s.sold), 10, "silver"],
+    ["buy1", "🛒", "Premier achat", "Acheter une carte sur le marché", (s) => _n(s.bought), 1, ""],
+    ["buy10", "🧾", "Client fidèle", "Acheter 10 cartes sur le marché", (s) => _n(s.bought), 10, "silver"],
+    ["pm5", "👁️", "Œil de lynx", "Faire 5 bonnes réponses d'affilée à Plus ou moins", (s) => _n(s.pm), 5, ""],
+    ["pm10", "🎯", "Tireur d'élite", "Faire 10 bonnes réponses d'affilée à Plus ou moins", (s) => _n(s.pm), 10, "silver"],
+    ["pm20", "🧠", "Encyclopédie", "Faire 20 bonnes réponses d'affilée à Plus ou moins", (s) => _n(s.pm), 20, "silver"],
+    ["pm30", "🔮", "Voyant", "Faire 30 bonnes réponses d'affilée à Plus ou moins", (s) => _n(s.pm), 30, "gold"],
+    ["quiz1", "❓", "Premier quiz", "Terminer un quiz", (s) => _n(s.quizDone), 1, ""],
+    ["quiz10", "📝", "Habitué des quiz", "Terminer 10 quiz", (s) => _n(s.quizDone), 10, "silver"],
+    ["quizP1", "💫", "Sans faute", "Réussir un quiz 10 sur 10", (s) => _n(s.quizPerfect), 1, "silver"],
+    ["quizP10", "🎓", "Professeur", "Réussir 10 quiz 10 sur 10", (s) => _n(s.quizPerfect), 10, "gold"],
+    ["quizE", "🏆", "Expert incollable", "Réussir un quiz Expert 10 sur 10", (s) => _n(s.quizL3), 1, "gold"],
+    ["wish5", "💭", "Rêveur", "Mettre 5 cartes dans sa liste de souhaits", (s) => _n(s.wish), 5, ""],
+    ["wish20", "🌠", "Grande liste", "Mettre 20 cartes dans sa liste de souhaits", (s) => _n(s.wish), 20, "silver"],
+    ["follow1", "🔔", "Sur écoute", "Suivre une voiture ou une marque", (s) => _n(s.follows), 1, ""],
+    ["follow10", "📡", "Radar", "Suivre 10 voitures ou marques", (s) => _n(s.follows), 10, "silver"],
+    ["swap50", "🕴️", "Courtier", "Réaliser 50 échanges de cartes", (s) => s.trades, 50, "gold"],
+    ["streak100", "🌋", "Cent jours", "Visiter le site 100 jours de suite", (s) => s.best, 100, "gold"],
+    ["cmt200", "📢", "Orateur", "Poster 200 commentaires", (s) => s.comments, 200, "gold"],
+    ["like200", "💖", "Cœur de pierre précieuse", "Aimer 200 voitures", (s) => s.likes, 200, "gold"],
+    ["lap100", "🏎️", "Centurion du chrono", "Enregistrer 100 chronos", (s) => s.laps, 100, "gold"],
+    ["car10", "🏘️", "Parc automobile", "Publier 10 voitures", (s) => s.cars, 10, "gold"],
+    ["lvl10", "🔝", "Mythique", "Atteindre le niveau 10", (s) => s.level, 10, "gold"]
+  ].concat(BRAND_BADGES.map((b) => ["b-" + b[0], b[1], b[2], "Posséder 10 cartes " + b[0] + " différentes", (s) => brandN(s, b[0]), 10, "silver"]));
+  EXTRA.forEach((b) => BADGES.push({ id: b[0], icon: b[1], label: b[2], desc: b[3], get: b[4], goal: b[5], tier: b[6] }));
+  const setBrandsTotal = (n) => { if (n > 0) BRANDS_TOTAL = n | 0; };
+
+  return {
+    TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
+    setsOf, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
+    LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
+    RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
+    FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
+    SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
+  };
+});

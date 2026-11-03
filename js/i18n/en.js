@@ -721,5 +721,6 @@
 "vendue": "sold",
 "Tes cartes, albums et vitrine": "Your cards, albums and showcase",
 "Pack du jour, packs par pays": "Daily pack, packs by country",
-"Packs par pays et offres du jour": "Packs by country and daily offers"
+"Packs par pays et offres du jour": "Packs by country and daily offers",
+"Semaine": "Week"
 }]);

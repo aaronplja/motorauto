@@ -721,5 +721,6 @@
 "vendue": "venduta",
 "Tes cartes, albums et vitrine": "Le tue carte, album e vetrina",
 "Pack du jour, packs par pays": "Pacchetto del giorno, pacchetti per paese",
-"Packs par pays et offres du jour": "Pacchetti per paese e offerte del giorno"
+"Packs par pays et offres du jour": "Pacchetti per paese e offerte del giorno",
+"Semaine": "Settimana"
 }]);

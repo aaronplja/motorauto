@@ -1,0 +1,186 @@
+/* ==========================================================================
+   MOTORAUTO — finitions globales (chargé en dernier)
+   Objectif : aucun débordement, tout est lisible, défilable et cliquable
+   sur mobile comme sur ordinateur.
+   ========================================================================== */
+
+/* ---- socle : jamais de défilement horizontal, médias contenus ---- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; }
+body { overflow-x: clip; overflow-wrap: break-word; }
+img, svg, video, canvas, iframe { max-width: 100%; }
+:where(h1, h2, h3, h4, p, li, td, th, label, .lap-title, .record-line, .anecdote-card) { overflow-wrap: break-word; hyphens: manual; }
+:where(pre, code) { overflow-wrap: break-word; white-space: pre-wrap; }
+:where(table) { max-width: 100%; }
+.table-scroll, .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---- interactions tactiles fiables ---- */
+a, button, [role="button"], summary, label, select, .filter-pill, .page-tab, .touch-bar-item, .telemetry-row.clickable {
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+button { font-family: inherit; }
+button:not(:disabled), [role="button"], a[href], summary { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+:focus:not(:focus-visible) { outline: none; }
+
+/* ---- champs de saisie : un seul style partout ---- */
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]), textarea, select) {
+  font-family: inherit; font-size: 1rem; line-height: 1.35; color: var(--color-ink);
+  background: var(--bg-elevated); border: 1px solid var(--stroke-line); border-radius: 12px;
+  padding: .65rem .85rem; min-height: 44px; max-width: 100%;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+  -webkit-appearance: none; appearance: none;
+}
+
+:where(textarea) { min-height: 96px; resize: vertical; }
+:where(select) {
+  padding-right: 2.2rem; text-overflow: ellipsis;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+}
+:where(input, textarea)::placeholder { color: var(--color-muted); opacity: 1; }
+:where(input, textarea, select):focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--glow-soft); }
+:where(input, textarea, select):disabled { opacity: .55; cursor: not-allowed; }
+:where(input[type="checkbox"], input[type="radio"]) { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+input[type="range"] { accent-color: var(--accent); width: 100%; }
+input[type="file"] { max-width: 100%; font-size: .9rem; }
+input[type="search"]::-webkit-search-cancel-button { cursor: pointer; }
+.honey, #ct-honey, [name="website"][tabindex="-1"] { position: absolute !important; left: -9999px !important; width: 1px !important; height: 1px !important; opacity: 0 !important; pointer-events: none !important; }
+
+/* ---- boutons : le texte long passe à la ligne au lieu d'être coupé ---- */
+.cta-btn, .btn { white-space: normal; text-align: center; line-height: 1.2; height: auto; max-width: 100%; }
+.cta-btn svg, .btn svg { flex: none; }
+
+/* ---- fenêtres : titres longs, contenu large, bouton fermer toujours visible ---- */
+.modal-dialog { box-sizing: border-box; max-width: min(560px, 100%); overflow-x: hidden; }
+.dialog-header { position: sticky; top: 0; z-index: 7; background: var(--bg-surface); min-width: 0; }
+.dialog-header > div { min-width: 0; flex: 1 1 auto; }
+.dialog-title { font-size: clamp(1.15rem, 5.2vw, 1.6rem); overflow-wrap: break-word; }
+.dialog-sub { overflow-wrap: break-word; }
+.dialog-close-btn { position: relative; z-index: 9; margin-left: auto; }
+.dialog-body { min-width: 0; }
+.dialog-body table, .dialog-body pre { display: block; max-width: 100%; overflow-x: auto; }
+.compare-chip, .compare-chip button { max-width: 100%; }
+@media (max-width: 420px) { .compare-clear, .compare-chip button { right: 0; } }
+
+/* ---- grilles/flex : les enfants peuvent rétrécir ---- */
+:where(.page-wrap, .stage-shell, .page-head, .page-head-text, .toolbar-cluster, .selectors-cluster, .sort-cluster, .telemetry-row, .record-line, .anecdote-card, .tcg-grid, .hub-tile, .referral-actions, .cta-actions) { min-width: 0; }
+.referral-actions, .cta-actions { flex-wrap: wrap; }
+.sort-cluster { min-width: 0; }
+.sort-cluster select, .selectors-cluster select { width: 100%; }
+.page-head { flex-wrap: wrap; gap: .75rem 1rem; }
+
+/* ---- en-tête sur très petits écrans ---- */
+:root { --user-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7'/%3E%3C/svg%3E"); }
+@media (max-width: 380px) {
+  .header-bar { gap: .3rem; padding-left: .55rem; }
+  .brand-link { font-size: 1.3rem; }
+  .header-actions { gap: .25rem; }
+  .icon-btn { width: 38px; height: 38px; }
+  .pilot-chip { height: 38px; padding: 0 .5rem; gap: .35rem; width: 42px; min-width: 42px; max-width: 42px; flex: none; justify-content: center; }
+  .pilot-chip .pilot-label { display: none; }
+  .pilot-chip { position: relative; }
+  .pilot-chip::after { content: ""; width: 20px; height: 20px; background: currentColor; -webkit-mask: var(--user-ico) center/contain no-repeat; mask: var(--user-ico) center/contain no-repeat; }
+  .pilot-chip .live-status-dot { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; box-shadow: 0 0 0 2px var(--bg-elevated); }
+}
+@media (max-width: 340px) { .brand-link { font-size: 1.15rem; } .icon-btn { width: 34px; height: 34px; } .pilot-chip { height: 36px; width: 36px; min-width: 36px; max-width: 36px; padding: 0; } }
+
+/* ---- onglets & pastilles défilables ---- */
+.categories-scroll, .page-tabs, .phases-strip, .chip-row { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; overscroll-behavior-x: contain; }
+.categories-scroll::-webkit-scrollbar, .page-tabs::-webkit-scrollbar, .phases-strip::-webkit-scrollbar { display: none; }
+.page-tab, .filter-pill, .phase-pill-btn { flex: none; min-height: 40px; }
+
+/* ---- cibles tactiles confortables ---- */
+.footer-links a, .site-footer a { min-height: 44px; padding-block: .35rem; }
+.site-footer a[href^="mailto"] { display: inline-flex; min-height: 44px; }
+.legal-links a { min-height: 44px; display: inline-flex; align-items: center; }
+
+/* ---- tactile : pas d'effets de survol « collés » ---- */
+@media (hover: none) {
+  .cta-btn:hover, .btn:hover, .fill-btn:hover, .btn-primary:hover, .pilot-chip:hover, .tcg:hover, .hub-tile:hover, .telemetry-row:hover { transform: none; }
+  .fill-btn::before, .btn-primary::before { display: none; }
+}
+
+/* ---- défilement des fenêtres et listes internes ---- */
+.modal-dialog, .dialog-body, .chat-scroll, .suggestions-list, .picker-list, #engine-picker-list, #sharecar-results { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+body.modal-open { overflow: hidden; }
+
+/* ---- fiche voiture : sections ---- */
+.records-box { display: grid; gap: .5rem; }
+.record-line, .anecdote-card { overflow-wrap: break-word; }
+.timeline li span { display: block; }
+
+/* ---- réduire les animations si demandé ---- */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+
+/* ---- fiche voiture : boutons d'action en grille propre sur mobile ---- */
+@media (max-width: 700px) {
+  .sheet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+  .sheet-actions > :first-child { grid-column: 1 / -1; }
+  .sheet-actions .cta-btn { width: 100%; padding-inline: .6rem; }
+  .sheet-actions > :last-child:nth-child(even) { grid-column: 1 / -1; }
+}
+
+/* ---- croix de fermeture des surcouches plein écran ---- */
+.ov-x { position: fixed; top: calc(.7rem + var(--safe-top, 0px)); right: .7rem; z-index: 3200; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--stroke-line); background: rgba(0,0,0,.55); color: #fff; font-size: 1.7rem; line-height: 1; display: grid; place-items: center; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.ov-x:hover { border-color: var(--accent); }
+
+/* clavier mobile ouvert : on libère le bas de l'écran */
+body.kb-open .mobile-touch-bar { transform: translateY(160%); opacity: 0; pointer-events: none; transition: transform .2s, opacity .2s; }
+body.kb-open { padding-bottom: 0; }
+
+/* ---- titres de section : jamais coupés au milieu d'un mot ---- */
+.section-title { font-size: clamp(1.9rem, 8.4vw, 3.8rem); overflow-wrap: normal; word-break: normal; hyphens: manual; }
+.page-title, .sheet-big-title, h1 { overflow-wrap: break-word; }
+.section-head { flex-wrap: wrap; align-items: flex-end; }
+.section-head > :first-child { flex: 1 1 14rem; min-width: 0; }
+.section-head > a, .section-head > .link-more, .section-head > button { flex: none; }
+@media (max-width: 480px) {
+  .command-search-wrapper { min-height: 56px; padding: 0 .85rem; gap: .5rem; }
+  .command-search-wrapper input { font-size: 1rem; height: 54px; }
+  .cmd-key-indicator { display: none; }
+}
+
+/* ---- photos manquantes : pas de texte alternatif qui déborde dans les pastilles ---- */
+img[class*="avatar"], img[data-fallback], .pro-id img { font-size: 0; color: transparent; background: var(--bg-elevated); object-fit: cover; }
+.trade-why { text-align: left; margin: .7rem auto; padding-left: 1.2rem; max-width: 36rem; display: grid; gap: .35rem; list-style: disc; }
+
+/* ---- échanges : jamais plus large que l'écran, sélection de carte qui glisse ---- */
+.trade-composer, .pilot-trade, .pilot-trades, .trade-list, .trade-row { min-width: 0; max-width: 100%; }
+.trade-composer { grid-template-columns: minmax(0, 1fr); }
+.comp-col, .comp-send, .pt-main { min-width: 0; }
+.pick-row { overflow-x: auto; overflow-y: hidden; touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; max-width: 100%; padding-inline: 2px; }
+.pick-row .tcg { pointer-events: none; }
+.pick { touch-action: pan-x; }
+.comp-send { grid-template-columns: minmax(0, 1fr); }
+.comp-send .cta-btn { width: 100%; }
+.trade-swap { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+@media (min-width: 700px) { .trade-composer { grid-template-columns: repeat(2, minmax(0, 1fr)); } .comp-send { grid-template-columns: minmax(0, 1fr) auto; } .comp-send .cta-btn { width: auto; } }
+
+/* ---- cartes : retournement fiable (iOS/Android) ---- */
+.tcg-3d { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transform-style: preserve-3d; -webkit-transform-style: preserve-3d; }
+.tcg-3d-face, .flip-face { -webkit-backface-visibility: hidden; backface-visibility: hidden; transform-style: flat; }
+.tcg-3d-face.rev { overflow: hidden; }
+.tcg-3d-face.rev > * { min-width: 0; }
+.tcg-3d-face:not(.rev) { transition: visibility 0s .33s; }
+.tcg-3d.back .tcg-3d-face:not(.rev) { visibility: hidden; }
+.tcg-3d-face.rev { visibility: hidden; transition: visibility 0s .33s; }
+.tcg-3d.back .tcg-3d-face.rev { visibility: visible; }
+.flip-front { visibility: hidden; transition: visibility 0s .33s; }
+.flip.on .flip-front { visibility: visible; }
+.flip-back { transition: visibility 0s .33s; }
+.flip.on .flip-back { visibility: hidden; }
+
+/* ---- ouverture de pack : cartes côte à côte, résumé et boutons toujours accessibles ---- */
+.tcg-overlay { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: calc(3.4rem + var(--safe-top, 0px)) .8rem calc(1rem + var(--safe-bottom, 0px)); place-items: start center; align-content: start; }
+.pk3 { width: 100%; max-width: 640px; margin-inline: auto; padding: .2rem 0 1rem; gap: 1rem; }
+.pk3 h2 { font-size: 1.3rem; text-align: center; }
+.tcg-flips { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 2rem .6rem !important; justify-content: stretch !important; padding: .5rem 0 2rem !important; }
+.tcg-flips .flip { width: 100% !important; min-width: 0 !important; }
+.tcg-flips .flip-front .tcg { font-size: .62em; }
+.tcg-flips .flip-front .tcg .tcg-stats { gap: .1rem; }
+.tcg-tag { bottom: -1.5rem !important; text-align: center; font-size: .66rem !important; white-space: nowrap; }
+.pk3 .tcg-actions, .pk3 #tcg-end { position: sticky; bottom: 0; z-index: 4; display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; padding: .8rem 0 calc(.2rem + var(--safe-bottom, 0px)); background: none; }
+.pk3 .tcg-actions[hidden], .pk3 #tcg-end[hidden], .pk3-sum[hidden] { display: none; }
+.pk3-sum { max-width: 100%; }
+@media (min-width: 700px) { .tcg-flips { grid-template-columns: repeat(auto-fit, minmax(140px, 170px)) !important; justify-content: center !important; } .tcg-flips .flip-front .tcg { font-size: .8em; } }
+@media (max-width: 330px) { .tcg-flips { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }

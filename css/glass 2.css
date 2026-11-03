@@ -1,0 +1,85 @@
+/* MOTORAUTO — verre liquide : surfaces flottantes (la barre du bas vit dans css/dock.css). */
+
+/* ==========================================================================
+   Tour 21 — « verre liquide » partout : barre du haut, menus, fenêtres, onglets, cartes
+   ========================================================================== */
+:root { --ma-ease: cubic-bezier(.34,1.18,.5,1); --ma-ease-out: cubic-bezier(.22,.9,.3,1); --blur: 16px; --glass-bg: color-mix(in srgb, var(--bg-surface) 52%, transparent); --glass-line: color-mix(in srgb, #fff 30%, transparent);
+  --glass-shadow: inset 0 1.5px 0 rgba(255,255,255,.5), inset 0 0 18px rgba(255,255,255,.08), 0 10px 30px -10px rgba(0,0,0,.32); }
+:root[data-tone="dark"] { --glass-bg: color-mix(in srgb, var(--bg-surface) 58%, transparent); --glass-line: rgba(255,255,255,.1);
+  --glass-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 16px rgba(255,255,255,.02), 0 12px 32px -10px rgba(0,0,0,.6); }
+
+.app-header, .modal-dialog, .notif-panel, .page-tabs, .toolbar-cluster, .command-search-wrapper, .search-suggestions-dropdown, .menu-panel, .user-menu, .profile-menu, .settings-panel, .to-top, .toast {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: blur(var(--blur, 16px)) saturate(1.5) !important; backdrop-filter: blur(var(--blur, 16px)) saturate(1.5) !important;
+  border-color: var(--glass-line) !important; box-shadow: var(--glass-shadow) !important;
+}
+.contest-box, .contest-hero, .pilot-trade, .chal-card, .hub-tile, .hall-card, .photo-card, .hub-card, .profile-card, .mini-card, .gate-card, .page-box, .feed-item, .event-card, .dash-card, .chart-box {
+  background: color-mix(in srgb, var(--bg-surface) 70%, transparent) !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  border-color: var(--glass-line) !important; box-shadow: var(--glass-shadow) !important;
+}
+.app-header { border-bottom: 1px solid var(--glass-line) !important; box-shadow: 0 8px 26px -14px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.12) !important; }
+.app-header::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 140% at 15% -60%, rgba(255,255,255,.28), transparent 55%); }
+:root[data-tone="dark"] .app-header::before { background: radial-gradient(120% 140% at 15% -60%, rgba(255,255,255,.08), transparent 55%); }
+.app-header > * { position: relative; }
+.app-header { transition: transform .4s cubic-bezier(.22,.9,.3,1) !important; will-change: transform; }
+.app-header.hide-up { transform: translateY(-110%); }
+.page-tabs { border-radius: 18px; padding-inline: .35rem !important; border-bottom: 1px solid var(--glass-line) !important; position: sticky; top: calc(var(--safe-top) + 4px); z-index: 20; }
+.modal-layer { background: rgba(10,12,18,.38) !important; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.modal-dialog { border: 1px solid var(--glass-line); }
+@media (min-width: 1000px) { .app-header.hide-up { transform: translateY(-110%); } }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .app-header, .modal-dialog, .notif-panel, .page-tabs, .toolbar-cluster, .contest-box, .contest-hero, .photo-card, .hub-card, .profile-card, .page-box { background: var(--bg-surface) !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .app-header, .modal-dialog, .notif-panel, .page-tabs, .toolbar-cluster, .contest-box, .contest-hero, .photo-card, .hub-card, .profile-card, .page-box { background: var(--bg-surface) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+}
+@media (prefers-reduced-motion: reduce) { .app-header { transition: none !important; } }
+
+/* Notifications : cartes avec avatar, regroupées par jour */
+.notif-panel { padding: 0; overflow: hidden; border-radius: 22px !important; }
+.notif-day { padding: .55rem 1rem .25rem; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--color-muted); }
+.notif-row { position: relative; margin: .2rem .5rem; border-radius: 16px; overflow: hidden; }
+.notif-item { border: 0 !important; border-radius: 16px; background: color-mix(in srgb, var(--bg-surface) 40%, transparent) !important; align-items: center; padding: .65rem .75rem !important; }
+.notif-item.unread { background: color-mix(in srgb, var(--accent) 14%, transparent) !important; }
+.notif-av { position: relative; flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #fff; background: hsl(var(--h, 220) 55% 46%); }
+.notif-av.sys { background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #000)); color: var(--on-accent, #fff); }
+.notif-badge-ico { position: absolute; right: -4px; bottom: -4px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-surface); color: var(--accent); border: 1px solid var(--glass-line); }
+.notif-badge-ico svg { width: 12px; height: 12px; }
+.notif-app { font-size: .62rem; font-weight: 800; letter-spacing: .1em; color: var(--accent); }
+.notif-line { color: var(--color-ink) !important; font-size: .88rem; }
+.notif-text { color: var(--color-secondary); font-size: .84rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* barre de tri / onglets collants : suivent l'en-tête, et montent tout en haut quand il se masque */
+.toolbar-cluster { top: calc(var(--hdr-h, 76px) + 6px) !important; transition: top .32s cubic-bezier(.3,.7,.3,1); }
+.page-tabs { top: calc(var(--hdr-h, 76px) + 6px) !important; transition: top .32s cubic-bezier(.3,.7,.3,1); }
+.hdr-hidden .toolbar-cluster, .hdr-hidden .page-tabs { top: calc(var(--safe-top, 0px) + 8px) !important; }
+@media (prefers-reduced-motion: reduce) { .toolbar-cluster, .page-tabs { transition: none; } }
+
+
+/* ==========================================================================
+   Tour 22 — fluidité : barre du bas en capsule (transform seulement), modes d'animation
+   ========================================================================== */
+@media (max-width: 999px) {
+  /* la proposition de notifications passe au-dessus de la barre */
+  #push-ask { bottom: calc(var(--bar-h, 84px) + var(--safe-bottom, 0px) + 22px) !important; z-index: 700 !important; }
+}
+/* menu « Moi » : verre plus dense, toujours lisible */
+.me-sheet { background: color-mix(in srgb, var(--bg-surface) 92%, transparent) !important; -webkit-backdrop-filter: blur(24px) saturate(1.4) !important; backdrop-filter: blur(24px) saturate(1.4) !important; }
+.me-backdrop { background: rgba(8,10,16,.45); }
+
+/* pendant le défilement le flou est remplacé par un fond plus plein : même rendu, nettement moins de calcul */
+html.scrolling[data-anim="smooth"] .app-header, html.scrolling[data-anim="smooth"] #mobile-touch-bar .dock, html.scrolling[data-anim="smooth"] .page-tabs, html.scrolling[data-anim="smooth"] .toolbar-cluster
+{ -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: color-mix(in srgb, var(--bg-surface) 88%, transparent) !important; }
+html[data-anim="smooth"] { --blur: 10px; }
+html[data-anim="reduced"] *, html[data-anim="reduced"] *::before, html[data-anim="reduced"] *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+html[data-anim="reduced"] .app-header, html[data-anim="reduced"] #mobile-touch-bar .dock, html[data-anim="reduced"] .modal-dialog, html[data-anim="reduced"] .notif-panel, html[data-anim="reduced"] .page-tabs, html[data-anim="reduced"] .toolbar-cluster, html[data-anim="reduced"] .me-sheet
+{ -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: var(--bg-surface) !important; }
+/* accessibilité : contraste renforcé */
+html[data-contrast="high"] { --glass-line: color-mix(in srgb, var(--color-ink) 55%, transparent); --line: color-mix(in srgb, var(--color-ink) 45%, transparent); --stroke-line: color-mix(in srgb, var(--color-ink) 45%, transparent); }
+html[data-contrast="high"] .lap-meta, html[data-contrast="high"] small { color: var(--color-ink) !important; opacity: .9; }
+html[data-contrast="high"] :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.a11y-card .a11y-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+.a11y-card .a11y-row button { min-height: 44px; padding: .4rem .9rem; border-radius: 12px; border: 1px solid var(--glass-line); background: transparent; color: inherit; font-weight: 700; }
+.a11y-card .a11y-row button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent, #fff); border-color: var(--accent); }
