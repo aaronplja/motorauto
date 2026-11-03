@@ -55,7 +55,7 @@
   }
   function hintOf(id) {
     id = String(id).replace(/^d-/, "").replace(/1$|3$/, (m) => m);
-    return { "pack": "#/jouer/cartes", like3: "#/catalogue", comment1: "#/catalogue", react2: "#/catalogue", chat3: "chat.html", packs5: "#/jouer/cartes", comment5: "#/catalogue", duel3: "#/duel", share3: "#/catalogue", like15: "#/catalogue", chat5: "chat.html", packs3: "#/jouer/cartes", daily3: "#/jouer/cartes", comment2: "#/catalogue", duel1: "#/duel", share1: "#/catalogue", lap1: "#/classement/chronos", like5: "#/catalogue", react3: "#/catalogue", rsvp1: "#/communaute/evenements", vote1: "#/jouer/concours", trade1: "#/jouer/echanges", wish3: "#/jouer/cartes" }[id] || "#/jouer";
+    return { "pack": "#/jouer/boutique", like3: "#/catalogue", comment1: "#/catalogue", react2: "#/catalogue", chat3: "chat.html", packs5: "#/jouer/boutique", comment5: "#/catalogue", duel3: "#/duel", share3: "#/catalogue", like15: "#/catalogue", chat5: "chat.html", packs3: "#/jouer/cartes", daily3: "#/jouer/cartes", comment2: "#/catalogue", duel1: "#/duel", share1: "#/catalogue", lap1: "#/classement/chronos", like5: "#/catalogue", react3: "#/catalogue", rsvp1: "#/communaute/evenements", vote1: "#/jouer/concours", trade1: "#/jouer/echanges", wish3: "#/jouer/cartes" }[id] || "#/jouer";
   }
   async function claim(id) {
     if (busy) return; busy = true; renderChallenges();
@@ -100,15 +100,22 @@
 
   // ------------------------------------------------------------------ vue d'ensemble
   const SVI = (d) => `<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
-  const HUBI = {fusion: SVI('<circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M7 10v2c0 2 5 2 5 6M17 10v2c0 2-5 2-5 6"/><circle cx="12" cy="20" r="1.4"/>'),market: SVI('<path d="M3 10l2-5h14l2 5"/><path d="M4 10v10h16V10"/><path d="M9 20v-6h6v6"/>'),wish: SVI('<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/>'),pm: SVI('<path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/>'),quiz: SVI('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1 1-1.1 1.8"/><circle cx="12" cy="17" r=".6"/>'),ach: SVI('<circle cx="12" cy="9" r="5.5"/><path d="M8.5 14L7 21l5-3 5 3-1.5-7"/>'),time: SVI('<path d="M3 12h18"/><circle cx="7" cy="12" r="2"/><circle cx="14" cy="12" r="2"/><path d="M7 10V6M14 14v4"/>'),news: SVI('<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 8h3v9a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/>')};
-  /** pages d'accueil des onglets « Mini-jeux » et « Communauté » (les « Cartes » ont leur propre page) */
+  const HUBI = {shop: SVI('<path d="M5 8h14l-1.2 11H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>'),fusion: SVI('<circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M7 10v2c0 2 5 2 5 6M17 10v2c0 2-5 2-5 6"/><circle cx="12" cy="20" r="1.4"/>'),market: SVI('<path d="M3 10l2-5h14l2 5"/><path d="M4 10v10h16V10"/><path d="M9 20v-6h6v6"/>'),wish: SVI('<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/>'),pm: SVI('<path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/>'),quiz: SVI('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1 1-1.1 1.8"/><circle cx="12" cy="17" r=".6"/>'),ach: SVI('<circle cx="12" cy="9" r="5.5"/><path d="M8.5 14L7 21l5-3 5 3-1.5-7"/>'),time: SVI('<path d="M3 12h18"/><circle cx="7" cy="12" r="2"/><circle cx="14" cy="12" r="2"/><path d="M7 10V6M14 14v4"/>'),news: SVI('<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 8h3v9a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/>')};
+  /** pages d'accueil des trois onglets de Jouer : de grandes tuiles, comme avant */
   async function renderHub(group) {
-    group = group === "minijeux" ? "minijeux" : "communaute";
+    group = group === "minijeux" || group === "cartes" ? group : "communaute";
     const root = document.getElementById("play-hub-" + group); if (!root) return;
-    const month = G.monthKey();
+    const month = G.monthKey(), canDaily = (d) => d && d.lastPack !== G.dayKey();
     const tile = (href, ico, title, sub, badge, cls) => `<a class="hub-tile ${cls || ""}" href="${href}"><i class="hub-ico" aria-hidden="true">${ico}</i><b>${title}</b><small>${sub}</small>${badge ? `<span class="hub-badge">${badge}</span>` : ""}</a>`;
     const draw = (st) => {
-      root.innerHTML = group === "minijeux" ? `<div class="hub-grid">
+      root.innerHTML = group === "cartes" ? `<div class="hub-grid">
+        ${tile("#/jouer/collection", "🎴", T("Collection"), st.cards, "", "hub-feature")}
+        ${tile("#/jouer/boutique", HUBI.shop, T("Boutique"), st.shop, st.shopBadge)}
+        ${tile("#/jouer/echanges", "🔄", "Échanges", st.trade, st.tradeBadge)}
+        ${tile("#/fusion", HUBI.fusion, T("Fusion"), T("5 doublons → 1 carte au-dessus"), "")}
+        ${tile("#/marche", HUBI.market, T("Marché"), T("Vends et achète des cartes"), "")}
+        ${tile("#/souhaits", HUBI.wish, T("Souhaits"), T("Qui cherche quoi, qui propose quoi"), "")}
+      </div>` : group === "minijeux" ? `<div class="hub-grid">
         ${tile("#/quiz", HUBI.quiz, T("Quiz"), T("4 catégories, 3 niveaux"), "")}
         ${tile("#/plusmoins", HUBI.pm, T("Plus ou moins"), T("Séries sans faute = cristaux"), "")}
         ${tile("#/duel", "🏁", "Duel", "0-100 km/h et 400 m en course", "")}
@@ -120,9 +127,17 @@
         ${tile("#/classement", "🏆", "Classements", "Chronos, circuits, pilotes", "")}
       </div>`;
     };
-    const st = { chal: "4 nouveaux défis chaque lundi", chalBadge: "", contest: "Thème du mois, vote de la communauté" };
+    const st = { chal: "4 nouveaux défis chaque lundi", chalBadge: "", contest: "Thème du mois, vote de la communauté", cards: "Tes cartes, albums et vitrine", shop: "Pack du jour, packs par pays", shopBadge: "", trade: "Échange tes doublons avec les pilotes", tradeBadge: "" };
     draw(st);
     if (group === "minijeux") return;
+    if (group === "cartes") {
+      if (!C.user) return;
+      const [col, trades] = await Promise.all([window.MACards.load().catch(() => null), C.db.collection("trades").where("toUid", "==", C.user.uid).limit(60).get().then((s) => s.docs.filter((d) => d.data().status === "open").length).catch(() => 0)]);
+      if (col) { st.cards = `${col.count} / ${C.cars.length} cartes · ${window.MA.dustIcon(13)} ${col.dust}`; st.shop = canDaily(col) ? "Ton pack du jour t'attend !" : "Packs par pays et offres du jour"; st.shopBadge = canDaily(col) ? "1" : col.bonus ? String(col.bonus) : ""; }
+      st.trade = trades ? `${trades} proposition${trades > 1 ? "s" : ""} à traiter` : "Échange tes doublons avec les pilotes"; st.tradeBadge = trades ? String(trades) : "";
+      if (C.Router.is("play", { tab: "cartes" })) draw(st);
+      return;
+    }
     renderEvents(); if (window.MAReferral) window.MAReferral.mount(root);
     if (!C.user) return;
     const [wk, contest] = await Promise.all([loadWeekly(), C.db.collection("contests").doc(month).get().then((s) => (s.exists ? s.data() : null)).catch(() => null)]);
@@ -163,10 +178,10 @@
     ctx.Router.register("play", { enter: async (p) => {
       clearInterval(tick);
       setTimeout(paintShopDot, 80);
-      if (p.tab === "minijeux" || p.tab === "communaute") renderHub(p.tab);
+      if (p.tab === "cartes" || p.tab === "minijeux" || p.tab === "communaute") renderHub(p.tab);
       else if (p.tab === "defis") { renderChallenges(); await loadWeekly(true); renderChallenges(); tick = setInterval(() => { const el = document.getElementById("chal-left"); if (el && weekly) el.textContent = remaining(weekly.endsAt - Date.now()); else clearInterval(tick); }, 30000); }
     } });
-    document.addEventListener("ma:auth", () => { weekly = null; weeklyAt = 0; if (ctx.Router.is("play", { tab: "minijeux" }) || ctx.Router.is("play", { tab: "communaute" })) renderHub(ctx.Router.is("play", { tab: "minijeux" }) ? "minijeux" : "communaute"); else if (ctx.Router.is("play", { tab: "defis" })) { renderChallenges(); loadWeekly(true).then(renderChallenges); } });
+    document.addEventListener("ma:auth", () => { weekly = null; weeklyAt = 0; const cur = ["cartes", "minijeux", "communaute"].find((k) => ctx.Router.is("play", { tab: k })); if (cur) renderHub(cur); else if (ctx.Router.is("play", { tab: "defis" })) { renderChallenges(); loadWeekly(true).then(renderChallenges); } });
     document.addEventListener("click", (e) => { const c = e.target.closest("[data-chal-claim]"); if (c) claim(c.dataset.chalClaim); });
     document.addEventListener("ma:duel-done", () => log("duel"));
     document.addEventListener("ma:shared", () => log("share"));
@@ -176,7 +191,7 @@
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-battle-tile]"); if (!b) return;
     e.preventDefault();
-    if (!window.MABattle) { location.hash = "#/jouer/cartes"; return; }
+    if (!window.MABattle) { location.hash = "#/jouer/collection"; return; }
     Promise.resolve(window.MACards && window.MACards.load ? window.MACards.load() : null).catch(() => {}).then(() => window.MABattle.open());
   });
 })();

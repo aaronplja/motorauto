@@ -714,5 +714,12 @@
 "Duel": "Duel",
 "Cartes à collectionner, mini-jeux, défis de la semaine et concours photo.": "Collectible cards, mini-games, weekly challenges and photo contest.",
 "0-100 km/h et 400 m en course": "0-100 km/h and 400 m races",
-"Ton pack du jour t'attend !": "Your daily pack is waiting!"
+"Ton pack du jour t'attend !": "Your daily pack is waiting!",
+"Confirmer": "Confirm",
+"ton annonce": "your listing",
+"par": "by",
+"vendue": "sold",
+"Tes cartes, albums et vitrine": "Your cards, albums and showcase",
+"Pack du jour, packs par pays": "Daily pack, packs by country",
+"Packs par pays et offres du jour": "Packs by country and daily offers"
 }]);

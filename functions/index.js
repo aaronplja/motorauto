@@ -89,7 +89,7 @@ exports.followSpecialCard = onDocumentCreated({ document: "special_cards/{id}", 
   const c = ev.data && ev.data.data(); if (!c || c.active === false) return;
   try {
     const hit = await brandsIn((c.name || "") + " " + (c.edition || "")); if (!hit.length) return;
-    await game.notifyFollowers({ brands: hit, text: "✨ Nouvelle carte spéciale : " + String(c.name || "").slice(0, 60), link: "#/jouer/cartes" });
+    await game.notifyFollowers({ brands: hit, text: "✨ Nouvelle carte spéciale : " + String(c.name || "").slice(0, 60), link: "#/jouer/collection" });
   } catch (e) { logger.warn("followSpecialCard", e); }
 });
 exports.newsPublished = onDocumentWritten({ document: "news/{id}", region: REGION }, async (ev) => {

@@ -720,7 +720,7 @@
 
   // ------------------------------------------------------------------ profil public : collection et wishlist
   function profPage(ids, page) {
-    return ids.slice(page * PAGE, (page + 1) * PAGE).map((id) => `<a href="${G.isSpecial(id) ? "#/jouer/cartes" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { cls: "tcg-mini" })}</a>`).join("") + pagerHtml("data-ppage", page, ids.length);
+    return ids.slice(page * PAGE, (page + 1) * PAGE).map((id) => `<a href="${G.isSpecial(id) ? "#/jouer/collection" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { cls: "tcg-mini" })}</a>`).join("") + pagerHtml("data-ppage", page, ids.length);
   }
   async function renderProfile(uid) {
     let el = document.getElementById("pub-cards");
@@ -740,7 +740,7 @@
       const carDocs = await Promise.all((sc.cars || []).slice(0, 3).map((cid) => C.db.collection("community_cars").doc(cid).get().then((x) => (x.exists && x.data().uid === uid ? Object.assign({ id: x.id }, x.data()) : null)).catch(() => null)));
       const pubCars = carDocs.filter(Boolean);
       if (!ids.length && !wl.length && !vit.length) return;
-      const vitHtml = vit.length || pubCars.length ? `<div class="panel-section-title">Vitrine</div><div class="cg-pshow">${vit.map((id) => `<div class="cg-pshow-i"><a href="${G.isSpecial(id) ? "#/jouer/cartes" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { owned: true, count: 0 })}</a>${mine && !(mine.owned[id] > 0) ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-wish-add="${C.esc(id)}">★ Je cherche cette carte</button>` : ""}</div>`).join("")}${pubCars.map((c) => `<div class="cg-pshow-i">${cardHtml(myCarObj(c), { owned: true, count: 0 })}<small class="tcg-hint">Sa voiture</small></div>`).join("")}</div>` : "";
+      const vitHtml = vit.length || pubCars.length ? `<div class="panel-section-title">Vitrine</div><div class="cg-pshow">${vit.map((id) => `<div class="cg-pshow-i"><a href="${G.isSpecial(id) ? "#/jouer/collection" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { owned: true, count: 0 })}</a>${mine && !(mine.owned[id] > 0) ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-wish-add="${C.esc(id)}">★ Je cherche cette carte</button>` : ""}</div>`).join("")}${pubCars.map((c) => `<div class="cg-pshow-i">${cardHtml(myCarObj(c), { owned: true, count: 0 })}<small class="tcg-hint">Sa voiture</small></div>`).join("")}</div>` : "";
       el.innerHTML = `${vitHtml}${ids.length ? `<div class="panel-section-title">Collection de cartes <span class="lap-meta">${(d.count || 0)} / ${C.cars.length}${d.specials ? " · ✦ " + d.specials : ""}</span></div>
         <div class="tcg-strip" id="pub-cards-strip">${profPage(ids, 0)}</div>` : ""}
         ${wl.length ? `<div class="panel-section-title">★ Cartes recherchées <span class="lap-meta">${wl.length}</span></div>
@@ -757,7 +757,7 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     ctx.Router.register("play", { enter: async (p) => {
-      if (p.tab !== "cartes" && p.tab !== "boutique") return;
+      if (p.tab !== "collection" && p.tab !== "boutique") return;
       ctab = p.tab === "boutique" ? "shop" : "mine";
       render();
       await load().catch(() => {});
@@ -771,7 +771,7 @@
       }
     } });
     ctx.Router.register("pilot", { enter: (p) => renderProfile(p.uid) });
-    document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (ctx.Router.is("play", { tab: "cartes" }) || ctx.Router.is("play", { tab: "boutique" })) { render(); load(true).then(render).catch(() => {}); } });
+    document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (ctx.Router.is("play", { tab: "collection" }) || ctx.Router.is("play", { tab: "boutique" })) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-dust-log]")) { showDustLog(); return; }
       const pk = e.target.closest("[data-pack]");
@@ -812,6 +812,6 @@
       else if (e.target.id === "cards-minp") { minPower = Number(e.target.value) || 0; renderGrid(); }
       else if (e.target.id === "cards-sort") { sortBy = e.target.value; store.set("ma_cards_sort", sortBy); renderGrid(); }
     });
-    document.addEventListener("ma:game", () => { if (doc && ctx.Router.is("play", { tab: "cartes" })) load(true).then(render).catch(() => {}); });
+    document.addEventListener("ma:game", () => { if (doc && (ctx.Router.is("play", { tab: "collection" }) || ctx.Router.is("play", { tab: "boutique" }))) load(true).then(render).catch(() => {}); });
   });
 })();

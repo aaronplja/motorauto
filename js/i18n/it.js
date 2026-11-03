@@ -714,5 +714,12 @@
 "Duel": "Duello",
 "Cartes à collectionner, mini-jeux, défis de la semaine et concours photo.": "Carte da collezione, minigiochi, sfide settimanali e concorso fotografico.",
 "0-100 km/h et 400 m en course": "0-100 km/h e 400 m in gara",
-"Ton pack du jour t'attend !": "Il tuo pacchetto del giorno ti aspetta!"
+"Ton pack du jour t'attend !": "Il tuo pacchetto del giorno ti aspetta!",
+"Confirmer": "Conferma",
+"ton annonce": "il tuo annuncio",
+"par": "di",
+"vendue": "venduta",
+"Tes cartes, albums et vitrine": "Le tue carte, album e vetrina",
+"Pack du jour, packs par pays": "Pacchetto del giorno, pacchetti per paese",
+"Packs par pays et offres du jour": "Pacchetti per paese e offerte del giorno"
 }]);

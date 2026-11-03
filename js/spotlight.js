@@ -26,8 +26,8 @@
     const pl = (pilots || []).filter((p) => has(p.name)).slice(0, LIMIT).map((p) => ({ href: "#/pilote/" + encodeURIComponent(p.id), t: p.name, s: "Pilote", img: p.avatar, round: true }));
     const sp = window.MACards && window.MACards.specials ? Array.from(window.MACards.specials().values()) : [];
     const mine = window.MACards && window.MACards.mine && window.MACards.mine() ? window.MACards.mine().owned || {} : {};
-    const cards = sp.filter((s) => has(s.name, s.edition)).slice(0, 3).map((s) => ({ href: "#/jouer/cartes", t: "✦ " + s.name, s: s.edition || "Édition limitée", img: s.image }))
-      .concat((C.cars || []).filter((c) => mine[c.id] > 0 && has(c.brand + " " + c.model)).slice(0, 4).map((c) => ({ href: "#/jouer/cartes", t: "🃏 " + c.brand + " " + c.model, s: "Dans ta collection", img: c.image })));
+    const cards = sp.filter((s) => has(s.name, s.edition)).slice(0, 3).map((s) => ({ href: "#/jouer/collection", t: "✦ " + s.name, s: s.edition || "Édition limitée", img: s.image }))
+      .concat((C.cars || []).filter((c) => mine[c.id] > 0 && has(c.brand + " " + c.model)).slice(0, 4).map((c) => ({ href: "#/jouer/collection", t: "🃏 " + c.brand + " " + c.model, s: "Dans ta collection", img: c.image })));
     const ads = (listings || []).filter((l) => has(l.title, l.desc, l.name)).slice(0, LIMIT).map((l) => ({ href: "#/annonces", t: l.title || "Annonce", s: (l.price ? l.price + " € · " : "") + (l.name || ""), img: Array.isArray(l.photos) ? l.photos[0] : l.photo }));
     [["Voitures", cars], ["Pilotes", pl], ["Cartes", cards], ["Annonces", ads]].forEach(([g, a]) => { if (a.length) out.push({ g, a }); });
     return out;

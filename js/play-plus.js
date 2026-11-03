@@ -83,7 +83,7 @@
   }
 
   // ====================================================================== MARCHÉ
-  let mk = { tab: "buy", list: [], mine: [], doc: null, sell: "", rar: "all", sort: "new", q: "", busy: false, err: "" };
+  let mk = { confirm: "", tab: "buy", list: [], mine: [], doc: null, sell: "", rar: "all", sort: "new", q: "", busy: false, err: "" };
   async function mkLoad() {
     try {
       const snap = await C.db.collection("card_listings").where("status", "==", "open").limit(250).get();
@@ -92,46 +92,63 @@
       mk.err = "";
     } catch (e) { mk.err = T("Le marché n'est pas encore disponible (règles Firestore à publier)."); }
   }
-  function mkItem(l, mine) {
-    const R = MC().RAR[l.rar] || MC().RAR.common, own = C.user && C.user.uid === l.uid, can = C.user && mk.doc && mk.doc.dust >= l.price;
-    return `<article class="mk-item rar-${l.rar}"><div class="mk-card">${mini(l.cardId)}</div>
-      <div class="mk-info"><b>${C.esc(label(l.cardId))}</b><small>${R.label} · ${own ? T("ton annonce") : `${T("par")} <a href="#/pilote/${encodeURIComponent(l.uid)}">${C.esc(l.name || T("Pilote"))}</a>`}</small></div>
-      <div class="mk-buy"><span class="mk-price">${dust(l.price, 16)}</span><small>${T("le vendeur reçoit")} ${G.marketNet(l.price)}</small>
-      ${own ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-mk-cancel="${C.esc(l.id)}" ${mk.busy ? "disabled" : ""}>${T("Retirer")}</button>` : `<button type="button" class="cta-btn fill-btn compact-btn" data-mk-buy="${C.esc(l.id)}" ${!C.user || !can || mk.busy ? "disabled" : ""}>${C.user && !can ? T("Pas assez") : T("Acheter")}</button>`}</div></article>`;
+  const MK_COL = { common: "#94a3b8", rare: "#3b82f6", epic: "#a855f7", legendary: "#f59e0b", shiny: "#22d3ee", legend: "#ef4444", mythic: "#ec4899" };
+  const EMPTY = (svg, title, sub) => `<div class="mkt-empty"><svg viewBox="0 0 64 64" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${svg}</svg><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</div>`;
+  const ICO_SHOP = '<path d="M8 24h48l-4 30H12z"/><path d="M22 24v-6a10 10 0 0 1 20 0v6"/>', ICO_TAG = '<path d="M8 8h24l24 24-20 20L8 28z"/><circle cx="20" cy="20" r="3"/>', ICO_CARD = '<rect x="14" y="8" width="36" height="48" rx="6"/><path d="M22 22h20M22 32h20M22 42h10"/>';
+  /** une annonce = une vraie carte, son prix en grand, un seul bouton */
+  function mkItem(l) {
+    const R = MC().RAR[l.rar] || MC().RAR.common, own = C.user && C.user.uid === l.uid, can = C.user && mk.doc && mk.doc.dust >= l.price, sure = mk.confirm === l.id;
+    const btn = own ? `<button type="button" class="cta-btn btn-ghost mkt-btn" data-mk-cancel="${C.esc(l.id)}" ${mk.busy ? "disabled" : ""}>${T("Retirer")}</button>`
+      : `<button type="button" class="cta-btn ${sure ? "mkt-sure" : "fill-btn"} mkt-btn" data-mk-buy="${C.esc(l.id)}" ${!C.user || !can || mk.busy ? "disabled" : ""}>${C.user && !can ? T("Pas assez") : sure ? T("Confirmer") + " · " + l.price : T("Acheter")}</button>`;
+    return `<article class="mkt-card${own ? " own" : ""}" style="--mk:${MK_COL[l.rar] || MK_COL.common}">
+      <div class="mkt-art">${mini(l.cardId)}</div>
+      <div class="mkt-body"><span class="mkt-rar">${R.label}</span><b class="mkt-name">${C.esc(label(l.cardId))}</b>
+        <small class="mkt-seller">${own ? T("ton annonce") : `${T("par")} <a href="#/pilote/${encodeURIComponent(l.uid)}">${C.esc(l.name || T("Pilote"))}</a>`}</small>
+        <div class="mkt-price">${dust(l.price, 20)}</div>${btn}</div></article>`;
   }
   function mkRender() {
     const root = rootOf("cardmarket"); if (!root) return;
     const RAR = MC().RAR, seg = [["buy", T("Acheter")], ["sell", T("Vendre")], ["mine", T("Mes annonces")]];
-    const head = `<div class="mk-top"><span class="seg" role="group" aria-label="${T("Marché")}">${seg.map(([k, l]) => `<button type="button" data-mk-tab="${k}" aria-pressed="${mk.tab === k}">${l}</button>`).join("")}</span>
-      ${C.user && mk.doc ? `<span class="mk-bal" title="${T("Tes cristaux")}">${dust(mk.doc.dust, 18)}</span>` : ""}</div>
-      <p class="lap-meta mk-note">${T("Prix fixe en cristaux. Seuls les doublons se vendent ; la carte est mise de côté jusqu'à la vente. 10 % du prix disparaissent (commission), le reste va au vendeur.")}</p>`;
+    const openMine = mk.mine.filter((l) => l.status === "open").length, soldMine = mk.mine.filter((l) => l.status === "sold").length;
+    const head = `<section class="mkt-hero"><div class="mkt-stats">
+        <div class="mkt-stat main"><small>${T("Tes cristaux")}</small><span>${C.user && mk.doc ? dust(mk.doc.dust, 26) : "—"}</span></div>
+        <div class="mkt-stat"><small>${T("En vente")}</small><b>${mk.list.length}</b></div>
+        <div class="mkt-stat"><small>${T("Mes annonces")}</small><b>${openMine}<i>/${G.MARKET_MAX_LISTINGS}</i></b></div></div>
+      <p class="mkt-note">${T("Prix fixe en cristaux. Seuls les doublons se vendent ; la carte est mise de côté jusqu'à la vente. 10 % du prix disparaissent (commission), le reste va au vendeur.")}</p></section>
+      <div class="page-tabs fit mkt-tabs" role="tablist" aria-label="${T("Marché")}" style="--n:3">${seg.map(([k, l]) => `<button type="button" role="tab" class="page-tab${mk.tab === k ? " active" : ""}" data-mk-tab="${k}" aria-selected="${mk.tab === k}"><span class="tl" data-s="${l}">${l}</span></button>`).join("")}</div>`;
     let body = "";
     if (mk.err) body = `<div class="empty-note error">${C.esc(mk.err)}</div>`;
     else if (mk.tab === "buy") {
       let items = mk.list.filter((l) => (mk.rar === "all" || l.rar === mk.rar) && (!mk.q || (label(l.cardId) + " " + (cardOf(l.cardId).brand || "")).toLowerCase().includes(mk.q.toLowerCase())));
       items = items.sort(mk.sort === "price" ? (a, b) => a.price - b.price : mk.sort === "rar" ? (a, b) => G.ORDER.indexOf(a.rar) - G.ORDER.indexOf(b.rar) || a.price - b.price : (a, b) => tsMs(b.createdAt) - tsMs(a.createdAt));
-      body = `<div class="cg-tools"><input type="search" id="mk-q" placeholder="${T("Rechercher une carte…")}" value="${C.esc(mk.q)}" aria-label="${T("Rechercher une carte")}" autocomplete="off">
-        <select id="mk-rar" aria-label="${T("Rareté")}"><option value="all">${T("Toutes raretés")}</option>${G.ORDER.filter((r) => r !== "mythic").map((r) => `<option value="${r}" ${mk.rar === r ? "selected" : ""}>${RAR[r].label}</option>`).join("")}</select>
+      const chips = [["all", T("Toutes raretés")]].concat(G.ORDER.filter((r) => r !== "mythic").map((r) => [r, RAR[r].label]));
+      body = `<div class="mkt-tools"><input type="search" id="mk-q" placeholder="${T("Rechercher une carte…")}" value="${C.esc(mk.q)}" aria-label="${T("Rechercher une carte")}" autocomplete="off">
         <select id="mk-sort" aria-label="${T("Trier par")}">${[["new", T("Plus récentes")], ["price", T("Prix croissant")], ["rar", T("Rareté")]].map(([k, l]) => `<option value="${k}" ${mk.sort === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
-        <div class="mk-list">${items.length ? items.map((l) => mkItem(l)).join("") : `<div class="empty-note">${T("Aucune carte en vente pour ces critères.")}</div>`}</div>`;
+        <div class="mkt-chips" role="group" aria-label="${T("Rareté")}">${chips.map(([k, l]) => `<button type="button" class="mkt-chip${mk.rar === k ? " on" : ""}" data-mk-rar="${k}" style="--mk:${MK_COL[k] || "var(--accent)"}">${l}</button>`).join("")}</div>
+        ${items.length ? `<div class="mkt-grid">${items.map(mkItem).join("")}</div>` : EMPTY(ICO_SHOP, T("Aucune carte en vente pour ces critères."), "")}`;
     } else if (!C.user) body = loginNote(T("vendre tes cartes"));
     else if (mk.tab === "sell") {
       const sp = mk.doc ? spareMap(mk.doc) : {}, ids = Object.keys(sp).filter((id) => rarOf(id) !== "mythic").sort((a, b) => G.ORDER.indexOf(rarOf(a)) - G.ORDER.indexOf(rarOf(b)));
       const sel = mk.sell && sp[mk.sell] ? mk.sell : "";
       let form = "";
       if (sel) { const r = rarOf(sel), b = G.marketBounds(r), sug = Math.min(b.max, Math.max(b.min, Math.round(MC().RAR[r].craft * 0.5)));
-        form = `<form class="mk-form" data-mk-form><div class="mk-sel">${mini(sel)}<div><b>${C.esc(label(sel))}</b><small>${MC().RAR[r].label}</small></div></div>
-          <label for="mk-price">${T("Prix en cristaux")} <small>(${b.min} – ${b.max})</small></label>
-          <div class="mk-row"><input id="mk-price" type="number" min="${b.min}" max="${b.max}" step="1" value="${sug}" inputmode="numeric" required><button type="submit" class="cta-btn fill-btn" ${mk.busy ? "disabled" : ""}>${T("Mettre en vente")}</button></div>
-          <small class="mk-hint" id="mk-hint">${T("Tu recevras")} ${G.marketNet(sug)} ${T("cristaux")}.</small></form>`; }
-      body = (form || "") + (ids.length ? `<p class="lap-meta">${T("Choisis un doublon à mettre en vente :")}</p><div class="fz-grid">${ids.map((id) => `<button type="button" class="fz-pick${sel === id ? " on" : ""}" data-mk-pick="${C.esc(id)}">${mini(id)}<span class="fz-x">×${sp[id]}</span></button>`).join("")}</div>` : `<div class="empty-note">${T("Tu n'as aucun doublon à vendre pour l'instant. Ouvre des packs !")}</div>`);
+        form = `<form class="mkt-sell" data-mk-form style="--mk:${MK_COL[r] || MK_COL.common}"><div class="mkt-sell-art">${mini(sel)}</div>
+          <div class="mkt-sell-f"><span class="mkt-rar">${MC().RAR[r].label}</span><b class="mkt-name">${C.esc(label(sel))}</b>
+            <label for="mk-price">${T("Prix en cristaux")} <small>(${b.min} – ${b.max})</small></label>
+            <input id="mk-range" type="range" min="${b.min}" max="${b.max}" step="1" value="${sug}" aria-label="${T("Prix en cristaux")}">
+            <div class="mk-row"><input id="mk-price" type="number" min="${b.min}" max="${b.max}" step="1" value="${sug}" inputmode="numeric" required><button type="submit" class="cta-btn fill-btn" ${mk.busy ? "disabled" : ""}>${T("Mettre en vente")}</button></div>
+            <small class="mk-hint" id="mk-hint">${T("Tu recevras")} <b>${G.marketNet(sug)}</b> ${T("cristaux")}.</small></div></form>`; }
+      body = (form || "") + (ids.length ? `<p class="mkt-sub">${T("Choisis un doublon à mettre en vente :")}</p><div class="fz-grid mkt-pick-grid">${ids.map((id) => `<button type="button" class="fz-pick${sel === id ? " on" : ""}" data-mk-pick="${C.esc(id)}">${mini(id)}<span class="fz-x">×${sp[id]}</span></button>`).join("")}</div>` : EMPTY(ICO_CARD, T("Tu n'as aucun doublon à vendre pour l'instant. Ouvre des packs !"), ""));
     } else {
       const open = mk.mine.filter((l) => l.status === "open"), sold = mk.mine.filter((l) => l.status === "sold").slice(0, 20);
-      body = `<h3 class="sec-title">${T("En vente")} <span class="lap-meta">${open.length} / ${G.MARKET_MAX_LISTINGS}</span></h3><div class="mk-list">${open.length ? open.map((l) => mkItem(l)).join("") : `<div class="empty-note small">${T("Aucune annonce en cours.")}</div>`}</div>
-        ${sold.length ? `<h3 class="sec-title">${T("Ventes récentes")}</h3><div class="mk-list">${sold.map((l) => `<article class="mk-item sold"><div class="mk-card">${mini(l.cardId)}</div><div class="mk-info"><b>${C.esc(label(l.cardId))}</b><small>${T("vendue")}</small></div><div class="mk-buy"><span class="mk-price">+${dust(G.marketNet(l.price), 16)}</span></div></article>`).join("")}</div>` : ""}`;
+      body = `<h3 class="mkt-sub">${T("En vente")} <span>${open.length} / ${G.MARKET_MAX_LISTINGS}</span></h3>${open.length ? `<div class="mkt-grid">${open.map(mkItem).join("")}</div>` : EMPTY(ICO_TAG, T("Aucune annonce en cours."), "")}
+        ${sold.length ? `<h3 class="mkt-sub">${T("Ventes récentes")}</h3><div class="mkt-sold">${sold.map((l) => `<div class="mkt-sold-row" style="--mk:${MK_COL[l.rar] || MK_COL.common}"><span class="mkt-sold-art">${mini(l.cardId)}</span><b>${C.esc(label(l.cardId))}</b><em>${T("vendue")}</em><span class="mkt-sold-gain">+${dust(G.marketNet(l.price), 16)}</span></div>`).join("")}</div>` : ""}`;
     }
+    const q = document.activeElement && document.activeElement.id === "mk-q" ? document.activeElement : null, pos = q ? q.selectionStart : 0;
     root.innerHTML = head + body;
+    if (q) { const n = document.getElementById("mk-q"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) { /* ignoré */ } } }
   }
+  window.MACardMarket = { state: () => mk, render: () => mkRender() };
   async function mkEnter() {
     mkRender();
     if (C.user) ready().then((d) => { mk.doc = d || MC().mine(); mkRender(); }).catch(() => {});
@@ -205,13 +222,14 @@
       }
       if (t.closest("[data-fz-reset]")) { fz.ids = []; fz.r = ""; fzRender(); return; }
       b = t.closest("[data-fz-go]"); if (b) { fzGo(b.dataset.fzGo); return; }
-      b = t.closest("[data-mk-tab]"); if (b) { mk.tab = b.dataset.mkTab; mkRender(); return; }
+      b = t.closest("[data-mk-tab]"); if (b) { mk.tab = b.dataset.mkTab; mk.confirm = ""; mkRender(); return; }
+      b = t.closest("[data-mk-rar]"); if (b) { mk.rar = b.dataset.mkRar; mkRender(); return; }
       b = t.closest("[data-mk-pick]"); if (b) { mk.sell = b.dataset.mkPick; mkRender(); return; }
       b = t.closest("[data-mk-buy]");
       if (b) {
         const l = mk.list.find((x) => x.id === b.dataset.mkBuy); if (!l) return;
-        if (!confirm(`${T("Acheter")} « ${label(l.cardId)} » ${T("pour")} ${l.price} ${T("cristaux")} ?`)) return;
-        mkDo(() => window.MAGameAPI.call("marketBuy", { id: l.id }), () => `${T("Carte achetée")} : ${label(l.cardId)}`); return;
+        if (mk.confirm !== l.id) { mk.confirm = l.id; mkRender(); clearTimeout(mk.ct); mk.ct = setTimeout(() => { mk.confirm = ""; mkRender(); }, 4000); return; }
+        mk.confirm = ""; mkDo(() => window.MAGameAPI.call("marketBuy", { id: l.id }), () => `${T("Carte achetée")} : ${label(l.cardId)}`); return;
       }
       b = t.closest("[data-mk-cancel]");
       if (b) { mkDo(() => window.MAGameAPI.call("marketCancel", { id: b.dataset.mkCancel }), () => T("Annonce retirée : la carte est revenue dans ta collection.")); return; }
@@ -223,12 +241,14 @@
       mkDo(() => window.MAGameAPI.call("marketList", { cardId: id, price }), () => { mk.sell = ""; mk.tab = "mine"; return `${T("En vente")} : ${label(id)} · ${price} ${T("cristaux")}`; });
     });
     document.addEventListener("input", (e) => {
-      if (e.target.id === "mk-q") { mk.q = e.target.value; const pos = e.target.selectionStart; mkRender(); const q = document.getElementById("mk-q"); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (_) { /* ignoré */ } } }
-      else if (e.target.id === "mk-price") { const h = document.getElementById("mk-hint"); if (h) h.textContent = `${T("Tu recevras")} ${G.marketNet(Math.floor(Number(e.target.value) || 0))} ${T("cristaux")}.`; }
+      if (e.target.id === "mk-q") { mk.q = e.target.value; mkRender(); }
+      else if (e.target.id === "mk-price" || e.target.id === "mk-range") {
+        const v = Math.floor(Number(e.target.value) || 0), o = document.getElementById(e.target.id === "mk-price" ? "mk-range" : "mk-price"); if (o) o.value = v;
+        const h = document.getElementById("mk-hint"); if (h) h.innerHTML = `${T("Tu recevras")} <b>${G.marketNet(v)}</b> ${T("cristaux")}.`;
+      }
     });
     document.addEventListener("change", (e) => {
-      if (e.target.id === "mk-rar") { mk.rar = e.target.value; mkRender(); }
-      else if (e.target.id === "mk-sort") { mk.sort = e.target.value; mkRender(); }
+      if (e.target.id === "mk-sort") { mk.sort = e.target.value; mkRender(); }
       else if (e.target.id === "wf-only") { wf.onlyMatch = e.target.checked; wfRender(); }
     });
     document.addEventListener("ma:auth", () => { fz.doc = null; mk.doc = null; mk.mine = []; wf.loaded = false; const n = C.Router.current() && C.Router.current().name; if (n === "fusion") fzEnter(); else if (n === "cardmarket") mkEnter(); else if (n === "wishfeed") wfEnter(); });

@@ -494,7 +494,7 @@
         if (d.owned[cardId] === 0) delete d.owned[cardId];
         writeCol(tx, uid, d);
       });
-      if (mode === "grant") await notify(uid, { uid: caller.uid, name: "MOTORAUTO" }, "🎁 Tu as reçu la carte « " + label + " »", "#/jouer/cartes");
+      if (mode === "grant") await notify(uid, { uid: caller.uid, name: "MOTORAUTO" }, "🎁 Tu as reçu la carte « " + label + " »", "#/jouer/collection");
       return { ok: true, serials };
     }
 
@@ -551,7 +551,7 @@
         writeCol(tx, ref, a); writeCol(tx, caller.uid, b);
         tx.set(col("referrals").doc(caller.uid), { uid: caller.uid, name: me, referrerUid: ref, referrerName: rname, createdAt: ts() });
       });
-      await notify(ref, { uid: caller.uid, name: me }, "🎁 " + me + " s'est inscrit grâce à toi : +1 pack bonus !", "#/jouer/cartes");
+      await notify(ref, { uid: caller.uid, name: me }, "🎁 " + me + " s'est inscrit grâce à toi : +1 pack bonus !", "#/jouer/boutique");
       return { ok: true, bonus: 1, referrerName: rname };
     }
 

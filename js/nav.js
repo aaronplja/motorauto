@@ -37,7 +37,7 @@
     const mine = user ? `
       <div class="me-group"><h3>Mon espace</h3>
         ${row("#/garage", "garage", "Mon garage")}
-        ${row("#/jouer/cartes", "cards", "Mes cartes")}
+        ${row("#/jouer/collection", "cards", "Mes cartes")}
         ${row("#/pilote/" + encodeURIComponent(user.uid), "user", "Mon profil public")}
         ${row("chat.html", "chat", "Messages", unread ? `<span class="me-badge">${unread}</span>` : "")}
         ${c.isAdmin ? row("#/admin", "shield", "Administration", (window.MAAdminTodo && MAAdminTodo.count() ? `<span class="me-badge">${MAAdminTodo.count()}</span>` : "")) : ""}

@@ -714,5 +714,12 @@
 "Duel": "Duell",
 "Cartes à collectionner, mini-jeux, défis de la semaine et concours photo.": "Sammelkarten, Minispiele, Wochenherausforderungen und Fotowettbewerb.",
 "0-100 km/h et 400 m en course": "0–100 km/h und 400 m im Rennen",
-"Ton pack du jour t'attend !": "Dein Tages-Pack wartet!"
+"Ton pack du jour t'attend !": "Dein Tages-Pack wartet!",
+"Confirmer": "Bestätigen",
+"ton annonce": "deine Anzeige",
+"par": "von",
+"vendue": "verkauft",
+"Tes cartes, albums et vitrine": "Deine Karten, Alben und Vitrine",
+"Pack du jour, packs par pays": "Tages-Pack, Packs nach Land",
+"Packs par pays et offres du jour": "Packs nach Land und Tagesangebote"
 }]);
