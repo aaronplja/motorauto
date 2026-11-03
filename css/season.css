@@ -162,3 +162,26 @@
 .ssn-cta-badge{min-width:26px;height:26px;border-radius:99px;background:linear-gradient(135deg,#c98a4b,#e0a96d);color:#2a1604;font-style:normal;font-weight:800;font-size:13px;display:grid;place-items:center;padding:0 7px}
 .ssn-cta-go{font-size:26px;color:#d79a5c}
 .ssn-back{display:inline-block;margin:0 0 10px;font-size:13px;font-weight:600;color:var(--muted,#9aa);text-decoration:none}.ssn-back:hover{color:var(--accent)}
+
+/* Profil public : distinctions (titre, cadre, meilleurs succès) */
+.ph-honors{display:flex;flex-direction:column;gap:.6rem;margin-top:-.2rem}
+.ph-honors[hidden]{display:none}
+.ph-chips,.ph-badges{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}
+.ph-chip{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .75rem;border-radius:99px;font-size:.78rem;font-weight:600;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
+.ph-chip-title{background:rgba(255,179,0,.14);border-color:rgba(255,179,0,.45);color:#ffcf5a}
+.ph-dot{width:10px;height:10px;border-radius:50%;background:var(--cf,#aaa);box-shadow:0 0 8px var(--cf,#aaa)}
+.ph-badge{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:1.25rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14)}
+.ph-badge.gold{border-color:#f59e0b;background:rgba(245,158,11,.12)} .ph-badge.silver{border-color:#94a3b8} .ph-badge.bronze{border-color:#b45309}
+.ph-more{border:0;background:none;color:var(--accent);font-weight:700;font-size:.8rem;cursor:pointer;padding:.3rem .4rem}
+.ph-cosm{margin-top:1.2rem}
+.ph-h{margin:1rem 0 .5rem;font-size:.95rem}.ph-h small{opacity:.6;font-weight:500;margin-left:.3rem}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:.6rem}
+.ph-grid-t{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.ph-tile{display:grid;justify-items:center;gap:.3rem;text-align:center;padding:.8rem .4rem;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)}
+.ph-tile b{font-size:.8rem}.ph-tile small{font-size:.68rem;opacity:.7}
+.ph-tile.off{opacity:.42;filter:grayscale(1)}
+.ph-tile.eq{border-color:#ffb300;background:rgba(255,179,0,.08)}.ph-tile.eq small{color:#ffcf5a;opacity:1;font-weight:700}
+.ph-av{display:block;width:54px;height:54px;border-radius:50%}
+.ph-av img,.ph-av i{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;background:rgba(255,255,255,.1)}
+.ph-title{margin:0;font-size:.74rem;padding:3px 10px}
+@media (max-width:420px){.ph-grid{grid-template-columns:repeat(3,1fr)}.ph-grid-t{grid-template-columns:repeat(2,1fr)}}

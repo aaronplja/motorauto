@@ -742,7 +742,7 @@
 "classement": "classifica",
 "complète": "completa",
 "collection": "collezione",
-"Meilleurs succès": "Migliori obiettivi",
+"Meilleurs succès": "Migliori traguardi",
 "Mes succès": "I miei obiettivi",
 "Les niveaux": "Livelli",
 "Niveau maximum atteint.": "Livello massimo raggiunto.",
@@ -861,5 +861,9 @@
 "Récupère chaque palier gagné, ou tout d'un coup": "Riscatta ogni livello guadagnato, o tutti insieme",
 "Défis de la semaine": "Sfide della settimana",
 "Gagne des points en jouant, débloque 30 paliers gratuits, enchaîne les quêtes et équipe tes cadres et titres.": "Guadagna punti giocando, sblocca 30 livelli gratuiti, concatena le missioni ed equipaggia cornici e titoli.",
-"Des défis chaque lundi et un défi du jour": "Sfide ogni lunedì e una sfida giornaliera"
+"Des défis chaque lundi et un défi du jour": "Sfide ogni lunedì e una sfida giornaliera",
+"Tout voir": "Vedi tutto",
+"Cadre": "Cornice",
+"Débloqué": "Sbloccato",
+"Cadres d'avatar": "Cornici avatar"
 }]);

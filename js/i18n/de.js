@@ -861,5 +861,9 @@
 "Récupère chaque palier gagné, ou tout d'un coup": "Hole jede verdiente Stufe ab, oder alle auf einmal",
 "Défis de la semaine": "Wochen-Herausforderungen",
 "Gagne des points en jouant, débloque 30 paliers gratuits, enchaîne les quêtes et équipe tes cadres et titres.": "Sammle Punkte beim Spielen, schalte 30 kostenlose Stufen frei, verkette Quests und rüste Rahmen und Titel aus.",
-"Des défis chaque lundi et un défi du jour": "Jeden Montag Herausforderungen und eine Tagesaufgabe"
+"Des défis chaque lundi et un défi du jour": "Jeden Montag Herausforderungen und eine Tagesaufgabe",
+"Tout voir": "Alle ansehen",
+"Cadre": "Rahmen",
+"Débloqué": "Freigeschaltet",
+"Cadres d'avatar": "Avatar-Rahmen"
 }]);

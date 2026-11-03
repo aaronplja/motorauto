@@ -861,5 +861,9 @@
 "Récupère chaque palier gagné, ou tout d'un coup": "Claim each tier you earn, or all at once",
 "Défis de la semaine": "Weekly challenges",
 "Gagne des points en jouant, débloque 30 paliers gratuits, enchaîne les quêtes et équipe tes cadres et titres.": "Earn points by playing, unlock 30 free tiers, chain quests and equip your frames and titles.",
-"Des défis chaque lundi et un défi du jour": "Challenges every Monday and a daily challenge"
+"Des défis chaque lundi et un défi du jour": "Challenges every Monday and a daily challenge",
+"Tout voir": "See all",
+"Cadre": "Frame",
+"Débloqué": "Unlocked",
+"Cadres d'avatar": "Avatar frames"
 }]);

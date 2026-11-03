@@ -861,5 +861,9 @@
 "Récupère chaque palier gagné, ou tout d'un coup": "Recoge cada nivel ganado, o todos de una vez",
 "Défis de la semaine": "Desafíos de la semana",
 "Gagne des points en jouant, débloque 30 paliers gratuits, enchaîne les quêtes et équipe tes cadres et titres.": "Gana puntos jugando, desbloquea 30 niveles gratis, encadena misiones y equipa tus marcos y títulos.",
-"Des défis chaque lundi et un défi du jour": "Desafíos cada lunes y un desafío diario"
+"Des défis chaque lundi et un défi du jour": "Desafíos cada lunes y un desafío diario",
+"Tout voir": "Ver todo",
+"Cadre": "Marco",
+"Débloqué": "Desbloqueado",
+"Cadres d'avatar": "Marcos de avatar"
 }]);
