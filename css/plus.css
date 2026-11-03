@@ -298,3 +298,5 @@ body[data-page="news"] .news-btn,.news-btn[aria-current="page"]{border-color:var
 .lv-list li.done .lv-n, .lv-list li.now .lv-n { background: var(--accent); color: var(--on-accent, #fff); border-color: var(--accent); }
 .lv-t { display: grid; gap: .15rem; min-width: 0; } .lv-t .ac-bar { width: 100%; margin: 0; }
 .lv-list em { font-style: normal; font-size: .78rem; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+
+.img-credit { margin: .35rem 0 0; font-size: .72rem; color: var(--color-muted); text-align: right; }

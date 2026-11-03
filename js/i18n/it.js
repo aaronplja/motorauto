@@ -756,5 +756,6 @@
 "Immortel": "Immortale",
 "Demi-dieu": "Semidio",
 "Divinité": "Divinità",
-"Ultime": "Ultimo"
+"Ultime": "Ultimo",
+"Photo : {0}": "Foto: {0}"
 }]);

@@ -756,5 +756,6 @@
 "Immortel": "Unsterblich",
 "Demi-dieu": "Halbgott",
 "Divinité": "Gottheit",
-"Ultime": "Ultimativ"
+"Ultime": "Ultimativ",
+"Photo : {0}": "Foto: {0}"
 }]);

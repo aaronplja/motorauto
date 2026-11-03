@@ -756,5 +756,6 @@
 "Immortel": "Immortal",
 "Demi-dieu": "Demigod",
 "Divinité": "Deity",
-"Ultime": "Ultimate"
+"Ultime": "Ultimate",
+"Photo : {0}": "Photo: {0}"
 }]);

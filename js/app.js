@@ -520,6 +520,7 @@
       <div class="sheet-hero-banner${(car.images && car.images.length > 1) ? " multi" : ""}">
         ${slidesHtml(car, false)}
       </div>
+      ${car.imageCredit ? `<p class="img-credit">${esc(car.imageCredit)}</p>` : ""}
       <div class="sheet-heading-box${(car.images && car.images.length > 1) ? " after-gallery" : ""}">
         <div class="sheet-brandline">${esc(car.brand)} <span>${esc(car.years)}</span></div>
         <h2 class="sheet-big-title">${esc(car.model)}</h2>
