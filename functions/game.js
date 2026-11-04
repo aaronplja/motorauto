@@ -26,19 +26,20 @@
       const list = await deps.cardPool();
       if (!list.length) fail("unavailable", "Catalogue indisponible, réessaie dans un instant.");
       const rar = core.computeRarities(list);
+      core.circuitRarities().forEach((v, k) => rar.set(k, v));
       try { // raretés modifiées à la main par l'admin (config/rarities)
         const ov = await col("config").doc("rarities").get();
         const m = ov.exists ? ov.data().map || {} : {};
         Object.keys(m).forEach((id) => { if (rar.has(id) && core.ORDER.indexOf(m[id]) >= 0) rar.set(id, m[id]); });
       } catch (_) { /* pas de surcharge */ }
-      poolCache = { at: now(), list, ids: list.map((c) => c.id), byId: new Map(list.map((c) => [c.id, c])), rar };
+      poolCache = { at: now(), list, ids: list.map((c) => c.id).concat(deps.noCircuits ? [] : core.CIRCUIT_CARDS.map((r) => r[0])), byId: new Map(list.map((c) => [c.id, c]).concat(Array.from(core.CIRCUIT_BY_ID.entries()))), rar };
       return poolCache;
     }
     async function specialCard(id) { const s = await col("special_cards").doc(id).get(); return s.exists ? s.data() : null; }
     async function isKnownCard(pool, id) { return pool.byId.has(id) || (core.isSpecial(id) && !!(await specialCard(id))); }
 
     // ---------------------------------------------------------------- petits utilitaires
-    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
+    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, circuits: d.circuits || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
     /** historique des cristaux (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
     function dustMove(d, n, why) {
       if (!n) return;
@@ -109,7 +110,7 @@
       const snap = await col("collections").doc(uid).get();
       const cur = snap.exists ? Object.assign(core.blankCollection(), snap.data()) : core.blankCollection();
       core.recount(cur);
-      const stats = await gatherStats(uid, cur, pool.ids.length);
+      const stats = await gatherStats(uid, cur, pool.list.length);
       let fresh = 0;
       const out = await db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid);
@@ -151,14 +152,15 @@
             if (o.pack) fail("failed-precondition", "Tu as déjà profité de cette offre aujourd'hui.");
             def.cost = core.offerPackCost(def.id); o.pack = 1; offerUsed = true;
           }
-          if (def.country) {
+          if (def.circuit) src = pool.ids.filter((id) => core.isCircuit(id));
+          else if (def.country) {
             src = pool.ids.filter((id) => core.countryOf((pool.byId.get(id) || {}).brand) === def.country);
             if (src.length < 2) fail("failed-precondition", "Ce pack n'est pas disponible pour l'instant.");
           }
           if (d.dust < def.cost) fail("failed-precondition", "Il te faut " + def.cost + " cristaux pour ce pack (tu en as " + d.dust + ").");
-          dustMove(d, -def.cost, def.country ? def.label + " acheté" : "Pack acheté");
+          dustMove(d, -def.cost, def.country || def.circuit ? def.label + " acheté" : "Pack acheté");
         }
-        const ids = kind === "shop" ? core.drawShopPack(pool.rar, src, rng, def.min) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % core.PITY.rare === 0, (d.opened + 1) % core.PITY.epic === 0, (d.pity || 0) + 1 >= core.PITY.legend);
+        const ids = kind === "shop" ? core.drawShopPack(pool.rar, src, rng, def.min, def.cards) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % core.PITY.rare === 0, (d.opened + 1) % core.PITY.epic === 0, (d.pity || 0) + 1 >= core.PITY.legend);
         let dust = 0, bonus = 0;
         d.pics = d.pics || {}; d.picClaims = d.picClaims || {};
         const cards = ids.map((id) => {
@@ -182,7 +184,7 @@
         if (bonus) dustMove(d, bonus, "Collection d'images");
         if (dust) dustMove(d, dust, kind === "shop" ? "Doublons du pack acheté" : "Doublons");
         if (kind !== "test") {
-          const m1 = bump(d, "open"), m2 = kind === "shop" ? bump(d, "shop", def.country || "world") : { gain: 0, names: [] }, m3 = offerUsed ? bump(d, "offer") : { gain: 0, names: [] };
+          const m1 = bump(d, "open"), m2 = kind === "shop" ? bump(d, "shop", def.circuit ? "world" : def.country || "world") : { gain: 0, names: [] }, m3 = offerUsed ? bump(d, "offer") : { gain: 0, names: [] };
           missions = { gain: m1.gain + m2.gain + m3.gain, names: m1.names.concat(m2.names, m3.names) };
         }
         if (kind === "daily" || kind === "bonus") d.pity = cards.some((c) => c.rarity === "legendary" || c.rarity === "shiny" || c.rarity === "mythic") ? 0 : (d.pity || 0) + 1;
@@ -316,12 +318,13 @@
           if (sn.claimed.indexOf(t) >= 0) fail("failed-precondition", "Palier déjà récupéré.");
           const r = core.passReward(t), pool = (r.epic || r.choice) ? await poolForClaim() : null, extra = [];
           if (r.choice) {
-            const offer = core.legendOffer(pool.ids, pool.rar, d.owned, uid, sn.n), pick = String((data && data.pick) || "");
+            const offer = core.legendOffer(pool.ids.filter((x) => !core.isCircuit(x)), pool.rar, d.owned, uid, sn.n), pick = String((data && data.pick) || "");
             if (!pick) return { need: "pick", offer, doc: view(d) };
             if (offer.indexOf(pick) < 0) fail("invalid-argument", "Cette carte ne fait pas partie de ton choix.");
             d.owned[pick] = (d.owned[pick] || 0) + 1; core.histAdd(d, pick, "pass", now()); extra.push(pick);
           }
-          if (r.epic) { const id = core.epicPick(pool.ids, pool.rar, d.owned, uid, sn.n, t); if (id) { d.owned[id] = (d.owned[id] || 0) + 1; core.histAdd(d, id, "pass", now()); extra.push(id); } }
+          if (r.circuit) { const id = core.circuitPick(pool.rar, d.owned, uid, sn.n, t); if (id) { d.owned[id] = (d.owned[id] || 0) + 1; core.histAdd(d, id, "pass", now()); extra.push(id); } }
+          if (r.epic) { const id = core.epicPick(pool.ids.filter((x) => !core.isCircuit(x)), pool.rar, d.owned, uid, sn.n, t); if (id) { d.owned[id] = (d.owned[id] || 0) + 1; core.histAdd(d, id, "pass", now()); extra.push(id); } }
           sn.claimed.push(t);
           let dust = r.dust, fz = null;
           if (r.freeze) {
@@ -476,7 +479,7 @@
     async function featuredCarId(wk) {
       const pool = await getPool();
       try { const s = await col("site_settings").doc("featured").get(); const id = s.exists && s.data().weeks && s.data().weeks[wk]; if (id && pool.byId.has(id)) return id; } catch (_) { /* tirage automatique */ }
-      return core.autoFeatured(wk, pool.ids);
+      return core.autoFeatured(wk, pool.ids.filter((x) => !core.isCircuit(x)));
     }
     async function featuredInfo(wk) {
       const pool = await getPool(), id = await featuredCarId(wk), c = pool.byId.get(id) || {};
@@ -706,6 +709,16 @@
       await requireAdmin(caller);
       const action = str(data && data.action, 20), uid = str(data && data.uid, 128) || caller.uid;
       const qty = Math.max(1, Math.min(100000, Math.floor(Number(data && data.qty) || 1)));
+      if (action === "circuitPhoto") {
+        const cid = str(data && data.id, 60), url = str(data && data.url, 600).trim();
+        if (!core.isCircuit(cid) || !core.CIRCUIT_BY_ID.has(cid)) fail("invalid-argument", "Circuit inconnu.");
+        if (url && !/^https:\/\/[^\s"'<>]+$/.test(url)) fail("invalid-argument", "L'adresse de la photo doit commencer par https://");
+        const ref = col("config").doc("circuitPhotos"), cur = await ref.get(), map = (cur.exists && cur.data().map) || {};
+        if (url) map[cid] = url; else delete map[cid];
+        await ref.set({ map, at: ts() });
+        return { ok: true, count: Object.keys(map).length };
+      }
+      if (action === "cardStats") return Object.assign({ ok: true }, await computeCardStats());
       if (["bonus", "dust", "resetDaily", "resetCollection", "unlockAll"].indexOf(action) < 0) fail("invalid-argument", "Action inconnue.");
       if (!(await nameOf(uid))) fail("not-found", "Pilote introuvable.");
       const pool = await getPool();
@@ -936,7 +949,7 @@
 
     // ---------------------------------------------------------------- Quiz : le serveur rejoue les questions de la graine et corrige
     async function quizSubmit(caller, data) {
-      const uid = caller.uid, pool = await getPool(), seed = str(data && data.seed, 40), cat = str(data && data.cat, 12), level = Math.max(1, Math.min(3, Number(data && data.level) | 0));
+      const uid = caller.uid, pool = await getPool(), seed = str(data && data.seed, 40), cat = str(data && data.cat, 12), level = Math.max(1, Math.min(4, Number(data && data.level) | 0));
       if (!/^[\w-]{4,40}$/.test(seed)) fail("invalid-argument", "Quiz invalide.");
       if (!core.QCATS[cat]) fail("invalid-argument", "Catégorie inconnue.");
       const answers = (Array.isArray(data && data.answers) ? data.answers : []).slice(0, core.QUIZ_N).map((x) => (Array.isArray(x) ? x.slice(0, 6).map((y) => Number(y) | 0) : Number(x) | 0));
@@ -947,13 +960,47 @@
         if (!g.quizBest || typeof g.quizBest !== "object") g.quizBest = {};
         g.quizBest[key] = Math.max(g.quizBest[key] || 0, score);
         g.quizPts = Object.keys(g.quizBest).reduce((t, k) => t + (g.quizBest[k] || 0), 0);
-        g.quizDone++; if (score === questions.length && questions.length >= core.QUIZ_N) { g.quizPerfect++; if (level === 3) g.quizL3++; }
+        g.quizDone++; if (score === questions.length && questions.length >= core.QUIZ_N) { g.quizPerfect++; if (level === 4) g.quizL3++; }
         const gain = Math.max(0, Math.min(score * core.QUIZ_REWARD, core.QUIZ_DAILY_CAP - day.dust));
         core.seasonAdd(d, score * core.SEASON_PTS.quizOk + (score === questions.length ? core.SEASON_PTS.quizPerfect : 0), score >= 6 ? { quiz: 1 } : null, now());
         if (gain > 0) day.dust += gain, dustMove(d, gain, "Quiz");
         writeCol(tx, uid, d);
         writeStats(tx, uid, g);
         return { score, total: questions.length, reward: gain, best: g.quizBest[key], pts: g.quizPts, doc: view(d) };
+      });
+    }
+
+    // ---------------------------------------------------------------- Quiz chrono : 60 s, classement hebdomadaire par niveau
+    async function chronoStart(caller, data) {
+      const uid = caller.uid, level = Math.max(1, Math.min(4, Number(data && data.level) | 0 || 1));
+      return db.runTransaction(async (tx) => {
+        const g = await readStats(tx, uid), seed = (rng().toString(36).slice(2, 9) + rng().toString(36).slice(2, 9)).replace(/[^a-z0-9]/g, "a").padEnd(8, "a");
+        g.chrono = { seed, level, t0: now() };
+        writeStats(tx, uid, g);
+        return { seed, level };
+      });
+    }
+    async function chronoSubmit(caller, data) {
+      const uid = caller.uid, pool = await getPool();
+      const answers = (Array.isArray(data && data.answers) ? data.answers : []).slice(0, core.CHRONO.max).map((x) => Number(x) | 0);
+      return db.runTransaction(async (tx) => {
+        const g = await readStats(tx, uid), d = await readCol(tx, uid), c = g.chrono;
+        if (!c || !c.seed) fail("failed-precondition", "Aucune partie chrono en cours : relance-en une.");
+        const el = (now() - c.t0) / 1000, qs = core.chronoQuestions(c.seed, c.level, pool.list);
+        let ok = 0; answers.forEach((a, i) => { if (qs[i] && a === qs[i].a) ok++; });
+        const wrong = answers.length - ok;
+        g.chrono = null;
+        if (el < core.CHRONO.secs - core.CHRONO.penalty * wrong - 4 || el < answers.length * 1.0 || el > core.CHRONO.secs + 120) { writeStats(tx, uid, g); fail("failed-precondition", "Partie chrono non valide (temps incohérent)."); }
+        const day = dayOf(g, "chronoDay"), gain = Math.max(0, Math.min(ok * core.CHRONO.reward, core.CHRONO.cap - day.dust));
+        if (!g.chronoBest || typeof g.chronoBest !== "object") g.chronoBest = {};
+        g.chronoBest[c.level] = Math.max(g.chronoBest[c.level] || 0, ok);
+        const f = core.chronoField(now(), c.level), pre = f.slice(0, 9);
+        Object.keys(g).forEach((k) => { if (/^cw\d{4}W\d+L\d$/.test(k) && k.slice(0, 9) !== pre) delete g[k]; });
+        g[f] = Math.max(Number(g[f]) || 0, ok);
+        g.chronoDone = (g.chronoDone || 0) + 1;
+        if (gain > 0) { day.dust += gain; dustMove(d, gain, "Quiz chrono"); }
+        writeCol(tx, uid, d); writeStats(tx, uid, g);
+        return { score: ok, wrong, reward: gain, best: g.chronoBest[c.level], weekBest: g[f], doc: view(d) };
       });
     }
 
@@ -1034,6 +1081,14 @@
       return seen.size;
     }
     /** chaque jour : prévient (au plus tous les 3 jours) les pilotes dont une carte de la liste de souhaits est en double chez un autre pilote */
+    /** rareté réelle : part des pilotes qui possèdent chaque carte (recalculée chaque nuit) */
+    async function computeCardStats() {
+      const snap = await col("collections").limit(5000).get(), cnt = {}; let total = 0;
+      snap.forEach((d) => { const o = d.data().owned || {}, ids = Object.keys(o).filter((id) => o[id] > 0); if (!ids.length) return; total++; ids.forEach((id) => { cnt[id] = (cnt[id] || 0) + 1; }); });
+      const map = {}; Object.keys(cnt).forEach((id) => { map[id] = Math.round((cnt[id] / total) * 1000) / 10; });
+      await col("config").doc("cardStats").set({ total, map, at: ts() });
+      return { total, cards: Object.keys(map).length };
+    }
     async function wishDigest() {
       const ws = (await col("wishlists").limit(300).get()).docs, cs = (await col("collections").limit(500).get()).docs;
       const owned = new Map(), dups = new Map();
@@ -1051,7 +1106,7 @@
       return sent;
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, _getPool: getPool };
+    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, _getPool: getPool };
   }
   return { createGame, GameError };
 });

@@ -15,7 +15,7 @@ ok(core.picReward("common", 2, 4, 3).gain === 0, "palier déjà encaissé");
   let seed = 7; const rng = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   // catalogue minimal : une seule voiture à 4 images → chaque tirage retombe dessus
   const pool = [{ id: "solo", power: 100, name: "Solo", pics: URLS.map(core.picKey) }];
-  const G = createGame({ db, ts: () => db.ts(), rng, now: () => NOW, cardPool: async () => pool, isAdmin: async () => true });
+  const G = createGame({ db, ts: () => db.ts(), rng, now: () => NOW, cardPool: async () => pool, noCircuits: true, isAdmin: async () => true });
   db.seed("users", "u1", { username: "P1" });
   const U = { uid: "u1" };
   let r = await G.openPack(U, { kind: "test" });

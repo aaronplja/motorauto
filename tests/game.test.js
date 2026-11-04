@@ -48,7 +48,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   // ---- pack du jour
   let r = await G.openPack(U1, { kind: "daily" });
   ok(r.cards.length === 3 && r.doc.lastPack === "2026-10-28" && r.doc.opened === 1, "pack du jour : 3 cartes");
-  ok(r.cards.every((c) => ids.includes(c.id)), "cartes issues du catalogue");
+  ok(r.cards.every((c) => ids.includes(c.id) || core.isCircuit(c.id)), "cartes issues du catalogue");
   await rejects(G.openPack(U1, { kind: "daily" }), "failed-precondition", "pack du jour déjà ouvert refusé");
   await rejects(G.openPack(U1, { kind: "gold" }), "invalid-argument", "type de pack inconnu refusé");
   NOW += 86400000;
@@ -56,7 +56,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   r = await G.openPack(U1, { kind: "bonus" }); ok(r.doc.bonus === 0, "pack bonus de bienvenue consommé");
   await rejects(G.openPack(U1, { kind: "bonus" }), "failed-precondition", "plus de pack bonus");
   const c1 = db.raw("collections", "u1");
-  ok(c1.count === Object.keys(c1.owned).length && Object.values(c1.owned).reduce((a, b) => a + b, 0) === 9, "9 cartes reçues, comptage cohérent");
+  ok(c1.count === Object.keys(c1.owned).filter((x) => !core.isCircuit(x)).length && Object.values(c1.owned).reduce((a, b) => a + b, 0) === 9, "9 cartes reçues, comptage cohérent");
 
   // ---- doublons → poussière
   db.seed("collections", "u2", Object.assign(core.blankCollection(), { owned: { [ids[0]]: 1 }, count: 1, opened: 5, bonus: 3, claimed: [] }));
@@ -323,7 +323,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     // garantie légendaire
     const dd = db.raw("collections", "w1"); dd.pity = core.PITY.legend - 1; dd.lastPack = ""; db.seed("collections", "w1", dd);
     r = await G.openPack(W, { kind: "daily" });
-    ok(r.cards.some((x) => ["legendary", "shiny", "mythic"].includes(PRAR.get(x.id))) && r.doc.pity === 0, "30e pack sans légendaire : légendaire garantie, compteur remis à 0");
+    ok(r.cards.some((x) => ["legendary", "shiny", "mythic"].includes(x.rarity)) && r.doc.pity === 0, "30e pack sans légendaire : légendaire garantie, compteur remis à 0");
     // roue
     let spin = await G.spinWheel(W); ok(spin.prize && spin.prize.text, "roue : " + spin.prize.text);
     await rejects(G.spinWheel(W), null, "un seul tour de roue par jour");
@@ -341,6 +341,48 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     NOW = Date.parse("2026-12-24T09:00:00+01:00"); r = await G.openAdvent(W, { day: 24 });
     ok((db.raw("collections", "w1").owned["sp-noel-2026"] || 0) === 1, "carte de Noël offerte le 24");
     NOW = save;
+  }
+
+  // ---- lot 2 : catégories Japon / Rallye / Électrique, niveau Expert, explications, chrono
+  {
+    const C2 = { uid: "c2" }; db.seed("users", "c2", { username: "Pilote_c2" });
+    ok(["japan", "rally", "ev"].every((c) => core.QCATS[c]) && core.QLEVELS[4] === "Expert" && core.QLEVELS[3] === "Difficile", "3 nouvelles catégories et niveau Expert");
+    for (const c of Object.keys(core.QCATS)) for (const l of [1, 2, 3, 4]) {
+      const qs = core.quizBuild("lot2" + c + l, c, l, pool);
+      ok(qs.length === core.QUIZ_N && qs.every((q) => q.o.length === 4 && (q.m ? q.m.length > 0 : q.a >= 0 && q.a < 4)), "10 questions valides : " + c + " niveau " + l);
+    }
+    const ex = core.quizBuild("explain1", "engines", 2, pool).filter((q) => q.ex); ok(ex.length > 0 && ex.every((q) => q.ex.length === 4 && q.ids.length === 4), "explications automatiques avec chiffres de la fiche");
+    const sd = "lot2seedxx", qs4 = core.quizBuild(sd, "japan", 4, pool); r = await G.quizSubmit(C2, { seed: sd, cat: "japan", level: 4, answers: qs4.map((q) => q.m || q.a) });
+    ok(r.score === 10 && r.doc && db.raw("gstats", "c2").quizBest["japan_4"] === 10 && db.raw("gstats", "c2").quizL3 === 1, "quiz Expert japonais 10/10 corrigé par le serveur");
+    // chrono
+    await rejects(G.chronoSubmit(C2, { answers: [0] }), null, "chrono sans départ refusé");
+    let st = await G.chronoStart(C2, { level: 2 }); const cq = core.chronoQuestions(st.seed, 2, pool);
+    ok(cq.length === core.CHRONO.max && cq.every((q) => !q.m), "questions chrono : " + cq.length + ", sans multi-réponses");
+    NOW += 10000; await rejects(G.chronoSubmit(C2, { answers: cq.slice(0, 5).map((q) => q.a) }), null, "chrono rendu trop tôt refusé");
+    st = await G.chronoStart(C2, { level: 2 }); NOW += 61000;
+    r = await G.chronoSubmit(C2, { answers: cq0(st, 2).slice(0, 30).map((q, i) => (i < 20 ? q.a : (q.a + 1) % 4)) });
+    ok(r.score === 20 && r.wrong === 10 && r.reward === core.CHRONO.cap && r.weekBest === 20, "chrono : 20 bonnes, 10 fausses, récompense plafonnée");
+    ok(db.raw("gstats", "c2")[core.chronoField(NOW, 2)] === 20, "score hebdo écrit dans le champ " + core.chronoField(NOW, 2));
+    await rejects(G.chronoSubmit(C2, { answers: [0] }), null, "une partie chrono ne se rend qu'une fois");
+    st = await G.chronoStart(C2, { level: 3 }); NOW += 61000;
+    await rejects(G.chronoSubmit(C2, { answers: cq0(st, 3).slice(0, 80).map((q) => q.a) }), null, "80 réponses en 61 s : refusé");
+  }
+  function cq0(st, l) { return core.chronoQuestions(st.seed, l, pool); }
+
+  // ---- lot 3 : cartes Circuit
+  {
+    const K = { uid: "k1" }; db.seed("users", "k1", { username: "Pilote_k1" });
+    ok(core.CIRCUIT_CARDS.length >= 90 && core.CIRCUIT_CARDS.every((r) => r[0].startsWith("ci-") && r[3] > 0 && core.CIRCUIT_COUNTRY[r[2]]), "92 cartes Circuit valides");
+    const rc = {}; core.CIRCUIT_CARDS.forEach((r) => { rc[r[5]] = (rc[r[5]] || 0) + 1; }); ok(rc.legendary === 6 && rc.epic === 17 && rc.rare + rc.common > 60, "répartition des raretés Circuit " + JSON.stringify(rc));
+    db.seed("collections", "k1", Object.assign(core.blankCollection(), { dust: 1000 }));
+    r = await G.openPack(K, { kind: "shop", pack: "circuit" });
+    ok(r.cards.length === 3 && r.cards.every((c) => core.isCircuit(c.id)) && r.doc.dust === 600 && r.doc.circuits >= 1 && r.doc.count === 0, "pack Circuit : 3 cartes Circuit, 400 cristaux, hors compteur des voitures");
+    ok(r.cards.some((c) => c.rarity !== "common"), "pack Circuit : au moins une carte rare ou mieux");
+    const ci = r.cards[0].id; r = await G.lockCard(K, { id: ci, on: true }); ok(r.doc.locked[ci], "une carte Circuit se verrouille");
+    db.seed("collections", "k2", Object.assign(core.blankCollection(), { dust: 0 })); db.seed("users", "k2", { username: "Pilote_k2" });
+    await rejects(G.openPack({ uid: "k2" }, { kind: "shop", pack: "circuit" }), "failed-precondition", "pack Circuit refusé sans assez de cristaux");
+    ok(core.passReward(17).circuit === 1 && core.passReward(27).circuit === 1 && core.passLabel(core.passReward(17)).includes("Circuit"), "paliers 17 et 27 : carte Circuit");
+    const cp = core.circuitPick(core.circuitRarities(), {}, "k1", 1, 17); ok(core.isCircuit(cp) && core.circuitRarities().get(cp) !== "common", "carte Circuit du palier : rare ou mieux (" + cp + ")");
   }
 
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");

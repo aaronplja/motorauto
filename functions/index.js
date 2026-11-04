@@ -59,7 +59,7 @@ function callable(name) {
 }
 ["syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "buyFreeze", "seasonClaim", "claimWelcome", "clubClash", "logAction", "weeklyStatus", "claimChallenge",
   "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "claimSets", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest",
-  "fuseCards", "pmPlay", "quizSubmit", "lockCard", "recycleCards", "spinWheel", "openAdvent", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
+  "fuseCards", "pmPlay", "quizSubmit", "lockCard", "recycleCards", "spinWheel", "openAdvent", "chronoStart", "chronoSubmit", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
 
 
 // ---- abonnements « voiture / marque » : notifications quand une fiche change, qu'une voiture arrive ou qu'une annonce « Nouveautés » est publiée
@@ -123,6 +123,7 @@ exports.pushOnNotification = require("./push").createPush({ db, messaging: admin
 // le 1er de chaque mois : clôture du concours photo précédent (gagnant, carte spéciale) et ouverture du suivant
 exports.closeDueContests = onSchedule({ schedule: "20 0 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.closeDueContests(); });
 exports.wishDigest = onSchedule({ schedule: "40 9 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.wishDigest(); });
+exports.cardStatsNightly = onSchedule({ schedule: "50 3 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.computeCardStats(); });
 exports.monthlyContest = onSchedule({ schedule: "10 0 1 * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.monthlyContest(); });
 
 // sauvegarde Firestore hebdomadaire (voir functions/backup.js : bucket + droits à configurer une fois)

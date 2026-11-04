@@ -101,6 +101,8 @@
           <button type="button" class="cta-btn btn-ghost compact-btn" data-tool="unlockAll">Tout débloquer</button>
           <button type="button" class="secondary-destructive-btn" data-tool="resetCollection">Remettre la collection à zéro</button>
         </div>
+        <div class="input-stack wide"><label for="ci-sel">Photo d'un circuit (adresse https d'une image ; vide = retirer)</label><div class="inline-field"><select id="ci-sel">${(window.MAGameCore || {}).CIRCUIT_CARDS ? window.MAGameCore.CIRCUIT_CARDS.map((r) => `<option value="${r[0]}">${C.esc(r[1])} (${C.esc(r[2])})</option>`).join("") : ""}</select><input type="url" id="ci-url" placeholder="https://…/photo.jpg"><button type="button" class="cta-btn fill-btn compact-btn" id="ci-save">Enregistrer</button></div>
+        <button type="button" class="cta-btn btn-ghost compact-btn" id="cs-run">Recalculer maintenant la rareté réelle (% de pilotes)</button></div>
         <div class="input-stack wide"><label for="tl-msg">Annonce à tous les pilotes (notification, 120 caractères max)</label><div class="inline-field"><input type="text" id="tl-msg" maxlength="120" placeholder="Ex : Nouvelle carte spéciale pour le salon, récupère-la dans Jouer !"><button type="button" class="cta-btn fill-btn compact-btn" data-tool="broadcast">Envoyer à tous</button></div></div>
         <p class="form-error" id="tl-err" role="alert"></p></div><hr class="admin-sep">`;
   }
@@ -260,6 +262,13 @@
     document.addEventListener("submit", (e) => {
       if (e.target.id === "sp-form") saveCard(e);
       else if (e.target.id === "grant-form") { e.preventDefault(); grant(e.target, (e.submitter && e.submitter.dataset.mode) || "grant"); }
+    });
+    document.addEventListener("click", async (e) => {
+      const sv = e.target.closest && e.target.closest("#ci-save"), cs = e.target.closest && e.target.closest("#cs-run"); if (!sv && !cs) return;
+      try {
+        if (sv) { await window.MAGameAPI.call("adminGameTool", { action: "circuitPhoto", id: document.getElementById("ci-sel").value, url: document.getElementById("ci-url").value.trim() }); C.toast("Photo du circuit enregistrée.", "ok"); if (window.MACards && window.MACards.load) window.MACards.load(true).catch(() => {}); }
+        else { const r = await window.MAGameAPI.call("adminGameTool", { action: "cardStats" }); C.toast("Rareté réelle recalculée (" + r.total + " pilotes).", "ok"); }
+      } catch (ex) { C.toast(ex.message, "err"); }
     });
     document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-tool]"); if (b) runTool(b.dataset.tool); const f = e.target.closest && e.target.closest("[data-feat-save]"); if (f) saveFeat(f.dataset.featSave); });
     document.addEventListener("input", (e) => {

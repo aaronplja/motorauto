@@ -24,15 +24,25 @@
     rarityMap = G.computeRarities(cars.map((c) => ({ id: c.id, power: c.stats.power, speed: c.stats.speed || 0, zero: c.stats.zero || 0, name: (c.brand + " " + c.model).trim(), brand: c.brand, category: c.category, year: G.yearOf(c) })));
     cars.forEach((c, i) => numbering.set(c.id, i + 1));
   }
-  let rarOv = {};
-  async function loadRarOv() { try { const s = await C.db.collection("config").doc("rarities").get(); rarOv = s.exists && s.data().map ? s.data().map : {}; } catch (_) { /* pas de surcharge */ } }
-  const rarityOf = (car) => { if (car.mine) return "mine"; if (car.special) return "special"; indexCars(); const o = rarOv[car.id]; if (o && ORDER.indexOf(o) >= 0) return o; return rarityMap.get(car.id) || "common"; };
+  let rarOv = {}, circPhotos = {};
+  let cardPct = {}, pctTotal = 0;
+  async function loadCardPct() { try { const s = await C.db.collection("config").doc("cardStats").get(); if (s.exists) { cardPct = s.data().map || {}; pctTotal = s.data().total || 0; } } catch (_) { /* pas de stats */ } }
+  const pctHtml = (id) => pctTotal >= 5 ? `<p class="tcg-hint cg-realpct">Possédée par <b>${String(cardPct[id] || 0).replace(".", ",")} %</b> des pilotes</p>` : "";
+  async function loadCircPhotos() { try { const s = await C.db.collection("config").doc("circuitPhotos").get(); circPhotos = s.exists && s.data().map ? s.data().map : {}; } catch (_) { /* pas de photos */ } }
+  async function loadRarOv() { loadCircPhotos(); loadCardPct(); try { const s = await C.db.collection("config").doc("rarities").get(); rarOv = s.exists && s.data().map ? s.data().map : {}; } catch (_) { /* pas de surcharge */ } }
+  const rarityOf = (car) => { if (car.mine) return "mine"; if (car.special) return "special"; if (car.circuit) { const o = rarOv[car.id]; return o && ORDER.indexOf(o) >= 0 ? o : car.rar; } indexCars(); const o = rarOv[car.id]; if (o && ORDER.indexOf(o) >= 0) return o; return rarityMap.get(car.id) || "common"; };
   const numberOf = (car) => { indexCars(); return numbering.get(car.id) || 0; };
   /** une carte, qu'elle vienne du catalogue ou d'une édition limitée */
   function cardObj(id) {
     const sp = specials.get(id);
     if (sp) return { id, brand: sp.edition || "Édition limitée", model: sp.name || id, image: sp.image || "", images: Array.isArray(sp.images) ? sp.images.slice(0, 12) : [], category: "", years: "", stats: { power: Number(sp.power) || 0, speed: Number(sp.speed) || 0, zero: Number(sp.zero) || null }, special: sp };
+    if (G.isCircuit && G.isCircuit(id)) { const c = G.CIRCUIT_BY_ID.get(id); return c ? Object.assign({}, c, { image: circPhotos[id] || "", images: [], category: "Circuit", years: String(c.since), stats: { power: 0, speed: 0, zero: null } }) : null; }
     return C.carsById.get(id) || null;
+  }
+  const circNo = (car) => { const i = G.CIRCUIT_CARDS.findIndex((r) => r[0] === car.id); return "C" + String(i + 1).padStart(2, "0"); };
+  function traceSvg(car) {
+    const d = (window.MACircuitTraces || {})[car.id];
+    return d ? `<svg class="tcg-trace" viewBox="0 0 100 100" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg>` : `<span class="tcg-q" aria-hidden="true">🏁</span>`;
   }
   const isOwned = (id) => !!(doc && (doc.owned[id] || 0) > 0);
   const countOf = (id) => (doc && doc.owned[id]) || 0;
@@ -55,18 +65,21 @@
     const esc = C.esc, r = rarityOf(car), R = RAR[r] || { label: "Ma voiture" }, owned = o.owned !== false, sp = car.special, lv = Math.max(1, Math.min(5, Number(o.lv) || 1));
     const pi = owned && !sp ? picInfo(car) : null, cardImage = o.image || (pi && pi.have.length ? shownUrl(car, pi) : car.image);
     const img = cardImage && C.safeUrl(cardImage) ? `<img class="${owned ? "" : "tcg-ghost"}" src="${esc(C.safeUrl(cardImage))}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">${owned ? "" : `<span class="tcg-q tcg-q-over" aria-hidden="true">?</span>`}` : `<span class="tcg-q" aria-hidden="true">${owned && sp ? "✦" : "?"}</span>`;
+    const circ = !!car.circuit;
     const mosaic = owned && sp && Array.isArray(car.images) && car.images.length > 1 ? car.images.map((u) => C.safeUrl(u)).filter(Boolean).slice(0, 4) : null;
     const model = String(car.model || "").replace(/\s*\(.*$/, "");
     const hasStats = !sp || car.stats.power > 0;
     const bar = (v) => `<i style="--v:${Math.max(0, Math.min(1, v)).toFixed(2)}"></i>`;
     const st = car.stats || {}, z = Number(st.zero) || 0;
-    const stats = hasStats
+    const stats = circ
+      ? `<div class="tcg-stats tcg-cstats"><span><b>${owned ? car.km.toString().replace(".", ",") : "?"}</b>km</span><span><b>${owned ? esc(car.countryLabel) : "?"}</b>pays</span><span><b>${owned ? car.since : "?"}</b>depuis</span></div>`
+      : hasStats
       ? `<div class="tcg-stats"><span><b>${owned ? st.power : "?"}</b>ch${bar(owned ? st.power / 1200 : 0)}</span><span><b>${owned ? (st.speed || "—") : "?"}</b>km/h${bar(owned ? st.speed / 400 : 0)}</span><span><b>${owned ? (z || "—") : "?"}</b>0-100${bar(owned && z ? (14 - z) / 11 : 0)}</span></div>`
       : `<p class="tcg-note">${owned ? esc(sp.text || "") : ""}</p>`;
-    const no = car.mine ? "MA" : sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0");
+    const no = car.mine ? "MA" : circ ? circNo(car) : sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0");
     const color = sp && sp.color ? " tcg-c-" + esc(sp.color) : "";
     return `<div class="tcg tcg-${r}${color}${lv > 1 ? " has-lv lvl" + lv : ""} ${owned ? "" : "locked"} ${o.cls || ""}" data-card="${esc(car.id)}" role="button" tabindex="0" aria-label="${owned ? esc(car.brand + " " + model) : "Carte non débloquée " + no}, ${R.label}">
-      <div class="tcg-art ${mosaic ? "tcg-mosaic m" + mosaic.length : ""}">${mosaic ? mosaic.map((u) => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">`).join("") : img}<i class="tcg-foil" aria-hidden="true"></i>${owned && isLk(car.id) ? `<i class="tcg-lk" aria-hidden="true">🔒</i>` : ""}${owned && !sp && car.drives && car.drives[0] && window.MATrack ? `<span class="tcg-drv" title="${esc(window.MATrack.DRIVES[car.drives[0]][0])}">${window.MATrack.driveIcon(car.drives[0], 14)}</span>` : ""}</div><i class="tcg-holo" aria-hidden="true"></i>
+      <div class="tcg-art ${mosaic ? "tcg-mosaic m" + mosaic.length : ""}${circ && !(cardImage && owned) ? " tcg-circ" : ""}">${circ && !(cardImage && owned) ? (owned ? traceSvg(car) : `<span class="tcg-q" aria-hidden="true">?</span>`) : mosaic ? mosaic.map((u) => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">`).join("") : img}<i class="tcg-foil" aria-hidden="true"></i>${owned && isLk(car.id) ? `<i class="tcg-lk" aria-hidden="true">🔒</i>` : ""}${owned && !sp && car.drives && car.drives[0] && window.MATrack ? `<span class="tcg-drv" title="${esc(window.MATrack.DRIVES[car.drives[0]][0])}">${window.MATrack.driveIcon(car.drives[0], 14)}</span>` : ""}</div><i class="tcg-holo" aria-hidden="true"></i>
       <div class="tcg-body"><span class="tcg-brand">${owned || sp ? esc(car.brand) : "—"}</span><b class="tcg-name">${owned || sp ? esc(model) : "Carte à débloquer"}</b>${stats}</div>
       ${lv > 1 ? `<i class="tcg-frame lv${lv}" aria-hidden="true"></i>` : ""}<span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span><span class="tcg-no">${no}</span>
       ${pi ? `<span class="tcg-pics" title="Images débloquées : ${pi.have.length} sur ${pi.keys.length}"><i></i>${pi.have.length}/${pi.keys.length}</span>` : ""}
@@ -138,6 +151,7 @@
   // ------------------------------------------------------------------ packs et fabrication (serveur)
   /** décor d'un pack : drapeau du pays (bandes de couleur), plaque centrale lisible quel que soit le fond */
   function packTheme(id) {
+    if (id === "circuit") return { label: "Circuit", f: "world", style: "--p1:#111827;--p2:#ef4444;--p3:#f9fafb" };
     const k = (G.COUNTRIES || []).find((x) => x.id === id);
     return k ? { label: k.label, f: k.f, style: `--p1:${k.c[0]};--p2:${k.c[1]};--p3:${k.c[2]}` } : { label: "Monde", f: "world", style: "--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24" };
   }
@@ -443,7 +457,8 @@
   }
   function backHtml(car, id) {
     const n = cnt(id), R = RAR[rarityOf(car)], sp = car.special, e = C.esc;
-    if (n === 0) return `<h3>Carte à débloquer</h3><p>Ouvre des packs pour la trouver${sp ? "." : " ou fabrique-la avec des cristaux."}</p><dl><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0")}</dd></dl>`;
+    if (n === 0) return `<h3>Carte à débloquer</h3><p>Ouvre des packs pour la trouver${sp ? "." : " ou fabrique-la avec des cristaux."}</p><dl><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${sp ? "★" : car.circuit ? circNo(car) : "#" + String(numberOf(car)).padStart(3, "0")}</dd></dl>`;
+    if (car.circuit) return `<h3>${e(car.model)}</h3><dl><dt>Pays</dt><dd>${e(car.countryLabel)}</dd><dt>Longueur</dt><dd>${String(car.km).replace(".", ",")} km</dd><dt>Depuis</dt><dd>${car.since}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${circNo(car)}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
     if (sp) return `<h3>${e(car.model)}</h3><p>${e(sp.text || "")}</p><dl><dt>Édition</dt><dd>${e(car.brand)}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
     const all = C.cars.filter((c) => c.brand === car.brand), have = all.filter((c) => countOf(c.id) > 0).length, st = car.stats;
     const desc = String(car.description || "").replace(/\s+/g, " ");
@@ -472,7 +487,7 @@
     const lv = lvOf(id), next = lv < G.LV_MAX ? G.upgradeCost(sp ? "special" : rarityOf(car), lv + 1) : 0;
     const lvBlock = n > 0 ? `<div class="cg-lvbox"><span class="cg-lvpips" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</span><b>Niveau ${lv} · ${G.LV_NAMES[lv]}</b>${lv < G.LV_MAX ? `<button type="button" class="cta-btn fill-btn compact-btn${doc && doc.dust < next ? " lack" : ""}" data-upgrade ${doc && doc.dust >= next && !peek ? "" : "disabled"}>Améliorer (${next} ${window.MA.dustIcon(14)})${doc && doc.dust < next ? ` · il manque ${next - doc.dust}` : ""}</button>` : `<span class="tcg-hint">niveau maximum</span>`}</div>` : "";
     const actions = [`<button type="button" class="cta-btn btn-ghost" data-flipcard>↻ Retourner</button>`];
-    if (n > 0 && !sp) actions.push(`<a class="cta-btn btn-ghost" href="#/voiture/${encodeURIComponent(id)}" data-close>Voir la fiche</a>`);
+    if (n > 0 && !sp && !car.circuit) actions.push(`<a class="cta-btn btn-ghost" href="#/voiture/${encodeURIComponent(id)}" data-close>Voir la fiche</a>`);
     if (n > 1) actions.push(`<button type="button" class="cta-btn fill-btn" data-swap>🔄 Proposer à l'échange</button>`);
     if (n > 0 && !peek && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-lock aria-pressed="${isLk(id)}">${isLk(id) ? "🔓 Déverrouiller" : "🔒 Verrouiller"}</button>`);
     if (n > 0) actions.push(`<button type="button" class="cta-btn btn-ghost" data-share>↗ Partager</button>`);
@@ -481,7 +496,7 @@
     if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-wish aria-pressed="${inWish}">${inWish ? "★ Dans ma wishlist" : "☆ Wishlist"}</button>`);
     actions.push(`<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button>`);
     const i = navIds.indexOf(id), nav = i >= 0 && navIds.length > 1 ? `<div class="tcg-nav"><button type="button" data-nav="-1" aria-label="Carte précédente" ${i > 0 ? "" : "disabled"}>‹</button><span class="tcg-hint">${i + 1} / ${navIds.length}</span><button type="button" data-nav="1" aria-label="Carte suivante" ${i < navIds.length - 1 ? "" : "disabled"}>›</button></div>` : "";
-    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n, lv: n > 0 && !peek ? lv : 1 })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${lvBlock}${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}${peek ? "" : histHtml(id)}<div class="tcg-actions">${actions.join("")}</div></div>`;
+    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n, lv: n > 0 && !peek ? lv : 1 })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${sp ? "" : pctHtml(id)}${lvBlock}${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}${peek ? "" : histHtml(id)}<div class="tcg-actions">${actions.join("")}</div></div>`;
   }
   function showDetail(id, ids, opts) {
     peek = opts && opts.peek ? id : "";
@@ -593,18 +608,19 @@
     o = o || {};
     const dust = doc.dust, cost = o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
     const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
-    const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>2 cartes</em></span>` : packInner(p.id);
+    const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>2 cartes</em></span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : "");
     const lack = dust < cost, price = o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
     return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}${o.cost != null ? " promo" : ""}" data-pack="shop" data-shop="${p.id}"${o.offer ? ` data-offer="1"` : ""} ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${cost} cristaux">
       ${o.cost != null ? `<span class="cg-ribbon">-${G.OFFER_PCT} %</span>` : ""}<span class="cg-art" ${st}>${art}</span>
-      <span class="cg-pm"><b>${p.id === "world" ? "Pack mondial" : C.esc(p.label)}</b><span class="cg-price${lack ? " lack" : ""}">${price}</span></span>
+      <span class="cg-pm"><b>${p.id === "world" ? "Pack mondial" : p.id === "circuit" ? "Pack Circuit" : C.esc(p.label)}</b><span class="cg-price${lack ? " lack" : ""}">${price}</span></span>
       <span class="cg-have">${gauge(p.have, p.total, full ? "full" : "")}<small>${p.have} / ${p.total} cartes${full ? " · complet" : ""}</small></span>
       ${o.used ? `<small class="cg-note">Offre déjà utilisée aujourd'hui</small>` : !ok && miss && !full ? `<small class="cg-note">il manque ${miss}</small>` : ""}</button>`;
   }
   function packRows() {
     indexCars();
     const cars = C.cars;
-    return [{ id: "world", label: "Monde", cost: G.PACKS.world.cost, total: cars.length, have: cars.filter((c) => countOf(c.id) > 0).length }].concat((G.COUNTRIES || []).map((k) => {
+    const circ = { id: "circuit", label: "Circuit", cost: G.PACKS.circuit.cost, total: G.CIRCUIT_CARDS.length, have: G.CIRCUIT_CARDS.filter((r) => countOf(r[0]) > 0).length };
+    return [{ id: "world", label: "Monde", cost: G.PACKS.world.cost, total: cars.length, have: cars.filter((c) => countOf(c.id) > 0).length }, circ].concat((G.COUNTRIES || []).map((k) => {
       const list = cars.filter((c) => G.countryOf(c.brand) === k.id && rarityOf(c) !== "mythic");
       return { id: k.id, label: k.label, cost: k.cost, total: list.length, have: list.filter((c) => countOf(c.id) > 0).length };
     }));
@@ -653,7 +669,7 @@
         <button type="button" class="cg-gift ${canDaily ? "ready" : "off"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="cg-gi">🎁</span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
       </div>${wheelHtml()}${adventHtml()}${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
-      <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">2 voitures du pays, dont 1 rare ou mieux · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
+      <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">2 voitures du pays, dont 1 rare ou mieux · Pack Circuit : 3 circuits · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
   }
 
   // ----- Mes cartes
@@ -784,7 +800,7 @@
   let sortBy = store.get("ma_cards_sort", "num"), view = store.get("ma_cards_view", "grid");
   const zeroKey = (c) => Number(c.stats.zero) || 99;
   function sortList(list) {
-    const byNum = (a, b) => numberOf(a) - numberOf(b);
+    const byNum = (a, b) => (numberOf(a) || (a.circuit ? 9000 : 0)) - (numberOf(b) || (b.circuit ? 9000 : 0)) || String(a.id).localeCompare(String(b.id));
     const cmp = {
       num: byNum,
       rar: (a, b) => ORDER.indexOf(rarityOf(a)) - ORDER.indexOf(rarityOf(b)) || byNum(a, b),
@@ -800,15 +816,16 @@
   function visibleList() {
     indexCars();
     const q = C.normalize(query);
-    const list = C.cars.filter((c) => {
+    const base = filter === "circuits" ? G.CIRCUIT_CARDS.map((r) => cardObj(r[0])).filter(Boolean) : C.cars;
+    const list = base.filter((c) => {
       const n = countOf(c.id);
       if (filter === "owned" && !n) return false;
       if (filter === "missing" && n) return false;
       if (filter === "dups" && n < 2) return false;
       if (filter === "wish" && !(wish || []).includes(c.id)) return false;
       if (rarFilter !== "all" && rarityOf(c) !== rarFilter) return false;
-      if (countryFilter !== "all" && G.countryOf(c.brand) !== countryFilter) return false;
-      if (minPower && c.stats.power < minPower) return false;
+      if (countryFilter !== "all" && !c.circuit && G.countryOf(c.brand) !== countryFilter) return false;
+      if (minPower && !c.circuit && c.stats.power < minPower) return false;
       return !q || C.normalize(c.brand + " " + c.model).includes(q);
     });
     return sortList(list);
@@ -883,7 +900,7 @@
               <select id="cards-country" aria-label="Pays"><option value="all">Tous pays</option>${countries}</select>
               <select id="cards-minp" aria-label="Puissance minimale">${[[0, "Toute puissance"], [150, "150 ch et +"], [300, "300 ch et +"], [500, "500 ch et +"], [800, "800 ch et +"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
               <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : rareté"], ["owned", "Tri : doublons d'abord"], ["level", "Tri : niveau"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
-            <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}
+            <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"], ["circuits", "🏁 Circuits"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}
               <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>
             <div class="tcg-grid" id="tcg-grid"></div></section></div></div>`;
     }

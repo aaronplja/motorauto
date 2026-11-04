@@ -77,3 +77,30 @@
 .adv-c.lock{opacity:.5;cursor:default}.adv-c.big{grid-column:span 2;aspect-ratio:auto}
 @keyframes advPulse{50%{transform:scale(1.05)}}
 @media (prefers-reduced-motion:reduce){.adv-c.can{animation:none}}
+
+/* lot 2 : quiz 4 niveaux, onglets, entraînement, chrono */
+.qz-levels{grid-template-columns:repeat(auto-fit,minmax(72px,1fr))!important}
+.qz-lv span{font-size:.8rem!important}
+.qz-lv.lv4 span{color:#b86bff}
+.qz-tabs{display:flex;gap:6px;margin:.2rem 0 .8rem;flex-wrap:wrap}
+.qz-tabs button{border:1px solid var(--stroke-line);background:var(--bg-elevated);color:var(--color-ink);border-radius:99px;padding:.45rem .95rem;font:inherit;font-weight:600;font-size:.88rem;cursor:pointer}
+.qz-tabs button.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.qz-tabs.small button{padding:.3rem .7rem;font-size:.8rem}
+.qz-levels.chrono{margin:.4rem 0 1rem}
+.qz-explain{margin:.8rem 0 .2rem;padding:.8rem .9rem;border-radius:14px;border:1px solid var(--stroke-line);background:var(--bg-elevated);display:grid;gap:.4rem;font-size:.9rem}
+.qz-ex{list-style:none;margin:0;padding:0;display:grid;gap:.3rem}
+.qz-ex li{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;border-bottom:1px solid var(--stroke-line);padding:.2rem 0}
+.qz-ex li small{color:var(--color-muted)}.qz-ex li.good a{color:#22c55e;font-weight:700}
+.qz-note{margin:0}
+.qz-explain a{color:var(--accent)}
+.qz-clock{display:flex;align-items:baseline;gap:.3rem;position:relative;margin:.2rem 0 .4rem}
+.qz-clock b{font-size:2.4rem;font-family:var(--font-tech,inherit);color:var(--accent)}
+.qz-fl{position:absolute;right:0;top:0;font-style:normal;font-weight:800;font-size:1.3rem;animation:qzFl .6s ease-out forwards}
+.qz-fl.good{color:#22c55e}.qz-fl.bad{color:#ef4444}
+@keyframes qzFl{from{transform:translateY(8px);opacity:0}30%{opacity:1}to{transform:translateY(-8px);opacity:.9}}
+
+/* ---- cartes Circuit */
+.tcg-circ{display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,var(--bg-elevated),var(--bg-surface));color:var(--accent)}
+.tcg-trace{width:82%;height:82%;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+.tcg-cstats b{font-size:.78em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.cg-realpct b{color:var(--accent)}

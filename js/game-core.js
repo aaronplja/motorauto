@@ -200,10 +200,112 @@
     return "xx";
   }
   /** packs de la boutique : « world » (toutes les voitures) et un pack par pays ; 2 cartes dont 1 « rare » ou mieux */
+
+  // ------------------------------------------------------------------ cartes Circuit (famille à part : tracé, longueur, pays ; l'administrateur peut ajouter une photo par URL)
+  const CIRCUIT_COUNTRY = {"ae": "Émirats arabes unis", "ar": "Argentine", "at": "Autriche", "au": "Australie", "az": "Azerbaïdjan", "be": "Belgique", "bh": "Bahreïn", "br": "Brésil", "ca": "Canada", "cn": "Chine", "cz": "Tchéquie", "de": "Allemagne", "es": "Espagne", "fr": "France", "gb": "Royaume-Uni", "hu": "Hongrie", "in": "Inde", "it": "Italie", "jp": "Japon", "kr": "Corée du Sud", "mc": "Monaco", "mx": "Mexique", "my": "Malaisie", "nl": "Pays-Bas", "pt": "Portugal", "qa": "Qatar", "ru": "Russie", "sa": "Arabie saoudite", "se": "Suède", "sg": "Singapour", "tr": "Turquie", "us": "États-Unis", "za": "Afrique du Sud", "ch": "Suisse"};
+  /** [id, nom, pays, longueur km, ouverture, rareté, 1 = tracé réel disponible] */
+  const CIRCUIT_CARDS = [
+    ["ci-yas-marina", "Yas Marina", "ae", 5.281, 2009, "epic", 1],
+    ["ci-buenos-aires", "Buenos Aires – Gálvez", "ar", 4.322, 1952, "common", 1],
+    ["ci-red-bull-ring", "Red Bull Ring", "at", 4.318, 1969, "rare", 1],
+    ["ci-albert-park", "Albert Park", "au", 5.278, 1953, "rare", 1],
+    ["ci-bakou", "Bakou", "az", 6.003, 2016, "rare", 1],
+    ["ci-spa", "Spa-Francorchamps", "be", 7.004, 1921, "legendary", 1],
+    ["ci-sakhir", "Sakhir (Bahreïn)", "bh", 5.412, 2002, "rare", 1],
+    ["ci-interlagos", "Interlagos", "br", 4.309, 1940, "epic", 1],
+    ["ci-jacarepagua", "Jacarepaguá", "br", 5.031, 1977, "common", 1],
+    ["ci-gilles-villeneuve", "Circuit Gilles-Villeneuve", "ca", 4.361, 1978, "rare", 1],
+    ["ci-shanghai", "Shanghai", "cn", 5.451, 2004, "rare", 1],
+    ["ci-nurburgring-gp", "Nürburgring (Grand Prix)", "de", 5.148, 1927, "rare", 1],
+    ["ci-hockenheim", "Hockenheimring", "de", 4.574, 1932, "rare", 1],
+    ["ci-barcelona", "Barcelona-Catalunya", "es", 4.655, 1991, "epic", 1],
+    ["ci-madring", "Madring (Madrid)", "es", 5.474, 2026, "common", 1],
+    ["ci-magny-cours", "Magny-Cours", "fr", 4.412, 1960, "rare", 1],
+    ["ci-paul-ricard", "Paul Ricard", "fr", 5.842, 1969, "rare", 1],
+    ["ci-silverstone", "Silverstone", "gb", 5.891, 1948, "epic", 1],
+    ["ci-hungaroring", "Hungaroring", "hu", 4.381, 1986, "rare", 1],
+    ["ci-mugello", "Mugello", "it", 5.245, 1974, "epic", 1],
+    ["ci-monza", "Monza", "it", 5.793, 1922, "legendary", 1],
+    ["ci-imola", "Imola", "it", 4.909, 1953, "epic", 1],
+    ["ci-suzuka", "Suzuka", "jp", 5.807, 1962, "legendary", 1],
+    ["ci-monaco", "Monaco", "mc", 3.337, 1929, "legendary", 1],
+    ["ci-mexico", "Mexico – Hermanos Rodríguez", "mx", 4.304, 1962, "rare", 1],
+    ["ci-sepang", "Sepang", "my", 5.543, 1999, "rare", 1],
+    ["ci-zandvoort", "Zandvoort", "nl", 4.259, 1948, "rare", 1],
+    ["ci-estoril", "Estoril", "pt", 4.349, 1972, "common", 1],
+    ["ci-portimao", "Portimão (Algarve)", "pt", 4.653, 2008, "common", 1],
+    ["ci-losail", "Losail (Qatar)", "qa", 5.38, 2004, "common", 1],
+    ["ci-sotchi", "Sotchi", "ru", 5.848, 2014, "common", 1],
+    ["ci-jeddah", "Jeddah", "sa", 6.175, 2021, "rare", 1],
+    ["ci-marina-bay", "Marina Bay (Singapour)", "sg", 4.928, 2008, "rare", 1],
+    ["ci-istanbul-park", "Istanbul Park", "tr", 5.338, 2005, "common", 1],
+    ["ci-indianapolis", "Indianapolis (circuit routier)", "us", 4.192, 1909, "epic", 1],
+    ["ci-watkins-glen", "Watkins Glen", "us", 5.43, 1956, "rare", 1],
+    ["ci-cota", "Circuit des Amériques (Austin)", "us", 5.514, 2012, "rare", 1],
+    ["ci-miami", "Miami", "us", 5.412, 2022, "common", 1],
+    ["ci-las-vegas", "Las Vegas", "us", 6.201, 2023, "common", 1],
+    ["ci-kyalami", "Kyalami", "za", 4.529, 1961, "common", 1],
+    ["ci-le-mans", "Le Mans – 24 Heures (circuit de la Sarthe)", "fr", 13.626, 1923, "legendary", 0],
+    ["ci-le-mans-bugatti", "Le Mans – Circuit Bugatti", "fr", 4.185, 1965, "common", 0],
+    ["ci-charade", "Charade (Clermont-Ferrand)", "fr", 8.055, 1958, "rare", 0],
+    ["ci-dijon", "Dijon-Prenois", "fr", 3.801, 1972, "common", 0],
+    ["ci-pau", "Pau – circuit urbain", "fr", 2.76, 1901, "common", 0],
+    ["ci-nordschleife", "Nürburgring – Nordschleife", "de", 20.832, 1927, "legendary", 0],
+    ["ci-sachsenring", "Sachsenring", "de", 3.671, 1927, "common", 0],
+    ["ci-norisring", "Norisring", "de", 2.3, 1947, "common", 0],
+    ["ci-hockenheim-old", "Hockenheim – ancien tracé", "de", 6.823, 1966, "epic", 0],
+    ["ci-brands-hatch", "Brands Hatch (Grand Prix)", "gb", 3.908, 1926, "rare", 0],
+    ["ci-donington", "Donington Park", "gb", 4.02, 1931, "rare", 0],
+    ["ci-goodwood", "Goodwood Motor Circuit", "gb", 3.8, 1948, "rare", 0],
+    ["ci-brooklands", "Brooklands", "gb", 4.43, 1907, "epic", 0],
+    ["ci-goodwood-hill", "Goodwood – Festival of Speed (côte)", "gb", 1.86, 1936, "rare", 0],
+    ["ci-oulton", "Oulton Park", "gb", 4.333, 1953, "common", 0],
+    ["ci-cadwell", "Cadwell Park", "gb", 3.5, 1934, "common", 0],
+    ["ci-snetterton", "Snetterton 300", "gb", 4.778, 1951, "common", 0],
+    ["ci-pikes-peak", "Pikes Peak (course de côte)", "us", 19.99, 1916, "epic", 0],
+    ["ci-daytona", "Daytona – circuit routier", "us", 5.729, 1959, "epic", 0],
+    ["ci-sebring", "Sebring", "us", 6.019, 1950, "epic", 0],
+    ["ci-road-atlanta", "Road Atlanta", "us", 4.088, 1970, "rare", 0],
+    ["ci-laguna-seca", "Laguna Seca", "us", 3.602, 1957, "epic", 0],
+    ["ci-road-america", "Road America", "us", 6.515, 1955, "rare", 0],
+    ["ci-talladega", "Talladega Superspeedway", "us", 4.281, 1969, "rare", 0],
+    ["ci-mid-ohio", "Mid-Ohio", "us", 3.634, 1962, "common", 0],
+    ["ci-long-beach", "Long Beach – circuit urbain", "us", 3.167, 1975, "common", 0],
+    ["ci-bathurst", "Bathurst – Mount Panorama", "au", 6.213, 1938, "epic", 0],
+    ["ci-phillip-island", "Phillip Island", "au", 4.445, 1956, "common", 0],
+    ["ci-misano", "Misano", "it", 4.226, 1972, "common", 0],
+    ["ci-vallelunga", "Vallelunga", "it", 4.085, 1951, "common", 0],
+    ["ci-targa-florio", "Targa Florio", "it", 72, 1906, "epic", 0],
+    ["ci-mille-miglia", "Mille Miglia (route)", "it", 1600, 1927, "epic", 0],
+    ["ci-pescara", "Pescara", "it", 25.579, 1924, "common", 0],
+    ["ci-jerez", "Jerez", "es", 4.428, 1985, "common", 0],
+    ["ci-valencia", "Valence – Ricardo Tormo", "es", 4.005, 1999, "common", 0],
+    ["ci-zolder", "Zolder", "be", 4.011, 1963, "common", 0],
+    ["ci-spa-old", "Spa-Francorchamps – ancien tracé", "be", 14.12, 1921, "epic", 0],
+    ["ci-salzburgring", "Salzburgring", "at", 4.241, 1969, "common", 0],
+    ["ci-osterreichring", "Österreichring – ancien tracé", "at", 5.911, 1969, "rare", 0],
+    ["ci-brno", "Brno", "cz", 5.403, 1987, "common", 0],
+    ["ci-anderstorp", "Anderstorp", "se", 4.018, 1968, "common", 0],
+    ["ci-bremgarten", "Bremgarten (Berne)", "ch", 7.28, 1931, "rare", 0],
+    ["ci-fuji", "Fuji Speedway", "jp", 4.563, 1965, "rare", 0],
+    ["ci-motegi", "Motegi", "jp", 4.801, 1997, "common", 0],
+    ["ci-tsukuba", "Tsukuba", "jp", 2.045, 1970, "common", 0],
+    ["ci-okayama", "Okayama", "jp", 3.703, 1990, "common", 0],
+    ["ci-autopolis", "Autopolis", "jp", 4.674, 1990, "common", 0],
+    ["ci-zhuhai", "Zhuhai", "cn", 4.319, 1996, "common", 0],
+    ["ci-korea", "Korea International Circuit", "kr", 5.615, 2010, "common", 0],
+    ["ci-buddh", "Buddh (Inde)", "in", 5.125, 2011, "common", 0],
+    ["ci-mosport", "Mosport", "ca", 3.957, 1961, "common", 0],
+    ["ci-mont-tremblant", "Mont-Tremblant", "ca", 4.265, 1964, "common", 0]
+  ];
+  const isCircuit = (id) => String(id).indexOf("ci-") === 0;
+  const CIRCUIT_BY_ID = new Map(CIRCUIT_CARDS.map((r) => [r[0], { id: r[0], circuit: true, name: r[1], brand: "Circuit", model: r[1], country: r[2], countryLabel: CIRCUIT_COUNTRY[r[2]] || "", km: r[3], since: r[4], rar: r[5], trace: !!r[6] }]));
+  const circuitRarities = () => new Map(CIRCUIT_CARDS.map((r) => [r[0], r[5]]));
   const PACKS = { world: { id: "world", label: "Pack mondial", cost: 200, cards: 2, min: "rare", country: "" } };
   COUNTRIES.forEach((k) => { PACKS[k.id] = { id: k.id, label: "Pack " + k.label, cost: k.cost, cards: 2, min: "rare", country: k.id }; });
+  PACKS.circuit = { id: "circuit", label: "Pack Circuit", cost: 400, cards: 3, min: "rare", country: "", circuit: true };
   const SHOP_PACK = { cost: PACKS.world.cost, cards: 2 };
-  function drawShopPack(rarities, ids, rng, min) {
+  function drawShopPack(rarities, ids, rng, min, n) {
     ids = ids.filter((id) => rarities.get(id) !== "mythic");
     const by = {}; ORDER.forEach((r) => { by[r] = []; });
     ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
@@ -214,9 +316,11 @@
       const better = ids.filter((id) => rarities.get(id) !== "common"); first = better[Math.floor(rng() * better.length)];
     }
     const out = [first];
-    let second = pick(pickRarity(rng, null));
-    for (let k = 0; k < 6 && second === out[0] && ids.length > 2; k++) second = pick(pickRarity(rng, null));   // évite le doublon dans le même pack quand c'est possible
-    out.push(second);
+    while (out.length < (n || 2)) {
+      let nx = pick(pickRarity(rng, null));
+      for (let k = 0; k < 6 && out.indexOf(nx) >= 0 && ids.length > out.length; k++) nx = pick(pickRarity(rng, null));   // évite le doublon dans le même pack quand c'est possible
+      out.push(nx);
+    }
     return out;
   }
 
@@ -287,9 +391,9 @@
   }
   /** recompte cartes distinctes (hors éditions spéciales) et éditions spéciales */
   function recount(doc) {
-    let c = 0, s = 0;
-    Object.keys(doc.owned || {}).forEach((k) => { if (doc.owned[k] > 0) { if (isSpecial(k)) s++; else c++; } });
-    doc.count = c; doc.specials = s; return doc;
+    let c = 0, s = 0, ci = 0;
+    Object.keys(doc.owned || {}).forEach((k) => { if (doc.owned[k] > 0) { if (isSpecial(k)) s++; else if (isCircuit(k)) ci++; else c++; } });
+    doc.count = c; doc.specials = s; doc.circuits = ci; return doc;
   }
 
   // ------------------------------------------------------------------ défis de la semaine
@@ -469,8 +573,8 @@
   const PM_DAILY_CAP = 100;
 
   // ------------------------------------------------------------------ quiz par niveau : questions automatiques (catalogue) + questions écrites
-  const QCATS = { brands: "Marques", history: "Histoire", engines: "Moteurs", motorsport: "Sport auto", countries: "Pays et constructeurs", circuits: "Rallye et circuits", numbers: "Chiffres", trivia: "Anecdotes et records" };
-  const QLEVELS = { 1: "Facile", 2: "Moyen", 3: "Expert" };
+  const QCATS = { brands: "Marques", history: "Histoire", engines: "Moteurs", motorsport: "Sport auto", countries: "Pays et constructeurs", circuits: "Circuits et courses", numbers: "Chiffres", trivia: "Anecdotes et records", japan: "Japon", rally: "Rallye", ev: "Électrique et hybride" };
+  const QLEVELS = { 1: "Facile", 2: "Moyen", 3: "Difficile", 4: "Expert" };
   // ---------------------------------------------------------------- saison : pass gratuit de 30 paliers, quêtes enchaînées, cosmétiques
   const SEASON_LEN = 31, DAY_MS = 86400000;   // une saison = un mois civil (heure de Paris) ; la saison 1 est novembre 2026
   const monthStartMs = (y, m) => { const key = y + "-" + String(m + 1).padStart(2, "0"); let t = Date.UTC(y, m, 1) - 3 * 3600000; while (dayKey(t).slice(0, 7) !== key) t += 1800000; return t; };
@@ -517,14 +621,14 @@
   };
   /** récompense d'un palier : cristaux, pack bonus, gel de série, carte épique, cosmétique ; palier 30 = une Légendaire au choix */
   const PASS_SPECIAL = {
-    5: { bonus: 1 }, 7: { freeze: 1 }, 10: { dust: 60, title: "t10" }, 12: { epic: 1 }, 15: { bonus: 1, frame: "s_gold" }, 20: { epic: 1, title: "t20" },
-    22: { freeze: 1 }, 25: { bonus: 2 }, 30: { dust: 200, choice: "legendary", frame: "s_royal", title: "t30" }
+    5: { bonus: 1 }, 7: { freeze: 1 }, 10: { dust: 60, title: "t10" }, 12: { epic: 1 }, 17: { circuit: 1 }, 15: { bonus: 1, frame: "s_gold" }, 20: { epic: 1, title: "t20" },
+    22: { freeze: 1 }, 25: { bonus: 2 }, 27: { circuit: 1 }, 30: { dust: 200, choice: "legendary", frame: "s_royal", title: "t30" }
   };
   function passReward(t) {
     const sp = PASS_SPECIAL[t] || null;
-    return Object.assign({ dust: sp ? 0 : 20 + Math.floor((t - 1) / 4) * 10, bonus: 0, frame: "", title: "", freeze: 0, epic: 0, choice: "" }, sp || {});
+    return Object.assign({ dust: sp ? 0 : 20 + Math.floor((t - 1) / 4) * 10, bonus: 0, frame: "", title: "", freeze: 0, epic: 0, circuit: 0, choice: "" }, sp || {});
   }
-  const passLabel = (r) => [r.dust ? r.dust + " cristaux" : "", r.bonus ? (r.bonus > 1 ? r.bonus + " packs bonus" : "1 pack bonus") : "", r.freeze ? "1 gel de série" : "", r.epic ? "1 carte Épique" : "", r.choice ? "1 Légendaire au choix" : "", r.frame ? "cadre " + FRAMES[r.frame].name : "", r.title ? "titre « " + TITLES[r.title].name + " »" : ""].filter(Boolean).join(" + ");
+  const passLabel = (r) => [r.dust ? r.dust + " cristaux" : "", r.bonus ? (r.bonus > 1 ? r.bonus + " packs bonus" : "1 pack bonus") : "", r.freeze ? "1 gel de série" : "", r.epic ? "1 carte Épique" : "", r.circuit ? "1 carte Circuit" : "", r.choice ? "1 Légendaire au choix" : "", r.frame ? "cadre " + FRAMES[r.frame].name : "", r.title ? "titre « " + TITLES[r.title].name + " »" : ""].filter(Boolean).join(" + ");
   /** trois Légendaires proposées (de préférence que le joueur n'a pas), identiques pour un joueur donné pendant toute la saison */
   function legendOffer(ids, rar, owned, uid, n) {
     const leg = ids.filter((id) => rar.get(id) === "legendary").sort(), fresh = leg.filter((id) => !(owned[id] > 0)), pool = (fresh.length >= 3 ? fresh : fresh.concat(leg.filter((id) => owned[id] > 0))).slice();
@@ -536,6 +640,11 @@
   function epicPick(ids, rar, owned, uid, n, t) {
     const all = ids.filter((id) => rar.get(id) === "epic").sort(), fresh = all.filter((id) => !(owned[id] > 0)), pool = fresh.length ? fresh : all;
     return pool.length ? pool[hashStr("epic-" + uid + "-" + n + "-" + t) % pool.length] : "";
+  }
+  /** carte Circuit (rare ou mieux) du palier, tirée de façon stable (de préférence une carte que le joueur n'a pas) */
+  function circuitPick(rar, owned, uid, n, t) {
+    const all = CIRCUIT_CARDS.map((r) => r[0]).filter((id) => ["rare", "epic", "legendary"].indexOf(rar.get(id) || "") >= 0).sort(), fresh = all.filter((id) => !(owned[id] > 0)), pool = fresh.length ? fresh : all;
+    return pool.length ? pool[hashStr("circuit-" + uid + "-" + n + "-" + t) % pool.length] : "";
   }
   /** quêtes de saison enchaînées : on ne passe à l'étape suivante qu'après avoir terminé la précédente */
   const SEASON_QUESTS = [
@@ -640,6 +749,268 @@
     ["motorsport", 3, "Comment s'appelait la célèbre ligne droite de 6 km du circuit du Mans ?", ["Les Hunaudières", "Le Mulsanne Arrow", "La Sarthe Express", "Tertre Rouge"], "What was the famous 6 km straight of the Le Mans circuit called?", ["The Hunaudières", "The Mulsanne Arrow", "The Sarthe Express", "Tertre Rouge"]]
   ];
 
+  const Q = (c, l, f, fo, e, eo) => [c, l, f, fo, e, eo || fo];
+  QBANK.push(
+Q("japan", 1, "Quelle marque japonaise utilise un logo à trois ellipses entrelacées ?", ["Toyota", "Mazda", "Nissan", "Honda"], "Which Japanese brand uses a logo made of three interlocking ovals?"),
+Q("japan", 1, "Quelle marque japonaise a pour emblème un ensemble d'étoiles inspiré des Pléiades ?", ["Subaru", "Suzuki", "Mitsubishi", "Daihatsu"], "Which Japanese brand has a star cluster inspired by the Pleiades as its emblem?"),
+Q("japan", 1, "Quel constructeur a créé le roadster MX-5 ?", ["Mazda", "Honda", "Toyota", "Nissan"], "Which carmaker created the MX-5 roadster?"),
+Q("japan", 1, "Quelle marque japonaise a lancé la Prius, la première hybride de grande série ?", ["Toyota", "Honda", "Nissan", "Mazda"], "Which Japanese brand launched the Prius, the first mass-produced hybrid?"),
+Q("japan", 1, "Quelle voiture japonaise est surnommée « Godzilla » ?", ["Nissan Skyline GT-R", "Toyota Supra", "Honda NSX", "Mazda RX-7"], "Which Japanese car is nicknamed “Godzilla”?"),
+Q("japan", 1, "Combien de losanges comporte le logo Mitsubishi ?", ["3", "2", "4", "5"], "How many diamonds are on the Mitsubishi logo?"),
+Q("japan", 1, "Quelle Toyota, surnommée AE86, est devenue célèbre grâce au manga Initial D ?", ["La Sprinter Trueno", "La Celica", "La Starlet", "La MR2"], "Which Toyota, known as the AE86, became famous through the manga Initial D?", ["The Sprinter Trueno", "The Celica", "The Starlet", "The MR2"]),
+Q("japan", 1, "Quel circuit japonais accueille le Grand Prix de Formule 1 ?", ["Suzuka", "Fuji", "Motegi", "Okayama"], "Which Japanese circuit hosts the Formula 1 Grand Prix?"),
+Q("japan", 1, "Lexus est la marque de luxe de quel constructeur ?", ["Toyota", "Honda", "Nissan", "Mazda"], "Lexus is the luxury brand of which carmaker?"),
+Q("japan", 1, "Quelle marque produit le petit 4x4 Jimny ?", ["Suzuki", "Daihatsu", "Subaru", "Isuzu"], "Which brand makes the small Jimny 4x4?"),
+Q("japan", 1, "Quelle marque japonaise produit la Civic Type R ?", ["Honda", "Toyota", "Subaru", "Mitsubishi"], "Which Japanese brand makes the Civic Type R?"),
+Q("japan", 1, "Quelle marque japonaise fabrique l'Impreza WRX ?", ["Subaru", "Mitsubishi", "Mazda", "Suzuki"], "Which Japanese brand makes the Impreza WRX?"),
+Q("japan", 1, "Quelle voiture est la plus vendue de l'histoire, avec plus de 50 millions d'exemplaires ?", ["Toyota Corolla", "Volkswagen Golf", "Ford Fiesta", "Honda Civic"], "Which car is the best-selling of all time, with over 50 million built?"),
+Q("japan", 1, "Quelle marque japonaise propose la Leaf, une des premières électriques populaires ?", ["Nissan", "Toyota", "Honda", "Mazda"], "Which Japanese brand makes the Leaf, one of the first popular electric cars?"),
+Q("japan", 1, "Quelle marque japonaise porte le nom de son fondateur Soichiro ?", ["Honda", "Toyota", "Suzuki", "Mazda"], "Which Japanese brand carries the name of its founder Soichiro?"),
+Q("japan", 1, "Dans quel pays est née la discipline du drift ?", ["Japon", "États-Unis", "Royaume-Uni", "Australie"], "In which country did drifting begin?"),
+Q("japan", 1, "Quelle voiture japonaise sportive est une Nissan Z ?", ["La Fairlady Z", "La Silvia", "La Cube", "La Micra"], "Which Japanese sports car is a Nissan Z?", ["The Fairlady Z", "The Silvia", "The Cube", "The Micra"]),
+Q("japan", 1, "Quelle marque japonaise produit la Swift Sport et la Vitara ?", ["Suzuki", "Subaru", "Isuzu", "Daihatsu"], "Which Japanese brand makes the Swift Sport and the Vitara?"),
+Q("japan", 1, "Quel jeu vidéo de course, créé au Japon sur PlayStation, est célèbre pour son réalisme ?", ["Gran Turismo", "Need for Speed", "Forza", "Ridge Racer"], "Which racing video game, created in Japan for PlayStation, is famous for its realism?"),
+Q("japan", 1, "Que signifie « kei car » au Japon ?", ["Une toute petite voiture à cylindrée limitée", "Une voiture de course", "Une voiture de luxe", "Un utilitaire lourd"], "What is a “kei car” in Japan?", ["A very small car with a limited engine size", "A race car", "A luxury car", "A heavy utility vehicle"]),
+Q("japan", 2, "Quelle cylindrée maximale pour une kei car japonaise ?", ["660 cm³", "1 000 cm³", "1 500 cm³", "400 cm³"], "What is the maximum engine size of a Japanese kei car?"),
+Q("japan", 2, "Quel circuit japonais est célèbre pour son tracé en forme de huit ?", ["Suzuka", "Fuji", "Tsukuba", "Autopolis"], "Which Japanese circuit is famous for its figure-eight layout?"),
+Q("japan", 2, "Quelle voiture japonaise a remporté les 24 Heures du Mans 1991 ?", ["Mazda 787B", "Nissan R90CK", "Toyota 91C-V", "Honda NSX GT2"], "Which Japanese car won the 1991 24 Hours of Le Mans?"),
+Q("japan", 2, "En quelle année Toyota a-t-il gagné pour la première fois les 24 Heures du Mans ?", ["2018", "1999", "2012", "2021"], "In which year did Toyota win the 24 Hours of Le Mans for the first time?"),
+Q("japan", 2, "Que signifie VTEC chez Honda ?", ["Distribution variable des soupapes à commande électronique", "Turbo à géométrie variable", "Transmission à quatre roues", "Traction électronique contrôlée"], "What does VTEC mean at Honda?", ["Variable valve timing and lift electronic control", "Variable-geometry turbo", "Four-wheel transmission", "Electronically controlled traction"]),
+Q("japan", 2, "Quelle voiture a donné à Datsun son image sportive en 1969 ?", ["La 240Z", "La Sunny", "La Bluebird", "La Cherry"], "Which car gave Datsun its sporty image in 1969?", ["The 240Z", "The Sunny", "The Bluebird", "The Cherry"]),
+Q("japan", 2, "Quel pilote britannique a été le premier à devenir champion du monde des rallyes sur Subaru, en 1995 ?", ["Colin McRae", "Richard Burns", "Petter Solberg", "Tommi Mäkinen"], "Which British driver became world rally champion with Subaru in 1995?"),
+Q("japan", 2, "Dans quelle préfecture se trouve Toyota City, berceau du constructeur ?", ["Aichi", "Hiroshima", "Osaka", "Kanagawa"], "In which prefecture is Toyota City, the carmaker's home, located?"),
+Q("japan", 2, "Quelle marque est installée à Hiroshima ?", ["Mazda", "Honda", "Subaru", "Suzuki"], "Which brand is based in Hiroshima?"),
+Q("japan", 2, "Quelle voiture a lancé la marque de luxe Infiniti, de Nissan, en 1989 ?", ["La Q45", "La GT-R", "La Skyline", "La Maxima"], "Which car launched Nissan's luxury brand Infiniti in 1989?", ["The Q45", "The GT-R", "The Skyline", "The Maxima"]),
+Q("japan", 2, "Quelle marque japonaise a lancé la Honda e, petite électrique au style rétro ?", ["Honda", "Mazda", "Nissan", "Toyota"], "Which Japanese brand launched the Honda e, a small electric car with retro styling?"),
+Q("japan", 2, "Quelle série de courses japonaise de voitures GT est la plus populaire du pays ?", ["Super GT", "Super Formula", "D1 Grand Prix", "Super Taikyu"], "Which Japanese GT racing series is the most popular in the country?"),
+Q("japan", 2, "Quelle marque japonaise fabrique les camions et pick-up D-Max ?", ["Isuzu", "Hino", "Mitsubishi Fuso", "UD"], "Which Japanese brand makes the D-Max pick-up?"),
+Q("japan", 2, "Quelle Toyota sportive a deux places et un moteur central ?", ["La MR2", "La Celica", "La Supra", "La GT86"], "Which sporty Toyota is a two-seater with a mid-mounted engine?"),
+Q("japan", 2, "Quel est le nom de la compacte hybride de Honda lancée en 1999 aux États-Unis ?", ["Insight", "Prius", "Fit", "Accord"], "What was Honda's hybrid launched in the US in 1999 called?"),
+Q("japan", 2, "Quelle Mazda a un moteur rotatif et des portes arrière à ouverture inversée ?", ["La RX-8", "La MX-5", "La CX-5", "La 323"], "Which Mazda has a rotary engine and rear-hinged back doors?", ["The RX-8", "The MX-5", "The CX-5", "The 323"]),
+Q("japan", 3, "Quelle marque japonaise a produit la 2000GT, vue dans un film de James Bond en 1967 ?", ["Toyota", "Nissan", "Mazda", "Honda"], "Which Japanese brand built the 2000GT, seen in a 1967 James Bond film?"),
+Q("japan", 3, "Quel pilote de F1 a été conseiller sur le développement de la Honda NSX d'origine ?", ["Ayrton Senna", "Alain Prost", "Nelson Piquet", "Nigel Mansell"], "Which F1 driver advised on the development of the original Honda NSX?"),
+Q("japan", 3, "Quel moteur équipait la Nissan Skyline GT-R R34 ?", ["RB26DETT", "2JZ-GTE", "SR20DET", "13B-REW"], "Which engine powered the Nissan Skyline GT-R R34?"),
+Q("japan", 3, "Quelle puissance officielle les constructeurs japonais s'imposaient-ils par « accord de gentlemen » à partir de 1989 ?", ["280 ch", "200 ch", "350 ch", "400 ch"], "What official power figure did Japanese carmakers hold to under a “gentlemen's agreement” from 1989?"),
+Q("japan", 3, "Que signifie STI dans Subaru STI ?", ["Subaru Tecnica International", "Sport Turbo Injection", "Super Touring Impreza", "Subaru Traction Intégrale"], "What does STI stand for in Subaru STI?"),
+Q("japan", 3, "Que signifie Nismo ?", ["Nissan Motorsport International", "Nissan Moteur Sport", "Nouvelle Idée Sportive Moderne", "Nissan Modèle Spécial"], "What does Nismo stand for?"),
+Q("japan", 3, "Quelle marque a créé le premier moteur rotatif de série à deux rotors dans la Cosmo Sport de 1967 ?", ["Mazda", "Nissan", "Toyota", "Suzuki"], "Which brand built the first two-rotor production rotary engine in the 1967 Cosmo Sport?"),
+Q("japan", 3, "Quel pilote finlandais a été quatre fois champion du monde des rallyes sur Mitsubishi Lancer Evo, de 1996 à 1999 ?", ["Tommi Mäkinen", "Juha Kankkunen", "Marcus Grönholm", "Timo Salonen"], "Which Finnish driver won four world rally titles in a Mitsubishi Lancer Evo from 1996 to 1999?"),
+Q("japan", 3, "Quel pilote espagnol a été champion du monde des rallyes en 1990 et 1992 sur Toyota Celica GT-Four ?", ["Carlos Sainz", "Jesús Puras", "Luis Moya", "Daniel Sordo"], "Which Spanish driver won the 1990 and 1992 world rally titles in a Toyota Celica GT-Four?"),
+Q("japan", 3, "Quel moteur 3,0 L six cylindres en ligne équipait la Toyota Supra A80 ?", ["2JZ-GTE", "1JZ-GTE", "RB26DETT", "4A-GE"], "Which 3.0-litre inline-six powered the Toyota Supra A80?"),
+Q("japan", 3, "Quelle est la méthode d'amélioration continue célèbre chez Toyota ?", ["Kaizen", "Ikigai", "Bushido", "Origami"], "What is Toyota's famous continuous-improvement method called?"),
+Q("japan", 3, "Quelle marque japonaise est issue d'un fabricant d'avions, Nakajima ?", ["Subaru", "Mazda", "Suzuki", "Isuzu"], "Which Japanese brand grew out of the aircraft maker Nakajima?"),
+Q("japan", 3, "Quelle marque appartient au groupe Toyota et construit de petites voitures et des kei cars ?", ["Daihatsu", "Suzuki", "Mazda", "Subaru"], "Which brand belongs to Toyota and builds small cars and kei cars?"),
+Q("japan", 3, "Quelle alliance a été scellée en 1999 entre Nissan et un constructeur français ?", ["Renault-Nissan", "Peugeot-Nissan", "Citroën-Nissan", "Alpine-Nissan"], "Which alliance was sealed in 1999 between Nissan and a French carmaker?"),
+Q("japan", 3, "Quel modèle de Mazda s'est vendu à plus de 1 million d'exemplaires et détient le record du roadster deux places le plus vendu ?", ["MX-5 Miata", "RX-7", "Cosmo", "Eunos"], "Which Mazda sold over a million units and holds the record as the best-selling two-seat roadster?"),
+Q("japan", 3, "Quelle course Mitsubishi a-t-elle gagnée douze fois avec le Pajero (Montero) ?", ["Le Dakar", "Le Monte-Carlo", "Le Safari", "Le Tour de Corse"], "Which event did Mitsubishi win twelve times with the Pajero (Montero)?", ["The Dakar", "Monte Carlo", "The Safari", "Tour de Corse"]),
+Q("japan", 3, "Quelle voiture Honda de 1992 est la première à porter le badge Type R ?", ["La NSX-R", "La Civic Type R", "L'Integra Type R", "La S2000"], "Which 1992 Honda was the first to wear the Type R badge?", ["The NSX-R", "The Civic Type R", "The Integra Type R", "The S2000"]),
+Q("japan", 3, "Quel moteur de 2,0 L, 4 cylindres, de la Honda S2000 tourne jusqu'à 9 000 tr/min ?", ["F20C", "K20A", "B18C", "H22A"], "Which 2.0-litre four-cylinder in the Honda S2000 revs up to 9,000 rpm?"),
+Q("japan", 3, "Quelle marque a conçu la technologie Skyactiv ?", ["Mazda", "Subaru", "Nissan", "Honda"], "Which brand developed Skyactiv technology?"),
+Q("japan", 4, "Quelle marque a d'abord fabriqué la Skyline avant sa fusion avec Nissan en 1966 ?", ["Prince Motor Company", "Hino", "Isuzu", "Datsun"], "Which company first built the Skyline before merging with Nissan in 1966?"),
+Q("japan", 4, "Quelle voiture japonaise de Le Mans 1997 était la Nissan R390 GT1 ?", ["Une GT1 de route homologuée", "Un proto LMP1", "Une GT2", "Une voiture de série"], "What kind of car was the Nissan R390 GT1 of Le Mans 1997?", ["A road-homologated GT1", "An LMP1 prototype", "A GT2", "A production car"]),
+Q("japan", 4, "Quelle voiture Toyota a terminé deuxième aux 24 Heures du Mans 1999 ?", ["TS020 GT-One", "TS050", "Supra GT500", "Celica GT-Four"], "Which Toyota finished second at the 1999 24 Hours of Le Mans?"),
+Q("japan", 4, "Quel moteur à 4 rotors équipait la Mazda 787B ?", ["R26B", "13B", "20B", "12A"], "Which four-rotor engine powered the Mazda 787B?"),
+Q("japan", 4, "Combien de Lexus LFA ont été produites, avec son V10 de 4,8 L ?", ["500", "1 000", "250", "2 000"], "How many Lexus LFAs, with their 4.8-litre V10, were built?"),
+Q("japan", 4, "Quelle voiture, surnommée « Devil Z », est la star du manga Wangan Midnight ?", ["Nissan Fairlady Z S30", "Toyota Supra A80", "Mazda RX-7 FD", "Honda NSX"], "Which car, nicknamed the “Devil Z”, is the star of the manga Wangan Midnight?"),
+Q("japan", 4, "Quelle entreprise, fondée sous le nom de Toyo Cork Kogyo, est devenue un constructeur automobile ?", ["Mazda", "Suzuki", "Subaru", "Isuzu"], "Which company, founded as Toyo Cork Kogyo, became a carmaker?"),
+Q("japan", 4, "Quelle petite Toyota sportive de 1965 avait un bicylindre à plat d'environ 800 cm³ ?", ["Sports 800", "Publica", "2000GT", "Corona"], "Which small 1965 Toyota sports car had a flat-twin of about 800 cc?"),
+Q("japan", 4, "Quelle voiture a été fabriquée par Mitsubishi avec une traction intégrale et quatre roues directrices en 1990 ?", ["La 3000GT (GTO)", "La Eclipse", "La Colt", "La Galant VR-4"], "Which Mitsubishi had all-wheel drive and four-wheel steering in 1990?", ["The 3000GT (GTO)", "The Eclipse", "The Colt", "The Galant VR-4"]),
+Q("japan", 4, "Quelle voiture Honda de 1963 est le tout premier modèle automobile de la marque ?", ["La T360 (mini-camion)", "La S500", "La N360", "La Civic"], "Which 1963 Honda was the brand's very first automobile?", ["The T360 (mini-truck)", "The S500", "The N360", "The Civic"]),
+Q("japan", 4, "Quelle voiture Suzuki a lancé en 1955 le segment des kei cars modernes ?", ["La Suzulight", "La Alto", "La Cappuccino", "La Jimny"], "Which 1955 Suzuki launched the modern kei car segment?", ["The Suzulight", "The Alto", "The Cappuccino", "The Jimny"]),
+Q("japan", 4, "Quel circuit japonais, au pied du Mont Fuji, a accueilli le GP de F1 en 1976 et 1977 ?", ["Fuji Speedway", "Suzuka", "Tsukuba", "Sugo"], "Which Japanese circuit at the foot of Mount Fuji hosted the F1 Grand Prix in 1976 and 1977?"),
+Q("japan", 4, "Quel moteur équipe l'AE86 de Takumi Fujiwara dans Initial D ?", ["Le 4A-GE", "Le 2JZ", "Le SR20", "Le 13B"], "Which engine powers Takumi Fujiwara's AE86 in Initial D?", ["The 4A-GE", "The 2JZ", "The SR20", "The 13B"]),
+Q("ev", 1, "Quelle marque produit la Model 3 et la Model Y ?", ["Tesla", "Rivian", "Polestar", "Lucid"], "Which brand makes the Model 3 and the Model Y?"),
+Q("ev", 1, "Quelle unité mesure l'énergie stockée dans une batterie de voiture électrique ?", ["Le kilowattheure (kWh)", "Le newton-mètre", "Le litre", "Le décibel"], "Which unit measures the energy stored in an electric car battery?", ["The kilowatt-hour (kWh)", "The newton-metre", "The litre", "The decibel"]),
+Q("ev", 1, "Que signifie « hybride rechargeable » ?", ["On peut brancher la voiture pour recharger sa batterie", "La voiture roule uniquement à l'essence", "La voiture se recharge au soleil", "La voiture roule à l'hydrogène"], "What does “plug-in hybrid” mean?", ["You can plug the car in to recharge its battery", "The car only runs on petrol", "The car recharges with sunlight", "The car runs on hydrogen"]),
+Q("ev", 1, "Quelle citadine électrique de Renault est sortie en 2012 ?", ["La Zoe", "La Twingo", "La Clio", "La Mégane"], "Which electric city car did Renault launch in 2012?", ["The Zoe", "The Twingo", "The Clio", "The Mégane"]),
+Q("ev", 1, "Quelle citadine électrique Renault reprend le nom d'un modèle des années 1970 ?", ["La Renault 5", "La Renault 4", "La Renault 12", "La Renault 16"], "Which electric Renault city car revives the name of a 1970s model?", ["The Renault 5", "The Renault 4", "The Renault 12", "The Renault 16"]),
+Q("ev", 1, "Qu'est-ce que le freinage régénératif ?", ["Il récupère de l'énergie au freinage pour la batterie", "Il refroidit les freins", "Il bloque les roues", "Il double la puissance"], "What is regenerative braking?", ["It recovers energy when braking to charge the battery", "It cools the brakes", "It locks the wheels", "It doubles the power"]),
+Q("ev", 1, "Quel est le principal métal des batteries lithium-ion ?", ["Le lithium", "Le plomb", "Le cuivre", "Le sodium"], "Which metal gives lithium-ion batteries their name?", ["Lithium", "Lead", "Copper", "Sodium"]),
+Q("ev", 1, "Combien d'émissions de CO₂ à l'échappement une voiture 100 % électrique produit-elle ?", ["Aucune", "La moitié d'une essence", "Autant qu'une diesel", "Un peu moins"], "How much CO₂ does a fully electric car emit from the tailpipe?", ["None", "Half of a petrol car", "As much as a diesel", "A bit less"]),
+Q("ev", 1, "De quel inventeur Tesla porte-t-il le nom ?", ["Nikola Tesla", "Thomas Edison", "Alexander Bell", "Henry Ford"], "After which inventor is Tesla named?"),
+Q("ev", 1, "Comment exprime-t-on la consommation d'une voiture électrique ?", ["En kWh pour 100 km", "En litres pour 100 km", "En tours par minute", "En mètres par seconde"], "How is the consumption of an electric car expressed?", ["In kWh per 100 km", "In litres per 100 km", "In revolutions per minute", "In metres per second"]),
+Q("ev", 1, "Comment s'appelle le réseau de bornes de recharge rapide de Tesla ?", ["Superchargeur", "Ionity", "Fastned", "Allego"], "What is Tesla's fast-charging network called?", ["Supercharger", "Ionity", "Fastned", "Allego"]),
+Q("ev", 1, "Quelle voiture électrique de Nissan est l'une des plus vendues au monde depuis 2010 ?", ["La Leaf", "La Juke", "La Micra", "La Qashqai"], "Which Nissan electric car has been one of the world's best sellers since 2010?", ["The Leaf", "The Juke", "The Micra", "The Qashqai"]),
+Q("ev", 1, "Quel constructeur a lancé la Prius, la première hybride populaire ?", ["Toyota", "Ford", "Volkswagen", "Peugeot"], "Which carmaker launched the Prius, the first popular hybrid?"),
+Q("ev", 1, "Quelle unité exprime la puissance d'une borne de recharge ?", ["Le kilowatt (kW)", "Le volt-ampère-heure", "Le décibel", "Le litre"], "Which unit gives the power of a charging point?", ["The kilowatt (kW)", "The volt-ampere hour", "The decibel", "The litre"]),
+Q("ev", 1, "Quelle voiture électrique est la plus petite et sans permis, vendue par Citroën ?", ["L'Ami", "La C3", "La C1", "La ë-C4"], "Which tiny licence-free electric car does Citroën sell?", ["The Ami", "The C3", "The C1", "The ë-C4"]),
+Q("ev", 1, "Quelle voiture électrique abordable de Dacia est sortie en 2021 ?", ["La Spring", "La Sandero", "La Duster", "La Jogger"], "Which affordable electric Dacia came out in 2021?", ["The Spring", "The Sandero", "The Duster", "The Jogger"]),
+Q("ev", 1, "Pourquoi une voiture électrique est-elle silencieuse ?", ["Il n'y a pas de moteur thermique", "Elle est plus légère", "Elle roule moins vite", "Elle a des pneus spéciaux"], "Why is an electric car quiet?", ["It has no combustion engine", "It is lighter", "It is slower", "It has special tyres"]),
+Q("ev", 1, "Quelle marque suédoise de voitures électriques est liée à Volvo ?", ["Polestar", "Koenigsegg", "Saab", "Scania"], "Which Swedish electric brand is linked to Volvo?"),
+Q("ev", 1, "Quel acronyme désigne une voiture 100 % électrique à batterie ?", ["BEV", "PHEV", "MHEV", "ICE"], "Which acronym denotes a fully battery-electric vehicle?"),
+Q("ev", 2, "Que signifie PHEV ?", ["Plug-in Hybrid Electric Vehicle", "Petrol Hybrid Engine Vehicle", "Power Hybrid Energy Version", "Pure Hydrogen Electric Vehicle"], "What does PHEV stand for?"),
+Q("ev", 2, "Quel constructeur chinois, dont le nom signifie « Build Your Dreams », est un géant des batteries et des voitures électriques ?", ["BYD", "NIO", "Geely", "Chery"], "Which Chinese maker, whose name means “Build Your Dreams”, is a giant of batteries and electric cars?"),
+Q("ev", 2, "Quel est le nom de la première Porsche 100 % électrique ?", ["Taycan", "Macan", "Cayenne", "Panamera"], "What is the first fully electric Porsche called?"),
+Q("ev", 2, "Quel cycle d'homologation mesure l'autonomie officielle en Europe ?", ["WLTP", "NEDC", "EPA", "CAFE"], "Which test cycle measures official range in Europe?", ["WLTP", "NEDC", "EPA", "CAFE"]),
+Q("ev", 2, "Quel championnat de monoplaces électriques a débuté en 2014 ?", ["La Formule E", "La Formule 2", "L'IndyCar", "La W Series"], "Which electric single-seater championship began in 2014?", ["Formula E", "Formula 2", "IndyCar", "W Series"]),
+Q("ev", 2, "Quelle voiture à pile à combustible, fonctionnant à l'hydrogène, est produite par Toyota ?", ["La Mirai", "La Prius", "La Yaris", "La Supra"], "Which hydrogen fuel-cell car does Toyota make?", ["The Mirai", "The Prius", "The Yaris", "The Supra"]),
+Q("ev", 2, "Que rejette une voiture à hydrogène à l'échappement ?", ["De la vapeur d'eau", "Du CO₂", "Du méthane", "De l'ozone"], "What does a hydrogen car emit from the tailpipe?", ["Water vapour", "CO₂", "Methane", "Ozone"]),
+Q("ev", 2, "Pourquoi une voiture électrique accélère-t-elle fort dès le départ ?", ["Le couple maximal est disponible dès l'arrêt", "Elle est très légère", "Elle a beaucoup de vitesses", "Elle a un turbo"], "Why does an electric car accelerate hard from a standstill?", ["Maximum torque is available from zero rpm", "It is very light", "It has many gears", "It has a turbo"]),
+Q("ev", 2, "Quelle boîte de vitesses équipe la plupart des voitures électriques ?", ["Un seul rapport de réduction", "Une boîte à 6 vitesses manuelle", "Une boîte robotisée à 8 rapports", "Une boîte à variation continue"], "Which gearbox do most electric cars use?", ["A single-speed reduction", "A 6-speed manual", "An 8-speed automated", "A continuously variable one"]),
+Q("ev", 2, "Quelle marque croate a conçu l'hypercar électrique Nevera ?", ["Rimac", "Pininfarina", "Lucid", "Koenigsegg"], "Which Croatian brand built the Nevera electric hypercar?"),
+Q("ev", 2, "Quel constructeur américain propose la Mustang Mach-E ?", ["Ford", "Chevrolet", "Dodge", "Tesla"], "Which American maker offers the Mustang Mach-E?"),
+Q("ev", 2, "Quelle recharge est la plus rapide ?", ["En courant continu (DC), à une borne rapide", "Sur une prise domestique", "En courant alternatif lent à 3 kW", "Par induction domestique"], "Which charging is the fastest?", ["Direct current (DC) at a fast charger", "From a household socket", "Slow 3 kW alternating current", "Home induction"]),
+Q("ev", 2, "Quelle citadine électrique Peugeot est basée sur la 208 ?", ["La e-208", "La e-2008", "La e-Rifter", "La e-Traveller"], "Which electric Peugeot supermini is based on the 208?", ["The e-208", "The e-2008", "The e-Rifter", "The e-Traveller"]),
+Q("ev", 2, "Quel est le nom de la petite électrique Fiat au look rétro ?", ["La 500e", "La Panda EV", "La Tipo e", "La Punto e"], "What is the small retro-styled electric Fiat called?", ["The 500e", "The Panda EV", "The Tipo e", "The Punto e"]),
+Q("ev", 2, "Quel constructeur américain a lancé le pick-up électrique Cybertruck ?", ["Tesla", "Ford", "Rivian", "GMC"], "Which American maker launched the Cybertruck electric pick-up?"),
+Q("ev", 2, "En quelle année la Formule E a-t-elle disputé sa première course, à Pékin ?", ["2014", "2008", "2011", "2018"], "In which year did Formula E hold its first race, in Beijing?"),
+Q("ev", 2, "Quel est le nom de la Chevrolet hybride rechargeable à prolongateur d'autonomie, cousine de l'Opel Ampera ?", ["Volt", "Bolt", "Spark", "Malibu"], "What is the Chevrolet range-extender plug-in hybrid, cousin of the Opel Ampera, called?"),
+Q("ev", 3, "Quelle électrique a gagné la course de côte de Pikes Peak en 2018 avec Romain Dumas ?", ["Volkswagen I.D. R", "Tesla Model S", "Porsche Taycan", "Audi e-tron"], "Which electric car won the 2018 Pikes Peak hill climb with Romain Dumas?"),
+Q("ev", 3, "Quelle voiture, la « Jamais Contente », a été la première à dépasser 100 km/h en 1899 ?", ["Une électrique", "Une à vapeur", "Une à essence", "Une à pédales"], "What kind of car was “La Jamais Contente”, the first to pass 100 km/h in 1899?", ["An electric car", "A steam car", "A petrol car", "A pedal car"]),
+Q("ev", 3, "Quel est le premier prototype hybride gagnant des 24 Heures du Mans, en 2012 ?", ["Audi R18 e-tron quattro", "Toyota TS030", "Peugeot 908", "Porsche 919"], "Which hybrid won the 24 Hours of Le Mans for the first time, in 2012?"),
+Q("ev", 3, "Quelle plateforme électrique modulaire équipe la Volkswagen ID.3 ?", ["MEB", "MQB", "MLB", "PPE"], "Which modular electric platform underpins the Volkswagen ID.3?"),
+Q("ev", 3, "Que signifie CCS pour la recharge ?", ["Combined Charging System", "Central Charge Station", "Constant Current Supply", "Car Charging Standard"], "What does CCS mean for charging?"),
+Q("ev", 3, "Quelle tension de 800 volts équipe l'Hyundai Ioniq 5 et la Porsche Taycan pour la recharge rapide ?", ["Une architecture 800 V", "Une architecture 12 V", "Une architecture 48 V", "Une architecture 100 V"], "Which voltage architecture lets the Hyundai Ioniq 5 and Porsche Taycan charge fast?", ["An 800 V architecture", "A 12 V architecture", "A 48 V architecture", "A 100 V architecture"]),
+Q("ev", 3, "Quelle boîte équipe l'essieu arrière de la Porsche Taycan ?", ["Une boîte à deux rapports", "Une boîte à dix rapports", "Une boîte manuelle", "Aucune boîte"], "What kind of gearbox does the rear axle of the Porsche Taycan have?", ["A two-speed gearbox", "A ten-speed gearbox", "A manual gearbox", "No gearbox"]),
+Q("ev", 3, "Qui a été le premier double champion de Formule E, en 2018 et 2019 ?", ["Jean-Éric Vergne", "Lucas di Grassi", "Sébastien Buemi", "Sam Bird"], "Who was Formula E's first double champion, in 2018 and 2019?"),
+Q("ev", 3, "Qu'est-ce qu'un « range extender » ?", ["Un petit moteur thermique qui produit l'électricité", "Un grand pack de batteries", "Un chargeur solaire", "Un pneu à faible résistance"], "What is a “range extender”?", ["A small combustion engine that generates electricity", "A larger battery pack", "A solar charger", "A low-rolling-resistance tyre"]),
+Q("ev", 3, "Quel composant convertit le courant continu de la batterie en courant alternatif pour le moteur ?", ["L'onduleur", "Le redresseur", "L'alternateur", "Le démarreur"], "Which part converts the battery's direct current to alternating current for the motor?", ["The inverter", "The rectifier", "The alternator", "The starter"]),
+Q("ev", 3, "Qu'est-ce que le V2L ?", ["Alimenter des appareils depuis la batterie de la voiture", "Charger plus vite", "Rouler en V", "Un type de pneu"], "What is V2L?", ["Powering devices from the car's battery", "Charging faster", "Driving in V", "A tyre type"]),
+Q("ev", 3, "Quel est le nom du système de récupération d'énergie au freinage en Formule 1 ?", ["MGU-K", "ERS-X", "KERS-T", "DRS"], "What is the Formula 1 braking energy recovery unit called?"),
+Q("ev", 3, "Quelle voiture a été la première hybride de série lancée au Japon, en 1997 ?", ["Toyota Prius", "Honda Insight", "Nissan Leaf", "Lexus RX 400h"], "Which was the first mass-production hybrid launched in Japan, in 1997?"),
+Q("ev", 3, "Combien de moteurs électriques a la Tesla Model S Plaid ?", ["3", "1", "2", "4"], "How many electric motors does the Tesla Model S Plaid have?"),
+Q("ev", 3, "Qu'est-ce qu'un hybride « micro » ou 48 V ?", ["Un moteur thermique assisté par un petit système électrique", "Une voiture à batterie de 48 kWh", "Une voiture à hydrogène", "Une voiture à deux moteurs thermiques"], "What is a “mild” or 48 V hybrid?", ["A combustion engine assisted by a small electric system", "A 48 kWh battery car", "A hydrogen car", "A car with two combustion engines"]),
+Q("ev", 3, "Quel système hybride, de Nissan, fait que le moteur thermique ne sert qu'à produire l'électricité ?", ["e-Power", "Hybrid Synergy Drive", "i-MMD", "E-Tense"], "Which Nissan hybrid system uses the combustion engine only to generate electricity?"),
+Q("ev", 3, "Quelle puissance annonce la Rimac Nevera ?", ["Environ 1 900 ch", "Environ 700 ch", "Environ 1 200 ch", "Environ 3 000 ch"], "How much power does the Rimac Nevera claim?", ["About 1,900 hp", "About 700 hp", "About 1,200 hp", "About 3,000 hp"]),
+Q("ev", 3, "Quelle start-up américaine a lancé le SUV électrique R1S et le pick-up R1T ?", ["Rivian", "Lucid", "Fisker", "Canoo"], "Which American start-up launched the R1S SUV and R1T pick-up?"),
+Q("ev", 3, "Quelle marque chinoise propose l'échange de batterie en quelques minutes ?", ["NIO", "BYD", "Xpeng", "Li Auto"], "Which Chinese brand offers battery swapping in minutes?"),
+Q("ev", 4, "Quel système de la Formule 1 récupère l'énergie à partir des gaz d'échappement ?", ["MGU-H", "MGU-K", "KERS", "ERS-B"], "Which Formula 1 system recovers energy from exhaust gases?"),
+Q("ev", 4, "Quelle était la cylindrée des moteurs de F1 hybrides à partir de 2014 ?", ["1,6 L, V6 turbo", "2,4 L, V8", "3,0 L, V10", "1,0 L, 3 cylindres"], "What were the hybrid Formula 1 engines like from 2014?", ["1.6 L V6 turbo", "2.4 L V8", "3.0 L V10", "1.0 L three-cylinder"]),
+Q("ev", 4, "Quel ingénieur a présenté en 1900 la Lohner-Porsche, considérée comme la première hybride ?", ["Ferdinand Porsche", "Gottlieb Daimler", "Rudolf Diesel", "Louis Renault"], "Which engineer presented the Lohner-Porsche in 1900, considered the first hybrid?"),
+Q("ev", 4, "Quelle voiture électrique GM de 1996 a été louée puis retirée de la route ?", ["EV1", "Bolt", "Volt", "Spark EV"], "Which 1996 GM electric car was leased and then withdrawn?"),
+Q("ev", 4, "Quelle Tesla de 2008 a été la première de série à utiliser des cellules lithium-ion ?", ["Le Roadster", "La Model S", "La Model X", "La Model 3"], "Which 2008 Tesla was the first production car to use lithium-ion cells?", ["The Roadster", "The Model S", "The Model X", "The Model 3"]),
+Q("ev", 4, "Quelle plateforme de Hyundai-Kia équipe l'Ioniq 5 ?", ["E-GMP", "MEB", "TNGA", "CMF-EV"], "Which Hyundai-Kia platform underpins the Ioniq 5?"),
+Q("ev", 4, "Quel type de moteur équipait la Tesla Model S d'origine ?", ["Asynchrone à induction", "À courant continu à balais", "Pas à pas", "À réluctance"], "What type of motor did the original Tesla Model S use?", ["AC induction", "Brushed DC", "Stepper", "Switched reluctance"]),
+Q("ev", 4, "Quel est le principe de l'e-POWER de Nissan par rapport à un hybride parallèle ?", ["Les roues sont toujours entraînées par le moteur électrique", "Le moteur thermique entraîne toujours les roues", "Il n'y a pas de batterie", "Il y a deux boîtes de vitesses"], "How does Nissan's e-POWER differ from a parallel hybrid?", ["The wheels are always driven by the electric motor", "The combustion engine always drives the wheels", "There is no battery", "There are two gearboxes"]),
+Q("ev", 4, "Qui a été le premier champion de Formule E, en 2014-2015 ?", ["Nelson Piquet Jr.", "Sébastien Buemi", "Lucas di Grassi", "Sam Bird"], "Who was the first Formula E champion, in 2014-2015?"),
+Q("ev", 4, "Quel est le nom du système hybride de Toyota qui utilise un train épicycloïdal ?", ["Hybrid Synergy Drive", "e-Power", "i-DCD", "E-Tense"], "Which Toyota hybrid system uses a planetary gear set?"),
+Q("ev", 4, "Qui conduisait La Jamais Contente, première voiture à dépasser 100 km/h en 1899 ?", ["Camille Jenatzy", "Louis Renault", "Émile Levassor", "Gaston de Chasseloup-Laubat"], "Who drove La Jamais Contente, the first car to pass 100 km/h in 1899?"),
+Q("ev", 4, "Quelle discipline à hydrogène l'ACO prévoit-il d'accueillir aux 24 Heures du Mans ?", ["Une catégorie hydrogène", "Un Grand Prix F1", "Une course de camions", "Un rallye-raid"], "What does the ACO plan to add at the 24 Hours of Le Mans?", ["A hydrogen class", "A F1 Grand Prix", "A truck race", "A rally raid"]),
+Q("ev", 4, "Quelle voiture électrique américaine de 2012 a marqué la renaissance de Tesla avec une batterie de 60 à 85 kWh ?", ["La Model S", "Le Roadster", "La Model Y", "Le Cybertruck"], "Which 2012 American electric car marked Tesla's breakthrough, with a 60 to 85 kWh battery?", ["The Model S", "The Roadster", "The Model Y", "The Cybertruck"]),
+Q("rally", 1, "Quel est le rôle du copilote en rallye ?", ["Lire les notes de route au pilote", "Changer les roues", "Chronométrer la course", "Conduire en alternance"], "What is the co-driver's job in rallying?", ["Read the pace notes to the driver", "Change the wheels", "Time the stage", "Drive in turns"]),
+Q("rally", 1, "Comment appelle-t-on une portion chronométrée d'un rallye ?", ["Une spéciale", "Une manche", "Un relais", "Une étape libre"], "What is a timed section of a rally called?", ["A special stage", "A heat", "A relay", "A free leg"]),
+Q("rally", 1, "Quel rallye ouvre traditionnellement la saison WRC, en hiver ?", ["Le Rallye Monte-Carlo", "Le Rallye du Kenya", "Le Rallye de Finlande", "Le Tour de Corse"], "Which rally traditionally opens the WRC season, in winter?", ["Monte Carlo Rally", "Safari Rally", "Rally Finland", "Tour de Corse"]),
+Q("rally", 1, "Quel pilote a été neuf fois champion du monde des rallyes de 2004 à 2012 ?", ["Sébastien Loeb", "Sébastien Ogier", "Colin McRae", "Carlos Sainz"], "Which driver won nine world rally titles from 2004 to 2012?"),
+Q("rally", 1, "Qui était le copilote de Sébastien Loeb ?", ["Daniel Elena", "Julien Ingrassia", "Luis Moya", "Timo Rautiainen"], "Who was Sébastien Loeb's co-driver?"),
+Q("rally", 1, "Quelle voiture Lancia, avec sa transmission intégrale, a dominé les rallyes à la fin des années 1980 ?", ["La Delta Integrale", "La Stratos", "La 037", "La Fulvia"], "Which Lancia, with all-wheel drive, dominated rallying in the late 1980s?", ["The Delta Integrale", "The Stratos", "The 037", "The Fulvia"]),
+Q("rally", 1, "Quel rallye-raid est parti de Paris pour Dakar lors de sa première édition ?", ["Le Paris-Dakar", "Le Paris-Pékin", "Le Rallye des Gazelles", "Le Rallye des Pharaons"], "Which rally raid left Paris for Dakar on its first edition?", ["The Paris-Dakar", "Peking to Paris", "The Gazelles Rally", "The Pharaohs Rally"]),
+Q("rally", 1, "Sur quel terrain se court le Rallye de Suède ?", ["Sur neige et glace", "Sur sable", "Sur asphalte sec", "Sur terre rouge"], "What surface is the Swedish rally run on?", ["Snow and ice", "Sand", "Dry tarmac", "Red dirt"]),
+Q("rally", 1, "Que contiennent les notes d'un copilote ?", ["La description des virages et des dangers", "La météo", "Les temps des rivaux", "Le niveau d'essence"], "What do a co-driver's notes contain?", ["A description of bends and hazards", "The weather", "Rivals' times", "The fuel level"]),
+Q("rally", 1, "Comment surnomme-t-on les pilotes de rallye finlandais ?", ["Les « Flying Finns »", "Les « Iron Swedes »", "Les « Mad Italians »", "Les « Red Devils »"], "What are Finnish rally drivers nicknamed?", ["The “Flying Finns”", "The “Iron Swedes”", "The “Mad Italians”", "The “Red Devils”"]),
+Q("rally", 1, "Quel équipement protège l'habitacle d'une voiture de rallye en cas de retournement ?", ["L'arceau de sécurité", "Le toit ouvrant", "Le pare-buffle", "L'antibrouillard"], "What protects a rally car's cabin in a roll-over?", ["The roll cage", "The sunroof", "The bull bar", "The fog light"]),
+Q("rally", 1, "Quelle marque a offert à Sébastien Loeb ses neuf titres mondiaux ?", ["Citroën", "Peugeot", "Ford", "Subaru"], "Which brand gave Sébastien Loeb his nine world titles?"),
+Q("rally", 1, "Combien de roues motrices ont les voitures du WRC actuel ?", ["4", "2", "3", "6"], "How many driven wheels do current WRC cars have?"),
+Q("rally", 1, "Quelle île française accueille le « rallye des 10 000 virages » ?", ["La Corse", "La Réunion", "La Martinique", "Belle-Île"], "Which French island hosts the “rally of 10,000 corners”?", ["Corsica", "Réunion", "Martinique", "Belle-Île"]),
+Q("rally", 1, "Que signifie « SS » dans les résultats d'un rallye ?", ["Special Stage", "Super Sport", "Safety Service", "Start Sector"], "What does “SS” mean in rally results?"),
+Q("rally", 1, "Quelle marque japonaise a ramené la victoire en WRC avec la Yaris à partir de 2017 ?", ["Toyota", "Mazda", "Honda", "Suzuki"], "Which Japanese brand returned to winning in the WRC with the Yaris from 2017?"),
+Q("rally", 1, "Quel rallye est célèbre pour ses sauts et sa vitesse sur piste de terre en Finlande ?", ["Le Rallye de Finlande", "Le Rallye de Suède", "Le Rallye du Portugal", "Le Rallye du Japon"], "Which rally is famous for its jumps and speed on Finnish gravel?", ["Rally Finland", "Rally Sweden", "Rally Portugal", "Rally Japan"]),
+Q("rally", 1, "Quel col des Alpes-Maritimes est célèbre au Rallye Monte-Carlo ?", ["Le col de Turini", "Le col du Galibier", "Le col de la Bonette", "Le Stelvio"], "Which Alps pass is famous on the Monte Carlo Rally?", ["Col de Turini", "Col du Galibier", "Col de la Bonette", "Stelvio"]),
+Q("rally", 2, "Quelle voiture a imposé la transmission intégrale en rallye dès 1981 ?", ["L'Audi Quattro", "La Ford Escort", "La Renault 5 Turbo", "La Fiat 131"], "Which car brought all-wheel drive to rallying from 1981?"),
+Q("rally", 2, "Quelle pilote est devenue en 1981 la première femme à gagner une manche du championnat du monde des rallyes ?", ["Michèle Mouton", "Pat Moss", "Jutta Kleinschmidt", "Louise Aitken-Walker"], "Which driver became the first woman to win a World Rally Championship round, in 1981?"),
+Q("rally", 2, "Qui a été champion du monde des rallyes en 1995 sur Subaru Impreza ?", ["Colin McRae", "Tommi Mäkinen", "Carlos Sainz", "Juha Kankkunen"], "Who won the 1995 world rally title in a Subaru Impreza?"),
+Q("rally", 2, "Quel pilote finlandais a été quatre fois champion du monde sur Mitsubishi de 1996 à 1999 ?", ["Tommi Mäkinen", "Marcus Grönholm", "Ari Vatanen", "Hannu Mikkola"], "Which Finnish driver won four world titles with Mitsubishi from 1996 to 1999?"),
+Q("rally", 2, "Quel pilote est devenu en 2022 le plus jeune champion du monde des rallyes, à 22 ans ?", ["Kalle Rovanperä", "Elfyn Evans", "Esapekka Lappi", "Ott Tänak"], "Which driver became the youngest world rally champion in 2022, aged 22?"),
+Q("rally", 2, "Quel autre pilote français compte huit titres de champion du monde des rallyes ?", ["Sébastien Ogier", "Didier Auriol", "Bruno Saby", "François Delecour"], "Which other French driver has eight world rally titles?"),
+Q("rally", 2, "Quelle voiture a gagné le Rallye Monte-Carlo 1973 avec Jean-Claude Andruet ?", ["L'Alpine A110", "La Lancia Stratos", "La Porsche 911", "La Ford Escort"], "Which car won the 1973 Monte Carlo Rally with Jean-Claude Andruet?", ["The Alpine A110", "The Lancia Stratos", "The Porsche 911", "The Ford Escort"]),
+Q("rally", 2, "Quelle course est surnommée la « Course to the Clouds » ?", ["Pikes Peak", "Le Mont Ventoux", "Le Dakar", "Le Rallye du Kenya"], "Which race is nicknamed “The Race to the Clouds”?", ["Pikes Peak", "Mont Ventoux", "The Dakar", "Safari Rally"]),
+Q("rally", 2, "Qui est le créateur du Paris-Dakar ?", ["Thierry Sabine", "Jean-Claude Killy", "Gilles Panizzi", "René Metge"], "Who created the Paris-Dakar rally?"),
+Q("rally", 2, "Quelle équipe a dominé le Groupe B en 1985 avec la 205 T16 ?", ["Peugeot Talbot Sport", "Lancia", "Audi Sport", "Ford"], "Which team dominated Group B in 1985 with the 205 T16?"),
+Q("rally", 2, "En quelle année le Dakar s'est-il installé en Arabie saoudite ?", ["2020", "2009", "2015", "2023"], "In which year did the Dakar move to Saudi Arabia?"),
+Q("rally", 2, "Quel pays accueille le Safari Rally, revenu au WRC en 2021 ?", ["Le Kenya", "L'Afrique du Sud", "Le Maroc", "La Tunisie"], "Which country hosts the Safari Rally, back in the WRC in 2021?", ["Kenya", "South Africa", "Morocco", "Tunisia"]),
+Q("rally", 2, "Qu'est-ce que la « reconnaissance » en rallye ?", ["Un passage préalable lent pour établir les notes", "Un tour de chauffe en course", "Un contrôle technique", "La remise des prix"], "What is the “recce” in rallying?", ["A slow preliminary pass to make the pace notes", "A warm-up lap in the race", "A technical inspection", "The prize-giving"]),
+Q("rally", 2, "Qu'est-ce que le « parc d'assistance » ?", ["La zone où les mécaniciens réparent les voitures", "Le parc des spectateurs", "La zone de départ", "Le garage du pilote"], "What is the “service park”?", ["The area where mechanics repair the cars", "The spectators' park", "The start area", "The driver's garage"]),
+Q("rally", 2, "Quel pilote belge a été champion du monde des rallyes en 2024 sur Hyundai ?", ["Thierry Neuville", "Kris Meeke", "Sébastien Ogier", "Ott Tänak"], "Which Belgian driver won the 2024 world rally title in a Hyundai?"),
+Q("rally", 2, "Quelle Renault a remporté le Rallye Monte-Carlo 1981 avec Jean Ragnotti ?", ["La 5 Turbo", "La Clio Williams", "L'Alpine A310", "La R12 Gordini"], "Which Renault won the 1981 Monte Carlo Rally with Jean Ragnotti?", ["The 5 Turbo", "The Clio Williams", "The Alpine A310", "The R12 Gordini"]),
+Q("rally", 2, "Quel pilote a remporté le Dakar à moto puis en auto, surnommé « Monsieur Dakar » ?", ["Stéphane Peterhansel", "Cyril Despres", "Hubert Auriol", "Nani Roma"], "Which Dakar winner on motorbikes and cars is nicknamed “Mr Dakar”?"),
+Q("rally", 2, "Quelle marque a fourni la voiture de Sébastien Ogier pour ses premiers titres, de 2013 à 2016 ?", ["Volkswagen", "Citroën", "Ford", "Hyundai"], "Which brand supplied Sébastien Ogier's car for his titles from 2013 to 2016?"),
+Q("rally", 3, "Quelle voiture a gagné le Monte-Carlo 1964 avec Paddy Hopkirk ?", ["La Mini Cooper S", "La Ford Cortina", "La Citroën DS", "La Porsche 904"], "Which car won the 1964 Monte Carlo Rally with Paddy Hopkirk?", ["The Mini Cooper S", "The Ford Cortina", "The Citroën DS", "The Porsche 904"]),
+Q("rally", 3, "Quel pilote a été champion du monde des rallyes en 1980 et 1982, notamment sur Fiat et Opel ?", ["Walter Röhrl", "Hannu Mikkola", "Ari Vatanen", "Markku Alén"], "Which driver was world rally champion in 1980 and 1982, notably in a Fiat and an Opel?"),
+Q("rally", 3, "Quel accident de 1986 a mis fin au Groupe B ?", ["Celui de Toivonen et Cresto au Tour de Corse", "Celui de Loeb au Dakar", "Celui de Mäkinen en Finlande", "Celui de Vatanen au Kenya"], "Which 1986 accident ended Group B?", ["Toivonen and Cresto at the Tour de Corse", "Loeb at the Dakar", "Mäkinen in Finland", "Vatanen in Kenya"]),
+Q("rally", 3, "Combien de titres constructeurs la Lancia Delta a-t-elle gagnés de 1987 à 1992 ?", ["6", "3", "4", "8"], "How many consecutive manufacturers' titles did the Lancia Delta win from 1987 to 1992?"),
+Q("rally", 3, "Quel pilote français a été le premier à devenir champion du monde des rallyes, en 1994 ?", ["Didier Auriol", "Bruno Saby", "François Delecour", "Jean Ragnotti"], "Which French driver was the first to become world rally champion, in 1994?"),
+Q("rally", 3, "Quel pilote finlandais a gagné le titre mondial en 1981 sur Ford Escort RS ?", ["Ari Vatanen", "Timo Salonen", "Hannu Mikkola", "Markku Alén"], "Which Finnish driver won the 1981 world title in a Ford Escort RS?"),
+Q("rally", 3, "Quelle spéciale bonus, en fin de rallye, donne des points supplémentaires aux meilleurs temps ?", ["La Power Stage", "La Super Spéciale", "La Joker Stage", "La Final Run"], "Which bonus stage at the end of a rally awards extra points for the fastest times?"),
+Q("rally", 3, "Combien de victoires au Dakar Stéphane Peterhansel a-t-il en tout (motos et autos) ?", ["14", "8", "10", "17"], "How many Dakar wins does Stéphane Peterhansel have in total (bikes and cars)?"),
+Q("rally", 3, "Quelle était la catégorie reine du WRC depuis 2022, aux voitures hybrides ?", ["Rally1", "Rally2", "Groupe A", "Super 2000"], "What is the WRC's top category, with hybrid cars, since 2022?"),
+Q("rally", 3, "Quelle propulsion Lancia a gagné le titre constructeurs 1983 face à l'Audi Quattro ?", ["La Lancia 037", "La Lancia Delta S4", "La Fiat 131", "La Fulvia HF"], "Which rear-wheel-drive Lancia won the 1983 manufacturers' title against the Audi Quattro?", ["The Lancia 037", "The Lancia Delta S4", "The Fiat 131", "The Fulvia HF"]),
+Q("rally", 3, "Combien de titres constructeurs Citroën a-t-il gagnés en WRC ?", ["8", "5", "3", "11"], "How many manufacturers' titles did Citroën win in the WRC?"),
+Q("rally", 3, "Quel pilote a gagné le Monte-Carlo 1986 sur Lancia Delta S4 ?", ["Henri Toivonen", "Timo Salonen", "Bruno Saby", "Juha Kankkunen"], "Which driver won the 1986 Monte Carlo Rally in a Lancia Delta S4?"),
+Q("rally", 3, "Quelle Audi a remporté Pikes Peak 1987 avec Walter Röhrl ?", ["La Sport Quattro S1", "La 80 Quattro", "La RS 4", "La TT"], "Which Audi won Pikes Peak in 1987 with Walter Röhrl?", ["The Sport Quattro S1", "The 80 Quattro", "The RS 4", "The TT"]),
+Q("rally", 3, "Quel pilote espagnol a gagné le Dakar 2024 sur Audi RS Q e-tron ?", ["Carlos Sainz", "Nani Roma", "Fernando Alonso", "Isidre Esteve"], "Which Spanish driver won the 2024 Dakar in an Audi RS Q e-tron?"),
+Q("rally", 3, "Quelle voiture Citroën a gagné le Monte-Carlo 1959 et 1966 ?", ["La DS", "La 2CV", "La Traction", "La CX"], "Which Citroën won the Monte Carlo Rally in 1959 and 1966?", ["The DS", "The 2CV", "The Traction", "The CX"]),
+Q("rally", 3, "Quelle voiture japonaise a gagné trois titres constructeurs de suite de 1995 à 1997 ?", ["Subaru Impreza", "Toyota Celica", "Mitsubishi Lancer", "Mazda 323"], "Which Japanese car won three consecutive manufacturers' titles from 1995 to 1997?"),
+Q("rally", 3, "Quel pilote finlandais a gagné quatre titres mondiaux avec Peugeot, Lancia et Toyota ?", ["Juha Kankkunen", "Marcus Grönholm", "Timo Salonen", "Hannu Mikkola"], "Which Finn won four world titles with Peugeot, Lancia and Toyota?"),
+Q("rally", 3, "Quelle Peugeot a remporté le championnat du monde constructeurs en 2000, 2001 et 2002 ?", ["La 206 WRC", "La 205 T16", "La 307 WRC", "La 405 T16"], "Which Peugeot won the manufacturers' title in 2000, 2001 and 2002?", ["The 206 WRC", "The 205 T16", "The 307 WRC", "The 405 T16"]),
+Q("rally", 3, "Quel pilote a donné à Ford le titre mondial 1979 ?", ["Björn Waldegård", "Ari Vatanen", "Hannu Mikkola", "Roger Clark"], "Which driver gave Ford the 1979 world title?"),
+Q("rally", 3, "Quelle série de vidéos de Ken Block mêle drift et cascades ?", ["Gymkhana", "Rallycross", "Hoonigan Race", "Top Gear"], "Which Ken Block video series mixes drifting and stunts?"),
+Q("rally", 3, "Quelle Hyundai, avec Thierry Neuville, participe au WRC depuis 2022 en catégorie reine ?", ["La i20 N Rally1", "La Kona", "La Tucson", "La Ioniq"], "Which Hyundai, driven by Thierry Neuville, competes in the WRC's top class since 2022?", ["The i20 N Rally1", "The Kona", "The Tucson", "The Ioniq"]),
+Q("rally", 4, "Quel Suédois a gagné le Monte-Carlo 1971 sur Alpine A110 ?", ["Ove Andersson", "Björn Waldegård", "Stig Blomqvist", "Per Eklund"], "Which Swede won the 1971 Monte Carlo Rally in an Alpine A110?"),
+Q("rally", 4, "En quelle année a eu lieu le premier Rallye Monte-Carlo ?", ["1911", "1925", "1950", "1973"], "In which year was the first Monte Carlo Rally held?"),
+Q("rally", 4, "Quel est le nom de la dernière voiture à propulsion championne du monde des rallyes en 1983 ?", ["Lancia 037", "Audi Quattro", "Peugeot 205 T16", "Toyota Celica GT-Four"], "Which rear-wheel-drive car was the last to win a world rally title, in 1983?"),
+Q("rally", 4, "Combien de kilowatts le bloc hybride des Rally1 apporte-t-il ?", ["100 kW", "30 kW", "250 kW", "10 kW"], "How much power does the Rally1 hybrid unit add?"),
+Q("rally", 4, "Combien de virages compte la route de Pikes Peak ?", ["156", "60", "300", "42"], "How many corners does the Pikes Peak road have?"),
+Q("rally", 4, "Quel copilote a accompagné Carlos Sainz pour ses titres mondiaux ?", ["Luis Moya", "Timo Rautiainen", "Nicky Grist", "Derek Ringer"], "Which co-driver partnered Carlos Sainz for his world titles?"),
+Q("rally", 4, "Quelle voiture, dessinée par Bertone et conçue pour le rallye, a gagné trois titres constructeurs de 1974 à 1976 ?", ["La Lancia Stratos HF", "La Fiat 124 Abarth", "L'Alpine A110", "La Ford Escort RS1800"], "Which Bertone-designed rally special won three manufacturers' titles from 1974 to 1976?", ["The Lancia Stratos HF", "The Fiat 124 Abarth", "The Alpine A110", "The Ford Escort RS1800"]),
+Q("rally", 4, "Quel Suédois a été champion du monde des rallyes 1984 sur Audi Quattro ?", ["Stig Blomqvist", "Björn Waldegård", "Per Eklund", "Kenneth Eriksson"], "Which Swede won the 1984 world rally title in an Audi Quattro?"),
+Q("rally", 4, "Quelle tête d'affiche du Groupe B était la Lancia Delta S4, avec un moteur à compresseur et turbo ?", ["Une double suralimentation", "Un moteur électrique", "Un moteur rotatif", "Un diesel"], "What was special about the Lancia Delta S4's engine?", ["Both a supercharger and a turbo", "An electric motor", "A rotary engine", "A diesel"]),
+Q("rally", 4, "Qui est le premier pilote à avoir gagné le Dakar à moto puis en voiture ?", ["Hubert Auriol", "Stéphane Peterhansel", "Cyril Despres", "Nani Roma"], "Who was the first driver to win the Dakar on a motorbike and then in a car?"),
+Q("rally", 4, "Quelle voiture Toyota a donné à Didier Auriol le titre 1994 ?", ["La Celica Turbo 4WD (ST185)", "La Corolla WRC", "La Yaris WRC", "La MR2"], "Which Toyota gave Didier Auriol the 1994 title?", ["The Celica Turbo 4WD (ST185)", "The Corolla WRC", "The Yaris WRC", "The MR2"]),
+Q("rally", 4, "Quel pays a organisé le premier Rallye du Japon intégré au WRC en 2004 ?", ["Le Japon (Hokkaido)", "La Chine", "La Corée", "L'Australie"], "Where was the Rally Japan that joined the WRC calendar in 2004 held?", ["Japan (Hokkaido)", "China", "Korea", "Australia"]),
+Q("brands", 4, "Quelle marque britannique a racheté Lagonda en 1947 ?", ["Aston Martin", "Bentley", "Jaguar", "Rover"], "Which British brand bought Lagonda in 1947?"),
+Q("brands", 4, "Sous quel nom les Simca ont-elles été vendues après le rachat de Chrysler Europe par PSA en 1978 ?", ["Talbot", "Matra", "Panhard", "Chrysler"], "Under which name were Simcas sold after PSA bought Chrysler Europe in 1978?"),
+Q("brands", 4, "Dans quelle ville Maserati a-t-elle été fondée en 1914 ?", ["Bologne", "Modène", "Turin", "Milan"], "In which city was Maserati founded in 1914?", ["Bologna", "Modena", "Turin", "Milan"]),
+Q("brands", 4, "Quel homme d'affaires italien a relancé Bugatti en 1987 ?", ["Romano Artioli", "Ferdinand Piëch", "Gianni Agnelli", "Ferruccio Lamborghini"], "Which Italian businessman relaunched Bugatti in 1987?"),
+Q("brands", 4, "Quelle fusion de 1952 a créé la British Motor Corporation ?", ["Austin et Morris", "Rover et Land Rover", "Jaguar et Daimler", "Triumph et MG"], "Which 1952 merger created the British Motor Corporation?", ["Austin and Morris", "Rover and Land Rover", "Jaguar and Daimler", "Triumph and MG"]),
+Q("brands", 4, "Quelle marque de luxe a pour mascotte une cigogne ?", ["Hispano-Suiza", "Delahaye", "Talbot-Lago", "Voisin"], "Which luxury brand uses a stork as its mascot?"),
+Q("brands", 4, "Quelle société a fabriqué la Trabant en Allemagne de l'Est ?", ["VEB Sachsenring", "Wartburg", "IFA Barkas", "Škoda"], "Which company built the Trabant in East Germany?"),
+Q("brands", 4, "Avec quelle entreprise Benz & Cie a-t-elle fusionné en 1926 pour former Daimler-Benz ?", ["Daimler-Motoren-Gesellschaft", "Maybach", "Horch", "NSU"], "Which company did Benz & Cie merge with in 1926 to form Daimler-Benz?"),
+Q("history", 4, "En quelle année Ford a-t-il lancé la chaîne de montage mobile ?", ["1913", "1908", "1922", "1930"], "In which year did Ford introduce the moving assembly line?"),
+Q("history", 4, "En quelle année Citroën a-t-il lancé la Traction Avant ?", ["1934", "1925", "1948", "1955"], "In which year did Citroën launch the Traction Avant?"),
+Q("history", 4, "Quelle classe Mercedes a introduit l'ABS de série en 1978 ?", ["La Classe S (W116)", "La Classe E", "La 190", "La 300 SL"], "Which Mercedes introduced ABS as standard in 1978?", ["The S-Class (W116)", "The E-Class", "The 190", "The 300 SL"]),
+Q("history", 4, "Sous quel numéro la future Porsche 911 a-t-elle été présentée en 1963 ?", ["901", "911", "356", "904"], "Under which number was the future Porsche 911 presented in 1963?"),
+Q("history", 4, "Quelle voiture a battu le record de vitesse sur terre avec 1 227 km/h en 1997 ?", ["ThrustSSC", "Bloodhound", "Spirit of America", "Thrust2"], "Which car set the land speed record of 1,227 km/h in 1997?"),
+Q("history", 4, "Qui a dessiné la carrosserie de la Citroën DS ?", ["Flaminio Bertoni", "Giorgetto Giugiaro", "Sergio Pininfarina", "Marcello Gandini"], "Who designed the bodywork of the Citroën DS?"),
+Q("history", 4, "Quel groupe a introduit le premier turbo de série, en 1962, sur l'Oldsmobile Jetfire ?", ["General Motors", "Ford", "Saab", "Chrysler"], "Which group introduced the first production turbo in 1962, on the Oldsmobile Jetfire?"),
+Q("history", 4, "En quelle année a été créé le championnat du monde de Formule 1 ?", ["1950", "1946", "1958", "1962"], "In which year was the Formula 1 World Championship created?"),
+Q("engines", 4, "Quel V8 de 7,0 L équipait la Ford GT40 Mk II victorieuse au Mans en 1966 ?", ["Le Ford 427", "Le Coyote", "Le Hemi", "Le Chevrolet Small Block"], "Which 7.0-litre V8 powered the Ford GT40 Mk II that won Le Mans in 1966?", ["The Ford 427", "The Coyote", "The Hemi", "The Chevrolet Small Block"]),
+Q("engines", 4, "Quel cycle moteur, utilisé par les hybrides Toyota, ferme tardivement l'admission pour réduire la consommation ?", ["Le cycle Atkinson", "Le cycle Diesel", "Le cycle Otto", "Le cycle Stirling"], "Which engine cycle, used by Toyota hybrids, closes the intake late to cut consumption?", ["The Atkinson cycle", "The Diesel cycle", "The Otto cycle", "The Stirling cycle"]),
+Q("engines", 4, "Quelle cylindrée a le W16 de la Bugatti Veyron ?", ["8,0 L", "6,0 L", "7,0 L", "9,0 L"], "What is the displacement of the Bugatti Veyron's W16?"),
+Q("engines", 4, "Quelle marque allemande a lancé en 1967 la Ro 80 à moteur rotatif ?", ["NSU", "Mercedes-Benz", "Opel", "Borgward"], "Which German brand launched the rotary-engined Ro 80 in 1967?"),
+Q("engines", 4, "Quel vilebrequin donne au V8 de la Ferrari 458 son hurlement aigu ?", ["Un vilebrequin à plan plat", "Un vilebrequin à plan croisé", "Un vilebrequin à plat double", "Un vilebrequin à 120°"], "Which crankshaft layout gives the Ferrari 458's V8 its high-pitched scream?", ["A flat-plane crankshaft", "A cross-plane crankshaft", "A double flat crankshaft", "A 120° crankshaft"]),
+Q("engines", 4, "Combien de rotors avait le moteur de la Mazda 787B ?", ["4", "2", "3", "6"], "How many rotors did the Mazda 787B's engine have?"),
+Q("engines", 4, "À quoi sert la sonde lambda ?", ["À mesurer l'oxygène dans l'échappement pour régler le mélange", "À mesurer la température de l'huile", "À mesurer la pression du turbo", "À mesurer la vitesse des roues"], "What does a lambda sensor do?", ["Measures oxygen in the exhaust to adjust the mixture", "Measures oil temperature", "Measures turbo pressure", "Measures wheel speed"]),
+Q("motorsport", 4, "Quel duo a gagné les 24 Heures du Mans 1966 sur la Ford GT40 n°2 ?", ["Bruce McLaren et Chris Amon", "Dan Gurney et A.J. Foyt", "Ken Miles et Denny Hulme", "Jacky Ickx et Jackie Oliver"], "Which pair won the 1966 24 Hours of Le Mans in Ford GT40 no. 2?"),
+Q("motorsport", 4, "Quelle écurie a gagné le premier championnat du monde des constructeurs de F1, en 1958 ?", ["Vanwall", "Ferrari", "Cooper", "Lotus"], "Which team won the first Formula 1 Constructors' Championship in 1958?"),
+Q("motorsport", 4, "Quel pilote-constructeur a gagné les 24 Heures du Mans 1980 avec sa propre voiture ?", ["Jean Rondeau", "Gérard Larrousse", "Henri Pescarolo", "Jean-Pierre Beltoise"], "Which driver-constructor won the 1980 24 Hours of Le Mans in his own car?"),
+Q("motorsport", 4, "Quel pilote britannique faisait partie de l'équipage de la Mazda 787B victorieuse en 1991 ?", ["Johnny Herbert", "Derek Bell", "Martin Brundle", "Damon Hill"], "Which British driver was in the Mazda 787B crew that won in 1991?"),
+Q("motorsport", 4, "Quelle marque française a gagné le Mans en 1972, 1973 et 1974 ?", ["Matra", "Alpine", "Peugeot", "Rondeau"], "Which French marque won Le Mans in 1972, 1973 and 1974?"),
+Q("motorsport", 4, "Quelle Peugeot a remporté Le Mans en 1992 et 1993 ?", ["La 905", "La 908", "La 905 Evo", "La 9X8"], "Which Peugeot won Le Mans in 1992 and 1993?"),
+Q("countries", 4, "De quel pays vient la marque Pagani ?", ["Italie", "Allemagne", "France", "Espagne"], "Which country does the Pagani brand come from?", ["Italy", "Germany", "France", "Spain"]),
+Q("countries", 4, "De quel pays vient la marque Koenigsegg ?", ["Suède", "Norvège", "Danemark", "Finlande"], "Which country does Koenigsegg come from?", ["Sweden", "Norway", "Denmark", "Finland"]),
+Q("countries", 4, "De quel pays vient la marque Tatra ?", ["République tchèque", "Pologne", "Hongrie", "Autriche"], "Which country does Tatra come from?", ["Czech Republic", "Poland", "Hungary", "Austria"]),
+Q("countries", 4, "De quel pays vient la marque Proton ?", ["Malaisie", "Indonésie", "Thaïlande", "Philippines"], "Which country does Proton come from?", ["Malaysia", "Indonesia", "Thailand", "Philippines"]),
+Q("countries", 4, "De quel pays vient la marque Holden ?", ["Australie", "Nouvelle-Zélande", "Afrique du Sud", "Canada"], "Which country does Holden come from?", ["Australia", "New Zealand", "South Africa", "Canada"]),
+Q("countries", 4, "De quel pays vient la marque Spyker ?", ["Pays-Bas", "Belgique", "Suisse", "Autriche"], "Which country does Spyker come from?", ["Netherlands", "Belgium", "Switzerland", "Austria"]),
+Q("circuits", 4, "Quelle longueur fait le circuit des 24 Heures du Mans actuel ?", ["13,6 km", "8,5 km", "5,8 km", "16 km"], "How long is the current 24 Hours of Le Mans circuit?", ["13.6 km", "8.5 km", "5.8 km", "16 km"]),
+Q("circuits", 4, "Quel est le premier circuit automobile permanent construit au monde, ouvert en 1907 ?", ["Brooklands", "Monza", "Indianapolis", "Silverstone"], "Which was the world's first purpose-built motor racing circuit, opened in 1907?"),
+Q("circuits", 4, "Quel circuit italien est surnommé le « Temple de la Vitesse » ?", ["Monza", "Imola", "Mugello", "Misano"], "Which Italian circuit is nicknamed the “Temple of Speed”?"),
+Q("circuits", 4, "Quel virage célèbre se trouve à Spa-Francorchamps ?", ["Eau Rouge-Raidillon", "Tamburello", "Parabolica", "Stowe"], "Which famous corner is at Spa-Francorchamps?", ["Eau Rouge-Raidillon", "Tamburello", "Parabolica", "Stowe"]),
+Q("circuits", 4, "Quelle est la longueur de la Nordschleife du Nürburgring ?", ["20,8 km", "12,5 km", "25,4 km", "15,1 km"], "How long is the Nürburgring Nordschleife?", ["20.8 km", "12.5 km", "25.4 km", "15.1 km"]),
+Q("circuits", 4, "Dans quel état américain se trouve le circuit de Laguna Seca et son célèbre « Corkscrew » ?", ["La Californie", "La Floride", "Le Texas", "L'Ohio"], "In which US state is Laguna Seca, with its famous “Corkscrew”?", ["California", "Florida", "Texas", "Ohio"]),
+Q("numbers", 4, "Quelle puissance a la McLaren F1 de 1992 ?", ["Environ 630 ch", "Environ 450 ch", "Environ 800 ch", "Environ 1 000 ch"], "How much power does the 1992 McLaren F1 have?", ["About 630 hp", "About 450 hp", "About 800 hp", "About 1,000 hp"]),
+Q("numbers", 4, "Quelle vitesse maximale a atteint la McLaren F1 en 1998 ?", ["391 km/h", "330 km/h", "420 km/h", "450 km/h"], "What top speed did the McLaren F1 reach in 1998?"),
+Q("numbers", 4, "Quelle vitesse a atteint la Bugatti Chiron prototype en 2019 ?", ["Environ 490 km/h", "Environ 440 km/h", "Environ 520 km/h", "Environ 560 km/h"], "What speed did the prototype Bugatti Chiron reach in 2019?", ["About 490 km/h", "About 440 km/h", "About 520 km/h", "About 560 km/h"]),
+Q("numbers", 4, "Quelle cylindrée ont les moteurs de F1 depuis 2014 ?", ["1,6 L", "2,4 L", "3,0 L", "1,0 L"], "What is the displacement of Formula 1 engines since 2014?", ["1.6 L", "2.4 L", "3.0 L", "1.0 L"]),
+Q("numbers", 4, "Quelle distance a parcouru l'Audi R15 TDI aux 24 Heures du Mans 2010 ?", ["Plus de 5 400 km", "Environ 4 000 km", "Environ 6 000 km", "Moins de 3 500 km"], "What distance did the Audi R15 TDI cover at the 2010 24 Hours of Le Mans?", ["More than 5,400 km", "About 4,000 km", "About 6,000 km", "Less than 3,500 km"]),
+Q("numbers", 4, "Combien de chevaux vaut environ 1 kW ?", ["1,36", "0,74", "2,5", "10"], "Roughly how many horsepower is 1 kW?"),
+Q("trivia", 4, "Dans quel pays était fabriquée la DeLorean DMC-12 ?", ["Irlande du Nord", "États-Unis", "Canada", "Angleterre"], "In which country was the DeLorean DMC-12 built?", ["Northern Ireland", "United States", "Canada", "England"]),
+Q("trivia", 4, "Environ combien de Coccinelle ont été produites ?", ["21,5 millions", "5 millions", "12 millions", "40 millions"], "Roughly how many Beetles were built?", ["21.5 million", "5 million", "12 million", "40 million"]),
+Q("trivia", 4, "À qui doit-on l'emblème du cheval cabré de Ferrari ?", ["À l'aviateur Francesco Baracca", "À Enzo Ferrari seul", "À Ferruccio Lamborghini", "À Benito Mussolini"], "Whose emblem inspired Ferrari's prancing horse?", ["The pilot Francesco Baracca", "Enzo Ferrari alone", "Ferruccio Lamborghini", "Benito Mussolini"]),
+Q("trivia", 4, "D'où vient le trident du logo Maserati ?", ["De la fontaine de Neptune à Bologne", "Des armoiries de Modène", "D'un emblème naval", "D'une pièce de monnaie"], "Where does the Maserati trident come from?", ["The Neptune fountain in Bologna", "The arms of Modena", "A naval emblem", "A coin"]),
+Q("trivia", 4, "Quel signe astrologique a inspiré le taureau de Lamborghini ?", ["Le Taureau", "Le Bélier", "Le Lion", "Le Scorpion"], "Which zodiac sign inspired the Lamborghini bull?", ["Taurus", "Aries", "Leo", "Scorpio"]),
+Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom ?", ["Antoine de la Mothe Cadillac, fondateur de Détroit", "Henry Leland", "Louis Chevrolet", "William Durant"], "After whom is Cadillac named?", ["Antoine de la Mothe Cadillac, founder of Detroit", "Henry Leland", "Louis Chevrolet", "William Durant"])
+  );
+
   // questions à PLUSIEURS bonnes réponses : [catégorie, niveau, question fr, options fr, indices corrects, question en, options en]
   const QMULTI = [
     ["brands", 1, "Lesquelles de ces marques sont françaises ?", ["Peugeot", "Fiat", "Citroën", "Seat"], [0, 2], "Which of these brands are French?", ["Peugeot", "Fiat", "Citroën", "Seat"]],
@@ -659,7 +1030,37 @@
     ["circuits", 2, "Lesquelles de ces courses sont des courses d'endurance ?", ["Les 24 Heures du Mans", "Les 24 Heures de Daytona", "Le Grand Prix de Monaco", "Le Tour de France auto"], [0, 1], "Which of these races are endurance races?", ["Le Mans 24 Hours", "Daytona 24 Hours", "Monaco Grand Prix", "Tour de France Automobile"]],
     ["trivia", 1, "Lesquelles de ces voitures ont un moteur rotatif ?", ["Mazda RX-7", "Mazda RX-8", "Mazda MX-5", "Honda S2000"], [0, 1], "Which of these cars have a rotary engine?", ["Mazda RX-7", "Mazda RX-8", "Mazda MX-5", "Honda S2000"]],
     ["trivia", 2, "Lesquelles de ces voitures sont des roadsters ?", ["Mazda MX-5", "Porsche Boxster", "Renault Espace", "Peugeot 3008"], [0, 1], "Which of these cars are roadsters?", ["Mazda MX-5", "Porsche Boxster", "Renault Espace", "Peugeot 3008"]],
-    ["trivia", 3, "Lesquelles de ces voitures ont été construites en Groupe B ?", ["Peugeot 205 T16", "Lancia Delta S4", "Renault Clio Williams", "Citroën Saxo"], [0, 1], "Which of these cars were built for Group B?", ["Peugeot 205 T16", "Lancia Delta S4", "Renault Clio Williams", "Citroën Saxo"]]
+    ["trivia", 3, "Lesquelles de ces voitures ont été construites en Groupe B ?", ["Peugeot 205 T16", "Lancia Delta S4", "Renault Clio Williams", "Citroën Saxo"], [0, 1], "Which of these cars were built for Group B?", ["Peugeot 205 T16", "Lancia Delta S4", "Renault Clio Williams", "Citroën Saxo"]],
+["japan", 1, "Lesquelles de ces marques sont japonaises ?", ["Toyota", "Kia", "Mazda", "Hyundai"], [0, 2], "Which of these brands are Japanese?", ["Toyota", "Kia", "Mazda", "Hyundai"]],
+["japan", 1, "Lesquelles de ces voitures sont japonaises ?", ["Nissan GT-R", "Honda NSX", "Mazda RX-7", "Lancia Delta"], [0, 1, 2], "Which of these cars are Japanese?", ["Nissan GT-R", "Honda NSX", "Mazda RX-7", "Lancia Delta"]],
+["japan", 2, "Lesquelles de ces voitures ont été produites par Toyota ?", ["Supra", "Celica", "Skyline", "Civic"], [0, 1], "Which of these cars were built by Toyota?", ["Supra", "Celica", "Skyline", "Civic"]],
+["japan", 2, "Lesquelles de ces marques sont des marques de luxe japonaises ?", ["Lexus", "Infiniti", "Mazda", "Suzuki"], [0, 1], "Which of these are Japanese luxury brands?", ["Lexus", "Infiniti", "Mazda", "Suzuki"]],
+["japan", 3, "Lesquels de ces moteurs sont japonais ?", ["2JZ-GTE", "RB26DETT", "XU10J4", "EJ207"], [0, 1, 3], "Which of these engines are Japanese?", ["2JZ-GTE", "RB26DETT", "XU10J4", "EJ207"]],
+["japan", 4, "Lesquelles de ces voitures ont un moteur rotatif Wankel de série ?", ["Mazda Cosmo", "Mazda RX-8", "Mazda MX-5", "NSU Ro 80"], [0, 1, 3], "Which of these production cars have a Wankel rotary engine?", ["Mazda Cosmo", "Mazda RX-8", "Mazda MX-5", "NSU Ro 80"]],
+["rally", 1, "Lesquels de ces rallyes comptent ou ont compté pour le WRC ?", ["Monte-Carlo", "Finlande", "Dakar", "Pikes Peak"], [0, 1], "Which of these rallies count or have counted for the WRC?", ["Monte Carlo", "Finland", "Dakar", "Pikes Peak"]],
+["rally", 2, "Lesquels de ces pilotes ont été champions du monde des rallyes ?", ["Colin McRae", "Tommi Mäkinen", "Michael Schumacher", "Sébastien Vettel"], [0, 1], "Which of these drivers were world rally champions?", ["Colin McRae", "Tommi Mäkinen", "Michael Schumacher", "Sebastian Vettel"]],
+["rally", 2, "Lesquelles de ces voitures ont couru en rallye ?", ["Lancia Stratos", "Ford Escort RS", "Smart ForTwo", "Fiat Multipla"], [0, 1], "Which of these cars raced in rallies?", ["Lancia Stratos", "Ford Escort RS", "Smart ForTwo", "Fiat Multipla"]],
+["rally", 3, "Lesquelles de ces voitures étaient du Groupe B ?", ["Audi Sport Quattro S1", "Lancia Delta S4", "Subaru Impreza WRC", "Citroën C4 WRC"], [0, 1], "Which of these cars were Group B?", ["Audi Sport Quattro S1", "Lancia Delta S4", "Subaru Impreza WRC", "Citroën C4 WRC"]],
+["rally", 3, "Lesquels de ces pilotes ont gagné le Dakar en voiture ?", ["Stéphane Peterhansel", "Carlos Sainz", "Sébastien Loeb", "Colin McRae"], [0, 1], "Which of these drivers won the Dakar in a car?", ["Stéphane Peterhansel", "Carlos Sainz", "Sébastien Loeb", "Colin McRae"]],
+["ev", 1, "Lesquelles de ces voitures sont 100 % électriques ?", ["Tesla Model 3", "Nissan Leaf", "Toyota Corolla essence", "Renault Clio essence"], [0, 1], "Which of these cars are fully electric?", ["Tesla Model 3", "Nissan Leaf", "Petrol Toyota Corolla", "Petrol Renault Clio"]],
+["ev", 2, "Lesquels de ces éléments se trouvent dans une voiture électrique ?", ["Une batterie", "Un moteur électrique", "Un pot d'échappement", "Une boîte à 6 rapports"], [0, 1], "Which of these are found in an electric car?", ["A battery", "An electric motor", "An exhaust pipe", "A 6-speed gearbox"]],
+["ev", 2, "Lesquelles de ces marques proposent des voitures électriques ?", ["Polestar", "Rivian", "Ferrari V12", "Lada"], [0, 1], "Which of these brands offer electric cars?", ["Polestar", "Rivian", "Ferrari V12", "Lada"]],
+["ev", 3, "Lesquels de ces systèmes sont des hybrides ?", ["Toyota Hybrid Synergy Drive", "Nissan e-Power", "Diesel common rail", "Turbo à géométrie variable"], [0, 1], "Which of these are hybrid systems?", ["Toyota Hybrid Synergy Drive", "Nissan e-Power", "Common-rail diesel", "Variable-geometry turbo"]],
+["ev", 4, "Lesquels de ces vainqueurs des 24 Heures du Mans étaient hybrides ?", ["Audi R18 e-tron quattro", "Toyota TS050 Hybrid", "Porsche 917", "Ford GT40"], [0, 1], "Which of these Le Mans winners were hybrids?", ["Audi R18 e-tron quattro", "Toyota TS050 Hybrid", "Porsche 917", "Ford GT40"]],
+["brands", 4, "Lesquelles de ces marques ont fait partie du groupe BMC ou de British Leyland ?", ["Austin", "Morris", "Citroën", "Fiat"], [0, 1], "Which of these brands were part of BMC or British Leyland?", ["Austin", "Morris", "Citroën", "Fiat"]],
+["history", 3, "Lesquelles de ces voitures ont gagné les 24 Heures du Mans ?", ["Bentley Speed Six", "Jaguar C-Type", "Citroën DS", "Renault 5"], [0, 1], "Which of these cars won the 24 Hours of Le Mans?", ["Bentley Speed Six", "Jaguar C-Type", "Citroën DS", "Renault 5"]],
+["history", 4, "Lesquelles de ces voitures ont une traction avant d'origine ?", ["Citroën Traction Avant", "Mini 1959", "Porsche 911 classique", "Ford Mustang 1965"], [0, 1], "Which of these cars were front-wheel drive from the start?", ["Citroën Traction Avant", "Mini 1959", "Classic Porsche 911", "1965 Ford Mustang"]],
+["engines", 3, "Lesquels de ces moteurs sont des turbodiesel ou des diesel ?", ["TDI", "HDi", "VTEC", "2JZ-GTE"], [0, 1], "Which of these are diesel engines?", ["TDI", "HDi", "VTEC", "2JZ-GTE"]],
+["engines", 4, "Lesquelles de ces voitures ont eu un moteur central arrière ?", ["Lamborghini Miura", "Ferrari 308", "Porsche Cayman", "Alfa Romeo Giulia"], [0, 1, 2], "Which of these cars have a mid-engine layout?", ["Lamborghini Miura", "Ferrari 308", "Porsche Cayman", "Alfa Romeo Giulia"]],
+["motorsport", 3, "Lesquels de ces circuits accueillent une course d'endurance de 24 heures ?", ["Le Mans", "Spa-Francorchamps", "Monaco", "Suzuka 8 Heures"], [0, 1], "Which of these circuits host a 24-hour endurance race?", ["Le Mans", "Spa-Francorchamps", "Monaco", "Suzuka 8 Hours"]],
+["motorsport", 4, "Lesquels de ces pilotes ont gagné les 24 Heures du Mans ?", ["Tom Kristensen", "Jacky Ickx", "Ayrton Senna", "Michael Schumacher"], [0, 1], "Which of these drivers won the 24 Hours of Le Mans?", ["Tom Kristensen", "Jacky Ickx", "Ayrton Senna", "Michael Schumacher"]],
+["circuits", 3, "Lesquels de ces circuits sont en Italie ?", ["Monza", "Imola", "Spa-Francorchamps", "Silverstone"], [0, 1], "Which of these circuits are in Italy?", ["Monza", "Imola", "Spa-Francorchamps", "Silverstone"]],
+["circuits", 4, "Lesquels de ces circuits ont accueilli un Grand Prix de F1 au Japon ?", ["Suzuka", "Fuji", "Monza", "Interlagos"], [0, 1], "Which of these circuits hosted a Formula 1 Grand Prix in Japan?", ["Suzuka", "Fuji", "Monza", "Interlagos"]],
+["countries", 3, "Lesquelles de ces marques sont suédoises ?", ["Volvo", "Koenigsegg", "Lotus", "Skoda"], [0, 1], "Which of these brands are Swedish?", ["Volvo", "Koenigsegg", "Lotus", "Skoda"]],
+["countries", 4, "Lesquelles de ces marques sont britanniques ?", ["Morgan", "Caterham", "Pagani", "Spyker"], [0, 1], "Which of these brands are British?", ["Morgan", "Caterham", "Pagani", "Spyker"]],
+["numbers", 3, "Lesquelles de ces voitures dépassent 1 000 ch ?", ["Bugatti Veyron", "Rimac Nevera", "Porsche 911 Carrera", "Mazda MX-5"], [0, 1], "Which of these cars exceed 1,000 hp?", ["Bugatti Veyron", "Rimac Nevera", "Porsche 911 Carrera", "Mazda MX-5"]],
+["trivia", 3, "Lesquelles de ces voitures sont apparues dans des films de James Bond ?", ["Aston Martin DB5", "Lotus Esprit", "Fiat Panda", "Peugeot 205"], [0, 1], "Which of these cars appeared in James Bond films?", ["Aston Martin DB5", "Lotus Esprit", "Fiat Panda", "Peugeot 205"]],
+["trivia", 4, "Lesquelles de ces marques ont un animal sur leur emblème ?", ["Ferrari", "Peugeot", "Mercedes-Benz", "Toyota"], [0, 1], "Which of these brands have an animal on their badge?", ["Ferrari", "Peugeot", "Mercedes-Benz", "Toyota"]]
   ];
   // questions écrites ajoutées : pays, circuits et rallye, anecdotes (codes moteurs, records)
   QBANK.push(
@@ -709,39 +1110,45 @@
   /** construit les 10 questions d'un quiz (mêmes questions, même ordre de réponses pour une même graine : le serveur peut donc corriger) */
   function quizBuild(seed, cat, level, list, opt) {
     opt = opt || {};
-    cat = QCATS[cat] ? cat : "brands"; level = Math.max(1, Math.min(3, level | 0 || 1));
+    cat = QCATS[cat] ? cat : "brands"; level = Math.max(1, Math.min(4, level | 0 || 1));
     const rng = seeded("quiz|" + seed + "|" + cat + "|" + level), T = opt.t || ((s) => s), lang = opt.lang || "fr";
     const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const x = a[i]; a[i] = a[j]; a[j] = x; } return a; };
     const pick = (arr) => arr[Math.floor(rng() * arr.length)];
     const cars = (list || []).filter((c) => c && c.name && c.brand).map((c) => Object.assign({}, c, { name: cleanName(c) })).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-    const mk = (q, opts, ans, k) => { const order = shuffle(opts.map((_, i) => i)); return { q, o: order.map((i) => opts[i]), a: order.indexOf(ans), k }; };
+    const info = (c) => [c.power > 0 && c.power + " ch", c.speed > 0 && c.speed + " km/h", c.zero > 0 && "0-100 : " + c.zero + " s", c.year > 0 && String(c.year)].filter(Boolean).join(" · ");
+    const xt = (list) => ({ ids: list.map((c) => c.id), ex: list.map(info) });
+    const mk = (q, opts, ans, k, x) => {
+      const order = shuffle(opts.map((_, i) => i)), r = { q, o: order.map((i) => opts[i]), a: order.indexOf(ans), k };
+      if (x && x.ex && x.ex.length === opts.length) { r.ex = order.map((i) => x.ex[i]); r.ids = order.map((i) => x.ids[i]); } else if (x && x.note) { r.note = x.note; r.ids = x.ids || []; }
+      return r;
+    };
     const mkm = (q, opts, goods, k) => { const order = shuffle(opts.map((_, i) => i)); const m = goods.map((g) => order.indexOf(g)).sort((x, y) => x - y); return { q, o: order.map((i) => opts[i]), a: m[0], m, k }; };
     const distinct = (arr) => new Set(arr).size === arr.length;
     const gapOk = (vals, ratio) => { const s = vals.slice().sort((x, y) => y - x); return s[1] > 0 ? s[0] / s[1] >= ratio : s[0] > 0; };
-    const RATIO = [0, 1.35, 1.12, 1.03][level];
+    const RATIO = [0, 1.35, 1.12, 1.03, 1.015][level];
     const four = (get, pred) => { for (let i = 0; i < 60; i++) { const c = []; for (let j = 0; j < 4; j++) c.push(pick(cars.filter(pred || (() => true)))); if (!distinct(c.map((x) => x.id)) || c.some((x) => !(get(x) > 0))) continue; if (!distinct(c.map(get))) continue; return c; } return null; };
     const fams = Array.from(new Set(cars.map((c) => familyOf(c.brand)))).filter((f) => cars.filter((c) => familyOf(c.brand) === f).length >= 2);
     const gens = {
       brands: [
         () => { const c = pick(cars), fam = familyOf(c.brand), pool = level >= 2 ? fams.filter((f) => f !== fam && countryOf(f) === countryOf(fam)) : fams.filter((f) => f !== fam); const w = shuffle(pool.length >= 3 ? pool : fams.filter((f) => f !== fam)).slice(0, 3); if (w.length < 3) return null; return mk(fmt(T("Quelle marque fabrique la {0} ?"), [modelOf(c)]), [fam].concat(w), 0, "brand-of"); },
         () => { const f = pick(fams.filter((x) => countryOf(x) !== "xx")); const ids = shuffle(COUNTRIES.filter((k) => k.id !== "xx").map((k) => k.id).filter((i) => i !== countryOf(f))).slice(0, 3); return mk(fmt(T("De quel pays vient la marque {0} ?"), [f]), [ctryLabel(countryOf(f))].concat(ids.map(ctryLabel)), 0, "brand-country"); },
-        () => { const f = pick(fams), good = pick(cars.filter((c) => familyOf(c.brand) === f)); const others = shuffle(cars.filter((c) => familyOf(c.brand) !== f && (level < 3 || countryOf(c.brand) === countryOf(f)))).slice(0, 3); if (others.length < 3) return null; return mk(fmt(T("Laquelle de ces voitures est signée {0} ?"), [f]), [good.name].concat(others.map((c) => c.name)), 0, "which-brand"); }
+        () => { const f = pick(fams), good = pick(cars.filter((c) => familyOf(c.brand) === f)); const others = shuffle(cars.filter((c) => familyOf(c.brand) !== f && (level < 3 || countryOf(c.brand) === countryOf(f)))).slice(0, 3); if (others.length < 3) return null; const L = [good].concat(others); return mk(fmt(T("Laquelle de ces voitures est signée {0} ?"), [f]), L.map((c) => c.name), 0, "which-brand", xt(L)); }
       ],
       engines: [
-        () => { const c = four((x) => x.power, (x) => x.power > 0); if (!c || !gapOk(c.map((x) => x.power), RATIO)) return null; const b = c.reduce((m, x) => (x.power > m.power ? x : m)); return mk(T("Laquelle est la plus puissante ?"), c.map((x) => x.name), c.indexOf(b), "most-power"); },
-        () => { const c = four((x) => x.speed, (x) => x.speed > 0); if (!c || !gapOk(c.map((x) => x.speed), RATIO)) return null; const b = c.reduce((m, x) => (x.speed > m.speed ? x : m)); return mk(T("Laquelle atteint la vitesse maximale la plus élevée ?"), c.map((x) => x.name), c.indexOf(b), "top-speed"); },
-        () => { const c = four((x) => x.zero, (x) => x.zero > 0); if (!c) return null; const z = c.map((x) => x.zero).sort((p, q) => p - q); if (!(z[1] / z[0] >= [0, 1.3, 1.1, 1.03][level])) return null; const b = c.reduce((m, x) => (x.zero < m.zero ? x : m)); return mk(T("Laquelle est la plus rapide de 0 à 100 km/h ?"), c.map((x) => x.name), c.indexOf(b), "fastest-zero"); },
-        () => { const c = pick(cars.filter((x) => x.power > 0)), w = [0, 100, 50, 25][level], base = Math.floor(c.power / w) * w; const labs = [base]; [-1, 1, -2, 2, 3].forEach((d) => { if (labs.length < 4 && base + d * w >= 0) labs.push(base + d * w); }); if (labs.length < 4) return null; return mk(fmt(T("Environ combien de chevaux pour la {0} ?"), [c.name]), labs.map((l) => l + " – " + (l + w) + " ch"), 0, "power-range"); }
+        () => { const c = four((x) => x.power, (x) => x.power > 0); if (!c || !gapOk(c.map((x) => x.power), RATIO)) return null; const b = c.reduce((m, x) => (x.power > m.power ? x : m)); return mk(T("Laquelle est la plus puissante ?"), c.map((x) => x.name), c.indexOf(b), "most-power", xt(c)); },
+        () => { const c = four((x) => x.speed, (x) => x.speed > 0); if (!c || !gapOk(c.map((x) => x.speed), RATIO)) return null; const b = c.reduce((m, x) => (x.speed > m.speed ? x : m)); return mk(T("Laquelle atteint la vitesse maximale la plus élevée ?"), c.map((x) => x.name), c.indexOf(b), "top-speed", xt(c)); },
+        () => { const c = four((x) => x.zero, (x) => x.zero > 0); if (!c) return null; const z = c.map((x) => x.zero).sort((p, q) => p - q); if (!(z[1] / z[0] >= [0, 1.3, 1.1, 1.03, 1.015][level])) return null; const b = c.reduce((m, x) => (x.zero < m.zero ? x : m)); return mk(T("Laquelle est la plus rapide de 0 à 100 km/h ?"), c.map((x) => x.name), c.indexOf(b), "fastest-zero", xt(c)); },
+        () => { const c = pick(cars.filter((x) => x.power > 0)), w = [0, 100, 50, 25, 20][level], base = Math.floor(c.power / w) * w; const labs = [base]; [-1, 1, -2, 2, 3].forEach((d) => { if (labs.length < 4 && base + d * w >= 0) labs.push(base + d * w); }); if (labs.length < 4) return null; return mk(fmt(T("Environ combien de chevaux pour la {0} ?"), [c.name]), labs.map((l) => l + " – " + (l + w) + " ch"), 0, "power-range", { ids: [c.id], note: c.name + " : " + c.power + " ch" }); }
       ],
       history: [
-        () => { const c = four((x) => x.year, (x) => x.year > 0); if (!c) return null; const ys = c.map((x) => x.year).sort((p, q) => p - q); if (ys[1] - ys[0] < [0, 25, 10, 3][level]) return null; const b = c.reduce((m, x) => (x.year < m.year ? x : m)); return mk(T("Laquelle est la plus ancienne ?"), c.map((x) => x.name), c.indexOf(b), "oldest"); },
-        () => { const c = four((x) => x.year, (x) => x.year > 0); if (!c) return null; const ys = c.map((x) => x.year).sort((p, q) => q - p); if (ys[0] - ys[1] < [0, 25, 10, 3][level]) return null; const b = c.reduce((m, x) => (x.year > m.year ? x : m)); return mk(T("Laquelle est la plus récente ?"), c.map((x) => x.name), c.indexOf(b), "newest"); },
-        () => { const c = pick(cars.filter((x) => x.year > 1900)), d = Math.floor(c.year / 10) * 10, ds = [d]; [-10, 10, -20, 20, 30, -30].forEach((k) => { if (ds.length < 4 && d + k >= 1900 && d + k <= 2020) ds.push(d + k); }); return mk(fmt(T("Dans quelle décennie est sortie la {0} ?"), [c.name]), ds.map((x) => fmt(T("années {0}"), [x])), 0, "decade"); }
+        () => { const c = four((x) => x.year, (x) => x.year > 0); if (!c) return null; const ys = c.map((x) => x.year).sort((p, q) => p - q); if (ys[1] - ys[0] < [0, 25, 10, 3, 2][level]) return null; const b = c.reduce((m, x) => (x.year < m.year ? x : m)); return mk(T("Laquelle est la plus ancienne ?"), c.map((x) => x.name), c.indexOf(b), "oldest", xt(c)); },
+        () => { const c = four((x) => x.year, (x) => x.year > 0); if (!c) return null; const ys = c.map((x) => x.year).sort((p, q) => q - p); if (ys[0] - ys[1] < [0, 25, 10, 3, 2][level]) return null; const b = c.reduce((m, x) => (x.year > m.year ? x : m)); return mk(T("Laquelle est la plus récente ?"), c.map((x) => x.name), c.indexOf(b), "newest", xt(c)); },
+        () => { const c = pick(cars.filter((x) => x.year > 1900)), d = Math.floor(c.year / 10) * 10, ds = [d]; [-10, 10, -20, 20, 30, -30].forEach((k) => { if (ds.length < 4 && d + k >= 1900 && d + k <= 2020) ds.push(d + k); }); return mk(fmt(T("Dans quelle décennie est sortie la {0} ?"), [c.name]), ds.map((x) => fmt(T("années {0}"), [x])), 0, "decade", { ids: [c.id], note: c.name + " : " + c.year }); }
       ],
       motorsport: [
-        () => { const lm = cars.filter((c) => c.category === "Le Mans"), rest = cars.filter((c) => c.category !== "Le Mans" && String(c.id).indexOf("rally-") !== 0); if (!lm.length) return null; return mk(T("Laquelle de ces voitures a couru aux 24 Heures du Mans ?"), [pick(lm).name].concat(shuffle(rest).slice(0, 3).map((c) => c.name)), 0, "lemans"); },
-        () => { const ra = cars.filter((c) => String(c.id).indexOf("rally-") === 0), rest = cars.filter((c) => String(c.id).indexOf("rally-") !== 0 && c.category !== "Le Mans"); if (!ra.length) return null; return mk(T("Laquelle de ces voitures est une voiture de rallye ?"), [pick(ra).name].concat(shuffle(rest).slice(0, 3).map((c) => c.name)), 0, "rally"); },
-        () => { const sc = cars.filter((c) => c.category === "Supercar"), rest = cars.filter((c) => c.category === "Break" || c.category === "Berline"); if (!sc.length) return null; return mk(T("Laquelle de ces voitures est une supercar ?"), [pick(sc).name].concat(shuffle(rest).slice(0, 3).map((c) => c.name)), 0, "supercar"); }
+        () => { const lm = cars.filter((c) => c.category === "Le Mans"), rest = cars.filter((c) => c.category !== "Le Mans" && String(c.id).indexOf("rally-") !== 0); if (!lm.length) return null; const L = [pick(lm)].concat(shuffle(rest).slice(0, 3)); return mk(T("Laquelle de ces voitures a couru aux 24 Heures du Mans ?"), L.map((c) => c.name), 0, "lemans", xt(L)); },
+        () => { const ra = cars.filter((c) => String(c.id).indexOf("rally-") === 0), rest = cars.filter((c) => String(c.id).indexOf("rally-") !== 0 && c.category !== "Le Mans"); if (!ra.length) return null; const L = [pick(ra)].concat(shuffle(rest).slice(0, 3)); return mk(T("Laquelle de ces voitures est une voiture de rallye ?"), L.map((c) => c.name), 0, "rally", xt(L)); },
+        () => { const sc = cars.filter((c) => c.category === "Supercar"), rest = cars.filter((c) => c.category === "Break" || c.category === "Berline"); if (!sc.length) return null; const L = [pick(sc)].concat(shuffle(rest).slice(0, 3)); return mk(T("Laquelle de ces voitures est une supercar ?"), L.map((c) => c.name), 0, "supercar", xt(L)); }
       ]
     };
     const out = [], seen = new Set();
@@ -763,6 +1170,12 @@
       add(mk(fr ? b[2] : b[4], opts, 0, "written"));
     }
     // questions automatiques
+    gens.japan = [
+      () => { const jp = cars.filter((c) => countryOf(c.brand) === "jp"), c = four((x) => x.power, (x) => x.power > 0 && countryOf(x.brand) === "jp"); if (!c || !gapOk(c.map((x) => x.power), RATIO) || !jp.length) return null; const b = c.reduce((m, x) => (x.power > m.power ? x : m)); return mk(T("Laquelle de ces voitures japonaises est la plus puissante ?"), c.map((x) => x.name), c.indexOf(b), "jp-power", xt(c)); },
+      () => { const c = four((x) => x.year, (x) => x.year > 0 && countryOf(x.brand) === "jp"); if (!c) return null; const ys = c.map((x) => x.year).sort((p, q) => p - q); if (ys[1] - ys[0] < [0, 25, 10, 3, 2][level]) return null; const b = c.reduce((m, x) => (x.year < m.year ? x : m)); return mk(T("Laquelle de ces voitures japonaises est la plus ancienne ?"), c.map((x) => x.name), c.indexOf(b), "jp-oldest", xt(c)); },
+      () => { const jp = cars.filter((c) => countryOf(c.brand) === "jp"), rest = cars.filter((c) => countryOf(c.brand) !== "jp" && countryOf(c.brand) !== "xx"); if (!jp.length || rest.length < 3) return null; const L = [pick(jp)].concat(shuffle(rest).slice(0, 3)); return mk(T("Laquelle de ces voitures est japonaise ?"), L.map((c) => c.name), 0, "is-jp", xt(L)); }
+    ];
+    gens.rally = [gens.motorsport[1]]; gens.ev = [];
     gens.countries = [gens.brands[1], gens.brands[0]]; gens.circuits = gens.motorsport; gens.numbers = gens.engines.concat(gens.history); gens.trivia = [];
     const g = gens[cat] || [];
     for (let tries = 0; tries < 400 && g.length && out.length < QUIZ_N && cars.length > 8; tries++) { let q = null; try { q = pick(g)(); } catch (e) { q = null; } add(q); }
@@ -770,6 +1183,15 @@
     for (let i = nWritten; i < wanted.length && out.length < QUIZ_N; i++) { const b = wanted[i], fr = lang === "fr"; add(mk(fr ? b[2] : b[4], fr ? b[3] : b[5], 0, "written")); }
     return shuffle(out).slice(0, QUIZ_N);
   }
+
+  /** mode chrono : 60 s, +1 par bonne réponse, −5 s par erreur ; questions de toutes les catégories, à réponse unique */
+  const CHRONO = { secs: 60, penalty: 5, reward: 2, cap: 40, max: 80 };
+  function chronoQuestions(seed, level, list, opt) {
+    const cats = Object.keys(QCATS), out = [];
+    for (let b = 0; out.length < CHRONO.max && b < 40; b++) quizBuild(seed + "-" + b, cats[b % cats.length], level, list, opt).forEach((q) => { if (!q.m) out.push(q); });
+    return out.slice(0, CHRONO.max);
+  }
+  const chronoField = (ms, level) => "cw" + weekKey(ms).replace("-", "") + "L" + level;
   /** corrige un quiz : renvoie le nombre de bonnes réponses (answers = indices choisis) */
   function quizScore(questions, answers) {
     let n = 0;
@@ -851,7 +1273,7 @@
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     setsOf, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
+    circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
     SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
