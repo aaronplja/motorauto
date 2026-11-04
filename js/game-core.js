@@ -596,6 +596,28 @@
     ["motorsport", 3, "Quelle voiture a gagné de justesse les 24 Heures du Mans 1969 ?", ["Ford GT40", "Ferrari 330 P4", "Matra MS670", "Jaguar D-Type"], "Which car narrowly won the 1969 24 Hours of Le Mans?", ["Ford GT40", "Ferrari 330 P4", "Matra MS670", "Jaguar D-Type"]],
     ["motorsport", 3, "Comment s'appelait la célèbre ligne droite de 6 km du circuit du Mans ?", ["Les Hunaudières", "Le Mulsanne Arrow", "La Sarthe Express", "Tertre Rouge"], "What was the famous 6 km straight of the Le Mans circuit called?", ["The Hunaudières", "The Mulsanne Arrow", "The Sarthe Express", "Tertre Rouge"]]
   ];
+
+  // questions à PLUSIEURS bonnes réponses : [catégorie, niveau, question fr, options fr, indices corrects, question en, options en]
+  const QMULTI = [
+    ["brands", 1, "Lesquelles de ces marques sont françaises ?", ["Peugeot", "Fiat", "Citroën", "Seat"], [0, 2], "Which of these brands are French?", ["Peugeot", "Fiat", "Citroën", "Seat"]],
+    ["brands", 1, "Lesquelles de ces marques sont allemandes ?", ["Audi", "Volvo", "Opel", "Skoda"], [0, 2], "Which of these brands are German?", ["Audi", "Volvo", "Opel", "Skoda"]],
+    ["brands", 2, "Lesquelles de ces marques appartiennent au groupe Volkswagen ?", ["Audi", "Porsche", "Mazda", "Skoda"], [0, 1, 3], "Which of these brands belong to the Volkswagen Group?", ["Audi", "Porsche", "Mazda", "Skoda"]],
+    ["brands", 3, "Lesquelles de ces marques sont britanniques ?", ["Aston Martin", "Lotus", "Alpine", "Maserati"], [0, 1], "Which of these brands are British?", ["Aston Martin", "Lotus", "Alpine", "Maserati"]],
+    ["countries", 1, "Lesquelles de ces marques sont japonaises ?", ["Honda", "Hyundai", "Subaru", "Kia"], [0, 2], "Which of these brands are Japanese?", ["Honda", "Hyundai", "Subaru", "Kia"]],
+    ["countries", 2, "Lesquelles de ces marques sont italiennes ?", ["Ferrari", "Seat", "Lancia", "Bentley"], [0, 2], "Which of these brands are Italian?", ["Ferrari", "Seat", "Lancia", "Bentley"]],
+    ["engines", 1, "Lesquels de ces moteurs sont à pistons ?", ["Le V8", "Le Wankel", "Le flat-six", "La turbine"], [0, 2], "Which of these engines are piston engines?", ["The V8", "The Wankel", "The flat-six", "The turbine"]],
+    ["engines", 2, "Lesquelles de ces voitures ont un moteur à l'arrière ?", ["Porsche 911 classique", "Renault Alpine A110 (1963)", "Mazda MX-5", "Volkswagen Golf"], [0, 1], "Which of these cars are rear-engined?", ["Classic Porsche 911", "Renault Alpine A110 (1963)", "Mazda MX-5", "Volkswagen Golf"]],
+    ["engines", 3, "Lesquels de ces codes moteur sont japonais ?", ["2JZ-GTE", "RB26DETT", "XU9JA", "EJ207"], [0, 1, 3], "Which of these engine codes are Japanese?", ["2JZ-GTE", "RB26DETT", "XU9JA", "EJ207"]],
+    ["history", 1, "Lesquelles de ces voitures sont des compactes sportives « GTI » ?", ["Volkswagen Golf GTI", "Peugeot 205 GTI", "Citroën 2CV", "Fiat Panda"], [0, 1], "Which of these cars are “GTI” hot hatches?", ["Volkswagen Golf GTI", "Peugeot 205 GTI", "Citroën 2CV", "Fiat Panda"]],
+    ["history", 2, "Lesquelles de ces voitures ont gagné les 24 Heures du Mans ?", ["Ford GT40", "Porsche 917", "Fiat 500", "Mini Cooper"], [0, 1], "Which of these cars won the Le Mans 24 Hours?", ["Ford GT40", "Porsche 917", "Fiat 500", "Mini Cooper"]],
+    ["motorsport", 1, "Lesquels de ces drapeaux existent en course ?", ["Jaune", "À damier", "Violet", "Rose"], [0, 1], "Which of these flags are used in racing?", ["Yellow", "Chequered", "Purple", "Pink"]],
+    ["motorsport", 2, "Lesquels de ces pilotes ont été champions du monde des rallyes ?", ["Sébastien Loeb", "Sébastien Ogier", "Lewis Hamilton", "Fernando Alonso"], [0, 1], "Which of these drivers were World Rally champions?", ["Sébastien Loeb", "Sébastien Ogier", "Lewis Hamilton", "Fernando Alonso"]],
+    ["circuits", 1, "Lesquels de ces circuits sont en Europe ?", ["Monza", "Spa-Francorchamps", "Suzuka", "Daytona"], [0, 1], "Which of these circuits are in Europe?", ["Monza", "Spa-Francorchamps", "Suzuka", "Daytona"]],
+    ["circuits", 2, "Lesquelles de ces courses sont des courses d'endurance ?", ["Les 24 Heures du Mans", "Les 24 Heures de Daytona", "Le Grand Prix de Monaco", "Le Tour de France auto"], [0, 1], "Which of these races are endurance races?", ["Le Mans 24 Hours", "Daytona 24 Hours", "Monaco Grand Prix", "Tour de France Automobile"]],
+    ["trivia", 1, "Lesquelles de ces voitures ont un moteur rotatif ?", ["Mazda RX-7", "Mazda RX-8", "Mazda MX-5", "Honda S2000"], [0, 1], "Which of these cars have a rotary engine?", ["Mazda RX-7", "Mazda RX-8", "Mazda MX-5", "Honda S2000"]],
+    ["trivia", 2, "Lesquelles de ces voitures sont des roadsters ?", ["Mazda MX-5", "Porsche Boxster", "Renault Espace", "Peugeot 3008"], [0, 1], "Which of these cars are roadsters?", ["Mazda MX-5", "Porsche Boxster", "Renault Espace", "Peugeot 3008"]],
+    ["trivia", 3, "Lesquelles de ces voitures ont été construites en Groupe B ?", ["Peugeot 205 T16", "Lancia Delta S4", "Renault Clio Williams", "Citroën Saxo"], [0, 1], "Which of these cars were built for Group B?", ["Peugeot 205 T16", "Lancia Delta S4", "Renault Clio Williams", "Citroën Saxo"]]
+  ];
   // questions écrites ajoutées : pays, circuits et rallye, anecdotes (codes moteurs, records)
   QBANK.push(
     ["trivia", 1, "Que signifie le sigle « GTI » ?", ["Gran Turismo Injection", "Grand Tourer International", "Gran Touring Italia", "Gas Turbine Injection"], "What does “GTI” stand for?", ["Gran Turismo Injection", "Grand Tourer International", "Gran Touring Italia", "Gas Turbine Injection"]],
@@ -650,6 +672,7 @@
     const pick = (arr) => arr[Math.floor(rng() * arr.length)];
     const cars = (list || []).filter((c) => c && c.name && c.brand).map((c) => Object.assign({}, c, { name: cleanName(c) })).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const mk = (q, opts, ans, k) => { const order = shuffle(opts.map((_, i) => i)); return { q, o: order.map((i) => opts[i]), a: order.indexOf(ans), k }; };
+    const mkm = (q, opts, goods, k) => { const order = shuffle(opts.map((_, i) => i)); const m = goods.map((g) => order.indexOf(g)).sort((x, y) => x - y); return { q, o: order.map((i) => opts[i]), a: m[0], m, k }; };
     const distinct = (arr) => new Set(arr).size === arr.length;
     const gapOk = (vals, ratio) => { const s = vals.slice().sort((x, y) => y - x); return s[1] > 0 ? s[0] / s[1] >= ratio : s[0] > 0; };
     const RATIO = [0, 1.35, 1.12, 1.03][level];
@@ -682,8 +705,16 @@
     const add = (q) => { if (q && !seen.has(q.q) && distinct(q.o)) { seen.add(q.q); out.push(q); return true; } return false; };
     // questions écrites : niveau demandé d'abord, puis niveaux voisins
     const bank = QBANK.filter((b) => b[0] === cat);
-    const wanted = shuffle(bank.filter((b) => b[1] === level)).concat(shuffle(bank.filter((b) => Math.abs(b[1] - level) === 1)));
-    const nWritten = Math.min(wanted.length, QUIZ_N / 2);
+    const wanted = shuffle(bank.filter((b) => b[1] === level)).concat(shuffle(bank.filter((b) => Math.abs(b[1] - level) === 1))).concat(shuffle(bank.filter((b) => Math.abs(b[1] - level) >= 2)));
+    // 2 questions à réponses multiples par partie (niveau demandé d'abord)
+    const multi = shuffle(QMULTI.filter((b) => b[0] === cat && b[1] === level)).concat(shuffle(QMULTI.filter((b) => b[0] === cat && b[1] !== level))).slice(0, 2);
+    multi.forEach((b) => { const fr = lang === "fr"; add(mkm(fr ? b[2] : b[5], fr ? b[3] : b[6], b[4], "multi")); });
+    if (cat === "brands" || cat === "countries") {
+      const byC = {}; fams.forEach((f) => { const c = countryOf(f); if (c !== "xx") (byC[c] = byC[c] || []).push(f); });
+      const cs = Object.keys(byC).filter((c) => byC[c].length >= 2 && fams.length - byC[c].length >= 2);
+      if (cs.length && out.length < 3) { const c = pick(cs), good = shuffle(byC[c]).slice(0, 2), bad = shuffle(fams.filter((f) => countryOf(f) !== c)).slice(0, 2); add(mkm(fmt(T("Lesquelles de ces marques viennent de : {0} ?"), [ctryLabel(c)]), good.concat(bad), [0, 1], "multi-country")); }
+    }
+    const nWritten = Math.min(wanted.length, QUIZ_N / 2 - multi.length);
     for (let i = 0; i < nWritten; i++) {
       const b = wanted[i], fr = lang === "fr", opts = fr ? b[3] : b[5];
       add(mk(fr ? b[2] : b[4], opts, 0, "written"));
@@ -697,7 +728,15 @@
     return shuffle(out).slice(0, QUIZ_N);
   }
   /** corrige un quiz : renvoie le nombre de bonnes réponses (answers = indices choisis) */
-  function quizScore(questions, answers) { let n = 0; (answers || []).forEach((a, i) => { if (questions[i] && Number(a) === questions[i].a) n++; }); return n; }
+  function quizScore(questions, answers) {
+    let n = 0;
+    (answers || []).forEach((a, i) => {
+      const q = questions[i]; if (!q) return;
+      if (q.m) { const got = (Array.isArray(a) ? a : [a]).map(Number).filter((x, j, r) => Number.isInteger(x) && r.indexOf(x) === j).sort((x, y) => x - y); if (got.length === q.m.length && got.every((x, j) => x === q.m[j])) n++; }
+      else if (Number(a) === q.a) n++;
+    });
+    return n;
+  }
 
   // ------------------------------------------------------------------ succès supplémentaires (comptent dans l'XP comme les autres badges)
   const _n = (v) => Number(v) || 0;

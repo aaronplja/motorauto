@@ -938,5 +938,7 @@
 "L'onglet Badges montre tous ses cadres et titres débloqués": "La scheda Badge mostra tutte le cornici e i titoli sbloccati",
 "Sur ton propre profil, « Personnaliser le profil » ouvre le panneau de réglages": "Sul tuo profilo, «Personalizza il profilo» apre il pannello delle impostazioni",
 "jours restants": "giorni rimasti",
-"jour restant": "giorno rimasto"
+"jour restant": "giorno rimasto",
+"Plusieurs réponses possibles : coche-les toutes, puis valide.": "Più risposte possibili: spuntale tutte, poi conferma.",
+"Lesquelles de ces marques viennent de : {0} ?": "Quali di questi marchi vengono da: {0}?"
 }]);

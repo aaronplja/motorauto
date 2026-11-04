@@ -844,7 +844,7 @@
       const uid = caller.uid, pool = await getPool(), seed = str(data && data.seed, 40), cat = str(data && data.cat, 12), level = Math.max(1, Math.min(3, Number(data && data.level) | 0));
       if (!/^[\w-]{4,40}$/.test(seed)) fail("invalid-argument", "Quiz invalide.");
       if (!core.QCATS[cat]) fail("invalid-argument", "Catégorie inconnue.");
-      const answers = (Array.isArray(data && data.answers) ? data.answers : []).slice(0, core.QUIZ_N).map((x) => Number(x) | 0);
+      const answers = (Array.isArray(data && data.answers) ? data.answers : []).slice(0, core.QUIZ_N).map((x) => (Array.isArray(x) ? x.slice(0, 6).map((y) => Number(y) | 0) : Number(x) | 0));
       const questions = core.quizBuild(seed, cat, level, pool.list), score = core.quizScore(questions, answers);
       return db.runTransaction(async (tx) => {
         const g = await readStats(tx, uid), d = await readCol(tx, uid);

@@ -9,3 +9,13 @@
 .ssn-cta-go{color:var(--bronze-ink)}
 .ssn-ice{color:var(--ice-ink)}
 .pv3-level .mentor-zone{grid-column:1/-1}
+/* quiz : réponses multiples */
+.qz-multi{margin:.1rem 0 .7rem;font-size:.85rem;font-weight:700;color:var(--accent)}
+.qz-opt{display:flex;align-items:center;gap:.7rem}
+.qz-box{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--stroke-line);display:grid;place-items:center;font-style:normal;font-size:.8rem;font-weight:900;color:var(--on-accent);transition:background .15s,border-color .15s}
+.qz-opt.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--bg-surface))}
+.qz-opt.sel .qz-box{background:var(--accent);border-color:var(--accent)}
+.qz-opt.good .qz-box{background:#22c55e;border-color:#22c55e;color:#fff}
+.qz-opt.miss{border-color:#22c55e;border-style:dashed}
+.qz-opt.miss .qz-box{border-color:#22c55e;color:#22c55e}
+.qz-opt.bad .qz-box{background:#ef4444;border-color:#ef4444}

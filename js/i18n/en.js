@@ -938,5 +938,7 @@
 "L'onglet Badges montre tous ses cadres et titres débloqués": "The Badges tab shows all their unlocked frames and titles",
 "Sur ton propre profil, « Personnaliser le profil » ouvre le panneau de réglages": "On your own profile, “Customise profile” opens the settings panel",
 "jours restants": "days left",
-"jour restant": "day left"
+"jour restant": "day left",
+"Plusieurs réponses possibles : coche-les toutes, puis valide.": "Several answers possible: tick them all, then confirm.",
+"Lesquelles de ces marques viennent de : {0} ?": "Which of these brands come from: {0}?"
 }]);

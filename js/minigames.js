@@ -107,11 +107,13 @@
       return;
     }
     if (qz.state === "play") {
-      const q = qz.qs[qz.i], picked = qz.picked, done = picked >= 0;
+      const q = qz.qs[qz.i], picked = qz.picked, done = picked >= 0, multi = !!q.m, sel = qz.sel || [];
+      const cls = (i) => multi ? (done ? (q.m.includes(i) ? (sel.includes(i) ? " good" : " miss") : sel.includes(i) ? " bad" : "") : (sel.includes(i) ? " sel" : "")) : (done ? (i === q.a ? " good" : i === picked ? " bad" : "") : "");
       root.innerHTML = `<section class="mg-card qz-card"><div class="qz-head"><span>${T(G.QCATS[qz.cat])} · ${T(G.QLEVELS[qz.level])}</span><b>${qz.i + 1} / ${qz.qs.length}</b></div>
         <div class="xp-bar small" aria-hidden="true"><i style="width:${(qz.i / qz.qs.length) * 100}%"></i></div>
-        <h2 class="qz-q">${C.esc(q.q)}</h2>
-        <div class="qz-opts">${q.o.map((o, i) => `<button type="button" class="qz-opt${done ? (i === q.a ? " good" : i === picked ? " bad" : "") : ""}" data-qz-pick="${i}" ${done ? "disabled" : ""}>${C.esc(o)}</button>`).join("")}</div>
+        <h2 class="qz-q">${C.esc(q.q)}</h2>${multi ? `<p class="qz-multi">${T("Plusieurs réponses possibles : coche-les toutes, puis valide.")}</p>` : ""}
+        <div class="qz-opts">${q.o.map((o, i) => `<button type="button" class="qz-opt${cls(i)}" data-qz-pick="${i}" ${multi ? `role="checkbox" aria-checked="${sel.includes(i)}"` : ""} ${done ? "disabled" : ""}>${multi ? `<i class="qz-box" aria-hidden="true">${sel.includes(i) || (done && q.m.includes(i)) ? "✓" : ""}</i>` : ""}${C.esc(o)}</button>`).join("")}</div>
+        ${multi && !done ? `<button type="button" class="cta-btn fill-btn mt" data-qz-ok ${sel.length ? "" : "disabled"}>${T("Valider")}</button>` : ""}
         ${done ? `<button type="button" class="cta-btn fill-btn mt" data-qz-next autofocus>${qz.i + 1 >= qz.qs.length ? T("Voir mon résultat") : T("Question suivante")}</button>` : ""}</section>`;
       return;
     }
@@ -122,7 +124,7 @@
       <div class="fz-actions"><button type="button" class="cta-btn fill-btn" data-qz-start="${qz.cat}" data-level="${qz.level}">${T("Rejouer")}</button><button type="button" class="cta-btn btn-ghost" data-qz-menu>${T("Autre quiz")}</button></div></section>${lb}`;
   }
   function qzBegin(cat, level) {
-    qz.cat = cat; qz.level = level; qz.seed = newSeed(); qz.i = 0; qz.answers = []; qz.picked = -1; qz.result = null; qz.err = "";
+    qz.cat = cat; qz.level = level; qz.seed = newSeed(); qz.i = 0; qz.answers = []; qz.picked = -1; qz.sel = []; qz.result = null; qz.err = "";
     try { qz.qs = G.quizBuild(qz.seed, cat, level, quizPool(), { t: T, lang: lang() }); } catch (e) { qz.err = T("Impossible de préparer le quiz."); }
     if (!qz.qs.length) qz.err = qz.err || T("Pas assez de questions pour cette catégorie.");
     qz.state = qz.err ? "menu" : "play"; qzRender();
@@ -201,8 +203,13 @@
       if ((b = t.closest("[data-pm-start]"))) { pmStart(); return; }
       if ((b = t.closest("[data-pm-pick]"))) { pmPick(b.dataset.pmPick); return; }
       if ((b = t.closest("[data-qz-start]"))) { qzBegin(b.dataset.qzStart, Number(b.dataset.level) || 1); return; }
-      if ((b = t.closest("[data-qz-pick]"))) { if (qz.picked >= 0) return; qz.picked = Number(b.dataset.qzPick); qz.answers[qz.i] = qz.picked; qzRender(); return; }
-      if (t.closest("[data-qz-next]")) { if (qz.i + 1 >= qz.qs.length) { qzFinish(); } else { qz.i++; qz.picked = -1; qzRender(); } return; }
+      if ((b = t.closest("[data-qz-pick]"))) {
+        if (qz.picked >= 0) return; const n = Number(b.dataset.qzPick), q = qz.qs[qz.i];
+        if (q && q.m) { qz.sel = qz.sel || []; const at = qz.sel.indexOf(n); if (at >= 0) qz.sel.splice(at, 1); else qz.sel.push(n); qzRender(); return; }
+        qz.picked = n; qz.answers[qz.i] = n; qzRender(); return;
+      }
+      if (t.closest("[data-qz-ok]")) { if (qz.picked >= 0 || !(qz.sel && qz.sel.length)) return; qz.answers[qz.i] = qz.sel.slice().sort((x, y) => x - y); qz.picked = 0; qzRender(); return; }
+      if (t.closest("[data-qz-next]")) { if (qz.i + 1 >= qz.qs.length) { qzFinish(); } else { qz.i++; qz.picked = -1; qz.sel = []; qzRender(); } return; }
       if (t.closest("[data-qz-menu]")) { qz.state = "menu"; qz.err = ""; qzRender(); return; }
       if ((b = t.closest("[data-ac-f]"))) { ac.filter = b.dataset.acF; acRender(); }
       else if ((b = t.closest("[data-ac-t]"))) { ac.tier = b.dataset.acT; acRender(); }

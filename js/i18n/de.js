@@ -938,5 +938,7 @@
 "L'onglet Badges montre tous ses cadres et titres débloqués": "Der Tab Abzeichen zeigt alle freigeschalteten Rahmen und Titel",
 "Sur ton propre profil, « Personnaliser le profil » ouvre le panneau de réglages": "Auf deinem eigenen Profil öffnet „Profil anpassen“ das Einstellungsfenster",
 "jours restants": "Tage übrig",
-"jour restant": "Tag übrig"
+"jour restant": "Tag übrig",
+"Plusieurs réponses possibles : coche-les toutes, puis valide.": "Mehrere Antworten möglich: Hake alle an und bestätige.",
+"Lesquelles de ces marques viennent de : {0} ?": "Welche dieser Marken stammen aus: {0}?"
 }]);

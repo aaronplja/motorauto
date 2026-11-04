@@ -938,5 +938,7 @@
 "L'onglet Badges montre tous ses cadres et titres débloqués": "La pestaña Insignias muestra todos sus marcos y títulos desbloqueados",
 "Sur ton propre profil, « Personnaliser le profil » ouvre le panneau de réglages": "En tu propio perfil, «Personalizar el perfil» abre el panel de ajustes",
 "jours restants": "días restantes",
-"jour restant": "día restante"
+"jour restant": "día restante",
+"Plusieurs réponses possibles : coche-les toutes, puis valide.": "Varias respuestas posibles: márcalas todas y confirma.",
+"Lesquelles de ces marques viennent de : {0} ?": "¿Cuáles de estas marcas vienen de: {0}?"
 }]);

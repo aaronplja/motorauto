@@ -294,7 +294,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     ok(core.seasonInfo(Date.parse("2026-11-15T12:00:00+01:00")).daysLeft === 16, "jours restants jusqu'à la fin du mois");
     let tot = 0; for (let t = 1; t <= 30; t++) tot += core.passReward(t).dust; ok(tot > 1000 && tot < 2000, "cristaux totaux du pass équilibrés : " + tot); }
   // quiz : nouvelles catégories
-  for (const c of ["countries", "circuits", "numbers", "trivia"]) { const sd = "seed" + c + "ab"; const qs = core.quizBuild(sd, c, 2, pool); r = await G.quizSubmit(U2, { seed: sd, cat: c, level: 2, answers: qs.map((q) => q.a) }); ok(r.total >= 9 && r.score === r.total, "quiz " + c + " : " + r.total + " questions"); }
+  for (const c of ["countries", "circuits", "numbers", "trivia"]) { const sd = "seed" + c + "ab"; const qs = core.quizBuild(sd, c, 2, pool); r = await G.quizSubmit(U2, { seed: sd, cat: c, level: 2, answers: qs.map((q) => q.m || q.a) }); ok(r.total >= 9 && r.score === r.total, "quiz " + c + " : " + r.total + " questions"); }
 
   // ---- défi de clubs
   NOW = Date.parse("2026-11-02T10:00:00+01:00");
