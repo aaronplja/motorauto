@@ -6,7 +6,7 @@
   "use strict";
   const G = window.MAGameCore;
   if (!G) return;
-  let C = null, freezes = null, busy = false, welcomeShown = false;
+  let C = null, freezes = null, busy = false, welcomeShown = false, ssnTab = "pass";
   const T = (s) => (window.MAI18n ? window.MAI18n.t(s) : s);
   const API = (n, d) => window.MAGameAPI.call(n, d);
   const doc = () => (window.MACards && window.MACards.mine()) || null;
@@ -77,13 +77,15 @@
       <div class="ssn-prog"><div class="ssn-ring" style="--p:${pct}%"><b>${tier}</b><small>/ ${G.PASS_TIERS}</small></div>
         <div><b>${sn.pts} ${T("points de saison")}</b><span class="ssn-bar"><u style="width:${pct}%"></u></span><small>${tier >= G.PASS_TIERS ? T("Pass terminé : bravo !") : `${toNext} ${T("points avant le palier")} ${tier + 1}`}</small>
           ${claimable ? `<button type="button" class="cta-btn fill-btn" data-ssn-all>${T("Tout récupérer")} (${claimable})</button>` : ""}</div></div>
+      <div class="ssn-tabs" role="tablist" aria-label="${T("Saison")}">${[["pass", "🏆", "Pass"], ["quests", "🎯", "Défis de saison"], ["cosm", "🖼️", "Cadres et titres"]].map((t) => `<button type="button" role="tab" class="ssn-tab${ssnTab === t[0] ? " on" : ""}" aria-selected="${ssnTab === t[0]}" data-ssn-tab="${t[0]}"><i aria-hidden="true">${t[1]}</i><span>${T(t[2])}</span></button>`).join("")}</div>
+      <div class="ssn-pane" data-pane="${ssnTab}">
+      ${ssnTab === "quests" ? `      <h3>${T("Défis de saison")}</h3>${questHtml(sn)}` : ssnTab === "cosm" ? `${window.MACosm ? cosmHtml() : ""}` : `
       <div class="ssn-tiers" role="list">${Array.from({ length: G.PASS_TIERS }, (_, i) => tierHtml(i + 1, sn, tier)).join("")}</div>
       ${howHtml(sn)}
-      <h3>${T("Quêtes de la saison")}</h3>${questHtml(sn)}
       <h3>${T("Gel de série")}</h3>
       <div class="ssn-freeze"><span class="ssn-ice" aria-hidden="true">❄</span><div><b>${freezes || 0} / ${G.FREEZE_MAX} ${T("en stock")}</b><small>${T("Un gel protège ta série de visites : il s'utilise tout seul le premier jour raté. 1 gel offert chaque mois.")}</small></div>
-        <button type="button" class="cta-btn btn-ghost" data-ssn-freeze ${(freezes || 0) >= G.FREEZE_MAX ? "disabled" : ""}>${T("Acheter")} · ${G.FREEZE_COST} ${T("cristaux")}</button></div>
-      <h3>${T("Cadres et titres")}</h3>${window.MACosm ? cosmHtml() : ""}
+        <button type="button" class="cta-btn btn-ghost" data-ssn-freeze ${(freezes || 0) >= G.FREEZE_MAX ? "disabled" : ""}>${T("Acheter")} · ${G.FREEZE_COST} ${T("cristaux")}</button></div>`}
+      </div>
     </section>`;
   }
   function drawCta() {
@@ -156,6 +158,7 @@
     setTimeout(drawCta, 1500);
     document.addEventListener("ma:auth", () => { freezes = null; welcomeShown = false; setTimeout(maybeWelcome, 2500); refresh(); });
     document.addEventListener("click", (e) => {
+      const tb = e.target.closest("[data-ssn-tab]"); if (tb) { ssnTab = tb.dataset.ssnTab; draw(); return; }
       const t = e.target.closest("[data-ssn-claim]"); if (t) return claim("tier", { tier: Number(t.dataset.ssnClaim) });
       if (e.target.closest("[data-ssn-all]")) return claimAll();
       if (e.target.closest("[data-ssn-quest]")) return claim("quest");

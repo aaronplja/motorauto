@@ -940,5 +940,7 @@
 "jours restants": "days left",
 "jour restant": "day left",
 "Plusieurs réponses possibles : coche-les toutes, puis valide.": "Several answers possible: tick them all, then confirm.",
-"Lesquelles de ces marques viennent de : {0} ?": "Which of these brands come from: {0}?"
+"Lesquelles de ces marques viennent de : {0} ?": "Which of these brands come from: {0}?",
+"Pass": "Pass",
+"Défis de saison": "Season challenges"
 }]);

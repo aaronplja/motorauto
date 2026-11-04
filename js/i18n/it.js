@@ -940,5 +940,7 @@
 "jours restants": "giorni rimasti",
 "jour restant": "giorno rimasto",
 "Plusieurs réponses possibles : coche-les toutes, puis valide.": "Più risposte possibili: spuntale tutte, poi conferma.",
-"Lesquelles de ces marques viennent de : {0} ?": "Quali di questi marchi vengono da: {0}?"
+"Lesquelles de ces marques viennent de : {0} ?": "Quali di questi marchi vengono da: {0}?",
+"Pass": "Pass",
+"Défis de saison": "Sfide di stagione"
 }]);

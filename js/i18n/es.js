@@ -940,5 +940,7 @@
 "jours restants": "días restantes",
 "jour restant": "día restante",
 "Plusieurs réponses possibles : coche-les toutes, puis valide.": "Varias respuestas posibles: márcalas todas y confirma.",
-"Lesquelles de ces marques viennent de : {0} ?": "¿Cuáles de estas marcas vienen de: {0}?"
+"Lesquelles de ces marques viennent de : {0} ?": "¿Cuáles de estas marcas vienen de: {0}?",
+"Pass": "Pase",
+"Défis de saison": "Desafíos de temporada"
 }]);

@@ -19,3 +19,13 @@
 .qz-opt.miss{border-color:#22c55e;border-style:dashed}
 .qz-opt.miss .qz-box{border-color:#22c55e;color:#22c55e}
 .qz-opt.bad .qz-box{background:#ef4444;border-color:#ef4444}
+/* pass de saison : 3 onglets */
+.ssn-tabs{display:flex;gap:.3rem;padding:.3rem;border-radius:999px;border:1px solid var(--stroke-line);background:color-mix(in srgb,var(--bg-elevated) 70%,transparent);margin:.2rem 0 .4rem;overflow-x:auto;scrollbar-width:none}
+.ssn-tabs::-webkit-scrollbar{display:none}
+.ssn-tab{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:42px;padding:0 .9rem;border:0;border-radius:999px;background:transparent;color:var(--color-muted);font:inherit;font-size:.86rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s}
+.ssn-tab i{font-style:normal}
+.ssn-tab.on{background:var(--accent);color:var(--on-accent)}
+.ssn-tab:not(.on):hover{color:var(--color-ink)}
+.ssn-pane{display:grid;gap:14px;animation:pvIn .3s both}
+@media (max-width:420px){.ssn-tab i{display:none}.ssn-tab{padding:0 .6rem;font-size:.8rem}}
+@media (max-width:480px){.ssn-tab{flex:1 1 0;min-width:0;padding:.3rem .4rem;font-size:.76rem;white-space:normal;line-height:1.1;text-align:center}}
