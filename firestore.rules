@@ -28,7 +28,7 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if isOwner(uid)
-        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'hideFollowing', 'hideFollowers', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok'])
+        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'hideFollowing', 'hideFollowers', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok', 'usernameAt'])
         && request.resource.data.username is string
         && request.resource.data.username.size() >= 2
         && request.resource.data.username.size() <= 24
@@ -46,12 +46,13 @@ service cloud.firestore {
         && request.resource.data.get('hideFollowing', false) is bool
         && request.resource.data.get('hideFollowers', false) is bool
         && request.resource.data.get('emailNotifs', true) is bool
+        && (request.resource.data.get('usernameAt', null) == null || request.resource.data.usernameAt == request.time)
         && validSocials();
 
       allow update: if isOwner(uid)
         // Le document final ne doit contenir que les champs publics : cela permet
         // de SUPPRIMER les anciens champs (favorites, telemetry, email...) lors de la migration.
-        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'hideFollowing', 'hideFollowers', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok'])
+        && request.resource.data.keys().hasOnly(['username', 'currentCar', 'avatar', 'bio', 'isPublicGarage', 'hideFollowing', 'hideFollowers', 'carPhoto', 'mods', 'emailNotifs', 'instagram', 'snapchat', 'tiktok', 'usernameAt'])
         && request.resource.data.username is string
         && request.resource.data.username.size() >= 2
         && request.resource.data.username.size() <= 24
@@ -63,6 +64,11 @@ service cloud.firestore {
         && request.resource.data.get('emailNotifs', true) is bool
         && request.resource.data.get('hideFollowing', false) is bool
         && request.resource.data.get('hideFollowers', false) is bool
+        // pseudo : un changement tous les 30 jours (usernameAt est posé par le serveur au moment du changement)
+        && (request.resource.data.username == resource.data.username
+            ? request.resource.data.get('usernameAt', null) == resource.data.get('usernameAt', null)
+            : (request.resource.data.get('usernameAt', null) == request.time
+               && (resource.data.get('usernameAt', null) == null || resource.data.usernameAt + duration.value(30, 'd') <= request.time)))
         && validSocials();
 
       allow delete: if isOwner(uid) || isAdmin();
@@ -590,6 +596,22 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
+    // --- Albums photo des sorties : seuls l'organisateur et les inscrits (rsvps) ajoutent ; lecture publique
+    match /event_photos/{pid} {
+      allow read: if true;
+      allow create: if signedIn() && notMuted()
+        && request.resource.data.keys().hasOnly(['event', 'uid', 'pilot', 'url', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.event is string && request.resource.data.event.size() <= 40
+        && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
+        && request.resource.data.url is string && request.resource.data.url.matches('https://firebasestorage.googleapis.com/.*') && request.resource.data.url.size() <= 600
+        && request.resource.data.createdAt == request.time
+        && (exists(/databases/$(database)/documents/rsvps/$(request.resource.data.event + '_' + request.auth.uid))
+            || get(/databases/$(database)/documents/events/$(request.resource.data.event)).data.uid == request.auth.uid);
+      allow update: if false;
+      allow delete: if isAdmin() || (signedIn() && (resource.data.uid == request.auth.uid
+        || get(/databases/$(database)/documents/events/$(resource.data.event)).data.uid == request.auth.uid));
+    }
     match /rsvps/{rid} {
       allow read: if true;
       allow create: if signedIn() && notMuted()
@@ -828,7 +850,7 @@ service cloud.firestore {
         && request.resource.data.avatar is string && request.resource.data.avatar.size() <= 600
         && request.resource.data.photo is string && request.resource.data.photo.size() <= 600
         && request.resource.data.photo.matches('https://firebasestorage.googleapis.com/.*')
-        && (!('photos' in request.resource.data) || (request.resource.data.photos is list && request.resource.data.photos.size() >= 1 && request.resource.data.photos.size() <= 12 && request.resource.data.photos[0] == request.resource.data.photo))
+        && (!('photos' in request.resource.data) || (request.resource.data.photos is list && request.resource.data.photos.size() >= 1 && request.resource.data.photos.size() <= 3 && request.resource.data.photos[0] == request.resource.data.photo))
         && request.resource.data.carName is string && request.resource.data.carName.size() >= 2 && request.resource.data.carName.size() <= 80
         && request.resource.data.caption is string && request.resource.data.caption.size() <= 100
         && request.resource.data.createdAt == request.time;
@@ -1183,7 +1205,7 @@ service cloud.firestore {
         && request.resource.data.get('description', '').size() <= 600
         && request.resource.data.get('mods', '').size() <= 500
         && request.resource.data.get('photos', []) is list
-        && request.resource.data.get('photos', []).size() <= 8
+        && request.resource.data.get('photos', []).size() <= 10
         && request.resource.data.updatedAt == request.time;
     }
 

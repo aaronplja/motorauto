@@ -66,7 +66,7 @@
       <p class="lap-meta">${entries.length} participant${entries.length > 1 ? "s" : ""} · ${votes.length} vote${votes.length > 1 ? "s" : ""} · ${esc(endText(contest))}</p>
       <p class="contest-prize">🏆 ${contest.prize ? esc(contest.prize) : "Le gagnant reçoit le badge <b>Photographe du mois</b> et une <b>carte spéciale</b> unique ; 2ᵉ et 3ᵉ gagnent des cristaux."}</p></div>`;
   }
-  const photosOf = (e) => (Array.isArray(e.photos) && e.photos.length ? e.photos : e.photo ? [e.photo] : []).slice(0, 12);
+  const photosOf = (e) => (Array.isArray(e.photos) && e.photos.length ? e.photos : e.photo ? [e.photo] : []).slice(0, 3);
   function participation() {
     const esc = C.esc;
     if (!contest || contest.status !== "open") return "";
@@ -76,7 +76,7 @@
       return `<div class="contest-box ${st[1]}"><span>${st[0]}</span>${photosOf(mine).map((u) => `<img class="contest-thumb" src="${esc(C.safeUrl(u) || "")}" alt="Ta photo">`).join("")}<button type="button" class="cta-btn btn-ghost compact-btn" data-contest-del>Retirer ma photo</button></div>`;
     }
     if (!formOpen) return `<div class="contest-box"><span><b>Envoie ta plus belle photo</b> sur le thème du concours.</span><button type="button" class="cta-btn fill-btn compact-btn" data-contest-form>📸 Participer</button></div>`;
-    return `<form class="contest-box contest-form" id="contest-form" novalidate><div class="input-stack"><label for="ct-photo">Photos (autant que tu veux, jusqu'à 12)</label><input type="file" id="ct-photo" accept="image/*" multiple required></div>
+    return `<form class="contest-box contest-form" id="contest-form" novalidate><div class="input-stack"><label for="ct-photo">Photos (jusqu'à 3 par participation)</label><input type="file" id="ct-photo" accept="image/*" multiple required></div>
       <div class="input-stack"><label for="ct-car">Voiture</label><input type="text" id="ct-car" maxlength="80" placeholder="Ex. Peugeot 106 S16" required></div>
       <div class="input-stack"><label for="ct-cap">Légende (facultatif)</label><input type="text" id="ct-cap" maxlength="100" placeholder="Une phrase sur ta photo"></div>
       <p class="form-error" id="ct-err" role="alert"></p><div class="contest-actions"><button type="submit" class="cta-btn fill-btn" id="ct-send">Envoyer mes photos</button><button type="button" class="cta-btn btn-ghost" data-contest-cancel>Annuler</button></div>
@@ -107,7 +107,7 @@
   async function submit(e) {
     e.preventDefault();
     if (busy || !C.requireLogin()) return;
-    const fl = Array.from(document.getElementById("ct-photo").files || []).filter((x) => /^image\//.test(x.type)).slice(0, 12), car = document.getElementById("ct-car").value.trim().slice(0, 80), cap = document.getElementById("ct-cap").value.trim().slice(0, 100), errEl = document.getElementById("ct-err");
+    const fl = Array.from(document.getElementById("ct-photo").files || []).filter((x) => /^image\//.test(x.type)).slice(0, 3), car = document.getElementById("ct-car").value.trim().slice(0, 80), cap = document.getElementById("ct-cap").value.trim().slice(0, 100), errEl = document.getElementById("ct-err");
     if (!fl.length) { errEl.textContent = "Choisis une photo."; return; }
     if (!car) { errEl.textContent = "Indique la voiture."; return; }
     busy = true; const btn = document.getElementById("ct-send"); btn.disabled = true; btn.textContent = "Envoi…";

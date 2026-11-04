@@ -973,5 +973,11 @@
 "Longueur": "Length",
 "Depuis": "Since",
 "depuis": "since",
-"Recalculer maintenant la rareté réelle (% de pilotes)": "Recalculate real rarity now (% of drivers)"
+"Recalculer maintenant la rareté réelle (% de pilotes)": "Recalculate real rarity now (% of drivers)",
+"🏁 Circuits et livrées": "🏁 Circuits and liveries",
+"Livrée": "Livery",
+"📷 Album": "📷 Album",
+"Unique · modifiable une fois tous les 30 jours · les autres pilotes te mentionnent avec @pseudo.": "Unique · can be changed once every 30 days · other drivers mention you with @username.",
+"Ton garage est plein : 5 voitures maximum. Supprime-en une pour en ajouter une nouvelle.": "Your garage is full: 5 cars maximum. Delete one to add a new one.",
+"10 photos maximum par voiture.": "10 photos maximum per car."
 }]);

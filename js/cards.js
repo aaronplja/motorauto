@@ -30,12 +30,13 @@
   const pctHtml = (id) => pctTotal >= 5 ? `<p class="tcg-hint cg-realpct">Possédée par <b>${String(cardPct[id] || 0).replace(".", ",")} %</b> des pilotes</p>` : "";
   async function loadCircPhotos() { try { const s = await C.db.collection("config").doc("circuitPhotos").get(); circPhotos = s.exists && s.data().map ? s.data().map : {}; } catch (_) { /* pas de photos */ } }
   async function loadRarOv() { loadCircPhotos(); loadCardPct(); try { const s = await C.db.collection("config").doc("rarities").get(); rarOv = s.exists && s.data().map ? s.data().map : {}; } catch (_) { /* pas de surcharge */ } }
-  const rarityOf = (car) => { if (car.mine) return "mine"; if (car.special) return "special"; if (car.circuit) { const o = rarOv[car.id]; return o && ORDER.indexOf(o) >= 0 ? o : car.rar; } indexCars(); const o = rarOv[car.id]; if (o && ORDER.indexOf(o) >= 0) return o; return rarityMap.get(car.id) || "common"; };
+  const rarityOf = (car) => { if (car.mine) return "mine"; if (car.special) return "special"; if (car.circuit || car.livery) { const o = rarOv[car.id]; return o && ORDER.indexOf(o) >= 0 ? o : car.rar; } indexCars(); const o = rarOv[car.id]; if (o && ORDER.indexOf(o) >= 0) return o; return rarityMap.get(car.id) || "common"; };
   const numberOf = (car) => { indexCars(); return numbering.get(car.id) || 0; };
   /** une carte, qu'elle vienne du catalogue ou d'une édition limitée */
   function cardObj(id) {
     const sp = specials.get(id);
     if (sp) return { id, brand: sp.edition || "Édition limitée", model: sp.name || id, image: sp.image || "", images: Array.isArray(sp.images) ? sp.images.slice(0, 12) : [], category: "", years: "", stats: { power: Number(sp.power) || 0, speed: Number(sp.speed) || 0, zero: Number(sp.zero) || null }, special: sp };
+    if (G.isLivery && G.isLivery(id)) { const r = G.LIVERIES.find((x) => x[0] === id), base = r && C.carsById.get(r[1]); return base ? Object.assign({}, base, { id, livery: true, baseId: r[1], liveryName: r[2], rar: r[3], model: String(base.model || "").replace(/\s*\(.*$/, "") + " · " + r[2] }) : null; }
     if (G.isCircuit && G.isCircuit(id)) { const c = G.CIRCUIT_BY_ID.get(id); return c ? Object.assign({}, c, { image: circPhotos[id] || "", images: [], category: "Circuit", years: String(c.since), stats: { power: 0, speed: 0, zero: null } }) : null; }
     return C.carsById.get(id) || null;
   }
@@ -76,12 +77,12 @@
       : hasStats
       ? `<div class="tcg-stats"><span><b>${owned ? st.power : "?"}</b>ch${bar(owned ? st.power / 1200 : 0)}</span><span><b>${owned ? (st.speed || "—") : "?"}</b>km/h${bar(owned ? st.speed / 400 : 0)}</span><span><b>${owned ? (z || "—") : "?"}</b>0-100${bar(owned && z ? (14 - z) / 11 : 0)}</span></div>`
       : `<p class="tcg-note">${owned ? esc(sp.text || "") : ""}</p>`;
-    const no = car.mine ? "MA" : circ ? circNo(car) : sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0");
+    const no = car.mine ? "MA" : circ ? circNo(car) : car.livery ? "LV" : sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0");
     const color = sp && sp.color ? " tcg-c-" + esc(sp.color) : "";
     return `<div class="tcg tcg-${r}${color}${lv > 1 ? " has-lv lvl" + lv : ""} ${owned ? "" : "locked"} ${o.cls || ""}" data-card="${esc(car.id)}" role="button" tabindex="0" aria-label="${owned ? esc(car.brand + " " + model) : "Carte non débloquée " + no}, ${R.label}">
       <div class="tcg-art ${mosaic ? "tcg-mosaic m" + mosaic.length : ""}${circ && !(cardImage && owned) ? " tcg-circ" : ""}">${circ && !(cardImage && owned) ? (owned ? traceSvg(car) : `<span class="tcg-q" aria-hidden="true">?</span>`) : mosaic ? mosaic.map((u) => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">`).join("") : img}<i class="tcg-foil" aria-hidden="true"></i>${owned && isLk(car.id) ? `<i class="tcg-lk" aria-hidden="true">🔒</i>` : ""}${owned && !sp && car.drives && car.drives[0] && window.MATrack ? `<span class="tcg-drv" title="${esc(window.MATrack.DRIVES[car.drives[0]][0])}">${window.MATrack.driveIcon(car.drives[0], 14)}</span>` : ""}</div><i class="tcg-holo" aria-hidden="true"></i>
       <div class="tcg-body"><span class="tcg-brand">${owned || sp ? esc(car.brand) : "—"}</span><b class="tcg-name">${owned || sp ? esc(model) : "Carte à débloquer"}</b>${stats}</div>
-      ${lv > 1 ? `<i class="tcg-frame lv${lv}" aria-hidden="true"></i>` : ""}<span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span><span class="tcg-no">${no}</span>
+      ${lv > 1 ? `<i class="tcg-frame lv${lv}" aria-hidden="true"></i>` : ""}<span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span>${car.livery ? `<span class="tcg-livtag" title="Livrée célèbre">🎨</span>` : ""}<span class="tcg-no">${no}</span>
       ${pi ? `<span class="tcg-pics" title="Images débloquées : ${pi.have.length} sur ${pi.keys.length}"><i></i>${pi.have.length}/${pi.keys.length}</span>` : ""}
       ${o.count > 1 ? `<span class="tcg-dup">×${o.count}</span>` : ""}${o.isNew ? `<span class="tcg-new-pill">NEW</span>` : ""}${o.wish ? `<span class="tcg-wish" title="Dans ta wishlist" aria-label="Dans ta wishlist">★</span>` : ""}
     </div>`;
@@ -458,6 +459,7 @@
   function backHtml(car, id) {
     const n = cnt(id), R = RAR[rarityOf(car)], sp = car.special, e = C.esc;
     if (n === 0) return `<h3>Carte à débloquer</h3><p>Ouvre des packs pour la trouver${sp ? "." : " ou fabrique-la avec des cristaux."}</p><dl><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${sp ? "★" : car.circuit ? circNo(car) : "#" + String(numberOf(car)).padStart(3, "0")}</dd></dl>`;
+    if (car.livery) return `<h3>${e(car.brand)} ${e(String(car.model).replace(/\s*\(.*$/, ""))}</h3><dl><dt>Livrée</dt><dd>${e(car.liveryName)}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>Puissance</dt><dd>${car.stats.power} ch</dd><dt>Vitesse</dt><dd>${car.stats.speed} km/h</dd><dt>0-100</dt><dd>${car.stats.zero ? car.stats.zero + " s" : "—"}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
     if (car.circuit) return `<h3>${e(car.model)}</h3><dl><dt>Pays</dt><dd>${e(car.countryLabel)}</dd><dt>Longueur</dt><dd>${String(car.km).replace(".", ",")} km</dd><dt>Depuis</dt><dd>${car.since}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${circNo(car)}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
     if (sp) return `<h3>${e(car.model)}</h3><p>${e(sp.text || "")}</p><dl><dt>Édition</dt><dd>${e(car.brand)}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
     const all = C.cars.filter((c) => c.brand === car.brand), have = all.filter((c) => countOf(c.id) > 0).length, st = car.stats;
@@ -487,7 +489,7 @@
     const lv = lvOf(id), next = lv < G.LV_MAX ? G.upgradeCost(sp ? "special" : rarityOf(car), lv + 1) : 0;
     const lvBlock = n > 0 ? `<div class="cg-lvbox"><span class="cg-lvpips" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</span><b>Niveau ${lv} · ${G.LV_NAMES[lv]}</b>${lv < G.LV_MAX ? `<button type="button" class="cta-btn fill-btn compact-btn${doc && doc.dust < next ? " lack" : ""}" data-upgrade ${doc && doc.dust >= next && !peek ? "" : "disabled"}>Améliorer (${next} ${window.MA.dustIcon(14)})${doc && doc.dust < next ? ` · il manque ${next - doc.dust}` : ""}</button>` : `<span class="tcg-hint">niveau maximum</span>`}</div>` : "";
     const actions = [`<button type="button" class="cta-btn btn-ghost" data-flipcard>↻ Retourner</button>`];
-    if (n > 0 && !sp && !car.circuit) actions.push(`<a class="cta-btn btn-ghost" href="#/voiture/${encodeURIComponent(id)}" data-close>Voir la fiche</a>`);
+    if (n > 0 && !sp && !car.circuit && !car.livery) actions.push(`<a class="cta-btn btn-ghost" href="#/voiture/${encodeURIComponent(id)}" data-close>Voir la fiche</a>`);
     if (n > 1) actions.push(`<button type="button" class="cta-btn fill-btn" data-swap>🔄 Proposer à l'échange</button>`);
     if (n > 0 && !peek && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-lock aria-pressed="${isLk(id)}">${isLk(id) ? "🔓 Déverrouiller" : "🔒 Verrouiller"}</button>`);
     if (n > 0) actions.push(`<button type="button" class="cta-btn btn-ghost" data-share>↗ Partager</button>`);
@@ -816,7 +818,7 @@
   function visibleList() {
     indexCars();
     const q = C.normalize(query);
-    const base = filter === "circuits" ? G.CIRCUIT_CARDS.map((r) => cardObj(r[0])).filter(Boolean) : C.cars;
+    const base = filter === "circuits" ? G.CIRCUIT_CARDS.map((r) => cardObj(r[0])).concat(G.LIVERIES.map((r) => cardObj(r[0]))).filter(Boolean) : C.cars;
     const list = base.filter((c) => {
       const n = countOf(c.id);
       if (filter === "owned" && !n) return false;
@@ -900,7 +902,7 @@
               <select id="cards-country" aria-label="Pays"><option value="all">Tous pays</option>${countries}</select>
               <select id="cards-minp" aria-label="Puissance minimale">${[[0, "Toute puissance"], [150, "150 ch et +"], [300, "300 ch et +"], [500, "500 ch et +"], [800, "800 ch et +"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
               <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : rareté"], ["owned", "Tri : doublons d'abord"], ["level", "Tri : niveau"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
-            <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"], ["circuits", "🏁 Circuits"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}
+            <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"], ["circuits", "🏁 Circuits et livrées"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}
               <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>
             <div class="tcg-grid" id="tcg-grid"></div></section></div></div>`;
     }

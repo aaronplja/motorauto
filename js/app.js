@@ -17,7 +17,7 @@
   } = window.MA;
 
   const ITEMS_PER_PAGE = 20;
-  const ADMIN_FIELDS_ALLOWED = ["username", "currentCar", "avatar", "bio", "isPublicGarage", "hideFollowing", "hideFollowers", "carPhoto", "mods", "emailNotifs", "instagram", "snapchat", "tiktok"];
+  const ADMIN_FIELDS_ALLOWED = ["username", "usernameAt", "currentCar", "avatar", "bio", "isPublicGarage", "hideFollowing", "hideFollowers", "carPhoto", "mods", "emailNotifs", "instagram", "snapchat", "tiktok"];
 
   const { auth, db, storage, FieldValue } = window.MAFB;
   const MA = window.MA;
@@ -711,6 +711,7 @@
       carPhoto: profile.carPhoto || "", mods: profile.mods || "", emailNotifs: profile.emailNotifs !== false,
       instagram: profile.instagram || "", snapchat: profile.snapchat || "", tiktok: profile.tiktok || ""
     };
+    if (profile.usernameAt) data.usernameAt = profile.usernameAt;
     await db.collection("users").doc(currentUser.uid).set(data);
   }
 
@@ -798,6 +799,12 @@
         MA.toast("Ce nom d'utilisateur est déjà utilisé par un autre pilote.", "err");
         return;
       }
+      if (newUsername !== profile.username) {
+        const last = profile.usernameAt && profile.usernameAt.toMillis ? profile.usernameAt.toMillis() : 0, left = last + 30 * 86400000 - Date.now();
+        if (left > 0) { MA.toast("Tu pourras changer de pseudo dans " + Math.ceil(left / 86400000) + " jour(s) (un changement tous les 30 jours).", "err"); return; }
+        if (!confirm("Changer ton pseudo en @" + newUsername + " ?\nTu ne pourras plus le modifier pendant 30 jours.")) return;
+        profile.usernameAt = FieldValue.serverTimestamp();
+      }
       profile.username = newUsername;
       profile.avatar = newAvatar;
       profile.bio = $("settings-bio").value.trim().slice(0, 300);
@@ -817,6 +824,7 @@
         profile[k] = h;
       }
       await saveProfile();
+      try { const fresh = await db.collection("users").doc(currentUser.uid).get(); profile.usernameAt = fresh.exists ? fresh.data().usernameAt || null : null; } catch (_) { /* facultatif */ }
       $("user-display-name").textContent = newUsername;
       renderGarageHeader();
       MA.toast("Profil mis à jour.", "ok");
@@ -1301,7 +1309,7 @@
     if (!v) return;
     if (!safeUrl(v)) { $("mc-error").textContent = "L'URL de l'image doit commencer par https://"; return; }
     $("mc-error").textContent = "";
-    if (mcImages.length >= 8) { $("mc-error").textContent = "8 photos maximum par voiture."; return; }
+    if (mcImages.length >= 10) { $("mc-error").textContent = "10 photos maximum par voiture."; return; }
     if (!mcImages.includes(v)) mcImages.push(v);
     inp.value = ""; renderMcImages();
   }
@@ -1311,7 +1319,7 @@
     if (!list.length || !currentUser) return;
     let done = 0;
     for (const f of list) {
-      if (mcImages.length >= 8) { st.textContent = "8 photos maximum par voiture."; return; }
+      if (mcImages.length >= 10) { st.textContent = "10 photos maximum par voiture."; return; }
       st.textContent = `Envoi ${done + 1}/${list.length}…`;
       try {
         const blob = await MA.resizeImage(f, 1800, 0.88);
@@ -1348,6 +1356,7 @@
 
   async function openMyCarEditor(id) {
     if (!requireLogin()) return;
+    if (!id && myCars.length >= 5) { MA.toast("Ton garage est plein : 5 voitures maximum. Supprime-en une pour en ajouter une nouvelle.", "err"); return; }
     mcEditing = id ? myCars.find((c) => c.id === id) || (isAdmin ? adminCars.get(id) : null) || null : null;
     if (id && !mcEditing && isAdmin) {
       try { const d = await db.collection("community_cars").doc(id).get(); if (d.exists) mcEditing = Object.assign({ id: d.id }, d.data()); } catch (_) { /* message ci-dessous */ }
@@ -1391,7 +1400,7 @@
       speed: (() => { const v = Math.round(Number($("mc-speed").value)); return v > 0 && v < 600 ? v : 0; })(),
       zero: (() => { const z = Number($("mc-zero").value.replace(",", ".")); return z > 0 && z < 60 ? Math.round(z * 10) / 10 : 0; })(),
       description: $("mc-desc").value.trim().slice(0, 600), mods: $("mc-mods").value.trim().slice(0, 500),
-      photos: mcImages.filter((u) => safeUrl(u)).slice(0, 8)
+      photos: mcImages.filter((u) => safeUrl(u)).slice(0, 10)
     }; } catch (e) { fail("Enregistrement impossible : " + e.message); return; }
     const btn = $("mc-save"); btn.disabled = true;
     try {

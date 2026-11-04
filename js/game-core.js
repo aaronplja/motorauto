@@ -298,6 +298,27 @@
     ["ci-mosport", "Mosport", "ca", 3.957, 1961, "common", 0],
     ["ci-mont-tremblant", "Mont-Tremblant", "ca", 4.265, 1964, "common", 0]
   ];
+  // ---- livrées célèbres : variantes de voitures du catalogue [id, voiture, livrée, rareté]
+  const LIVERIES = [
+    ["lv-917k-gulf", "lm-porsche-917k", "Gulf", "legendary"], ["lv-917k-martini", "lm-porsche-917k", "Martini Racing", "legendary"],
+    ["lv-917lh-salzburg", "lm-porsche-917lh", "Porsche Salzburg", "legendary"], ["lv-gt40-gulf", "lm-ford-gt40", "Gulf", "legendary"],
+    ["lv-956-rothmans", "lm-porsche-956", "Rothmans", "epic"], ["lv-962c-rothmans", "lm-porsche-962c", "Rothmans", "epic"],
+    ["lv-935-martini", "lm-porsche-935", "Martini Racing", "epic"], ["lv-integrale-martini", "rally-lancia-integrale", "Martini Racing", "epic"],
+    ["lv-037-martini", "rally-lancia-037", "Martini Racing", "epic"], ["lv-stratos-alitalia", "rally-lancia-stratos", "Alitalia", "legendary"],
+    ["lv-s4-martini", "rally-lancia-delta-s4", "Martini Racing", "legendary"], ["lv-205t16-ptS", "peugeot-205-t16", "Peugeot Talbot Sport", "epic"],
+    ["lv-s1-audisport", "audi-sport-quattro-s1-e2", "Audi Sport", "epic"], ["lv-celica-castrol", "toyota-celica-st185-st205", "Castrol", "epic"],
+    ["lv-impreza-555", "rally-subaru-impreza-gc8", "555", "epic"], ["lv-787b-renown", "lm-mazda-787b", "Renown", "legendary"],
+    ["lv-xjr9-silkcut", "lm-jaguar-xjr9", "Silk Cut", "epic"], ["lv-f1gtr-gulf", "lm-mclaren-f1-gtr", "Gulf", "legendary"],
+    ["lv-m3dtm-jager", "bmw-m3-e30-dtm", "Jägermeister", "epic"], ["lv-190e-amg", "mb-190e-dtm", "AMG", "epic"]
+  ];
+  const isLivery = (id) => String(id).indexOf("lv-") === 0;
+  const isExtra = (id) => isLivery(id) || String(id).indexOf("ci-") === 0;
+  const LIVERY_ROW = new Map(LIVERIES.map((r) => [r[0], r]));
+  /** carte livrée à partir de sa voiture de base (stats identiques) */
+  function liveryCard(id, base) {
+    const r = LIVERY_ROW.get(id); if (!r || !base) return null;
+    return Object.assign({}, base, { id, livery: true, baseId: r[1], liveryName: r[2], rar: r[3], model: String(base.model || base.name || "").replace(/\s*\(.*$/, "") + " · livrée " + r[2], name: undefined });
+  }
   const isCircuit = (id) => String(id).indexOf("ci-") === 0;
   const CIRCUIT_BY_ID = new Map(CIRCUIT_CARDS.map((r) => [r[0], { id: r[0], circuit: true, name: r[1], brand: "Circuit", model: r[1], country: r[2], countryLabel: CIRCUIT_COUNTRY[r[2]] || "", km: r[3], since: r[4], rar: r[5], trace: !!r[6] }]));
   const circuitRarities = () => new Map(CIRCUIT_CARDS.map((r) => [r[0], r[5]]));
@@ -391,9 +412,9 @@
   }
   /** recompte cartes distinctes (hors éditions spéciales) et éditions spéciales */
   function recount(doc) {
-    let c = 0, s = 0, ci = 0;
-    Object.keys(doc.owned || {}).forEach((k) => { if (doc.owned[k] > 0) { if (isSpecial(k)) s++; else if (isCircuit(k)) ci++; else c++; } });
-    doc.count = c; doc.specials = s; doc.circuits = ci; return doc;
+    let c = 0, s = 0, ci = 0, lv = 0;
+    Object.keys(doc.owned || {}).forEach((k) => { if (doc.owned[k] > 0) { if (isSpecial(k)) s++; else if (isCircuit(k)) ci++; else if (isLivery(k)) lv++; else c++; } });
+    doc.count = c; doc.specials = s; doc.circuits = ci; doc.liveries = lv; return doc;
   }
 
   // ------------------------------------------------------------------ défis de la semaine
@@ -1273,7 +1294,7 @@ Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     setsOf, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
+    LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
     SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };

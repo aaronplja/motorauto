@@ -973,5 +973,11 @@
 "Longueur": "Longitud",
 "Depuis": "Desde",
 "depuis": "desde",
-"Recalculer maintenant la rareté réelle (% de pilotes)": "Recalcular la rareza real (% de pilotos)"
+"Recalculer maintenant la rareté réelle (% de pilotes)": "Recalcular la rareza real (% de pilotos)",
+"🏁 Circuits et livrées": "🏁 Circuitos y libreas",
+"Livrée": "Librea",
+"📷 Album": "📷 Álbum",
+"Unique · modifiable une fois tous les 30 jours · les autres pilotes te mentionnent avec @pseudo.": "Único · se puede cambiar una vez cada 30 días · los demás pilotos te mencionan con @usuario.",
+"Ton garage est plein : 5 voitures maximum. Supprime-en une pour en ajouter une nouvelle.": "Tu garaje está lleno: 5 coches como máximo. Elimina uno para añadir otro.",
+"10 photos maximum par voiture.": "Máximo 10 fotos por coche."
 }]);

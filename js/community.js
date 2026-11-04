@@ -107,6 +107,7 @@
         <div class="event-meta">${going.size} participant${going.size > 1 ? "s" : ""}${names ? " : " + names + (going.size > 4 ? "…" : "") : ""}</div>
         <div class="event-actions">
           ${past ? `<span class="due">Terminé</span>` : `<button type="button" class="cta-btn ${me ? "btn-ghost" : "fill-btn"} compact-btn" data-ev="go" data-id="${esc(ev.id)}" aria-pressed="${!!me}">${me ? "✓ J'y vais (annuler)" : "J'y vais"}</button>`}
+          <button type="button" class="cta-btn btn-ghost compact-btn" data-ev="album" data-id="${esc(ev.id)}">📷 Album</button>
           ${canDel ? `<button type="button" class="secondary-destructive-btn" data-ev="del" data-id="${esc(ev.id)}">Supprimer</button>` : ""}
         </div>
       </div></article>`;

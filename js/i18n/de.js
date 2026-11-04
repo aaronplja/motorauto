@@ -973,5 +973,11 @@
 "Longueur": "Länge",
 "Depuis": "Seit",
 "depuis": "seit",
-"Recalculer maintenant la rareté réelle (% de pilotes)": "Echte Seltenheit neu berechnen (% der Fahrer)"
+"Recalculer maintenant la rareté réelle (% de pilotes)": "Echte Seltenheit neu berechnen (% der Fahrer)",
+"🏁 Circuits et livrées": "🏁 Strecken und Lackierungen",
+"Livrée": "Lackierung",
+"📷 Album": "📷 Album",
+"Unique · modifiable une fois tous les 30 jours · les autres pilotes te mentionnent avec @pseudo.": "Einmalig · alle 30 Tage änderbar · andere Fahrer erwähnen dich mit @Name.",
+"Ton garage est plein : 5 voitures maximum. Supprime-en une pour en ajouter une nouvelle.": "Deine Garage ist voll: maximal 5 Autos. Lösche eines, um ein neues hinzuzufügen.",
+"10 photos maximum par voiture.": "Maximal 10 Fotos pro Auto."
 }]);

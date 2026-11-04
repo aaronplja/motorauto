@@ -681,7 +681,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <section class="tab-panel" data-tab="profil" hidden>
       <div class="settings-box open">
           <div class="form-grid">
-            <div class="input-stack"><label for="settings-username">Pseudo</label><input type="text" id="settings-username" placeholder="Ton pseudo" maxlength="24"></div>
+            <div class="input-stack"><label for="settings-username">Pseudo</label><input type="text" id="settings-username" placeholder="Ton pseudo" maxlength="24"><small class="tcg-hint">Unique · modifiable une fois tous les 30 jours · les autres pilotes te mentionnent avec @pseudo.</small></div>
             <div class="input-stack"><label for="settings-avatar">Avatar (URL)</label><input type="text" id="settings-avatar" placeholder="https://…"></div>
           </div>
           <div class="avatar-upload">
@@ -1485,6 +1485,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/i18n.js"></script>
   <script defer src="js/car-index.js"></script>
   <script defer src="js/mentions.js"></script>
+  <script defer src="js/pilot-mentions.js"></script>
+  <script defer src="js/event-albums.js"></script>
   <script defer src="js/news-seed.js"></script>
   <script defer src="js/play-plus.js"></script>
   <script defer src="js/minigames.js"></script>

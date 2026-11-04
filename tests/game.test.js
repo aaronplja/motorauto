@@ -48,7 +48,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   // ---- pack du jour
   let r = await G.openPack(U1, { kind: "daily" });
   ok(r.cards.length === 3 && r.doc.lastPack === "2026-10-28" && r.doc.opened === 1, "pack du jour : 3 cartes");
-  ok(r.cards.every((c) => ids.includes(c.id) || core.isCircuit(c.id)), "cartes issues du catalogue");
+  ok(r.cards.every((c) => ids.includes(c.id) || core.isExtra(c.id)), "cartes issues du catalogue");
   await rejects(G.openPack(U1, { kind: "daily" }), "failed-precondition", "pack du jour déjà ouvert refusé");
   await rejects(G.openPack(U1, { kind: "gold" }), "invalid-argument", "type de pack inconnu refusé");
   NOW += 86400000;
@@ -56,7 +56,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   r = await G.openPack(U1, { kind: "bonus" }); ok(r.doc.bonus === 0, "pack bonus de bienvenue consommé");
   await rejects(G.openPack(U1, { kind: "bonus" }), "failed-precondition", "plus de pack bonus");
   const c1 = db.raw("collections", "u1");
-  ok(c1.count === Object.keys(c1.owned).filter((x) => !core.isCircuit(x)).length && Object.values(c1.owned).reduce((a, b) => a + b, 0) === 9, "9 cartes reçues, comptage cohérent");
+  ok(c1.count === Object.keys(c1.owned).filter((x) => !core.isExtra(x)).length && Object.values(c1.owned).reduce((a, b) => a + b, 0) === 9, "9 cartes reçues, comptage cohérent");
 
   // ---- doublons → poussière
   db.seed("collections", "u2", Object.assign(core.blankCollection(), { owned: { [ids[0]]: 1 }, count: 1, opened: 5, bonus: 3, claimed: [] }));
@@ -383,6 +383,14 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     await rejects(G.openPack({ uid: "k2" }, { kind: "shop", pack: "circuit" }), "failed-precondition", "pack Circuit refusé sans assez de cristaux");
     ok(core.passReward(17).circuit === 1 && core.passReward(27).circuit === 1 && core.passLabel(core.passReward(17)).includes("Circuit"), "paliers 17 et 27 : carte Circuit");
     const cp = core.circuitPick(core.circuitRarities(), {}, "k1", 1, 17); ok(core.isCircuit(cp) && core.circuitRarities().get(cp) !== "common", "carte Circuit du palier : rare ou mieux (" + cp + ")");
+  }
+
+  // ---- livrées
+  {
+    ok(core.LIVERIES.length === 20 && new Set(core.LIVERIES.map((r) => r[0])).size === 20 && core.LIVERIES.every((r) => core.isLivery(r[0]) && core.isExtra(r[0])), "20 livrées uniques");
+    const P = await G._getPool(); const lv = P.ids.filter((x) => core.isLivery(x));
+    ok(lv.length === 20 && lv.every((x) => ["epic", "legendary"].includes(P.rar.get(x)) && P.byId.get(x).livery === true), "les 20 livrées sont dans le pool (bases du catalogue présentes)");
+    const d = { owned: { [lv[0]]: 1, a: 1 } }; core.recount(d); ok(d.liveries === 1 && d.count === 1, "une livrée n'est pas comptée comme voiture");
   }
 
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");

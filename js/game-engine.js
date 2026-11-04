@@ -32,14 +32,16 @@
         const m = ov.exists ? ov.data().map || {} : {};
         Object.keys(m).forEach((id) => { if (rar.has(id) && core.ORDER.indexOf(m[id]) >= 0) rar.set(id, m[id]); });
       } catch (_) { /* pas de surcharge */ }
-      poolCache = { at: now(), list, ids: list.map((c) => c.id).concat(deps.noCircuits ? [] : core.CIRCUIT_CARDS.map((r) => r[0])), byId: new Map(list.map((c) => [c.id, c]).concat(Array.from(core.CIRCUIT_BY_ID.entries()))), rar };
+      const baseOf = new Map(list.map((c) => [c.id, c])), lvs = deps.noCircuits ? [] : core.LIVERIES.filter((r) => baseOf.has(r[1])).map((r) => core.liveryCard(r[0], baseOf.get(r[1])));
+      lvs.forEach((c) => rar.set(c.id, c.rar));
+      poolCache = { at: now(), list, ids: list.map((c) => c.id).concat(deps.noCircuits ? [] : core.CIRCUIT_CARDS.map((r) => r[0])).concat(lvs.map((c) => c.id)), byId: new Map(list.map((c) => [c.id, c]).concat(Array.from(core.CIRCUIT_BY_ID.entries())).concat(lvs.map((c) => [c.id, c]))), rar };
       return poolCache;
     }
     async function specialCard(id) { const s = await col("special_cards").doc(id).get(); return s.exists ? s.data() : null; }
     async function isKnownCard(pool, id) { return pool.byId.has(id) || (core.isSpecial(id) && !!(await specialCard(id))); }
 
     // ---------------------------------------------------------------- petits utilitaires
-    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, circuits: d.circuits || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
+    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, circuits: d.circuits || 0, liveries: d.liveries || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
     /** historique des cristaux (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
     function dustMove(d, n, why) {
       if (!n) return;
@@ -318,13 +320,13 @@
           if (sn.claimed.indexOf(t) >= 0) fail("failed-precondition", "Palier déjà récupéré.");
           const r = core.passReward(t), pool = (r.epic || r.choice) ? await poolForClaim() : null, extra = [];
           if (r.choice) {
-            const offer = core.legendOffer(pool.ids.filter((x) => !core.isCircuit(x)), pool.rar, d.owned, uid, sn.n), pick = String((data && data.pick) || "");
+            const offer = core.legendOffer(pool.ids.filter((x) => !core.isExtra(x)), pool.rar, d.owned, uid, sn.n), pick = String((data && data.pick) || "");
             if (!pick) return { need: "pick", offer, doc: view(d) };
             if (offer.indexOf(pick) < 0) fail("invalid-argument", "Cette carte ne fait pas partie de ton choix.");
             d.owned[pick] = (d.owned[pick] || 0) + 1; core.histAdd(d, pick, "pass", now()); extra.push(pick);
           }
           if (r.circuit) { const id = core.circuitPick(pool.rar, d.owned, uid, sn.n, t); if (id) { d.owned[id] = (d.owned[id] || 0) + 1; core.histAdd(d, id, "pass", now()); extra.push(id); } }
-          if (r.epic) { const id = core.epicPick(pool.ids.filter((x) => !core.isCircuit(x)), pool.rar, d.owned, uid, sn.n, t); if (id) { d.owned[id] = (d.owned[id] || 0) + 1; core.histAdd(d, id, "pass", now()); extra.push(id); } }
+          if (r.epic) { const id = core.epicPick(pool.ids.filter((x) => !core.isExtra(x)), pool.rar, d.owned, uid, sn.n, t); if (id) { d.owned[id] = (d.owned[id] || 0) + 1; core.histAdd(d, id, "pass", now()); extra.push(id); } }
           sn.claimed.push(t);
           let dust = r.dust, fz = null;
           if (r.freeze) {
@@ -479,7 +481,7 @@
     async function featuredCarId(wk) {
       const pool = await getPool();
       try { const s = await col("site_settings").doc("featured").get(); const id = s.exists && s.data().weeks && s.data().weeks[wk]; if (id && pool.byId.has(id)) return id; } catch (_) { /* tirage automatique */ }
-      return core.autoFeatured(wk, pool.ids.filter((x) => !core.isCircuit(x)));
+      return core.autoFeatured(wk, pool.ids.filter((x) => !core.isExtra(x)));
     }
     async function featuredInfo(wk) {
       const pool = await getPool(), id = await featuredCarId(wk), c = pool.byId.get(id) || {};
