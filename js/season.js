@@ -18,10 +18,12 @@
     return `<span class="ssn-av cosm-f cf-${id}" style="--cf:${f.color}">${av ? `<img src="${C.esc(av)}" alt="" data-fallback="avatar">` : "<i></i>"}</span>`;
   }
   function tierHtml(t, sn, tier) {
-    const r = G.passReward(t), got = sn.claimed.indexOf(t) >= 0, can = !got && tier >= t, big = r.frame || r.title || r.bonus;
-    const label = [r.dust ? `+${r.dust}` : "", r.bonus ? "Pack" : "", r.frame ? "Cadre" : "", r.title ? "Titre" : ""].filter(Boolean).join(" · ");
+    const r = G.passReward(t), got = sn.claimed.indexOf(t) >= 0, can = !got && tier >= t, big = r.frame || r.title || r.bonus || r.freeze || r.epic || r.choice;
+    const icons = (r.choice ? "★ " : "") + (r.epic ? "💜 " : "") + (r.bonus ? "🎁 " : "") + (r.freeze ? "❄ " : "") + (r.frame ? "🖼 " : "") + (r.title ? "🎖 " : "") + (r.dust ? "◆ " : "");
+    const head = r.choice ? T("Légendaire au choix") : r.epic ? T("Carte Épique") : r.bonus ? (r.bonus > 1 ? r.bonus + " " + T("packs bonus") : T("Pack bonus")) : r.freeze ? T("Gel de série") : r.frame ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : r.title ? T("Titre") : "+" + r.dust + " " + T("cristaux");
+    const more = [r.dust && (r.choice || r.epic || r.bonus || r.freeze || r.frame || r.title) ? "+" + r.dust + " " + T("cristaux") : "", r.choice && r.frame ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : "", r.epic && r.title ? T("Titre") + " « " + T(G.TITLES[r.title].name) + " »" : "", r.choice && r.title ? T("Titre") + " « " + T(G.TITLES[r.title].name) + " »" : "", !r.choice && !r.epic && r.frame && r.bonus ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : "", r.title && !r.choice && !r.epic ? "« " + T(G.TITLES[r.title].name) + " »" : ""].filter(Boolean).join(" · ");
     return `<button type="button" class="ssn-tier ${got ? "got" : can ? "can" : "lock"}${big ? " big" : ""}" ${can ? `data-ssn-claim="${t}"` : "disabled"} title="${C.esc(T("Palier") + " " + t + " : " + G.passLabel(r))}">
-      <i>${t}</i><b>${got ? "✓" : label}</b><small>${r.dust && !r.bonus ? T("cristaux") : ""}</small></button>`;
+      <i>${t}</i><span class="ssn-rw"><b>${C.esc(head)}</b>${more ? `<small>${C.esc(more)}</small>` : ""}</span><em>${got ? "✓" : can ? T("Récupérer") : icons.trim() ? "🔒" : "🔒"}</em></button>`;
   }
   function questHtml(sn) {
     const qs = G.questState(sn);
@@ -41,6 +43,26 @@
     return `<div class="ssn-cos-grid">${fr}</div><h4>${T("Titres")}</h4><div class="ssn-cos-grid ti">${ti}</div>
       ${mine.frame || mine.title ? `<button type="button" class="cta-btn btn-ghost" data-cos-clear>${T("Retirer cadre et titre")}</button>` : ""}`;
   }
+  /** tableau « comment gagner des points » + compteur du jour (plafond quotidien) */
+  function howHtml() {
+    const P = G.SEASON_PTS, cap = G.SEASON_DAY_CAP, today = Math.min(cap, G.seasonToday(doc() || {}, Date.now())), pct = Math.round(100 * today / cap);
+    const row = (ico, label, pts, free) => `<li><i aria-hidden="true">${ico}</i><span>${T(label)}</span><b>+${pts}${free ? " ★" : ""}</b></li>`;
+    return `<div class="ssn-how2"><div class="ssn-day"><div><b>${today} / ${cap}</b><small>${T("points de jeu gagnés aujourd'hui")}</small></div><span class="ssn-bar"><u style="width:${pct}%"></u></span></div>
+      <ul>${row("📦", "Ouvrir un pack", P.pack)}${row("❓", "Bonne réponse au quiz", P.quizOk)}${row("🎯", "Quiz parfait", P.quizPerfect)}${row("➕", "Bonne réponse au Plus ou moins", P.pmOk)}${row("⬆️", "Améliorer une carte", P.upgrade)}${row("🔮", "Fusionner des cartes", P.fuse)}${row("🔄", "Réussir un échange", P.trade)}${row("🛠️", "Fabriquer une carte", P.craft)}
+      ${row("📅", "Visite du jour", P.visit, 1)}${row("🎯", "Valider un défi de la semaine", P.challenge, 1)}${row("📚", "Compléter un album", P.album, 1)}</ul>
+      <small class="ssn-note">★ ${T("hors plafond quotidien")} · ${T("Les quêtes ne sont jamais plafonnées.")}</small></div>`;
+  }
+  /** choix d'une Légendaire parmi trois (palier 30) */
+  function pickLegend(tier, offer) {
+    return new Promise((resolve) => {
+      const M = window.MACards, ov = document.createElement("div"); ov.className = "ssn-pick";
+      ov.innerHTML = `<div class="ssn-pick-box" role="dialog" aria-modal="true" aria-label="${T("Choisis ta Légendaire")}"><h3>★ ${T("Choisis ta Légendaire")}</h3><p>${T("Une seule carte à garder parmi ces trois. Ton choix est définitif.")}</p>
+        <div class="ssn-pick-grid">${offer.map((id) => { const c = M.cardObj(id); return c ? `<button type="button" class="ssn-pick-card" data-pick-id="${C.esc(id)}" aria-label="${C.esc((c.brand || "") + " " + (c.model || ""))}"><span>${M.cardHtml(c, { owned: true, count: 0, lv: 1 })}</span></button>` : ""; }).join("")}</div>
+        <button type="button" class="cta-btn btn-ghost" data-pick-cancel>${T("Plus tard")}</button></div>`;
+      document.body.appendChild(ov); requestAnimationFrame(() => ov.classList.add("on"));
+      ov.addEventListener("click", (e) => { const b = e.target.closest("[data-pick-id]"); if (b) { ov.remove(); resolve(b.dataset.pickId); } else if (e.target === ov || e.target.closest("[data-pick-cancel]")) { ov.remove(); resolve(""); } });
+    });
+  }
   async function draw() {
     const el = root(); if (!el) return;
     if (!C.user) { el.innerHTML = ""; return; }
@@ -56,7 +78,7 @@
         <div><b>${sn.pts} ${T("points de saison")}</b><span class="ssn-bar"><u style="width:${pct}%"></u></span><small>${tier >= G.PASS_TIERS ? T("Pass terminé : bravo !") : `${toNext} ${T("points avant le palier")} ${tier + 1}`}</small>
           ${claimable ? `<button type="button" class="cta-btn fill-btn" data-ssn-all>${T("Tout récupérer")} (${claimable})</button>` : ""}</div></div>
       <div class="ssn-tiers" role="list">${Array.from({ length: G.PASS_TIERS }, (_, i) => tierHtml(i + 1, sn, tier)).join("")}</div>
-      <p class="ssn-how">${T("Points : pack ouvert +10 · bonne réponse au quiz +2 (quiz parfait +10) · bonne réponse au Plus ou moins +2 · visite du jour +5")}</p>
+      ${howHtml(sn)}
       <h3>${T("Quêtes de la saison")}</h3>${questHtml(sn)}
       <h3>${T("Gel de série")}</h3>
       <div class="ssn-freeze"><span class="ssn-ice" aria-hidden="true">❄</span><div><b>${freezes || 0} / ${G.FREEZE_MAX} ${T("en stock")}</b><small>${T("Un gel protège ta série de visites : il s'utilise tout seul le premier jour raté. 1 gel offert chaque mois.")}</small></div>
@@ -77,15 +99,21 @@
   async function claim(what, extra) {
     if (busy) return; busy = true;
     try {
-      const r = await API("seasonClaim", Object.assign({ what }, extra || {}));
+      let r = await API("seasonClaim", Object.assign({ what }, extra || {}));
+      if (r.need === "pick") {
+        if (r.doc) window.MACards.applyDoc(r.doc);
+        const pick = await pickLegend(extra && extra.tier, r.offer); if (!pick) { busy = false; draw(); return; }
+        r = await API("seasonClaim", Object.assign({ what }, extra || {}, { pick }));
+      }
       if (r.doc) window.MACards.applyDoc(r.doc);
-      C.toast("🎁 " + r.text, "ok");
+      if (r.cards && r.cards.length && window.MACards.cardObj(r.cards[r.cards.length - 1])) { const c = window.MACards.cardObj(r.cards[r.cards.length - 1]); C.toast("🎁 " + r.text + " · " + (c.brand || "") + " " + (c.model || ""), "ok"); }
+      else C.toast("🎁 " + r.text, "ok");
     } catch (e) { C.toast(e.message, "err"); }
     busy = false; draw();
   }
   async function claimAll() {
     const sn = seasonState(), tier = G.passTier(sn); if (busy) return; busy = true; let n = 0;
-    for (let t = 1; t <= tier; t++) if (sn.claimed.indexOf(t) < 0) { try { const r = await API("seasonClaim", { what: "tier", tier: t }); if (r.doc) window.MACards.applyDoc(r.doc); n++; } catch (_) { break; } }
+    for (let t = 1; t <= tier; t++) if (sn.claimed.indexOf(t) < 0) { try { const r = await API("seasonClaim", { what: "tier", tier: t }); if (r.doc) window.MACards.applyDoc(r.doc); if (r.need) break; n++; } catch (_) { break; } }
     busy = false; if (n) C.toast(`🎁 ${n} ${T("paliers récupérés")}`, "ok"); draw();
   }
   async function buyFreeze() {

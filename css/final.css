@@ -1,0 +1,69 @@
+/* MOTORAUTO — finitions : effet holographique discret, voile d'envoi des échanges, transitions et animations communes.
+   Chargé en dernier ; ne touche ni à la barre de navigation ni à la barre haute. */
+
+/* ---- hologramme : bien plus discret (raretés hautes seulement, et un reflet plus doux au toucher) ---- */
+.tcg .tcg-holo{opacity:.14!important}
+.tcg-epic .tcg-holo{opacity:.08!important}
+.tcg-legendary .tcg-holo{opacity:.12!important}
+.tcg-special .tcg-holo{opacity:.12!important}
+.tcg-shiny .tcg-holo{opacity:.16!important}
+.tcg-mythic .tcg-holo{opacity:.16!important}
+.tcg:hover .tcg-holo,.tcg-big .tcg-holo{opacity:.26!important}
+.tcg-tilting .tcg-holo{opacity:.2!important}
+.tcg .tcg-holo{filter:saturate(.55)}
+.tcg-epic .tcg-foil,.tcg-legendary .tcg-foil,.tcg-special .tcg-foil,.tcg[class*="tcg-c-"] .tcg-foil{opacity:.22!important}
+.tcg-shiny .tcg-foil{opacity:.3!important}
+.tcg-mythic .tcg-foil{opacity:.4!important}
+.tcg-big .tcg-foil,.tcg-grid .tcg:hover .tcg-foil,.flip.on .tcg .tcg-foil{animation-duration:5.2s!important}
+
+/* ---- échanges : voile « en cours d'envoi » ---- */
+.tr-sending{position:fixed;inset:0;z-index:3500;display:grid;place-items:center;background:rgba(4,6,14,.72);backdrop-filter:blur(6px);opacity:0;transition:opacity .2s}
+.tr-sending.on{opacity:1}
+.tr-send-box{display:grid;justify-items:center;gap:14px;padding:26px 30px;border-radius:24px;background:var(--bg-surface,#12151f);border:1px solid var(--stroke-line,rgba(255,255,255,.12));box-shadow:0 24px 60px rgba(0,0,0,.55);transform:translateY(8px) scale(.97);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.tr-sending.on .tr-send-box{transform:none}
+.tr-send-box b{font-size:1rem}
+.tr-send-cards{position:relative;width:110px;height:76px}
+.tr-send-cards i{position:absolute;top:6px;width:44px;height:62px;border-radius:8px;border:2px solid rgba(255,255,255,.35);background:linear-gradient(160deg,rgba(255,255,255,.18),rgba(255,255,255,.04))}
+.tr-send-cards i:first-child{left:6px;animation:trSwapA 1.3s ease-in-out infinite}
+.tr-send-cards i:last-child{right:6px;border-color:var(--accent,#ff4d2e);background:linear-gradient(160deg,color-mix(in srgb,var(--accent,#ff4d2e) 40%,transparent),rgba(255,255,255,.04));animation:trSwapB 1.3s ease-in-out infinite}
+@keyframes trSwapA{0%,100%{transform:translateX(0) rotate(-6deg)}50%{transform:translateX(50px) rotate(6deg) scale(.96)}}
+@keyframes trSwapB{0%,100%{transform:translateX(0) rotate(6deg)}50%{transform:translateX(-50px) rotate(-6deg) scale(.96)}}
+.tr-send-dots{display:flex;gap:6px}
+.tr-send-dots u{width:7px;height:7px;border-radius:50%;background:var(--accent,#ff4d2e);animation:trDot 1s ease-in-out infinite}
+.tr-send-dots u:nth-child(2){animation-delay:.15s}.tr-send-dots u:nth-child(3){animation-delay:.3s}
+@keyframes trDot{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.tr-send-cards i,.tr-send-dots u{animation:none}}
+
+/* ---- transitions communes (boutons, cartes, onglets, tuiles, feuilles) ---- */
+.cta-btn,.chip,.seg-btn,.page-tab,.pro-tab,.hub-tile,.play-tile,.cg-album,.badge-tile,.ssn-tier,.mk-card,.comm-card,.club-card,.event-card{transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .2s,border-color .2s,box-shadow .2s,color .2s,opacity .2s}
+.cta-btn:active,.chip:active,.hub-tile:active,.play-tile:active,.cg-album:active,.page-tab:active{transform:scale(.97)}
+@media (hover:hover){.hub-tile:hover,.play-tile:hover,.cg-album:hover{transform:translateY(-2px)}}
+.tab-panel:not([hidden]){animation:panelIn .28s cubic-bezier(.2,.8,.2,1) both}
+@keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.toast,.toast-item{animation:toastIn .3s cubic-bezier(.2,.8,.2,1) both}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.tcg-overlay.on{animation:ovin .25s cubic-bezier(.2,.8,.2,1) both}
+:focus-visible{outline:2px solid var(--accent,#ff4d2e);outline-offset:2px;border-radius:8px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* ---- mobile : en-têtes de blocs, sélecteurs et tuiles d'album ---- */
+.cg-bh{flex-direction:column;align-items:flex-start;gap:.2rem}
+.cg-bh .cta-btn{margin-left:0;align-self:flex-start}
+.cg-sub{flex:none;width:100%}
+.cg-seg{justify-self:stretch!important;display:grid!important;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}
+.cg-seg button{padding:.55rem .2rem!important;font-size:.78rem!important;min-width:0;white-space:nowrap}
+.ab2 .ab-top b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2}
+.ab2 .ab-top{align-items:flex-start}
+@media (min-width:720px){.cg-bh{flex-direction:row;align-items:baseline}.cg-bh .cta-btn{margin-left:auto}.cg-sub{flex:1 1 160px;width:auto}}
+
+/* carte des sorties : onglet « Carte » = la carte seule, filtres compacts sur une ligne défilante */
+body[data-comm-tab="carte"] .ev-when,body[data-comm-tab="carte"] #events-list,body[data-comm-tab="carte"] #events-past,body[data-comm-tab="carte"] [aria-label="Affichage des sorties"]{display:none!important}
+body[data-comm-tab="evenements"] #events-map-wrap{display:none!important}
+.mm-bar{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;gap:6px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.mm-bar::-webkit-scrollbar{display:none}
+.mm-bar .chip{flex:none;padding:.4rem .75rem;font-size:.78rem;min-height:36px;white-space:nowrap}
+
+/* petits téléphones (≤ 380 px) : le texte d'accueil ne déborde plus */
+.hero-copy{min-width:0;max-width:100%}
+@media (max-width:380px){.hero-heroic-title:where(:not(.app-header *,[class*="dock"] *)){font-size:clamp(2rem,10.2vw,2.6rem)!important}.hero-heroic-title .ht-line{white-space:normal}}
+.ssn-back{min-height:36px;display:inline-flex;align-items:center;padding:0 4px}

@@ -111,13 +111,25 @@
       ${body}</div>`;
   }
 
+  /** voile « en cours d'envoi » : deux cartes qui s'échangent pendant que le serveur travaille */
+  function sendingText(fn) {
+    const src = String(fn);
+    return /accept: true/.test(src) ? "Échange en cours…" : /accept: false/.test(src) ? "Réponse en cours d'envoi…" : /cancelTrade/.test(src) ? "Annulation en cours…" : /giveL/.test(src) ? "Envoi des propositions en cours…" : "Envoi en cours…";
+  }
+  function showSending(text) {
+    hideSending();
+    const el = document.createElement("div"); el.id = "tr-sending"; el.className = "tr-sending"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite");
+    el.innerHTML = `<div class="tr-send-box"><div class="tr-send-cards" aria-hidden="true"><i></i><i></i></div><b>${C.esc(window.MAI18n ? window.MAI18n.t(text) : text)}</b><span class="tr-send-dots" aria-hidden="true"><u></u><u></u><u></u></span></div>`;
+    document.body.appendChild(el); requestAnimationFrame(() => el.classList.add("on"));
+  }
+  function hideSending() { const el = document.getElementById("tr-sending"); if (el) el.remove(); }
   async function act(fn, okMsg) {
-    if (busy) return; busy = true;
+    if (busy) return; busy = true; showSending(sendingText(fn));
     try { const r = await fn(); if (okMsg) C.toast(typeof okMsg === "function" ? okMsg(r) : okMsg, "ok"); }
     catch (e) { C.toast(e.message, "err"); }
     finally { busy = false; }
     try { await window.MACards.load(true); await load(true); } catch (_) { /* ignoré */ }
-    render();
+    hideSending(); render();
   }
 
   window.MATrades = { prefill: (id) => { prefillGive = id; tab = "pilots"; loadedAt = 0; } };

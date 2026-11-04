@@ -54,7 +54,6 @@
   <link rel="stylesheet" href="css/glass.css">
   <link rel="stylesheet" href="css/dock.css">
   <link rel="stylesheet" href="css/motion.css">
-  <link rel="stylesheet" href="css/season.css">
   <link rel="stylesheet" href="css/admin-dash.css">
   <link rel="stylesheet" href="css/packs.css">
   <link rel="stylesheet" href="css/cards3.css">
@@ -69,6 +68,9 @@
   <link rel="stylesheet" href="css/profile-v2.css">
   <link rel="stylesheet" href="css/season.css">
   <link rel="stylesheet" href="css/center.css">
+  <link rel="stylesheet" href="css/albums3.css">
+  <link rel="stylesheet" href="css/profile-v3.css">
+  <link rel="stylesheet" href="css/final.css">
 <style id="splash-css">#splash{display:none}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.1rem;background:var(--bg-core,#09090b);touch-action:manipulation;contain:strict;animation:spLife 1.5s linear forwards}
 #splash .sp-mark{width:min(30vw,120px);height:auto;overflow:visible;animation:spMark 1.5s cubic-bezier(.3,.7,.2,1) forwards}
@@ -238,7 +240,6 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       <a class="play-tile" href="#/duel"><b>🏁 Duel</b><small>0-100 et 400 m en course</small></a>
       <a class="play-tile" href="#/jouer/boutique"><b>🃏 Cartes</b><small>Un pack gratuit par jour</small></a>
       <a class="play-tile" href="#/clubs"><b>🛡 Clubs</b><small>Par marque ou par région</small></a>
-      <a class="play-tile" href="#/annonces"><b>🏷 Annonces</b><small>Pièces entre pilotes</small></a>
     </div>
   </section>
 
@@ -368,6 +369,9 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <div class="page-head-actions"><a class="cta-btn fill-btn compact-btn" href="chat.html">💬 Ouvrir le salon</a></div>
       </header>
     <nav data-section="community"></nav>
+    <section class="tab-panel" data-tab="hub-pilotes" hidden><div id="comm-hub-pilotes"></div></section>
+    <section class="tab-panel" data-tab="hub-clubs" hidden><div id="comm-hub-clubs"></div></section>
+    <section class="tab-panel" data-tab="hub-classements" hidden><div id="comm-hub-classements"></div></section>
     <section class="tab-panel" data-tab="fil" hidden>
       <div class="seg-switch" role="tablist" aria-label="Filtrer le fil"><button type="button" role="tab" class="seg-btn active" data-feed-mode="all">Tout</button><button type="button" role="tab" class="seg-btn" data-feed-mode="follow">Mes abonnements</button></div>
       <div class="feed-list" id="feed-list" aria-live="polite"></div>
@@ -388,7 +392,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       </div>
       <div class="telemetry-stack" id="pilots-registry-list"></div>
     </section>
-    <section class="tab-panel" data-tab="evenements" hidden>
+    <section class="tab-panel" data-tab="evenements carte" hidden>
       <div class="community-tools">
         <span class="lap-meta" id="events-count" aria-live="polite"></span>
         <button type="button" class="cta-btn fill-btn compact-btn" data-action="event-new">+ Proposer une sortie</button>
@@ -500,33 +504,34 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="public-profile-modal" data-page="pilot">
   <div class="stage-shell page-wrap">
     <a class="back-link" href="#/communaute/pilotes" data-back="#/communaute/pilotes">← Tous les pilotes</a>
-    <section class="pro-hero pv2" aria-labelledby="pub-profile-name">
-      <div class="pv2-cover" aria-hidden="true"></div>
-      <div class="pro-id pv2-id">
-        <img id="pub-profile-avatar" src="" alt="Avatar du pilote" class="profile-avatar pro-avatar" data-fallback="avatar">
-        <div class="pro-id-text">
-          <span class="status-tag-verified" id="pub-profile-subtitle">Dossier pilote</span>
+    <section class="pro-hero pv3" aria-labelledby="pub-profile-name">
+      <div class="pv3-cover" id="pub-cover" aria-hidden="true"></div>
+      <div class="pv3-id">
+        <div class="pv3-av"><img id="pub-profile-avatar" src="" alt="Avatar du pilote" class="profile-avatar pro-avatar" data-fallback="avatar"></div>
+        <div class="pv3-who">
           <h1 class="page-title" id="pub-profile-name">Pilote</h1>
-          <p class="page-sub" id="pub-profile-car">Projet : -</p>
+          <span class="status-tag-verified pv3-tag" id="pub-profile-subtitle">Pilote</span>
+          <p class="pv3-car" id="pub-profile-car">Projet : -</p>
           <p class="presence-line" id="pub-presence" hidden></p>
         </div>
       </div>
-      <div class="pro-actions pv2-actions">
+      <div class="pv3-actions">
         <button type="button" class="cta-btn fill-btn compact-btn follow-btn" data-action="toggle-follow" hidden>Suivre</button>
+        <button type="button" class="cta-btn fill-btn compact-btn" id="pub-edit-btn" hidden>✏️ Personnaliser le profil</button>
         <button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats">📊 Caractéristiques</button>
         <button type="button" class="cta-btn btn-ghost compact-btn" id="pub-block-btn" data-action="toggle-block" hidden>Bloquer</button>
         <button type="button" class="cta-btn btn-ghost compact-btn grade-btn" id="pub-admin-btn" data-action="toggle-admin" hidden>Nommer admin</button>
       </div>
-      <p id="pub-profile-bio" class="profile-bio pv2-bio">Aucune bio renseignée.</p>
+      <p id="pub-profile-bio" class="profile-bio pv3-bio">Aucune bio renseignée.</p>
       <div id="pub-socials"></div>
       <div class="badge-row" id="pub-profile-badges"></div>
-      <div class="pro-stats pv2-stats" id="pub-social">
+      <div class="pro-stats pv3-stats" id="pub-social">
         <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b><span>abonnés</span></button>
         <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="following"><b data-sc="following">–</b><span>abonnements</span></button>
         <div class="pro-stat" id="pub-stat-cards"><b>–</b><span>cartes</span></div>
         <div class="pro-stat" id="pub-stat-level"><b>–</b><span>niveau</span></div>
       </div>
-      <div class="pv2-level" id="pub-level-card" hidden></div>
+      <div class="pv2-level pv3-level" id="pub-level-card" hidden></div>
     </section>
     <div id="pub-profile-private-warning" class="private-warning" style="display:none">🔒 Ce pilote garde son garage privé.</div>
     <nav class="pro-tabs" id="pub-tabs" role="tablist" aria-label="Sections du profil">
@@ -1464,6 +1469,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/profile-stats.js"></script>
   <script defer src="js/pilot-profile.js"></script>
   <script defer src="js/pilot-honors.js"></script>
+  <script defer src="js/profile-edit.js"></script>
+  <script defer src="js/community-hub.js"></script>
   <script defer src="js/legal.js"></script>
   <script defer src="js/engines.js"></script>
   <script defer src="js/share-car.js"></script>

@@ -60,6 +60,8 @@
     }
   }
 
+  window.MAHonors = { render };
+
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     ctx.Router.register("pilot", { enter: (p) => {

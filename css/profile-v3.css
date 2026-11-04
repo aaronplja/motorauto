@@ -1,0 +1,85 @@
+/* MOTORAUTO — profil public v3 : pensé mobile d'abord, centré sur petit écran, en deux colonnes à partir de 720 px. */
+#public-profile-modal .pro-hero.pv3{padding:0 0 1.1rem;gap:.9rem;border-radius:26px;overflow:hidden;position:relative;background:var(--bg-surface);border:1px solid var(--stroke-line);box-shadow:0 18px 40px -26px rgba(0,0,0,.7)}
+#public-profile-modal .pro-hero.pv3::before{display:none}
+#public-profile-modal .pv3>:not(.pv3-cover){margin-inline:1rem;position:relative}
+.pv3-cover{height:128px;margin:0!important;background:radial-gradient(120% 140% at 12% 0%,color-mix(in srgb,var(--accent) 55%,transparent),transparent 62%),linear-gradient(135deg,color-mix(in srgb,var(--accent) 30%,var(--bg-elevated)),var(--bg-elevated));background-size:cover;background-position:center;position:relative}
+.pv3-cover.has-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),var(--bg-surface) 96%)}
+.pv3-id{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.6rem;margin-top:-58px!important}
+.pv3-av{position:relative;flex:none}
+#public-profile-modal .pv3 .pro-avatar{width:104px;height:104px;border-radius:50%;border:4px solid var(--bg-surface);box-shadow:0 14px 30px -12px rgba(0,0,0,.7);object-fit:cover;display:block;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+#public-profile-modal .pv3 .pro-avatar.cosm-f{border-width:4px}
+.pv3-av:hover .pro-avatar{transform:scale(1.04)}
+.pv3-who{min-width:0;display:flex;flex-direction:column;align-items:center;gap:.25rem}
+#public-profile-modal .pv3 .page-title{margin:0;font-size:clamp(1.5rem,6.4vw,2.1rem);line-height:1.1;overflow-wrap:anywhere}
+.pv3-who .cosm-title{margin:.1rem 0 0;font-size:.74rem;padding:3px 11px}
+.pv3-tag{margin:0}
+.pv3-car{margin:.1rem 0 0;font-size:.85rem;color:var(--color-muted);display:inline-flex;gap:.35rem;align-items:center;max-width:100%}
+.pv3-actions{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.pv3-actions .cta-btn{min-height:44px;width:100%;justify-content:center}
+.pv3-actions .cta-btn:only-child,.pv3-actions .cta-btn:last-child:nth-child(odd){grid-column:1/-1}
+.pv3-actions>[hidden]{display:none!important}
+.pv3-bio{margin:0;line-height:1.55;text-align:center;max-width:62ch;margin-inline:auto!important;color:var(--color-secondary,inherit)}
+#pub-socials{display:flex;justify-content:center}
+.pv3 .badge-row{justify-content:center}
+.pv3-stats{grid-template-columns:repeat(4,1fr)!important;gap:.4rem!important}
+.pv3-stats .pro-stat{padding:.7rem .15rem;border-radius:16px;background:var(--bg-elevated);min-width:0}
+.pv3-stats .pro-stat b{font-size:1.25rem;font-variant-numeric:tabular-nums}
+.pv3-stats .pro-stat span{max-width:100%;white-space:nowrap}
+.pv3-level{padding:.9rem 1rem}
+.ph-honors{align-items:center}
+.ph-honors .ph-chips,.ph-honors .ph-badges{justify-content:center}
+/* onglets du profil : défilement doux, pas de coupure */
+#public-profile-modal .pro-tabs{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+#public-profile-modal .pro-tabs::-webkit-scrollbar{display:none}
+#public-profile-modal .pro-tab{scroll-snap-align:center;flex:1 0 auto}
+#public-profile-modal .pro-panel{animation:pvIn .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes pvIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (min-width:720px){
+  #public-profile-modal .pv3>:not(.pv3-cover){margin-inline:1.6rem}
+  .pv3-cover{height:160px}
+  .pv3-id{flex-direction:row;align-items:flex-end;text-align:left;gap:1.2rem;margin-top:-64px!important}
+  #public-profile-modal .pv3 .pro-avatar{width:128px;height:128px}
+  .pv3-who{align-items:flex-start;padding-bottom:.3rem}
+  .pv3-actions{display:flex;flex-wrap:wrap}.pv3-actions .cta-btn{width:auto;min-width:170px}
+  .pv3-bio{text-align:left;margin-inline:0!important}
+  #pub-socials,.pv3 .badge-row,.ph-honors,.ph-honors .ph-chips,.ph-honors .ph-badges{justify-content:flex-start;align-items:flex-start}
+  .pv3-stats .pro-stat span{font-size:.72rem}
+}
+@media (max-width:360px){.pv3-actions{grid-template-columns:1fr}.pv3-stats .pro-stat b{font-size:1.1rem}}
+/* panneau « Personnaliser le profil » */
+.pe-layer{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);animation:peFade .2s both}
+.pe-sheet{width:min(720px,100%);max-height:92dvh;display:flex;flex-direction:column;background:var(--bg-surface);border:1px solid var(--stroke-line);border-radius:26px 26px 0 0;box-shadow:0 -20px 60px rgba(0,0,0,.5);animation:peUp .34s cubic-bezier(.2,.8,.2,1) both}
+@media (min-width:720px){.pe-layer{align-items:center}.pe-sheet{border-radius:26px;max-height:88dvh}}
+.pe-head{display:flex;align-items:center;gap:.8rem;padding:1rem 1.1rem .7rem;border-bottom:1px solid var(--stroke-line)}
+.pe-head h2{margin:0;font-size:1.05rem;flex:1}
+.pe-x{width:40px;height:40px;border-radius:50%;border:1px solid var(--stroke-line);background:var(--bg-elevated);color:inherit;font-size:1.3rem;cursor:pointer}
+.pe-prev{display:flex;align-items:center;gap:.9rem;padding:.8rem 1.1rem;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,transparent),transparent)}
+.pe-prev .pe-av{width:64px;height:64px;border-radius:50%;flex:none}
+.pe-prev .pe-av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.pe-prev b{display:block;font-size:1.05rem}
+.pe-tabs{display:flex;gap:.3rem;padding:.4rem 1.1rem;overflow-x:auto;scrollbar-width:none}
+.pe-tabs button{flex:1 0 auto;border:0;border-radius:99px;padding:.55rem .9rem;background:transparent;color:var(--color-muted);font-weight:800;font-size:.85rem;cursor:pointer;min-height:40px;transition:background .2s,color .2s}
+.pe-tabs button.on{background:var(--accent);color:var(--on-accent,#fff)}
+.pe-body{overflow-y:auto;padding:.4rem 1.1rem 1.2rem;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.pe-body .settings-box{border:0;padding:0;background:none;box-shadow:none;max-height:none}
+.pe-pane[hidden]{display:none}
+.pe-pane{animation:pvIn .3s both}
+.pe-hint{color:var(--color-muted);font-size:.82rem;margin:.2rem 0 .8rem}
+@keyframes peUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes peFade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.pe-layer,.pe-sheet,.pe-pane,#public-profile-modal .pro-panel{animation:none}}
+.pe-body .danger-zone{display:none}
+.pe-pick{cursor:pointer;font:inherit;color:inherit}
+.pe-pick:disabled{cursor:not-allowed}
+.pe-pick.on:hover{border-color:var(--accent);transform:translateY(-2px)}
+.pe-pick{transition:transform .15s,border-color .15s}
+.pe-head,.pe-prev,.pe-tabs{flex:none}
+.pe-layer{z-index:3100}
+.pe-body{padding-bottom:calc(28px + var(--safe-bottom,0px))}
+#pub-edit-btn{grid-column:1/-1}
+.pv3-stats .pro-stat span{text-transform:none;letter-spacing:0;font-size:.66rem}
+@media (min-width:720px){.pv3-stats .pro-stat span{font-size:.78rem}}
+.pv3-actions{display:flex!important;flex-wrap:wrap;gap:.5rem}
+.pv3-actions .cta-btn{flex:1 1 calc(50% - .5rem)!important;width:auto!important;min-width:0!important}
+#pub-edit-btn{flex-basis:100%!important}
+@media (min-width:720px){.pv3-actions .cta-btn{flex:0 1 auto!important;min-width:170px!important}#pub-edit-btn{flex-basis:auto!important}}

@@ -570,36 +570,46 @@
       <div id="cg-titles" class="cg-titles"></div>
       <div class="cg-albumgrid">${list.map(tile).join("") || `<p class="lap-meta">Aucun album de ce type.</p>`}</div></section>`;
   }
-  let albumFilt = "all";
-  const albumCars = (cars) => albumFilt === "owned" ? cars.filter((c) => countOf(c.id) > 0) : albumFilt === "missing" ? cars.filter((c) => !(countOf(c.id) > 0)) : cars;
+  let albumFilt = "all", albumRar = "all", albumShow = 24;
+  const albumCars = (cars) => cars.filter((c) => (albumFilt === "all" || (albumFilt === "owned") === (countOf(c.id) > 0)) && (albumRar === "all" || rarityOf(c) === albumRar));
+  /** haut de l'album : anneau de progression, récompenses, jalons et raretés (cliquables pour filtrer) */
   function albumHead(cars, s, done, leg) {
-    const have = cars.filter((c) => countOf(c.id) > 0).length, p = pct(have, cars.length);
+    const have = cars.filter((c) => countOf(c.id) > 0).length, p = pct(have, cars.length), left = cars.length - have, full = left === 0;
     const rows = ORDER.map((r) => { const all = cars.filter((c) => rarityOf(c) === r); if (!all.length) return ""; const h = all.filter((c) => countOf(c.id) > 0).length;
-      return `<div class="ab-rar ${r}"><span>${RAR[r].label}</span><span class="ab-track"><u style="width:${pct(h, all.length)}%"></u></span><b>${h}/${all.length}</b></div>`; }).join("");
-    const marks = [25, 50, 75, 100].map((m) => `<i class="${p >= m ? "on" : ""}" style="left:${m}%"><small>${m}</small></i>`).join("");
-    return `<div class="ab-hero"><div class="ab-big"><b>${p}<small>%</small></b><span>${have} / ${cars.length} cartes</span></div>
-      <div class="ab-meter"><span class="ab-track big" aria-hidden="true"><u style="width:${p}%"></u>${marks}</span><small>${done ? "Album terminé : récompense récupérée" : have === cars.length ? "Complet : récupère ta récompense" : "Il te manque " + (cars.length - have) + " carte" + (cars.length - have > 1 ? "s" : "") + " · récompense " + s.reward + " cristaux" + (leg ? " + carte Légende" : "")}</small></div></div>
-      <div class="ab-rars">${rows}</div>
-      <div class="chip-row ab-filt" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["missing", "Manquantes"], ["owned", "Possédées"]].map(([k, l]) => `<button type="button" class="chip${albumFilt === k ? " active" : ""}" data-afilt="${k}" aria-pressed="${albumFilt === k}">${l}</button>`).join("")}</div>`;
+      return `<button type="button" class="ab3-rar r-${r}${albumRar === r ? " on" : ""}" data-arar="${r}" aria-pressed="${albumRar === r}"><i></i><span>${RAR[r].label}</span><b>${h}/${all.length}</b></button>`; }).join("");
+    const marks = [25, 50, 75].map((m) => `<i class="${p >= m ? "on" : ""}" style="left:${m}%"></i>`).join("");
+    const state = done ? `<span class="ab3-state ok">✓ Terminé · récompense récupérée</span>` : full ? `<span class="ab3-state ready">Complet : récupère ta récompense</span>` : `<span class="ab3-state">Encore ${left} carte${left > 1 ? "s" : ""}</span>`;
+    return `<div class="ab3-hero"><div class="ab3-ring" style="--p:${p}%"><b>${p}<small>%</small></b><span>${have} / ${cars.length}</span></div>
+      <div class="ab3-info">${state}
+        <span class="ab3-meter" aria-hidden="true"><u style="width:${p}%"></u>${marks}</span>
+        <div class="ab3-rewards"><span class="ab3-rw">◆ ${s.reward} cristaux</span>${leg ? `<span class="ab3-rw leg">★ Carte Légende</span>` : ""}</div></div></div>
+      <div class="ab3-rars" role="group" aria-label="Raretés">${rows}</div>
+      <div class="ab3-filt" role="group" aria-label="Filtrer">${[["all", "Toutes", cars.length], ["missing", "Manquantes", left], ["owned", "Possédées", have]].map(([k, l, n]) => `<button type="button" class="${albumFilt === k ? "on" : ""}" data-afilt="${k}" aria-pressed="${albumFilt === k}">${l} <em>${n}</em></button>`).join("")}</div>`;
   }
-  function albumPage(cars, page) {
-    cars = albumCars(cars);
-    return cars.slice(page * PAGE, (page + 1) * PAGE).map((c) => cardHtml(c, { owned: countOf(c.id) > 0, count: countOf(c.id), lv: lvOf(c.id) })).join("") + pagerHtml("data-apage", page, cars.length);
+  function albumPage(cars) {
+    const list = albumCars(cars);
+    if (!list.length) return `<p class="ab3-empty">${albumFilt === "owned" ? "Tu n'as encore aucune carte de cette sélection." : "Rien à afficher : tout est déjà dans ta collection !"}</p>`;
+    return list.slice(0, albumShow).map((c) => cardHtml(c, { owned: countOf(c.id) > 0, count: countOf(c.id), lv: lvOf(c.id) })).join("") +
+      (list.length > albumShow ? `<button type="button" class="ab3-more" data-amore>Afficher plus <em>${list.length - albumShow}</em></button>` : "");
   }
   function showAlbum(id) {
     const s = allSets().find((x) => x.id === id); if (!s) return;
-    albumFilt = "all";
+    albumFilt = "all"; albumRar = "all"; albumShow = 24;
     const cars = s.ids.map((i) => C.carsById.get(i)).filter(Boolean).sort((a, b) => numberOf(a) - numberOf(b));
     const have = cars.filter((c) => countOf(c.id) > 0).length, done = !!(claims && claims[s.id]), full = have === cars.length, leg = s.legend && cardObj(s.legend);
-    const o = mountOverlay("album", "Album " + s.name, `<div class="tcg-stage cg-album-ov"><h2>${C.esc(s.name)}</h2><div id="ab-head">${albumHead(cars, s, done, leg)}</div>
-      <div class="tcg-grid compact cg-album-grid" id="cg-album-grid">${albumPage(cars, 0)}</div>
-      ${leg ? `<h3 class="cg-legend-title">Récompense : carte Légende</h3><div class="cg-legend-slot">${cardHtml(leg, { owned: countOf(leg.id) > 0, count: 0, lv: lvOf(leg.id) })}</div>` : ""}
-      <div class="tcg-actions">${full && !done ? `<button type="button" class="cta-btn fill-btn" data-set-claim>Récupérer la récompense</button>` : ""}<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div>`);
+    const o = mountOverlay("album", "Album " + s.name, `<div class="tcg-stage cg-album-ov ab3">
+      <header class="ab3-bar"><button type="button" class="ab3-back" data-close aria-label="Retour">‹</button><div><small>${C.esc(kindLabel[s.kind] || "Album")}</small><h2>${C.esc(s.name)}</h2></div></header>
+      <div id="ab-head">${albumHead(cars, s, done, leg)}</div>
+      <div class="ab3-grid" id="cg-album-grid">${albumPage(cars)}</div>
+      ${leg ? `<section class="ab3-legend"><h3>★ Récompense : carte Légende</h3><p>${countOf(leg.id) > 0 ? "Tu l'as déjà obtenue." : "Termine l'album pour l'obtenir."}</p><div class="cg-legend-slot">${cardHtml(leg, { owned: countOf(leg.id) > 0, count: 0, lv: lvOf(leg.id) })}</div></section>` : ""}
+      <div class="ab3-dock">${full && !done ? `<button type="button" class="cta-btn fill-btn" data-set-claim>Récupérer la récompense</button>` : ""}<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div>`);
+    const redraw = () => { const g = o.querySelector("#cg-album-grid"), h = o.querySelector("#ab-head"); if (g) g.innerHTML = albumPage(cars); if (h) h.innerHTML = albumHead(cars, s, done, leg); };
     o.addEventListener("click", (e) => {
       if (e.target === o || e.target.closest("[data-close]")) { closeOverlay(); return; }
-      const af = e.target.closest("[data-afilt]"); if (af) { albumFilt = af.dataset.afilt; const g = o.querySelector("#cg-album-grid"), h = o.querySelector("#ab-head"); if (g) g.innerHTML = albumPage(cars, 0); if (h) h.innerHTML = albumHead(cars, s, done, leg); return; }
-      const ap = e.target.closest("[data-apage]"); if (ap) { const g = o.querySelector("#cg-album-grid"); if (g) { g.innerHTML = albumPage(cars, Math.max(0, Number(ap.dataset.apage) || 0)); g.scrollIntoView({ block: "nearest" }); } return; }
-      const cd = e.target.closest("[data-card]"); if (cd) { showDetail(cd.dataset.card, cars.map((c) => c.id)); return; }
+      const af = e.target.closest("[data-afilt]"); if (af) { albumFilt = af.dataset.afilt; albumShow = 24; redraw(); return; }
+      const ar = e.target.closest("[data-arar]"); if (ar) { albumRar = albumRar === ar.dataset.arar ? "all" : ar.dataset.arar; albumShow = 24; redraw(); return; }
+      if (e.target.closest("[data-amore]")) { albumShow += 24; const g = o.querySelector("#cg-album-grid"); if (g) g.innerHTML = albumPage(cars); return; }
+      const cd = e.target.closest("[data-card]"); if (cd) { showDetail(cd.dataset.card, albumCars(cars).map((c) => c.id)); return; }
       if (e.target.closest("[data-set-claim]")) claimAlbums(true);
     });
   }
@@ -794,7 +804,7 @@
   async function myCollection() { try { await load(); return doc; } catch (_) { return null; } }
 
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-sheet-card]"); if (b && C && C.user) showDetail(b.dataset.sheetCard, [], { peek: true }); else if (b) C && C.toast && C.toast("Connecte-toi pour voir la carte.", "err"); });
-  window.MACards = { loadRarOv, sheetBadge, setRarOv: (m) => { rarOv = m || {}; }, rarOv: () => rarOv, autoRarity: (car) => { indexCars(); return rarityMap.get(car.id) || "common"; }, lvOf, pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
+  window.MACards = { editShowcase: () => editShowcase(), loadRarOv, sheetBadge, setRarOv: (m) => { rarOv = m || {}; }, rarOv: () => rarOv, autoRarity: (car) => { indexCars(); return rarityMap.get(car.id) || "common"; }, lvOf, pool: () => C.cars, rarityOf, numberOf, cardHtml, cardObj, RAR, load: (f) => load(f), mine: () => doc, myWish: () => wish || [], loadSpecials, specials: () => specials, loadWish, applyDoc, isOwned, countOf };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);

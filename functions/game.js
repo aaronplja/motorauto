@@ -214,6 +214,7 @@
         if (d.dust < cost) fail("failed-precondition", "Il te faut " + cost + " cristaux (tu en as " + d.dust + ").");
         dustMove(d, -cost, offerUsed ? "Carte du jour achetée" : "Carte fabriquée"); d.owned[id] = 1;
         const missions = offerUsed ? bump(d, "offer") : { gain: 0, names: [] };
+        core.seasonAdd(d, core.SEASON_PTS.craft, null, now());
         writeCol(tx, uid, d);
         return { id, missions, doc: view(d) };
       });
@@ -234,6 +235,7 @@
         if (d.dust < cost) fail("failed-precondition", "Il te faut " + cost + " cristaux (tu en as " + d.dust + ").");
         dustMove(d, -cost, "Carte améliorée"); d.lv[id] = cur + 1;
         const missions = bump(d, "upgrade");
+        core.seasonAdd(d, core.SEASON_PTS.upgrade, null, now());
         writeCol(tx, uid, d);
         return { id, level: cur + 1, cost, missions, doc: view(d) };
       });
@@ -255,7 +257,7 @@
         });
         if (!won.length) return { claimed: [], legends: [], doc: view(d), done };
         const total = won.reduce((t, w) => t + w.reward, 0);
-        dustMove(d, total, "Album complété"); writeCol(tx, uid, d);
+        dustMove(d, total, "Album complété"); core.seasonAdd(d, core.SEASON_PTS.album * won.length, null, now(), true); writeCol(tx, uid, d);
         tx.set(ref, { done, updatedAt: ts() });
         return { claimed: won, legends, total, doc: view(d), done };
       });
@@ -282,7 +284,7 @@
         const best = Math.max(days, (cur && cur.best) || 0);
         tx.set(ref, { days, best, last: today, freezes, fzMonth, updatedAt: ts() });
         const sn = core.seasonOf(d, now());
-        if (sn.dayLog !== today) { sn.dayLog = today; core.seasonAdd(d, core.SEASON_PTS.visit, { days: 1 }, now()); writeCol(tx, uid, d); }
+        if (sn.dayLog !== today) { sn.dayLog = today; core.seasonAdd(d, core.SEASON_PTS.visit, { days: 1 }, now(), true); writeCol(tx, uid, d); }
         return { days, best, fresh: true, freezes, saved, doc: view(d) };
       });
     }
@@ -302,22 +304,36 @@
     }
     /** récupération d'un palier du pass ou d'une étape de quête de saison */
     async function seasonClaim(caller, data) {
-      const uid = caller.uid, what = data && data.what;
+      const uid = caller.uid, what = data && data.what, poolForClaim = () => getPool();
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid), sn = core.seasonOf(d, now());
-        let text = "";
+        let text = "", cards = [];
         if (what === "tier") {
           const t = Number(data.tier) | 0;
           if (t < 1 || t > core.PASS_TIERS) fail("invalid-argument", "Palier inconnu.");
           if (core.passTier(sn) < t) fail("failed-precondition", "Palier pas encore atteint.");
           if (sn.claimed.indexOf(t) >= 0) fail("failed-precondition", "Palier déjà récupéré.");
-          const r = core.passReward(t);
+          const r = core.passReward(t), pool = (r.epic || r.choice) ? await poolForClaim() : null, extra = [];
+          if (r.choice) {
+            const offer = core.legendOffer(pool.ids, pool.rar, d.owned, uid, sn.n), pick = String((data && data.pick) || "");
+            if (!pick) return { need: "pick", offer, doc: view(d) };
+            if (offer.indexOf(pick) < 0) fail("invalid-argument", "Cette carte ne fait pas partie de ton choix.");
+            d.owned[pick] = (d.owned[pick] || 0) + 1; extra.push(pick);
+          }
+          if (r.epic) { const id = core.epicPick(pool.ids, pool.rar, d.owned, uid, sn.n, t); if (id) { d.owned[id] = (d.owned[id] || 0) + 1; extra.push(id); } }
           sn.claimed.push(t);
-          if (r.dust) dustMove(d, r.dust, "Pass de saison");
+          let dust = r.dust, fz = null;
+          if (r.freeze) {
+            const sref = col("streaks").doc(uid), ss = await tx.get(sref), cur = ss.exists ? ss.data() : { days: 0, best: 0, last: "" };
+            if ((cur.freezes || 0) < core.FREEZE_MAX) { fz = { ref: sref, cur }; } else dust += 75;        // stock plein : remplacé par des cristaux
+          }
+          if (dust) dustMove(d, dust, "Pass de saison");
+          if (fz) tx.set(fz.ref, Object.assign({}, fz.cur, { freezes: (fz.cur.freezes || 0) + 1, updatedAt: ts() }));
           if (r.bonus) d.bonus = (d.bonus || 0) + r.bonus;
           if (r.frame && d.cosm.indexOf("f:" + r.frame) < 0) d.cosm.push("f:" + r.frame);
           if (r.title && d.cosm.indexOf("t:" + r.title) < 0) d.cosm.push("t:" + r.title);
           text = core.passLabel(r);
+          cards = extra;
         } else if (what === "quest") {
           const qs = core.questState(sn);
           if (qs.done) fail("failed-precondition", "Toutes les quêtes sont terminées.");
@@ -334,7 +350,7 @@
           }
         } else fail("invalid-argument", "Demande inconnue.");
         writeCol(tx, uid, d);
-        return { text, doc: view(d) };
+        return { text, cards, doc: view(d) };
       });
     }
     /** pack de bienvenue : une seule fois par compte */
@@ -489,6 +505,7 @@
           w.claimed.push(id); d.chal = (d.chal || 0) + 1;
           if (items.every((c) => w.claimed.indexOf(c.id) >= 0)) { perfect = true; d.bonus += core.PERFECT_WEEK_BONUS; }
         }
+        core.seasonAdd(d, core.SEASON_PTS.challenge + (perfect ? 30 : 0), null, now(), true);
         writeCol(tx, uid, d); writeWeekly(tx, uid, w);
         return { reward: r, perfect, doc: view(d) };
       });
@@ -565,6 +582,7 @@
         to.owned[t.want]--; to.owned[t.give] = (to.owned[t.give] || 0) + 1;
         from.trades = (from.trades || 0) + 1; to.trades = (to.trades || 0) + 1; wf.trades++; wt.trades++;
         bump(from, "trade"); bump(to, "trade");
+        core.seasonAdd(from, core.SEASON_PTS.trade, null, now()); core.seasonAdd(to, core.SEASON_PTS.trade, null, now());
         writeCol(tx, t.fromUid, from); writeCol(tx, uid, to); writeWeekly(tx, t.fromUid, wf); writeWeekly(tx, uid, wt);
         tx.update(ref, { status: "accepted", updatedAt: ts() });
       });
@@ -788,6 +806,7 @@
         const fresh = candidates.filter((id) => !(d.owned[id] > 0)), bag = fresh.length ? fresh : candidates;
         const got = bag[Math.floor(rng() * bag.length)];
         d.owned[got] = (d.owned[got] || 0) + 1; g.fuse++;
+        core.seasonAdd(d, core.SEASON_PTS.fuse, null, now());
         writeCol(tx, uid, d); writeStats(tx, uid, g);
         return { from, to, used, got, isNew: fresh.length > 0, fuse: g.fuse, doc: view(d) };
       });

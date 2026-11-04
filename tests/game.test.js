@@ -23,6 +23,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   // ---- cohérence des fichiers partagés
   ok(fs.readFileSync(path.join(__dirname, "../js/game-core.js"), "utf8") === fs.readFileSync(path.join(__dirname, "../functions/game-core.js"), "utf8"), "functions/game-core.js identique à js/game-core.js (node scripts/sync-functions.js)");
   ok(pool.length >= 100, "catalogue statique chargé : " + pool.length);
+  const PRAR = core.computeRarities(pool);
 
   // ---- calendrier
   ok(core.dayKey(Date.parse("2026-10-28T23:30:00Z")) === "2026-10-29", "jour de Paris (minuit passé)");
@@ -254,17 +255,23 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   await rejects(G.claimWelcome(S1), "failed-precondition", "cadeau de bienvenue une seule fois");
   r = await G.openPack(S1, { kind: "daily" });
   ok(r.doc.log.length === 1 && r.doc.best.split("|").length === 2 && r.doc.packsAll === 1, "historique : 1 pack, meilleure pioche " + r.doc.best);
-  ok(r.doc.season && r.doc.season.pts === core.SEASON_PTS.pack && r.doc.season.act.packs === 1, "saison : +10 points pour un pack");
+  ok(r.doc.season && r.doc.season.pts === core.SEASON_PTS.pack && r.doc.season.act.packs === 1, "saison : points pour un pack");
   await rejects(G.seasonClaim(S1, { what: "tier", tier: 1 }), "failed-precondition", "palier non atteint refusé");
   for (let i = 0; i < 5; i++) await G.openPack(S1, { kind: "bonus" }).catch(() => {});
   let sn = db.raw("collections", "s1").season; ok(sn.pts >= 20, "points de saison cumulés : " + sn.pts);
-  db.raw("collections", "s1").season.pts = 40 * 5;
+  db.raw("collections", "s1").season.pts = core.PASS_STEP * 5;
   const sdust0 = db.raw("collections", "s1").dust, bon0 = db.raw("collections", "s1").bonus;
   r = await G.seasonClaim(S1, { what: "tier", tier: 5 }); ok(db.raw("collections", "s1").bonus === bon0 + 1, "palier 5 : pack bonus");
   await rejects(G.seasonClaim(S1, { what: "tier", tier: 5 }), "failed-precondition", "palier déjà récupéré refusé");
   r = await G.seasonClaim(S1, { what: "tier", tier: 1 }); ok(db.raw("collections", "s1").dust > sdust0, "palier 1 : cristaux");
-  db.raw("collections", "s1").season.pts = 40 * 30; r = await G.seasonClaim(S1, { what: "tier", tier: 10 }); ok(r.doc.cosm.includes("t:t10"), "palier 10 : titre débloqué");
-  r = await G.seasonClaim(S1, { what: "tier", tier: 30 }); ok(r.doc.cosm.includes("f:s_royal") && r.doc.cosm.includes("t:t30"), "palier 30 : cadre et titre");
+  db.raw("collections", "s1").season.pts = core.PASS_STEP * 30; r = await G.seasonClaim(S1, { what: "tier", tier: 10 }); ok(r.doc.cosm.includes("t:t10"), "palier 10 : titre débloqué");
+  { const own0 = Object.keys(db.raw("collections", "s1").owned).filter((k) => db.raw("collections", "s1").owned[k] > 0).length; r = await G.seasonClaim(S1, { what: "tier", tier: 12 }); ok(r.cards.length === 1 && PRAR.get(r.cards[0]) === "epic", "palier 12 : carte Épique " + r.cards[0]); }
+  { const fz0 = (db.raw("streaks", "s1") || {}).freezes || 0; r = await G.seasonClaim(S1, { what: "tier", tier: 7 }); ok(((db.raw("streaks", "s1") || {}).freezes || 0) === fz0 + 1 || db.raw("collections", "s1").dust > 0, "palier 7 : gel de série (ou cristaux si stock plein)"); }
+  r = await G.seasonClaim(S1, { what: "tier", tier: 30 }); ok(r.need === "pick" && r.offer.length === 3 && r.offer.every((id) => PRAR.get(id) === "legendary"), "palier 30 : 3 Légendaires proposées");
+  await rejects(G.seasonClaim(S1, { what: "tier", tier: 30, pick: "pas-une-carte" }), "invalid-argument", "choix hors proposition refusé");
+  ok(!db.raw("collections", "s1").season.claimed.includes(30), "palier 30 non consommé sans choix");
+  { const pick = r.offer[1]; const had = db.raw("collections", "s1").owned[pick] || 0; r = await G.seasonClaim(S1, { what: "tier", tier: 30, pick }); ok(db.raw("collections", "s1").owned[pick] === had + 1 && r.cards[0] === pick, "palier 30 : Légendaire choisie obtenue"); }
+  ok(r.doc.cosm.includes("f:s_royal") && r.doc.cosm.includes("t:t30"), "palier 30 : cadre et titre");
   await rejects(G.seasonClaim(S1, { what: "quest" }), "failed-precondition", "quête non terminée refusée");
   for (let q = 0; q < 4; q++) { const c = db.raw("collections", "s1"); c.season.act[core.SEASON_QUESTS[q].act] = (c.season.base ? c.season.base[core.SEASON_QUESTS[q].act] || 0 : 0) + 999; r = await G.seasonClaim(S1, { what: "quest" }); }
   ok(r.doc.cosm.includes("f:quest") && r.doc.cosm.includes("t:quest") && r.doc.season.q === 4, "chaîne de quêtes terminée : récompense finale");
@@ -279,6 +286,13 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   NOW += 3 * 86400000; r = await G.touchStreak(F); ok(r.days === 1, "trop de jours ratés : la série repart de 1");
   r = await G.buyFreeze(F); ok(r.freezes === 1 && r.doc.dust === 1000 - core.FREEZE_COST, "achat d'un gel en cristaux");
   r = await G.buyFreeze(F); ok(r.freezes === 2, "deuxième gel"); await rejects(G.buyFreeze(F), "failed-precondition", "stock de 2 gels maximum");
+  // plafond quotidien de points de saison (hors visite / défis / albums)
+  { NOW = Date.parse("2026-12-10T10:00:00+01:00"); const c = Object.assign(core.blankCollection(), {}); const add = (n, free) => core.seasonAdd(c, n, null, NOW, free);
+    ok(add(50) === 50 && add(50) === core.SEASON_DAY_CAP - 50 && add(50) === 0, "points de saison plafonnés à " + core.SEASON_DAY_CAP + " par jour");
+    ok(add(15, true) === 15, "défi / visite / album : hors plafond"); NOW += 86400000; ok(add(30) === 30, "le plafond repart le lendemain");
+    ok(core.seasonInfo(Date.parse("2026-11-30T23:30:00+01:00")).n === 1 && core.seasonInfo(Date.parse("2026-12-01T00:30:00+01:00")).n === 2, "saison 1 = novembre 2026, saison 2 dès le 1er décembre (heure de Paris)");
+    ok(core.seasonInfo(Date.parse("2026-11-15T12:00:00+01:00")).daysLeft === 16, "jours restants jusqu'à la fin du mois");
+    let tot = 0; for (let t = 1; t <= 30; t++) tot += core.passReward(t).dust; ok(tot > 1000 && tot < 2000, "cristaux totaux du pass équilibrés : " + tot); }
   // quiz : nouvelles catégories
   for (const c of ["countries", "circuits", "numbers", "trivia"]) { const sd = "seed" + c + "ab"; const qs = core.quizBuild(sd, c, 2, pool); r = await G.quizSubmit(U2, { seed: sd, cat: c, level: 2, answers: qs.map((q) => q.a) }); ok(r.total >= 9 && r.score === r.total, "quiz " + c + " : " + r.total + " questions"); }
 
@@ -291,7 +305,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   r = await G.clubClash(U1); ok(r.pairs.length === 1, "défi de clubs : 2 clubs appariés");
   await G.openPack({ uid: "ca1" }, { kind: "daily" }); await G.openPack({ uid: "ca2" }, { kind: "daily" }); await G.openPack({ uid: "cb1" }, { kind: "daily" });
   NOW += 7 * 86400000; r = await G.clubClash(U1);
-  ok(r.prev.results.length === 1 && r.prev.results[0].win === "brand-a" && r.prev.results[0].as === 20 && r.prev.results[0].bs === 10, "défi de clubs : le club le plus actif gagne (" + JSON.stringify(r.prev.results[0]) + ")");
+  ok(r.prev.results.length === 1 && r.prev.results[0].win === "brand-a" && r.prev.results[0].as === core.SEASON_PTS.pack * 2 && r.prev.results[0].bs === core.SEASON_PTS.pack, "défi de clubs : le club le plus actif gagne (" + JSON.stringify(r.prev.results[0]) + ")");
   ok(db.raw("collections", "ca1").cosm.includes("t:clubwin") && !db.raw("collections", "cb1").cosm.includes("t:clubwin"), "titre de champion aux membres actifs du club gagnant");
   const cdust = db.raw("collections", "ca1").dust; r = await G.clubClash(U1); ok(db.raw("collections", "ca1").dust === cdust, "récompense versée une seule fois");
 

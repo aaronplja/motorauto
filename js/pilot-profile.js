@@ -54,6 +54,7 @@
               <small>${nf(s.xp)} XP${L.next ? " · encore " + nf(L.toNext) + " pour « " + esc(L.next.name) + " »" : " · niveau maximum"}</small></div>
             <ul class="pv2-facts"><li><b>${rank ? "n° " + rank : "–"}</b><span>classement</span></li><li><b>${s.badges.length}</b><span>succès</span></li><li><b>${nf(s.laps)}</b><span>chronos</span></li><li><b>${nf(s.records)}</b><span>records</span></li></ul>`;
           lc.hidden = false;
+          { const st = $("pub-profile-subtitle"); if (st) st.textContent = L.level.name; }
         }
       }
     } catch (_) { /* niveau indisponible */ }

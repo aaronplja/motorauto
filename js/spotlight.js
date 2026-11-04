@@ -12,7 +12,7 @@
     if (loading) return loading;
     loading = (async () => {
       try { pilots = (await C.db.collection("users").limit(500).get()).docs.map((d) => ({ id: d.id, name: d.data().username || "Pilote", avatar: d.data().avatar || "" })); } catch (_) { pilots = []; }
-      try { listings = (await C.db.collection("listings").where("status", "==", "open").limit(150).get()).docs.map((d) => Object.assign({ id: d.id }, d.data())); } catch (_) { listings = []; }
+      try { listings = []; } catch (_) { listings = []; }
       if (layer && !layer.hidden) draw();
     })();
     return loading;

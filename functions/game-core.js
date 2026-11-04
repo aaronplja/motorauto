@@ -422,21 +422,25 @@
     if (!a || !b) return null;
     return (S.get(a) - S.get(b)) * S.better > 0 ? "a" : "b";
   }
-  const PM_REWARDS = [[5, 10], [10, 25], [20, 60], [30, 100]];     // série atteinte → cristaux (une fois par série)
-  const PM_DAILY_CAP = 150;
+  const PM_REWARDS = [[5, 8], [10, 20], [20, 45], [30, 80]];     // série atteinte → cristaux (une fois par série)
+  const PM_DAILY_CAP = 100;
 
   // ------------------------------------------------------------------ quiz par niveau : questions automatiques (catalogue) + questions écrites
   const QCATS = { brands: "Marques", history: "Histoire", engines: "Moteurs", motorsport: "Sport auto", countries: "Pays et constructeurs", circuits: "Rallye et circuits", numbers: "Chiffres", trivia: "Anecdotes et records" };
   const QLEVELS = { 1: "Facile", 2: "Moyen", 3: "Expert" };
   // ---------------------------------------------------------------- saison : pass gratuit de 30 paliers, quêtes enchaînées, cosmétiques
-  const SEASON_LEN = 31, DAY_MS = 86400000;   // une saison = un mois civil ; la saison 1 est novembre 2026
+  const SEASON_LEN = 31, DAY_MS = 86400000;   // une saison = un mois civil (heure de Paris) ; la saison 1 est novembre 2026
+  const monthStartMs = (y, m) => { const key = y + "-" + String(m + 1).padStart(2, "0"); let t = Date.UTC(y, m, 1) - 3 * 3600000; while (dayKey(t).slice(0, 7) !== key) t += 1800000; return t; };
   const seasonInfo = (ms) => {
-    const t = ms === undefined ? Date.now() : ms, d = new Date(t), y = d.getUTCFullYear(), m = d.getUTCMonth();
-    const n = Math.max(1, (y - 2026) * 12 + m - 9), start = Date.UTC(y, m, 1), end = Date.UTC(y, m + 1, 1);
+    const t = ms === undefined ? Date.now() : ms, k = dayKey(t), y = Number(k.slice(0, 4)), m = Number(k.slice(5, 7)) - 1;
+    const n = Math.max(1, (y - 2026) * 12 + m - 9), start = monthStartMs(y, m), end = monthStartMs(m === 11 ? y + 1 : y, (m + 1) % 12);
     return { n, start, end, daysLeft: Math.max(1, Math.ceil((end - t) / DAY_MS)) };
   };
-  const PASS_TIERS = 30, PASS_STEP = 40;                       // 40 points de saison par palier : 1 200 points pour tout débloquer
-  const SEASON_PTS = { pack: 10, quizOk: 2, quizPerfect: 10, pmOk: 2, visit: 5, upgrade: 8, fuse: 12, duel: 4 };
+  const PASS_TIERS = 30, PASS_STEP = 50;                       // 50 points de saison par palier : 1 500 points pour tout débloquer
+  /** points de saison : chaque action de jeu rapporte un peu, avec un plafond quotidien pour que rien ne se « farme » ;
+   la visite du jour, les défis de la semaine, les albums et les succès ne comptent pas dans le plafond (ils sont rares) */
+  const SEASON_PTS = { pack: 8, quizOk: 1, quizPerfect: 6, pmOk: 1, visit: 5, upgrade: 6, fuse: 10, craft: 4, trade: 8, duel: 3, challenge: 15, album: 40, badge: 10, contest: 20 };
+  const SEASON_DAY_CAP = 60, SEASON_FREE = { visit: 1, challenge: 1, album: 1, badge: 1, contest: 1 };
   /** cosmétiques : cadres d'avatar et titres. src = niveau d'XP, succès, saison (paliers), top (classement mensuel) */
   const FRAMES = {
     bronze:   { name: "Bronze",       src: "level", v: 3,  color: "#c58a4a" },
@@ -468,14 +472,28 @@
     top3:     { name: "Sur le podium",        src: "top", v: 3 },
     clubwin:  { name: "Champion de club",     src: "clash", v: 1 }
   };
-  /** récompense d'un palier : cristaux, ou pack bonus tous les 5 paliers, ou cosmétique */
+  /** récompense d'un palier : cristaux, pack bonus, gel de série, carte épique, cosmétique ; palier 30 = une Légendaire au choix */
+  const PASS_SPECIAL = {
+    5: { bonus: 1 }, 7: { freeze: 1 }, 10: { dust: 60, title: "t10" }, 12: { epic: 1 }, 15: { bonus: 1, frame: "s_gold" }, 20: { epic: 1, title: "t20" },
+    22: { freeze: 1 }, 25: { bonus: 2 }, 30: { dust: 200, choice: "legendary", frame: "s_royal", title: "t30" }
+  };
   function passReward(t) {
-    const r = { dust: 20 + Math.floor(t / 3) * 10, bonus: 0, frame: "", title: "" };
-    if (t % 5 === 0) { r.bonus = 1; r.dust = 0; }
-    if (t === 10) r.title = "t10"; if (t === 15) r.frame = "s_gold"; if (t === 20) r.title = "t20"; if (t === 30) { r.title = "t30"; r.frame = "s_royal"; r.dust = 150; }
-    return r;
+    const sp = PASS_SPECIAL[t] || null;
+    return Object.assign({ dust: sp ? 0 : 20 + Math.floor((t - 1) / 4) * 10, bonus: 0, frame: "", title: "", freeze: 0, epic: 0, choice: "" }, sp || {});
   }
-  const passLabel = (r) => [r.dust ? r.dust + " cristaux" : "", r.bonus ? "1 pack bonus" : "", r.frame ? "cadre " + FRAMES[r.frame].name : "", r.title ? "titre « " + TITLES[r.title].name + " »" : ""].filter(Boolean).join(" + ");
+  const passLabel = (r) => [r.dust ? r.dust + " cristaux" : "", r.bonus ? (r.bonus > 1 ? r.bonus + " packs bonus" : "1 pack bonus") : "", r.freeze ? "1 gel de série" : "", r.epic ? "1 carte Épique" : "", r.choice ? "1 Légendaire au choix" : "", r.frame ? "cadre " + FRAMES[r.frame].name : "", r.title ? "titre « " + TITLES[r.title].name + " »" : ""].filter(Boolean).join(" + ");
+  /** trois Légendaires proposées (de préférence que le joueur n'a pas), identiques pour un joueur donné pendant toute la saison */
+  function legendOffer(ids, rar, owned, uid, n) {
+    const leg = ids.filter((id) => rar.get(id) === "legendary").sort(), fresh = leg.filter((id) => !(owned[id] > 0)), pool = (fresh.length >= 3 ? fresh : fresh.concat(leg.filter((id) => owned[id] > 0))).slice();
+    const rnd = mulberry(hashStr("legend-" + uid + "-" + n));
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const x = pool[i]; pool[i] = pool[j]; pool[j] = x; }
+    return pool.slice(0, 3);
+  }
+  /** carte Épique du palier, tirée de façon stable (de préférence une carte que le joueur n'a pas) */
+  function epicPick(ids, rar, owned, uid, n, t) {
+    const all = ids.filter((id) => rar.get(id) === "epic").sort(), fresh = all.filter((id) => !(owned[id] > 0)), pool = fresh.length ? fresh : all;
+    return pool.length ? pool[hashStr("epic-" + uid + "-" + n + "-" + t) % pool.length] : "";
+  }
   /** quêtes de saison enchaînées : on ne passe à l'étape suivante qu'après avoir terminé la précédente */
   const SEASON_QUESTS = [
     { id: "q1", label: "Ouvrir 10 packs", act: "packs", goal: 10, dust: 60 },
@@ -484,7 +502,7 @@
     { id: "q4", label: "Te connecter 14 jours", act: "days", goal: 14, dust: 120 }
   ];
   const SEASON_QUEST_FINAL = { dust: 300, frame: "quest", title: "quest" };
-  const blankSeason = (n) => ({ n, pts: 0, claimed: [], act: { packs: 0, quiz: 0, pm: 0, days: 0 }, q: 0, qDone: false, dayLog: "" });
+  const blankSeason = (n) => ({ n, pts: 0, claimed: [], act: { packs: 0, quiz: 0, pm: 0, days: 0 }, q: 0, qDone: false, dayLog: "", dp: { d: "", p: 0 } });
   /** met à jour (et remet à zéro si nouvelle saison) l'état de saison du joueur ; retourne l'état */
   function seasonOf(d, ms) {
     const cur = seasonInfo(ms).n;
@@ -492,13 +510,21 @@
     if (!d.cosm) d.cosm = [];
     return d.season;
   }
-  function seasonAdd(d, pts, act, ms) {
-    const s = seasonOf(d, ms);
-    s.pts = Math.min(PASS_TIERS * PASS_STEP, s.pts + Math.max(0, pts | 0));
-    const wk = weekKey(ms === undefined ? Date.now() : ms); if (!d.wpts || d.wpts.w !== wk) d.wpts = { w: wk, p: 0 }; d.wpts.p += Math.max(0, pts | 0);   // points de la semaine (défi de clubs)
+  /** ajoute des points de saison ; « free » = hors plafond quotidien. Retourne les points réellement ajoutés. */
+  function seasonAdd(d, pts, act, ms, free) {
+    const s = seasonOf(d, ms); let add = Math.max(0, pts | 0);
+    if (!free) {
+      const day = dayKey(ms === undefined ? Date.now() : ms);
+      if (!s.dp || s.dp.d !== day) s.dp = { d: day, p: 0 };
+      add = Math.min(add, Math.max(0, SEASON_DAY_CAP - s.dp.p)); s.dp.p += add;
+    }
+    const before = s.pts; s.pts = Math.min(PASS_TIERS * PASS_STEP, s.pts + add); add = s.pts - before;
+    const wk = weekKey(ms === undefined ? Date.now() : ms); if (!d.wpts || d.wpts.w !== wk) d.wpts = { w: wk, p: 0 }; d.wpts.p += add;   // points de la semaine (défi de clubs)
     if (act) Object.keys(act).forEach((k) => { s.act[k] = (s.act[k] || 0) + act[k]; });
-    return s;
+    return add;
   }
+  /** points de saison déjà gagnés aujourd'hui dans le plafond quotidien */
+  const seasonToday = (d, ms) => { const s = seasonOf(d, ms), day = dayKey(ms === undefined ? Date.now() : ms); return s.dp && s.dp.d === day ? s.dp.p : 0; };
   const passTier = (s) => Math.min(PASS_TIERS, Math.floor((s.pts || 0) / PASS_STEP));
   /** étape de quête en cours : la progression est plafonnée à l'objectif, et ne compte qu'à partir de l'étape ouverte */
   function questState(s) {
@@ -518,7 +544,7 @@
     return have;
   }
 
-  const QUIZ_N = 10, QUIZ_REWARD = 4, QUIZ_DAILY_CAP = 80;       // 4 cristaux par bonne réponse, 80 par jour au maximum
+  const QUIZ_N = 10, QUIZ_REWARD = 3, QUIZ_DAILY_CAP = 60;       // 3 cristaux par bonne réponse, 60 par jour au maximum
   // [catégorie, niveau, question FR, [bonne, faux, faux, faux], question EN, [good, wrong, wrong, wrong]]
   const QBANK = [
     ["brands", 1, "Quelle marque utilise un logo à quatre anneaux ?", ["Audi", "BMW", "Peugeot", "Toyota"], "Which brand uses a four-ring logo?", ["Audi", "BMW", "Peugeot", "Toyota"]],
@@ -744,7 +770,7 @@
     setsOf, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
-    FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
+    FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
     SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

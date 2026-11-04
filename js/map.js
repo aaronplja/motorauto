@@ -197,6 +197,6 @@
       const kd = e.target.closest("[data-mm-kind]"); if (kd) { kindOn = kindOn === kd.dataset.mmKind ? null : kd.dataset.mmKind; drawEvents(); return; }
       if (e.target.closest("[data-ev-list]")) { e.preventDefault(); setView("list"); }
     });
-    ctx.Router.register("community", { enter: (p) => { if (p.tab === "evenements") setView(view); } });
+    ctx.Router.register("community", { enter: (p) => { if (p.tab === "carte") setView("map"); else if (p.tab === "evenements") setView("list"); } });
   });
 })();

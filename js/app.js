@@ -1567,7 +1567,8 @@
       refreshPubAdminBtn(userId);
       renderUserCars(userId);
       renderSocial("pub", userId);
-      $("pub-profile-car").textContent = `Projet actuel : ${data.currentCar || "Non renseigné"}`;
+      $("pub-profile-car").textContent = data.currentCar && data.currentCar !== "Non renseignée" && data.currentCar !== "Projet Principal" ? "🚗 " + data.currentCar : "🚗 Voiture non renseignée";
+      { const cv = $("pub-cover"), cu = safeUrl(data.carPhoto); if (cv) { cv.style.backgroundImage = cu ? `url("${cu}")` : ""; cv.classList.toggle("has-photo", !!cu); } }
       $("pub-profile-avatar").dataset.fallback = "avatar";
       $("pub-profile-avatar").src = safeUrl(data.avatar) || FALLBACK_AVATAR;
       $("pub-profile-bio").textContent = data.bio || "Ce pilote n'a pas rédigé de biographie.";
@@ -3117,6 +3118,7 @@
   // pont vers les modules (social, communauté, circuits, admin, garage)
   window.MAApp = {
     moveGlider: () => moveGlider(),
+    refreshPublic: () => { if (pubUid) return renderPublicProfile(pubUid); },
     compareWith: (list) => { compareIds = (list || []).filter((id) => carsById.has(id)).slice(0, MAX_COMPARE); saveCompare(); renderCompareTray(); if (compareIds.length >= 2) openCompare(); else MA.toast("Ce comparateur n'existe plus.", "err"); },
     ctx: () => ({
       db, auth, storage, FieldValue, MA, esc, safeUrl, Router,
