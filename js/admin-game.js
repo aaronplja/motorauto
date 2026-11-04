@@ -103,6 +103,7 @@
         </div>
         <div class="input-stack wide"><label for="ci-sel">Photo d'un circuit (adresse https d'une image ; vide = retirer)</label><div class="inline-field"><select id="ci-sel">${(window.MAGameCore || {}).CIRCUIT_CARDS ? window.MAGameCore.CIRCUIT_CARDS.map((r) => `<option value="${r[0]}">${C.esc(r[1])} (${C.esc(r[2])})</option>`).join("") : ""}</select><input type="url" id="ci-url" placeholder="https://…/photo.jpg"><button type="button" class="cta-btn fill-btn compact-btn" id="ci-save">Enregistrer</button></div>
         <button type="button" class="cta-btn btn-ghost compact-btn" id="cs-run">Recalculer maintenant la rareté réelle (% de pilotes)</button></div>
+        <div class="input-stack wide"><label>Réglages du jeu et statistiques</label><div class="admin-actions"><button type="button" class="cta-btn btn-ghost compact-btn" id="gs-wheel">Roue du jour : activer / pause</button><button type="button" class="cta-btn btn-ghost compact-btn" id="gs-advent">Calendrier de l'Avent : activer / pause</button><button type="button" class="cta-btn btn-ghost compact-btn" id="gs-stats">Statistiques du jeu</button></div><pre class="admin-note" id="gs-out" aria-live="polite"></pre></div>
         <div class="input-stack wide"><label for="tl-msg">Annonce à tous les pilotes (notification, 120 caractères max)</label><div class="inline-field"><input type="text" id="tl-msg" maxlength="120" placeholder="Ex : Nouvelle carte spéciale pour le salon, récupère-la dans Jouer !"><button type="button" class="cta-btn fill-btn compact-btn" data-tool="broadcast">Envoyer à tous</button></div></div>
         <p class="form-error" id="tl-err" role="alert"></p></div><hr class="admin-sep">`;
   }
@@ -262,6 +263,18 @@
     document.addEventListener("submit", (e) => {
       if (e.target.id === "sp-form") saveCard(e);
       else if (e.target.id === "grant-form") { e.preventDefault(); grant(e.target, (e.submitter && e.submitter.dataset.mode) || "grant"); }
+    });
+    const gsState = { wheel: true, advent: true };
+    const gsPaint = () => { const w = document.getElementById("gs-wheel"), v = document.getElementById("gs-advent"); if (w) w.textContent = "Roue du jour : " + (gsState.wheel ? "activée" : "en pause"); if (v) v.textContent = "Calendrier de l'Avent : " + (gsState.advent ? "activé" : "en pause"); };
+    async function gsLoad() { try { const r = await window.MAGameAPI.call("adminGameTool", { action: "gameStats" }); gsState.wheel = r.settings.wheel !== false; gsState.advent = r.settings.advent !== false; gsPaint(); return r; } catch (_) { return null; } }
+    document.addEventListener("click", async (e) => {
+      const t = e.target.closest && e.target.closest("#gs-wheel,#gs-advent,#gs-stats"); if (!t) return;
+      try {
+        if (t.id === "gs-stats") { const r = await gsLoad(); if (r) document.getElementById("gs-out").textContent = `Pilotes avec collection : ${r.players}\nPack du jour ouvert aujourd'hui : ${r.today}\nRoue tournée aujourd'hui : ${r.wheelToday}\nPacks ouverts (total) : ${r.packs}\nCartes possédées (total) : ${r.cards}\nCristaux en circulation : ${r.crystals}`; return; }
+        if (!document.getElementById("gs-out").dataset.l) { document.getElementById("gs-out").dataset.l = "1"; await gsLoad(); }
+        if (t.id === "gs-wheel") gsState.wheel = !gsState.wheel; else gsState.advent = !gsState.advent;
+        await window.MAGameAPI.call("adminGameTool", { action: "gameSettings", wheel: gsState.wheel, advent: gsState.advent }); gsPaint(); C.toast("Réglage enregistré.", "ok");
+      } catch (ex) { C.toast(ex.message, "err"); }
     });
     document.addEventListener("click", async (e) => {
       const sv = e.target.closest && e.target.closest("#ci-save"), cs = e.target.closest && e.target.closest("#cs-run"); if (!sv && !cs) return;

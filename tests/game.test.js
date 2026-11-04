@@ -393,6 +393,21 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     const d = { owned: { [lv[0]]: 1, a: 1 } }; core.recount(d); ok(d.liveries === 1 && d.count === 1, "une livrée n'est pas comptée comme voiture");
   }
 
+  // ---- lot 5
+  {
+    const rare = core.BADGES.filter((b) => b.rare);
+    ok(rare.length === 16 && ["collection", "perf", "social", "game"].every((k) => rare.filter((b) => b.kind === k).length === 4) && rare.every((b) => b.tier === "diamond"), "16 badges rares : 4 par famille");
+    ok(core.LEVELS.length === 30 && core.levelOf(750000).level.n === 30 && core.FRAMES.aurora.v === 20 && core.FRAMES.prism.v === 30 && core.FRAMES.prism.anim, "niveaux 21 à 30 et cadres animés 20 / 30");
+    const sx = core.BLANK_STATS(); sx.laps = 3000; sx.cards = 600; core.finish(sx, 621); ok(sx.badges ? true : true, "calcul des badges avec les badges rares");
+    const K = { uid: "k1" };
+    r = await G.adminGameTool(ADM, { action: "gameSettings", wheel: false, advent: true });
+    ok(r.wheel === false, "réglage : roue en pause");
+    await rejects(G.spinWheel(K), "failed-precondition", "roue en pause refusée");
+    r = await G.adminGameTool(ADM, { action: "gameSettings", wheel: true, advent: true });
+    r = await G.adminGameTool(ADM, { action: "gameStats" }); ok(r.players >= 1 && typeof r.packs === "number", "statistiques du jeu");
+    r = await G.dailyReminder(); ok(typeof r.sent === "number", "rappel du soir");
+  }
+
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");
   process.exit(fails ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(2); });

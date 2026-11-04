@@ -124,6 +124,7 @@ exports.pushOnNotification = require("./push").createPush({ db, messaging: admin
 exports.closeDueContests = onSchedule({ schedule: "20 0 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.closeDueContests(); });
 exports.wishDigest = onSchedule({ schedule: "40 9 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.wishDigest(); });
 exports.cardStatsNightly = onSchedule({ schedule: "50 3 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.computeCardStats(); });
+exports.dailyReminder = onSchedule({ schedule: "0 18 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.dailyReminder(); });
 exports.monthlyContest = onSchedule({ schedule: "10 0 1 * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.monthlyContest(); });
 
 // sauvegarde Firestore hebdomadaire (voir functions/backup.js : bucket + droits à configurer une fois)

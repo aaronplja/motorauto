@@ -197,6 +197,12 @@
       if (ctxInfo && ctxInfo.ownerUid) targets.add(ctxInfo.ownerUid);
       comments.get(k).forEach((c) => targets.add(c.uid));
       targets.delete(C.user.uid);
+      // @pseudo : le pilote mentionné est prévenu (une notification « mention » à la place du simple commentaire)
+      const tagged = new Set();
+      for (const m of text.matchAll(/(^|[\s(])@([A-Za-z0-9À-ÿ][A-Za-z0-9À-ÿ._-]{1,23})/g)) {
+        try { const q = await C.db.collection("users").where("username", "==", m[2].replace(/[.,;:!?_-]+$/, "")).limit(1).get(); if (!q.empty && q.docs[0].id !== C.user.uid) tagged.add(q.docs[0].id); } catch (_) { /* hors ligne */ }
+      }
+      tagged.forEach((uid) => { targets.delete(uid); C.MA.notif.send(uid, { type: "mention", from: C.pilotName(), text: (ctxInfo ? ctxInfo.title + " : " : "") + text, link: ctxInfo && ctxInfo.link }, "mention_" + kind + "_" + target + "_" + C.user.uid); });
       targets.forEach((uid) => C.MA.notif.send(uid, { type: "comment", from: C.pilotName(), text: (ctxInfo ? ctxInfo.title + " : " : "") + text, link: ctxInfo && ctxInfo.link }, "comment_" + kind + "_" + target + "_" + C.user.uid));
       // pilotes tagués (@pseudo) : notification « mention », prioritaire sur la notification de commentaire
       try {

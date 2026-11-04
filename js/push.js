@@ -15,9 +15,13 @@
     ["comment", "Commentaires", "Quand on commente ta voiture"],
     ["event", "Sorties", "Quand un pilote rejoint ta sortie"],
     ["game", "Jeu", "Échanges, défis, cartes spéciales, concours"],
-    ["maint", "Entretien", "Rappels d'entretien de ta voiture"]
+    ["maint", "Entretien", "Rappels d'entretien de ta voiture"],
+    ["trade", "Échanges de cartes", "Proposition d'échange reçue, acceptée ou refusée"],
+    ["contest", "Concours photo", "Ouverture du concours du mois"],
+    ["season", "Fin de saison", "Rappel 3 jours avant la fin de la saison"],
+    ["daily", "Rappel du jour", "Chaque soir si tu n'as pas pris ton pack ou ta roue (désactivé par défaut)"]
   ];
-  const CAT = { reply: "reply", mention: "mention", dm: "dm", follow: "follow", like: "like", comment: "comment", event: "event", maint: "maint", game: "game" };
+  const CAT = { reply: "reply", mention: "mention", dm: "dm", follow: "follow", like: "like", comment: "comment", event: "event", maint: "maint", game: "game", trade: "trade", contest: "contest", season: "season", daily: "daily" };
   let C = null, prefs = null, deferredInstall = null, dnd = { on: false, from: "22:00", to: "08:00" };
   const TOKEN_KEY = "motorauto_push_token";
   const lsGet = (k) => { try { return localStorage.getItem(k); } catch (_) { return null; } };
@@ -26,9 +30,9 @@
 
   // ------------------------------------------------------------------ préférences
   async function loadPrefs(uid) {
-    prefs = {}; KINDS.forEach(([k]) => { prefs[k] = true; });
+    prefs = {}; KINDS.forEach(([k]) => { prefs[k] = k !== "daily"; });
     dnd = { on: false, from: "22:00", to: "08:00" };
-    try { const d = await db().collection("notif_prefs").doc(uid).get(); if (d.exists) { const x = d.data(); KINDS.forEach(([k]) => { if (x[k] === false) prefs[k] = false; }); dnd = { on: x.dnd === true, from: /^\d\d:\d\d$/.test(x.dndFrom) ? x.dndFrom : "22:00", to: /^\d\d:\d\d$/.test(x.dndTo) ? x.dndTo : "08:00" }; } } catch (_) { /* règles non publiées : tout activé */ }
+    try { const d = await db().collection("notif_prefs").doc(uid).get(); if (d.exists) { const x = d.data(); KINDS.forEach(([k]) => { if (k === "daily") prefs[k] = x[k] === true; else if (x[k] === false) prefs[k] = false; }); dnd = { on: x.dnd === true, from: /^\d\d:\d\d$/.test(x.dndFrom) ? x.dndFrom : "22:00", to: /^\d\d:\d\d$/.test(x.dndTo) ? x.dndTo : "08:00" }; } } catch (_) { /* règles non publiées : tout activé */ }
     return prefs;
   }
   async function setPref(uid, kind, on) {
@@ -40,7 +44,7 @@
     dnd = Object.assign({}, dnd, patch); await savePrefs(uid);
   }
   async function savePrefs(uid) {
-    const data = {}; KINDS.forEach(([k]) => { data[k] = (prefs || {})[k] !== false; });
+    const data = {}; KINDS.forEach(([k]) => { data[k] = k === "daily" ? (prefs || {})[k] === true : (prefs || {})[k] !== false; });
     data.dnd = dnd.on === true; data.dndFrom = dnd.from; data.dndTo = dnd.to;
     data.updatedAt = window.MAFB.FieldValue.serverTimestamp();
     await db().collection("notif_prefs").doc(uid).set(data);

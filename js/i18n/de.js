@@ -979,5 +979,12 @@
 "📷 Album": "📷 Album",
 "Unique · modifiable une fois tous les 30 jours · les autres pilotes te mentionnent avec @pseudo.": "Einmalig · alle 30 Tage änderbar · andere Fahrer erwähnen dich mit @Name.",
 "Ton garage est plein : 5 voitures maximum. Supprime-en une pour en ajouter une nouvelle.": "Deine Garage ist voll: maximal 5 Autos. Lösche eines, um ein neues hinzuzufügen.",
-"10 photos maximum par voiture.": "Maximal 10 Fotos pro Auto."
+"10 photos maximum par voiture.": "Maximal 10 Fotos pro Auto.",
+"Échanges de cartes": "Kartentausch",
+"Fin de saison": "Saisonende",
+"Rappel du jour": "Tageserinnerung",
+"Éclipse (rare)": "Eklipse (selten)",
+"Aurore": "Aurora",
+"Prisme": "Prisma",
+"Panthéon": "Pantheon"
 }]);

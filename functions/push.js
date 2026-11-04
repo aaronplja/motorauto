@@ -9,7 +9,7 @@ const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 
 const SITE = "https://motorauto.fr";
-const CATEGORY = { reply: "reply", mention: "mention", dm: "dm", follow: "follow", like: "like", comment: "comment", event: "event", maint: "maint", game: "game" };
+const CATEGORY = { reply: "reply", mention: "mention", dm: "dm", follow: "follow", like: "like", comment: "comment", event: "event", maint: "maint", game: "game", trade: "trade", contest: "contest", season: "season", daily: "daily" };
 /** Heure de Paris en minutes depuis minuit. */
 function parisMinutes(date) {
   const p = new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(date || new Date());
@@ -76,7 +76,7 @@ function createPush({ db, messaging, region }) {
         const p = await db.collection("notif_prefs").doc(uid).get();
         if (p.exists) {
           const x = p.data();
-          if (cat && x[cat] === false) return;
+          if (cat && (cat === "daily" ? x[cat] !== true : x[cat] === false)) return;
           if (x.dnd === true && inQuietHours(x.dndFrom, x.dndTo)) return;     // « Ne pas déranger »
         }
       } catch (_) { /* pas de préférences : on envoie */ }

@@ -69,8 +69,8 @@
     async function readWeekly(tx, uid, wk) { return normWeekly(await tx.get(col("weekly").doc(uid)), wk); }
     function writeWeekly(tx, uid, w) { w.updatedAt = ts(); tx.set(col("weekly").doc(uid), w); }
     async function nameOf(uid) { try { const s = await col("users").doc(uid).get(); return s.exists ? str(s.data().username, 40) || "Pilote" : null; } catch (_) { return null; } }
-    async function notify(to, from, text, link) {
-      try { await col("users/" + to + "/notifications").add({ type: "game", fromUid: from.uid || "motorauto", from: str(from.name || "MOTORAUTO", 40), text: str(text, 120), link: link || "#/jouer", read: false, createdAt: ts() }); } catch (_) { /* notification facultative */ }
+    async function notify(to, from, text, link, type) {
+      try { await col("users/" + to + "/notifications").add({ type: type || "game", fromUid: from.uid || "motorauto", from: str(from.name || "MOTORAUTO", 40), text: str(text, 120), link: link || "#/jouer", read: false, createdAt: ts() }); } catch (_) { /* notification facultative */ }
     }
     async function isMuted(uid) {
       try { const s = await col("mutes").doc(uid).get(); if (!s.exists) return false; const m = s.data(); return m.perma === true || Number(m.untilMs) > now(); } catch (_) { return false; }
@@ -355,6 +355,7 @@
             text += " + récompense finale exclusive (cadre et titre)";
           }
         } else fail("invalid-argument", "Demande inconnue.");
+        if (sn.claimed.indexOf(core.PASS_TIERS) >= 0 && sn.q >= core.SEASON_QUESTS.length && d.cosm.indexOf("f:s_eclipse") < 0) { d.cosm.push("f:s_eclipse"); text += " + cadre rare « Éclipse »"; }
         writeCol(tx, uid, d);
         return { text, cards, doc: view(d) };
       });
@@ -365,7 +366,9 @@
       if ((cur.freezes || 0) >= core.FREEZE_MAX) return false;
       tx.set(ref, Object.assign({}, cur, { freezes: (cur.freezes || 0) + 1, updatedAt: ts() })); return true;
     }
+    async function gameSettings() { try { const s = await col("config").doc("gameSettings").get(); return s.exists ? s.data() : {}; } catch (_) { return {}; } }
     async function spinWheel(caller) {
+      if ((await gameSettings()).wheel === false) fail("failed-precondition", "La roue est en pause pour le moment.");
       const uid = caller.uid, today = core.dayKey(now()), pool = await getPool();
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid), ss = await tx.get(col("streaks").doc(uid));
@@ -386,6 +389,7 @@
       });
     }
     async function openAdvent(caller, data) {
+      if ((await gameSettings()).advent === false) fail("failed-precondition", "Le calendrier de l'Avent est en pause pour le moment.");
       const uid = caller.uid, at = core.adventToday(now()), n = Math.floor(Number(data && data.day));
       if (!at) fail("failed-precondition", "Le calendrier de l'Avent ouvre le 1er décembre.");
       if (!(n >= 1 && n <= 24)) fail("invalid-argument", "Case inconnue.");
@@ -591,7 +595,7 @@
       if (open.some((t) => t.toUid === to && t.give === give && t.want === want)) fail("already-exists", "Cette proposition existe déjà.");
       const ref = col("trades").doc();
       await ref.set({ fromUid: uid, fromName, toUid: to, toName, give, want, message, status: "open", createdAt: ts(), updatedAt: ts() });
-      await notify(to, { uid, name: fromName }, fromName + " te propose un échange de cartes", "#/jouer/echanges");
+      await notify(to, { uid, name: fromName }, fromName + " te propose un échange de cartes", "#/jouer/echanges", "trade");
       const gn = await cardLabel(pool, give), wn = await cardLabel(pool, want);
       const dmId = await sendDm(uid, fromName, to, "🃏 Proposition d'échange : " + gn + " contre " + wn, { tradeId: ref.id, tradeGive: give, tradeWant: want, tradeGiveName: gn, tradeWantName: wn, tradeNote: message, tradeStatus: "open", tradeTo: to });
       if (dmId) { try { await ref.update({ dmId }); } catch (_) { /* facultatif */ } }
@@ -653,7 +657,7 @@
       const me = (await nameOf(uid)) || caller.name || "Pilote";
       if (ok) await settleTradeMessage(t, accept ? "accepted" : "declined", uid, me, accept ? "✅ Échange réalisé ! Les cartes ont changé de main." : "❌ Échange refusé.");
       else await settleTradeMessage(t, "cancelled", uid, me, "⚠️ Échange annulé : les cartes ne sont plus disponibles.");
-      if (ok) await notify(t.fromUid, { uid, name: me }, accept ? me + " a accepté ton échange 🎉" : me + " a décliné ton échange", "#/jouer/echanges");
+      if (ok) await notify(t.fromUid, { uid, name: me }, accept ? me + " a accepté ton échange 🎉" : me + " a décliné ton échange", "#/jouer/echanges", "trade");
       return { ok, accepted: accept && ok, message: msg };
     }
     async function cancelTrade(caller, data) {
@@ -719,6 +723,15 @@
         if (url) map[cid] = url; else delete map[cid];
         await ref.set({ map, at: ts() });
         return { ok: true, count: Object.keys(map).length };
+      }
+      if (action === "gameSettings") {
+        const cur = await gameSettings(), next = { wheel: data.wheel !== false, advent: data.advent !== false, at: ts() };
+        await col("config").doc("gameSettings").set(Object.assign({}, cur, next)); return { ok: true, wheel: next.wheel, advent: next.advent };
+      }
+      if (action === "gameStats") {
+        const today = core.dayKey(now()), snap = await col("collections").limit(5000).get(), st = { players: 0, today: 0, packs: 0, cards: 0, crystals: 0, wheelToday: 0 };
+        snap.forEach((d) => { const x = d.data(); st.players++; st.packs += x.opened || 0; st.cards += x.count || 0; st.crystals += x.dust || 0; if (x.lastPack === today) st.today++; if (x.wheelDay === today) st.wheelToday++; });
+        return Object.assign({ ok: true, settings: await gameSettings() }, st);
       }
       if (action === "cardStats") return Object.assign({ ok: true }, await computeCardStats());
       if (["bonus", "dust", "resetDaily", "resetCollection", "unlockAll"].indexOf(action) < 0) fail("invalid-argument", "Action inconnue.");
@@ -835,7 +848,30 @@
     async function monthlyContest() {
       const nowMonth = core.monthKey(now()), prev = core.monthKey(now() - 20 * 86400000);
       if (prev !== nowMonth) { const p = await col("contests").doc(prev).get(); if (p.exists && p.data().status === "open") await closeContest(prev); }
-      return openContest(nowMonth);
+      const r = await openContest(nowMonth);
+      try { await broadcastType("📸 Le concours photo du mois est ouvert : envoie jusqu'à 3 photos !", "#/jouer/concours", "contest"); } catch (_) { /* annonce facultative */ }
+      return r;
+    }
+    /** annonce à tous les pilotes (cloche du site ; le push dépend de leurs préférences) */
+    async function broadcastType(text, link, type) {
+      const snap = await col("users").limit(5000).get(); let n = 0;
+      for (const d of snap.docs) { await notify(d.id, { uid: "motorauto", name: "MOTORAUTO" }, text, link, type); n++; }
+      return n;
+    }
+    /** chaque soir : rappel du jour (pack / roue pas encore pris, pour ceux qui l'ont activé) et rappel de fin de saison (3 jours avant) */
+    async function dailyReminder() {
+      const today = core.dayKey(now()); let sent = 0;
+      const prefs = await col("notif_prefs").where("daily", "==", true).limit(2000).get();
+      for (const p of prefs.docs) {
+        const c = await col("collections").doc(p.id).get(), d = c.exists ? c.data() : {};
+        if (d.lastPack !== today || d.wheelDay !== today) { await notify(p.id, { uid: "motorauto", name: "MOTORAUTO" }, "🎁 Ton pack du jour et ta roue t'attendent !", "#/jouer/boutique", "daily"); sent++; }
+      }
+      const sn = core.seasonInfo(now());
+      if (sn.daysLeft === 3) {
+        const all = await col("collections").limit(5000).get();
+        for (const c of all.docs) { if ((c.data().opened || 0) > 0) { await notify(c.id, { uid: "motorauto", name: "MOTORAUTO" }, "⏳ Plus que 3 jours pour finir la saison " + sn.n + " !", "#/jouer/saison", "season"); sent++; } }
+      }
+      return { sent };
     }
 
     /** appelé chaque nuit : clôture les concours dont la date de fin (réglable par l'admin) est passée */
@@ -1108,7 +1144,7 @@
       return sent;
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, _getPool: getPool };
+    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
   }
   return { createGame, GameError };
 });

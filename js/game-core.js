@@ -42,7 +42,9 @@
     { n: 5, name: "Expert", xp: 1800 }, { n: 6, name: "Élite", xp: 3000 }, { n: 7, name: "Maître", xp: 4800 }, { n: 8, name: "Champion", xp: 7200 },
     { n: 9, name: "Légende", xp: 10500 }, { n: 10, name: "Mythique", xp: 15000 }, { n: 11, name: "Prodige", xp: 20500 }, { n: 12, name: "Virtuose", xp: 27500 },
     { n: 13, name: "Colosse", xp: 36000 }, { n: 14, name: "Titan", xp: 46500 }, { n: 15, name: "Phénomène", xp: 59000 }, { n: 16, name: "Icône", xp: 74000 },
-    { n: 17, name: "Immortel", xp: 92000 }, { n: 18, name: "Demi-dieu", xp: 113000 }, { n: 19, name: "Divinité", xp: 138000 }, { n: 20, name: "Ultime", xp: 168000 }
+    { n: 17, name: "Immortel", xp: 92000 }, { n: 18, name: "Demi-dieu", xp: 113000 }, { n: 19, name: "Divinité", xp: 138000 }, { n: 20, name: "Ultime", xp: 168000 },
+    { n: 21, name: "Astral", xp: 205000 }, { n: 22, name: "Cosmique", xp: 245000 }, { n: 23, name: "Stellaire", xp: 290000 }, { n: 24, name: "Galactique", xp: 340000 }, { n: 25, name: "Infini", xp: 395000 },
+    { n: 26, name: "Éternel", xp: 455000 }, { n: 27, name: "Transcendant", xp: 520000 }, { n: 28, name: "Absolu", xp: 590000 }, { n: 29, name: "Souverain", xp: 665000 }, { n: 30, name: "Panthéon", xp: 750000 }
   ];
   function levelOf(xp) {
     let cur = LEVELS[0];
@@ -621,7 +623,10 @@
     s_gold:   { name: "Saison",       src: "tier", v: 15, color: "#ffb300" },
     s_royal:  { name: "Royal de saison", src: "tier", v: 30, color: "#ff3d81" },
     quest:    { name: "Quête de saison", src: "quest", v: 4, color: "#38ef7d" },
-    podium:   { name: "Podium du mois", src: "top", v: 3, color: "#ffd700" }
+    podium:   { name: "Podium du mois", src: "top", v: 3, color: "#ffd700" },
+    aurora:   { name: "Aurore",       src: "level", v: 20, color: "#5eead4", anim: true },
+    prism:    { name: "Prisme",       src: "level", v: 30, color: "#c084fc", anim: true },
+    s_eclipse:{ name: "Éclipse (rare)", src: "quest", v: 4, color: "#fb7185", anim: true, rare: true }
   };
   const TITLES = {
     rookie:   { name: "Novice des circuits", src: "level", v: 2 },
@@ -630,6 +635,7 @@
     legend:   { name: "Légende vivante",     src: "level", v: 12 },
     titan:    { name: "Titan de la route",   src: "level", v: 16 },
     ultimate: { name: "Ultime",              src: "level", v: 20 },
+    panthe:   { name: "Panthéon",            src: "level", v: 30 },
     curator:  { name: "Conservateur",        src: "badge", v: "card100" },
     quizzer:  { name: "Maître du quiz",      src: "badge", v: "quizP10" },
     t10:      { name: "Habitué de la saison", src: "tier", v: 10 },
@@ -1284,6 +1290,25 @@ Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom
     ["lvl10", "🔝", "Mythique", "Atteindre le niveau 10", (s) => s.level, 10, "gold"]
   ].concat(BRAND_BADGES.map((b) => ["b-" + b[0], b[1], b[2], "Posséder 10 cartes " + b[0] + " différentes", (s) => brandN(s, b[0]), 10, "silver"]));
   EXTRA.forEach((b) => BADGES.push({ id: b[0], icon: b[1], label: b[2], desc: b[3], get: b[4], goal: b[5], tier: b[6] }));
+  // badges rares (palier « diamant ») : 4 familles — collection, performance, communauté, jeu
+  [
+    ["r-col1", "💎", "Collection quasi complète", "Posséder 580 cartes différentes", (s) => s.cards, 580, "collection"],
+    ["r-col2", "🔱", "Triple Légende", "Posséder 3 cartes Légende (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 3, "collection"],
+    ["r-col3", "✦", "Gardien des éditions limitées", "Posséder 5 cartes d'édition limitée", (s) => _n(s.specials), 5, "collection"],
+    ["r-col4", "📦", "Pack infini", "Ouvrir 5000 packs", (s) => _n(s.opened), 5000, "collection"],
+    ["r-perf1", "🏆", "Maître des records", "Détenir 10 records de circuits", (s) => s.records, 10, "perf"],
+    ["r-perf2", "🥇", "Habitué du podium", "Finir 50 fois sur un podium", (s) => s.podiums, 50, "perf"],
+    ["r-perf3", "🗺️", "Tour du monde des circuits", "Rouler sur 40 circuits différents", (s) => s.tracks, 40, "perf"],
+    ["r-perf4", "⏱️", "Chrono sans fin", "Enregistrer 3000 chronos", (s) => s.laps, 3000, "perf"],
+    ["r-soc1", "🗣️", "Voix de la communauté", "Poster 5000 commentaires", (s) => s.comments, 5000, "social"],
+    ["r-soc2", "🧑‍🏫", "Mentor de légende", "Accompagner 25 pilotes en tant que mentor", (s) => _n(s.mentored), 25, "social"],
+    ["r-soc3", "📸", "Triple lauréat photo", "Gagner 3 concours photo", (s) => _n(s.wins), 3, "social"],
+    ["r-soc4", "🎪", "Organisateur de légende", "Proposer 15 sorties", (s) => s.events, 15, "social"],
+    ["r-game1", "🎓", "Cent sans faute", "Réussir 100 quiz 10 sur 10", (s) => _n(s.quizPerfect), 100, "game"],
+    ["r-game2", "🤝", "Roi de l'échange", "Réaliser 500 échanges de cartes", (s) => s.trades, 500, "game"],
+    ["r-game3", "🔧", "Atelier légendaire", "Améliorer 200 cartes", (s) => _n(s.upgraded), 200, "game"],
+    ["r-game4", "🌌", "Panthéon", "Atteindre le niveau 30", (s) => s.level, 30, "game"]
+  ].forEach((b) => BADGES.push({ id: b[0], icon: b[1], label: b[2], desc: b[3], get: b[4], goal: b[5], tier: "diamond", rare: true, kind: b[6] }));
   // niveaux relevés (paliers beaucoup plus élevés) : id → [objectif, titre, description]
   const REV = {"lap10": [50, "50 chronos", "Enregistrer 50 chronos"], "lap50": [250, "250 chronos", "Enregistrer 250 chronos"], "globe": [15, "Globe-trotter", "Rouler sur 15 circuits différents"], "cmt10": [100, "Bavard", "Poster 100 commentaires"], "cmt50": [500, "Porte-voix", "Poster 500 commentaires"], "like10": [100, "Passionné", "Aimer 100 voitures"], "like50": [500, "Cœur d'or", "Aimer 500 voitures"], "car3": [10, "Garage rempli", "Publier 10 voitures"], "rsvp3": [15, "Toujours partant", "Participer à 15 sorties"], "streak3": [7, "7 jours d'affilée", "Visiter le site 7 jours de suite"], "streak7": [30, "Mois sans faute", "Visiter le site 30 jours de suite"], "streak30": [90, "Trimestre sans faute", "Visiter le site 90 jours de suite"], "card10": [25, "Collectionneur", "Posséder 25 cartes différentes"], "card50": [100, "Grand collectionneur", "Posséder 100 cartes différentes"], "swap10": [50, "Négociateur", "Réaliser 50 échanges de cartes"], "chal4": [12, "Relève le défi", "Valider 12 défis hebdomadaires"], "chal20": [52, "Infatigable", "Valider 52 défis hebdomadaires"], "lvl5": [7, "Expert", "Atteindre le niveau 7"], "epic10": [30, "Pile d'Épiques", "Posséder 30 cartes Épique ou mieux"], "leg5": [15, "15 Légendaires", "Posséder 15 cartes Légendaire ou mieux"], "shiny5": [10, "Chasseur de Shiny", "Posséder 10 cartes Shiny ou mieux"], "card100": [200, "200 cartes", "Posséder 200 cartes différentes"], "card250": [350, "Bibliothécaire", "Posséder 350 cartes différentes"], "card400": [500, "Conservateur", "Posséder 500 cartes différentes"], "brands10": [25, "Tour du monde", "Posséder des cartes de 25 marques différentes"], "opened10": [50, "Déballeur", "Ouvrir 50 packs"], "opened100": [500, "Passionné de packs", "Ouvrir 500 packs"], "opened500": [2000, "Boulimique de packs", "Ouvrir 2000 packs"], "sets5": [15, "15 albums", "Compléter 15 albums"], "sets10": [30, "30 albums", "Compléter 30 albums"], "sets25": [40, "Archiviste", "Compléter 40 albums"], "up10": [50, "Préparateur", "Améliorer 50 cartes"], "fuse10": [50, "Maître fondeur", "Réaliser 50 fusions"], "fuse50": [250, "Haut fourneau", "Réaliser 250 fusions"], "sell10": [50, "Marchand", "Vendre 50 cartes sur le marché"], "buy10": [50, "Client fidèle", "Acheter 50 cartes sur le marché"], "pm5": [10, "Œil de lynx", "Faire 10 bonnes réponses d'affilée à Plus ou moins"], "pm10": [20, "Tireur d'élite", "Faire 20 bonnes réponses d'affilée à Plus ou moins"], "pm20": [35, "Encyclopédie", "Faire 35 bonnes réponses d'affilée à Plus ou moins"], "pm30": [50, "Voyant", "Faire 50 bonnes réponses d'affilée à Plus ou moins"], "quiz10": [50, "Habitué des quiz", "Terminer 50 quiz"], "quizP10": [30, "Professeur", "Réussir 30 quiz 30 sur 30"], "wish5": [20, "Rêveur", "Mettre 20 cartes dans sa liste de souhaits"], "wish20": [75, "Grande liste", "Mettre 75 cartes dans sa liste de souhaits"], "follow10": [30, "Radar", "Suivre 30 voitures ou marques"], "swap50": [250, "Courtier", "Réaliser 250 échanges de cartes"], "streak100": [365, "Une année entière", "Visiter le site 365 jours de suite"], "cmt200": [2000, "Orateur", "Poster 2000 commentaires"], "like200": [2000, "Cœur de pierre précieuse", "Aimer 2000 voitures"], "lap100": [1000, "Millénaire du chrono", "Enregistrer 1000 chronos"], "car10": [30, "Parc automobile", "Publier 30 voitures"]};
   const BRAND_GOAL = { Peugeot: 20, Renault: 20, BMW: 20, Mercedes: 20, Audi: 20, "Alfa Romeo": 20, Toyota: 18, Nissan: 18, Ford: 18, Porsche: 12, "Citroën": 15 };
