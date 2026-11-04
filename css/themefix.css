@@ -129,3 +129,5 @@
 @keyframes cfHue{to{filter:hue-rotate(360deg)}}
 @keyframes cfPulse{50%{box-shadow:0 0 0 2px var(--bg-surface),0 0 0 5px var(--cf),0 0 22px 8px color-mix(in srgb,var(--cf) 75%,transparent)}}
 @media (prefers-reduced-motion:reduce){.cosm-f.cf-aurora,.cosm-f.cf-prism,.cosm-f.cf-s_eclipse{animation:none!important}}
+.cg-cphoto{margin:8px 0;padding:8px;border:1px dashed var(--stroke-line);border-radius:10px}
+.cg-cphoto label{font-size:.78rem;color:var(--color-secondary);display:block;margin-bottom:4px}

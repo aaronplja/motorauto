@@ -56,7 +56,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   r = await G.openPack(U1, { kind: "bonus" }); ok(r.doc.bonus === 0, "pack bonus de bienvenue consommé");
   await rejects(G.openPack(U1, { kind: "bonus" }), "failed-precondition", "plus de pack bonus");
   const c1 = db.raw("collections", "u1");
-  ok(c1.count === Object.keys(c1.owned).filter((x) => !core.isExtra(x)).length && Object.values(c1.owned).reduce((a, b) => a + b, 0) === 9, "9 cartes reçues, comptage cohérent");
+  ok(c1.count === Object.keys(c1.owned).length && Object.values(c1.owned).reduce((a, b) => a + b, 0) === 9, "9 cartes reçues, comptage cohérent");
 
   // ---- doublons → poussière
   db.seed("collections", "u2", Object.assign(core.blankCollection(), { owned: { [ids[0]]: 1 }, count: 1, opened: 5, bonus: 3, claimed: [] }));
@@ -376,7 +376,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     const rc = {}; core.CIRCUIT_CARDS.forEach((r) => { rc[r[5]] = (rc[r[5]] || 0) + 1; }); ok(rc.legendary === 6 && rc.epic === 17 && rc.rare + rc.common > 60, "répartition des raretés Circuit " + JSON.stringify(rc));
     db.seed("collections", "k1", Object.assign(core.blankCollection(), { dust: 1000 }));
     r = await G.openPack(K, { kind: "shop", pack: "circuit" });
-    ok(r.cards.length === 3 && r.cards.every((c) => core.isCircuit(c.id)) && r.doc.dust === 600 && r.doc.circuits >= 1 && r.doc.count === 0, "pack Circuit : 3 cartes Circuit, 400 cristaux, hors compteur des voitures");
+    ok(r.cards.length === 3 && r.cards.every((c) => core.isCircuit(c.id)) && r.doc.dust === 600 && r.doc.circuits >= 1 && r.doc.count === r.doc.circuits, "pack Circuit : 3 cartes Circuit, 400 cristaux, comptées dans la collection");
     ok(r.cards.some((c) => c.rarity !== "common"), "pack Circuit : au moins une carte rare ou mieux");
     const ci = r.cards[0].id; r = await G.lockCard(K, { id: ci, on: true }); ok(r.doc.locked[ci], "une carte Circuit se verrouille");
     db.seed("collections", "k2", Object.assign(core.blankCollection(), { dust: 0 })); db.seed("users", "k2", { username: "Pilote_k2" });
@@ -390,7 +390,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     ok(core.LIVERIES.length === 20 && new Set(core.LIVERIES.map((r) => r[0])).size === 20 && core.LIVERIES.every((r) => core.isLivery(r[0]) && core.isExtra(r[0])), "20 livrées uniques");
     const P = await G._getPool(); const lv = P.ids.filter((x) => core.isLivery(x));
     ok(lv.length === 20 && lv.every((x) => ["epic", "legendary"].includes(P.rar.get(x)) && P.byId.get(x).livery === true), "les 20 livrées sont dans le pool (bases du catalogue présentes)");
-    const d = { owned: { [lv[0]]: 1, a: 1 } }; core.recount(d); ok(d.liveries === 1 && d.count === 1, "une livrée n'est pas comptée comme voiture");
+    const d = { owned: { [lv[0]]: 1, a: 1 } }; core.recount(d); ok(d.liveries === 1 && d.count === 2, "une livrée est comptée dans la collection");
   }
 
   // ---- lot 5

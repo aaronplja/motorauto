@@ -498,7 +498,7 @@
     if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-wish aria-pressed="${inWish}">${inWish ? "★ Dans ma wishlist" : "☆ Wishlist"}</button>`);
     actions.push(`<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button>`);
     const i = navIds.indexOf(id), nav = i >= 0 && navIds.length > 1 ? `<div class="tcg-nav"><button type="button" data-nav="-1" aria-label="Carte précédente" ${i > 0 ? "" : "disabled"}>‹</button><span class="tcg-hint">${i + 1} / ${navIds.length}</span><button type="button" data-nav="1" aria-label="Carte suivante" ${i < navIds.length - 1 ? "" : "disabled"}>›</button></div>` : "";
-    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n, lv: n > 0 && !peek ? lv : 1 })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${sp ? "" : pctHtml(id)}${lvBlock}${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}${peek ? "" : histHtml(id)}<div class="tcg-actions">${actions.join("")}</div></div>`;
+    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n, lv: n > 0 && !peek ? lv : 1 })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${sp ? "" : pctHtml(id)}${lvBlock}${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}${peek ? "" : histHtml(id)}${car.circuit && C.isAdmin ? `<div class="cg-cphoto"><label for="cp-url">Photo du circuit (admin) : adresse https d'une image</label><div class="inline-field"><input type="url" id="cp-url" value="${C.esc(circPhotos[id] || "")}" placeholder="https://…/photo.jpg"><button type="button" class="cta-btn fill-btn compact-btn" data-cphoto>Enregistrer</button></div><small class="tcg-hint">Vide = retirer la photo (le tracé reste affiché).</small></div>` : ""}<div class="tcg-actions">${actions.join("")}</div></div>`;
   }
   function showDetail(id, ids, opts) {
     peek = opts && opts.peek ? id : "";
@@ -511,6 +511,11 @@
       if (e.target === o || e.target.closest("[data-close]")) closeOverlay();
       else if (e.target.closest("[data-craft]")) craft(id);
       else if (e.target.closest("[data-upgrade]")) upgrade(id);
+      else if (e.target.closest("[data-cphoto]")) {
+        const url = (o.querySelector("#cp-url").value || "").trim();
+        if (url && !C.safeUrl(url)) { C.toast("L'adresse doit commencer par https://", "err"); return; }
+        API("adminGameTool", { action: "circuitPhoto", id, url }).then(() => { if (url) circPhotos[id] = url; else delete circPhotos[id]; C.toast(url ? "Photo enregistrée." : "Photo retirée.", "ok"); refreshDetail(id); renderGrid(); }).catch((ex) => C.toast(ex.message, "err"));
+      }
       else if (e.target.closest("[data-lock]")) toggleLock(id);
       else if (e.target.closest("[data-wish]")) toggleWish(id);
       else if (e.target.closest("[data-flipcard]") || e.target.closest(".tcg-3d")) { const t = o.querySelector("#tcg-3d"); if (t) t.classList.toggle("back"); }
@@ -874,7 +879,7 @@
   function renderHero() {
     const top = document.getElementById("cg-top"); if (!top || !doc) return;
     indexCars();
-    const total = C.cars.length, owned = doc.count, dups = Object.keys(doc.owned).filter((k) => doc.owned[k] > 1).length;
+    const total = C.cars.length + G.CIRCUIT_CARDS.length + G.LIVERIES.length, owned = doc.count, dups = Object.keys(doc.owned).filter((k) => doc.owned[k] > 1).length;
     top.innerHTML = `<div class="cg-prog"><div class="cg-pt"><b>${owned}</b><span> / ${total} cartes</span><em>${pct(owned, total)} %</em></div>${gauge(owned, total, "big")}</div>
       <button type="button" class="cg-dust" data-dust-log title="Historique des cristaux"><span class="cg-di">${window.MA.dustIcon(22)}</span><b>${doc.dust}</b><small>cristaux${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></button>`;
     document.querySelectorAll("#cards-root [data-ctab]").forEach((b) => { const on = b.dataset.ctab === ctab; b.classList.toggle("active", on); b.setAttribute("aria-selected", String(on)); });
@@ -934,7 +939,7 @@
       const pubCars = carDocs.filter(Boolean);
       if (!ids.length && !wl.length && !vit.length && !give.length) return;
       const vitHtml = vit.length || pubCars.length ? `<div class="panel-section-title">Vitrine</div><div class="cg-pshow" data-bg="${sc.bg || ""}">${vit.map((id) => `<div class="cg-pshow-i"><a href="${G.isSpecial(id) ? "#/jouer/collection" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { owned: true, count: 0 })}</a>${mine && !(mine.owned[id] > 0) ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-wish-add="${C.esc(id)}">★ Je cherche cette carte</button>` : ""}</div>`).join("")}${pubCars.map((c) => `<div class="cg-pshow-i">${cardHtml(myCarObj(c), { owned: true, count: 0 })}<small class="tcg-hint">Sa voiture</small></div>`).join("")}</div>` : "";
-      el.innerHTML = `${vitHtml}${ids.length ? `<div class="panel-section-title">Collection de cartes <span class="lap-meta">${(d.count || 0)} / ${C.cars.length}${d.specials ? " · ✦ " + d.specials : ""}</span></div>
+      el.innerHTML = `${vitHtml}${ids.length ? `<div class="panel-section-title">Collection de cartes <span class="lap-meta">${(d.count || 0)} / ${C.cars.length + G.CIRCUIT_CARDS.length + G.LIVERIES.length}${d.specials ? " · ✦ " + d.specials : ""}</span></div>
         <div class="tcg-strip" id="pub-cards-strip">${profPage(ids, 0)}</div>` : ""}
         ${give.length ? `<div class="panel-section-title">🔁 Je donne <span class="lap-meta">${give.length} doublon${give.length > 1 ? "s" : ""}</span></div><div class="wish-list give-list">${give.slice(0, 12).map((id) => { const c = cardObj(id); return `<span class="wish-chip give">${C.esc(String(c.model).replace(/\s*\(.*$/, "").slice(0, 26))} ×${(d.owned || {})[id]}</span>`; }).join("")}</div>` : ""}
         ${wl.length ? `<div class="panel-section-title">★ Je cherche <span class="lap-meta">${wl.length}</span></div>

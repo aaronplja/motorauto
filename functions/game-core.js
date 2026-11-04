@@ -415,7 +415,7 @@
   /** recompte cartes distinctes (hors éditions spéciales) et éditions spéciales */
   function recount(doc) {
     let c = 0, s = 0, ci = 0, lv = 0;
-    Object.keys(doc.owned || {}).forEach((k) => { if (doc.owned[k] > 0) { if (isSpecial(k)) s++; else if (isCircuit(k)) ci++; else if (isLivery(k)) lv++; else c++; } });
+    Object.keys(doc.owned || {}).forEach((k) => { if (doc.owned[k] > 0) { if (isSpecial(k)) s++; else { c++; if (isCircuit(k)) ci++; else if (isLivery(k)) lv++; } } });
     doc.count = c; doc.specials = s; doc.circuits = ci; doc.liveries = lv; return doc;
   }
 

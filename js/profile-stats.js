@@ -40,7 +40,7 @@
     const rar = {}; RARS.forEach(([k]) => { rar[k] = [0, 0]; });
     C.cars.forEach((c) => { const r = window.MACards.rarityOf(c); const row = rar[r] || (rar[r] = [0, 0]); row[1]++; if ((col.owned[c.id] || 0) > 0) row[0]++; });
     const dups = Object.keys(col.owned || {}).filter((k) => col.owned[k] > 1).reduce((n, k) => n + (col.owned[k] - 1), 0);
-    const hp = d.cars.reduce((n, c) => n + (Number(c.power) || 0), 0), total = Math.max(1, C.cars.length), pct = Math.round(((col.count || 0) / total) * 100);
+    const hp = d.cars.reduce((n, c) => n + (Number(c.power) || 0), 0), total = Math.max(1, C.cars.length + window.MAGameCore.CIRCUIT_CARDS.length + window.MAGameCore.LIVERIES.length), pct = Math.round(((col.count || 0) / total) * 100);
     const name = d.u.username || (self ? C.pilotName() : "Pilote");
     document.getElementById("stats-title").textContent = name;
     document.getElementById("stats-sub").textContent = `Niveau ${L.level.n} · ${L.level.name}${d.rank ? " · n° " + d.rank + " sur " + d.ranked : ""}`;

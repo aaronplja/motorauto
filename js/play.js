@@ -133,7 +133,7 @@
     if (group === "cartes") {
       if (!C.user) return;
       const [col, trades] = await Promise.all([window.MACards.load().catch(() => null), C.db.collection("trades").where("toUid", "==", C.user.uid).limit(60).get().then((s) => s.docs.filter((d) => d.data().status === "open").length).catch(() => 0)]);
-      if (col) { st.cards = `${col.count} / ${C.cars.length} cartes · ${window.MA.dustIcon(13)} ${col.dust}`; st.shop = canDaily(col) ? "Ton pack du jour t'attend !" : "Packs par pays et offres du jour"; st.shopBadge = canDaily(col) ? "1" : col.bonus ? String(col.bonus) : ""; }
+      if (col) { st.cards = `${col.count} / ${C.cars.length + window.MAGameCore.CIRCUIT_CARDS.length + window.MAGameCore.LIVERIES.length} cartes · ${window.MA.dustIcon(13)} ${col.dust}`; st.shop = canDaily(col) ? "Ton pack du jour t'attend !" : "Packs par pays et offres du jour"; st.shopBadge = canDaily(col) ? "1" : col.bonus ? String(col.bonus) : ""; }
       st.trade = trades ? `${trades} proposition${trades > 1 ? "s" : ""} à traiter` : "Échange tes doublons avec les pilotes"; st.tradeBadge = trades ? String(trades) : "";
       if (C.Router.is("play", { tab: "cartes" })) draw(st);
       return;
