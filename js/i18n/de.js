@@ -324,7 +324,7 @@
 "Laquelle est la plus récente ?": "Welches ist das neueste?",
 "Quiz": "Quiz",
 "Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.": "Marken, Geschichte, Motoren, Motorsport: wähle Kategorie und Stufe.",
-"4 catégories, 3 niveaux": "4 Kategorien, 3 Stufen",
+"8 catégories, 3 niveaux": "8 Kategorien, 3 Stufen",
 "Classement des quiz": "Quiz-Rangliste",
 "Retour": "Zurück",
 "Voir mon résultat": "Mein Ergebnis ansehen",

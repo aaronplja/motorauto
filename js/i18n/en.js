@@ -324,7 +324,7 @@
 "Laquelle est la plus récente ?": "Which one is the most recent?",
 "Quiz": "Quiz",
 "Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.": "Brands, history, engines, motorsport: choose your category and level.",
-"4 catégories, 3 niveaux": "4 categories, 3 levels",
+"8 catégories, 3 niveaux": "8 categories, 3 levels",
 "Classement des quiz": "Quiz ranking",
 "Retour": "Back",
 "Voir mon résultat": "See my result",
