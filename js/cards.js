@@ -94,6 +94,7 @@
   const API = (name, data) => window.MAGameAPI.call(name, data);
   function applyDoc(v) {
     doc = Object.assign(blank(), doc || {}, v); loadedAt = Date.now();
+    G.recount(doc);   // le compteur se recalcule toujours depuis les cartes possédées (circuits et livrées inclus)
     if (window.MAGame) window.MAGame.invalidate();
     document.dispatchEvent(new CustomEvent("ma:cards", { detail: { doc } }));
   }
@@ -939,7 +940,7 @@
       const pubCars = carDocs.filter(Boolean);
       if (!ids.length && !wl.length && !vit.length && !give.length) return;
       const vitHtml = vit.length || pubCars.length ? `<div class="panel-section-title">Vitrine</div><div class="cg-pshow" data-bg="${sc.bg || ""}">${vit.map((id) => `<div class="cg-pshow-i"><a href="${G.isSpecial(id) ? "#/jouer/collection" : "#/voiture/" + encodeURIComponent(id)}" class="tcg-mini-link">${cardHtml(cardObj(id), { owned: true, count: 0 })}</a>${mine && !(mine.owned[id] > 0) ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-wish-add="${C.esc(id)}">★ Je cherche cette carte</button>` : ""}</div>`).join("")}${pubCars.map((c) => `<div class="cg-pshow-i">${cardHtml(myCarObj(c), { owned: true, count: 0 })}<small class="tcg-hint">Sa voiture</small></div>`).join("")}</div>` : "";
-      el.innerHTML = `${vitHtml}${ids.length ? `<div class="panel-section-title">Collection de cartes <span class="lap-meta">${(d.count || 0)} / ${C.cars.length + G.CIRCUIT_CARDS.length + G.LIVERIES.length}${d.specials ? " · ✦ " + d.specials : ""}</span></div>
+      el.innerHTML = `${vitHtml}${ids.length ? `<div class="panel-section-title">Collection de cartes <span class="lap-meta">${G.recount(Object.assign({}, d)).count} / ${C.cars.length + G.CIRCUIT_CARDS.length + G.LIVERIES.length}${d.specials ? " · ✦ " + d.specials : ""}</span></div>
         <div class="tcg-strip" id="pub-cards-strip">${profPage(ids, 0)}</div>` : ""}
         ${give.length ? `<div class="panel-section-title">🔁 Je donne <span class="lap-meta">${give.length} doublon${give.length > 1 ? "s" : ""}</span></div><div class="wish-list give-list">${give.slice(0, 12).map((id) => { const c = cardObj(id); return `<span class="wish-chip give">${C.esc(String(c.model).replace(/\s*\(.*$/, "").slice(0, 26))} ×${(d.owned || {})[id]}</span>`; }).join("")}</div>` : ""}
         ${wl.length ? `<div class="panel-section-title">★ Je cherche <span class="lap-meta">${wl.length}</span></div>

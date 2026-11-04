@@ -40,7 +40,7 @@
     const rar = {}; RARS.forEach(([k]) => { rar[k] = [0, 0]; });
     C.cars.forEach((c) => { const r = window.MACards.rarityOf(c); const row = rar[r] || (rar[r] = [0, 0]); row[1]++; if ((col.owned[c.id] || 0) > 0) row[0]++; });
     const dups = Object.keys(col.owned || {}).filter((k) => col.owned[k] > 1).reduce((n, k) => n + (col.owned[k] - 1), 0);
-    const hp = d.cars.reduce((n, c) => n + (Number(c.power) || 0), 0), total = Math.max(1, C.cars.length + window.MAGameCore.CIRCUIT_CARDS.length + window.MAGameCore.LIVERIES.length), pct = Math.round(((col.count || 0) / total) * 100);
+    const hp = d.cars.reduce((n, c) => n + (Number(c.power) || 0), 0), total = Math.max(1, C.cars.length + window.MAGameCore.CIRCUIT_CARDS.length + window.MAGameCore.LIVERIES.length), pct = Math.round((window.MAGameCore.recount(Object.assign({}, col)).count / total) * 100);
     const name = d.u.username || (self ? C.pilotName() : "Pilote");
     document.getElementById("stats-title").textContent = name;
     document.getElementById("stats-sub").textContent = `Niveau ${L.level.n} · ${L.level.name}${d.rank ? " · n° " + d.rank + " sur " + d.ranked : ""}`;
@@ -50,7 +50,7 @@
       <div class="sx-hero"><div class="lvl-ring" style="--p:${L.pct}%" data-lv-open="${s.xp}" role="button" tabindex="0" aria-label="Voir tous les niveaux"><b>${L.level.n}</b><small>NIV.</small></div>
         <div class="lvl-main"><h3>${esc(L.level.name)}</h3><div class="xp-bar"><i style="width:${L.pct}%"></i></div><small>${nf(s.xp)} XP${L.next ? ` · encore ${nf(L.toNext)} pour « ${esc(L.next.name)} »` : " · niveau maximum"}</small></div>
         ${d.rank ? `<div class="sx-rank"><b>n° ${d.rank}</b><span>sur ${d.ranked} pilotes</span></div>` : ""}</div>
-      <div class="sx-kpis">${kpi(col.count || 0, "cartes")}${kpi(s.badges.length, "succès")}${kpi(s.laps, "chronos")}${kpi(s.records, "records")}</div>
+      <div class="sx-kpis">${kpi(window.MAGameCore.recount(Object.assign({}, col)).count, "cartes")}${kpi(s.badges.length, "succès")}${kpi(s.laps, "chronos")}${kpi(s.records, "records")}</div>
       <section class="stats-sec"><h3><i aria-hidden="true">${ICON.cards}</i>Collection</h3>
         <div class="sx-coll"><div class="pv2-ring" style="--p:${pct}%"><b>${pct}%</b><small>complète</small></div>
           <div class="sx-rarlist">${RARS.map(([k, l]) => { const r = rar[k] || [0, 0], w = r[1] ? Math.round((r[0] / r[1]) * 100) : 0; return `<div class="sx-rar"><span><i class="r-${k}"></i>${l}</span><div class="sx-track"><u class="r-${k}" style="width:${w}%"></u></div><b>${r[0]}<small>/${r[1]}</small></b></div>`; }).join("")}</div></div>
