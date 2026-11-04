@@ -41,8 +41,24 @@
     return C.carsById.get(id) || null;
   }
   const circNo = (car) => { const i = G.CIRCUIT_CARDS.findIndex((r) => r[0] === car.id); return "C" + String(i + 1).padStart(2, "0"); };
+  /** illustration d'un circuit sans tracé officiel : ruban d'asphalte généré à partir de l'identifiant (stable, jamais présenté comme le vrai plan) */
+  function illusSvg(car) {
+    let h = 2166136261; for (const ch of car.id) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+    const rnd = () => { h = (Math.imul(h, 1664525) + 1013904223) >>> 0; return h / 4294967296; };
+    const kind = /daytona|talladega|indianapolis/.test(car.id) ? "oval" : /pikes|goodwood-hill/.test(car.id) ? "hill" : /mille|targa|pescara|charade|nordschleife|le-mans$|spa-old|bremgarten/.test(car.id) ? "road" : "circuit";
+    let pts = [];
+    if (kind === "oval") { for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; pts.push([50 + Math.cos(a) * 38, 50 + Math.sin(a) * 22 * (1 + (i % 8 === 0 ? 0.04 : 0))]); } }
+    else if (kind === "hill") { for (let i = 0; i < 9; i++) pts.push([18 + (i % 2 ? 64 : 0) * (0.7 + rnd() * 0.3) + (i % 2 ? 0 : rnd() * 10), 90 - i * 10]); }
+    else { const n = kind === "road" ? 11 : 10; for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2, r = 20 + rnd() * 24; pts.push([50 + Math.cos(a) * r * (kind === "road" ? 1.1 : 1), 50 + Math.sin(a) * r * 0.85]); } }
+    const closed = kind !== "hill", L = pts.length, P = (i) => pts[closed ? (i + L) % L : Math.max(0, Math.min(L - 1, i))];
+    let d = "M" + P(0)[0].toFixed(1) + " " + P(0)[1].toFixed(1);
+    for (let i = 0; i < (closed ? L : L - 1); i++) { const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2); d += "C" + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + " " + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) + " " + (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + " " + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) + " " + p2[0].toFixed(1) + " " + p2[1].toFixed(1); }
+    if (closed) d += "Z";
+    return `<svg class="tcg-trace tcg-illus" viewBox="0 0 100 100" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#2b2f36" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#f8fafc" stroke-width=".7" stroke-dasharray="2.2 2.2" stroke-linecap="round"/><circle cx="${P(0)[0].toFixed(1)}" cy="${P(0)[1].toFixed(1)}" r="2.6" fill="currentColor"/></svg>`;
+  }
   function traceSvg(car) {
     const d = (window.MACircuitTraces || {})[car.id];
+    if (!d) return illusSvg(car);
     return d ? `<svg class="tcg-trace" viewBox="0 0 100 100" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg>` : `<span class="tcg-q" aria-hidden="true">🏁</span>`;
   }
   const isOwned = (id) => !!(doc && (doc.owned[id] || 0) > 0);
@@ -461,7 +477,7 @@
     const n = cnt(id), R = RAR[rarityOf(car)], sp = car.special, e = C.esc;
     if (n === 0) return `<h3>Carte à débloquer</h3><p>Ouvre des packs pour la trouver${sp ? "." : " ou fabrique-la avec des cristaux."}</p><dl><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${sp ? "★" : car.circuit ? circNo(car) : "#" + String(numberOf(car)).padStart(3, "0")}</dd></dl>`;
     if (car.livery) return `<h3>${e(car.brand)} ${e(String(car.model).replace(/\s*\(.*$/, ""))}</h3><dl><dt>Livrée</dt><dd>${e(car.liveryName)}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>Puissance</dt><dd>${car.stats.power} ch</dd><dt>Vitesse</dt><dd>${car.stats.speed} km/h</dd><dt>0-100</dt><dd>${car.stats.zero ? car.stats.zero + " s" : "—"}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
-    if (car.circuit) return `<h3>${e(car.model)}</h3><dl><dt>Pays</dt><dd>${e(car.countryLabel)}</dd><dt>Longueur</dt><dd>${String(car.km).replace(".", ",")} km</dd><dt>Depuis</dt><dd>${car.since}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${circNo(car)}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
+    if (car.circuit) return `<h3>${e(car.model)}</h3><dl><dt>Pays</dt><dd>${e(car.countryLabel)}</dd><dt>Longueur</dt><dd>${String(car.km).replace(".", ",")} km</dd><dt>Depuis</dt><dd>${car.since}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>${circNo(car)}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>${!(window.MACircuitTraces || {})[car.id] ? `<p><small>Illustration : le tracé officiel de ce circuit n'est pas encore disponible.</small></p>` : ""}`;
     if (sp) return `<h3>${e(car.model)}</h3><p>${e(sp.text || "")}</p><dl><dt>Édition</dt><dd>${e(car.brand)}</dd><dt>Exemplaires</dt><dd>${n}</dd></dl>`;
     const all = C.cars.filter((c) => c.brand === car.brand), have = all.filter((c) => countOf(c.id) > 0).length, st = car.stats;
     const desc = String(car.description || "").replace(/\s+/g, " ");
