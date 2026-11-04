@@ -41,9 +41,34 @@
   #public-profile-modal .pv3 .pro-avatar{width:128px;height:128px}
   .pv3-who{align-items:flex-start;padding-bottom:.3rem}
   .pv3-actions{display:flex;flex-wrap:wrap}.pv3-actions .cta-btn{width:auto;min-width:170px}
-  .pv3-bio{text-align:left;margin-inline:0!important}
+  .pv3-bio{text-align:left;max-width:68ch;margin-inline:1.6rem!important}
   #pub-socials,.pv3 .badge-row,.ph-honors,.ph-honors .ph-chips,.ph-honors .ph-badges{justify-content:flex-start;align-items:flex-start}
   .pv3-stats .pro-stat span{font-size:.72rem}
+}
+/* ordinateur : mise en page deux colonnes (identité à gauche, chiffres à droite) — le mobile (< 900 px) ne change pas */
+@media (min-width:900px){
+  #public-profile-modal .pro-hero.pv3{grid-template-columns:minmax(0,1fr) 340px;column-gap:0;row-gap:.9rem;padding-bottom:1.6rem}
+  .pv3-cover{grid-column:1/-1;height:200px}
+  #public-profile-modal .pv3>:not(.pv3-cover){grid-column:1;margin-inline:2rem 1.2rem}
+  .pv3-id{margin-top:-78px!important;gap:1.5rem}
+  #public-profile-modal .pv3 .pro-avatar{width:152px;height:152px;border-width:5px}
+  #public-profile-modal .pv3 .page-title{font-size:clamp(2rem,3vw,2.7rem)}
+  .pv3-who{padding-bottom:.6rem;gap:.35rem}
+  .pv3-car{font-size:.95rem}
+  .pv3-actions .cta-btn{min-width:190px}
+  #public-profile-modal .pv3 .pv3-bio{margin-inline:2rem 1.2rem!important;font-size:1.02rem;max-width:62ch}
+  #public-profile-modal .pv3>.pv3-stats{grid-column:2;grid-row:2 / span 2;margin:1.4rem 2rem 0 .8rem;grid-template-columns:1fr 1fr!important;gap:.6rem!important;align-self:start}
+  .pv3-stats .pro-stat{padding:1rem .4rem;border:1px solid var(--stroke-line);transition:transform .2s,border-color .2s}
+  .pv3-stats .pro-stat:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 55%,var(--stroke-line))}
+  .pv3-stats .pro-stat b{font-size:1.7rem}
+  .pv3-stats .pro-stat span{font-size:.78rem}
+  #public-profile-modal .pv3>.pv3-level{grid-column:2;grid-row:4 / span 6;margin:0 2rem 0 .8rem;align-self:start}
+  #public-profile-modal .pv3>.pv3-level{padding:1.1rem 1.2rem;gap:.9rem 1.1rem;grid-template-columns:72px minmax(0,1fr)}
+  .pv3-level .pv2-lv-main{text-align:left;min-width:0}
+  .pv3-level .pv2-lv-main h3{font-size:1.15rem}
+  .pv3-level .pv2-facts{grid-template-columns:1fr 1fr;row-gap:.7rem}
+  .pv3-level .pv2-facts b{font-size:1.2rem}
+  .pv3-level .pv2-facts span{font-size:.68rem}
 }
 @media (max-width:360px){.pv3-actions{grid-template-columns:1fr}.pv3-stats .pro-stat b{font-size:1.1rem}}
 /* panneau « Personnaliser le profil » */

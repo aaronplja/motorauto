@@ -1,0 +1,11 @@
+/* Lisibilité multi-thèmes : couleurs « or » adaptées aux thèmes clairs + correctifs de contraste */
+:root{--gold:#ffcf5a}
+:root[data-theme="carrara-white"],:root[data-theme="silver-arrow"],:root[data-theme="ivory-dune"],:root[data-theme="nordic-frost"],
+:root[data-theme="solar-flare"],:root[data-theme="alpine-horizon"],:root[data-theme="rose-gold-gt"],:root[data-theme="mint-speedway"]{--gold:#8a5300}
+:root[data-theme="carrara-white"],:root[data-theme="silver-arrow"],:root[data-theme="ivory-dune"],:root[data-theme="nordic-frost"],
+:root[data-theme="solar-flare"],:root[data-theme="alpine-horizon"],:root[data-theme="rose-gold-gt"],:root[data-theme="mint-speedway"]{
+  --bronze-ink:#8c5420;--ice-ink:#0b6fa8}
+:root{--bronze-ink:#d79a5c;--ice-ink:#7fd0ff}
+.ssn-cta-go{color:var(--bronze-ink)}
+.ssn-ice{color:var(--ice-ink)}
+.pv3-level .mentor-zone{grid-column:1/-1}
