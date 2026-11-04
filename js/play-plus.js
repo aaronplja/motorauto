@@ -99,7 +99,7 @@
   function mkItem(l) {
     const R = MC().RAR[l.rar] || MC().RAR.common, own = C.user && C.user.uid === l.uid, can = C.user && mk.doc && mk.doc.dust >= l.price, sure = mk.confirm === l.id;
     const btn = own ? `<button type="button" class="cta-btn btn-ghost mkt-btn" data-mk-cancel="${C.esc(l.id)}" ${mk.busy ? "disabled" : ""}>${T("Retirer")}</button>`
-      : `<button type="button" class="cta-btn ${sure ? "mkt-sure" : "fill-btn"} mkt-btn" data-mk-buy="${C.esc(l.id)}" ${!C.user || !can || mk.busy ? "disabled" : ""}>${C.user && !can ? T("Pas assez") : sure ? T("Confirmer") + " · " + l.price : T("Acheter")}</button>`;
+      : `<button type="button" class="cta-btn ${sure ? "mkt-sure" : "fill-btn"} mkt-btn${C.user && !can ? " lack" : ""}" data-mk-buy="${C.esc(l.id)}" ${!C.user || !can || mk.busy ? "disabled" : ""}>${C.user && !can ? T("Pas assez") : sure ? T("Confirmer") + " · " + l.price : T("Acheter")}</button>`;
     return `<article class="mkt-card${own ? " own" : ""}" style="--mk:${MK_COL[l.rar] || MK_COL.common}">
       <div class="mkt-art">${mini(l.cardId)}</div>
       <div class="mkt-body"><span class="mkt-rar">${R.label}</span><b class="mkt-name">${C.esc(label(l.cardId))}</b>

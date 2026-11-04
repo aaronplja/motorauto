@@ -84,7 +84,7 @@
       ${howHtml(sn)}
       <h3>${T("Gel de série")}</h3>
       <div class="ssn-freeze"><span class="ssn-ice" aria-hidden="true">❄</span><div><b>${freezes || 0} / ${G.FREEZE_MAX} ${T("en stock")}</b><small>${T("Un gel protège ta série de visites : il s'utilise tout seul le premier jour raté. 1 gel offert chaque mois.")}</small></div>
-        <button type="button" class="cta-btn btn-ghost" data-ssn-freeze ${(freezes || 0) >= G.FREEZE_MAX ? "disabled" : ""}>${T("Acheter")} · ${G.FREEZE_COST} ${T("cristaux")}</button></div>`}
+        <button type="button" class="cta-btn btn-ghost${doc() && doc().dust < G.FREEZE_COST && (freezes || 0) < G.FREEZE_MAX ? " lack" : ""}" data-ssn-freeze ${(freezes || 0) >= G.FREEZE_MAX ? "disabled" : ""}>${T("Acheter")} · ${G.FREEZE_COST} ${T("cristaux")}</button></div>`}
       </div>
     </section>`;
   }

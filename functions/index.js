@@ -59,7 +59,7 @@ function callable(name) {
 }
 ["syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "buyFreeze", "seasonClaim", "claimWelcome", "clubClash", "logAction", "weeklyStatus", "claimChallenge",
   "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "claimSets", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest",
-  "fuseCards", "pmPlay", "quizSubmit", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
+  "fuseCards", "pmPlay", "quizSubmit", "lockCard", "recycleCards", "spinWheel", "openAdvent", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
 
 
 // ---- abonnements « voiture / marque » : notifications quand une fiche change, qu'une voiture arrive ou qu'une annonce « Nouveautés » est publiée

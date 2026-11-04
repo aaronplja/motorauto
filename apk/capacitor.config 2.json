@@ -1,0 +1,11 @@
+{
+  "appId": "fr.motorauto.app",
+  "appName": "MOTORAUTO",
+  "webDir": "www",
+  "backgroundColor": "#09090b",
+  "server": {
+    "url": "https://motorauto.fr",
+    "androidScheme": "https",
+    "allowNavigation": ["motorauto.fr", "*.motorauto.fr", "*.firebaseapp.com", "*.googleapis.com", "accounts.google.com"]
+  }
+}

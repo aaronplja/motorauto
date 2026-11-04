@@ -66,7 +66,7 @@
     const no = car.mine ? "MA" : sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0");
     const color = sp && sp.color ? " tcg-c-" + esc(sp.color) : "";
     return `<div class="tcg tcg-${r}${color}${lv > 1 ? " has-lv lvl" + lv : ""} ${owned ? "" : "locked"} ${o.cls || ""}" data-card="${esc(car.id)}" role="button" tabindex="0" aria-label="${owned ? esc(car.brand + " " + model) : "Carte non débloquée " + no}, ${R.label}">
-      <div class="tcg-art ${mosaic ? "tcg-mosaic m" + mosaic.length : ""}">${mosaic ? mosaic.map((u) => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">`).join("") : img}<i class="tcg-foil" aria-hidden="true"></i>${owned && !sp && car.drives && car.drives[0] && window.MATrack ? `<span class="tcg-drv" title="${esc(window.MATrack.DRIVES[car.drives[0]][0])}">${window.MATrack.driveIcon(car.drives[0], 14)}</span>` : ""}</div><i class="tcg-holo" aria-hidden="true"></i>
+      <div class="tcg-art ${mosaic ? "tcg-mosaic m" + mosaic.length : ""}">${mosaic ? mosaic.map((u) => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">`).join("") : img}<i class="tcg-foil" aria-hidden="true"></i>${owned && isLk(car.id) ? `<i class="tcg-lk" aria-hidden="true">🔒</i>` : ""}${owned && !sp && car.drives && car.drives[0] && window.MATrack ? `<span class="tcg-drv" title="${esc(window.MATrack.DRIVES[car.drives[0]][0])}">${window.MATrack.driveIcon(car.drives[0], 14)}</span>` : ""}</div><i class="tcg-holo" aria-hidden="true"></i>
       <div class="tcg-body"><span class="tcg-brand">${owned || sp ? esc(car.brand) : "—"}</span><b class="tcg-name">${owned || sp ? esc(model) : "Carte à débloquer"}</b>${stats}</div>
       ${lv > 1 ? `<i class="tcg-frame lv${lv}" aria-hidden="true"></i>` : ""}<span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span><span class="tcg-no">${no}</span>
       ${pi ? `<span class="tcg-pics" title="Images débloquées : ${pi.have.length} sur ${pi.keys.length}"><i></i>${pi.have.length}/${pi.keys.length}</span>` : ""}
@@ -188,6 +188,102 @@
     } catch (e) { C.toast(e.message, "err"); await load(true).catch(() => {}); }
     finally { busy = false; renderHero(); }
   }
+  // ------------------------------------------------------------------ roue quotidienne et calendrier de l'Avent
+  const WHEEL_SEG = ["dust", "pack", "dust", "pts", "dust", "freeze", "dust", "pack", "pts", "card"];
+  const WHEEL_ICON = { dust: "💎", pack: "🎁", freeze: "❄️", pts: "⭐", card: "🃏" };
+  function wheelHtml() {
+    if (!doc || !C.user) return "";
+    const ready = doc.wheelDay !== day();
+    return `<section class="cg-block cg-wheelblk" aria-label="Roue du jour"><header class="cg-bh"><h3>Roue du jour</h3><span class="cg-sub">1 tour gratuit par jour · ${ready ? "prêt !" : "reviens dans <b data-nextday>" + leftToday() + "</b>"}</span></header>
+      <div class="wh-row"><span class="wh-mini" aria-hidden="true">🎡</span><p class="tcg-hint">Cristaux, pack bonus, gel de série, points de saison… et parfois une carte rare ou épique.</p><button type="button" class="cta-btn fill-btn" data-wheel ${ready && !busy ? "" : "disabled"}>${ready ? "Tourner la roue" : "Déjà tournée"}</button></div></section>`;
+  }
+  function wheelOpen() {
+    if (busy || !C.requireLogin()) return;
+    const o = mountOverlay("wheel", "Roue du jour", `<div class="wh-box"><h2>🎡 Roue du jour</h2><div class="wh-wrap"><i class="wh-pin" aria-hidden="true">▼</i><div class="wh-wheel" id="wh-wheel">${WHEEL_SEG.map((k, i) => `<span style="--a:${i * 36 + 18}deg">${WHEEL_ICON[k]}</span>`).join("")}</div></div><p class="wh-res" id="wh-res" aria-live="polite">Lance la roue !</p><div class="tcg-actions"><button type="button" class="cta-btn fill-btn" id="wh-go">Tourner</button><button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div>`);
+    o.addEventListener("click", async (e) => {
+      if (e.target === o || e.target.closest("[data-close]")) return closeOverlay();
+      if (!e.target.closest("#wh-go") || busy) return;
+      busy = true; const go = o.querySelector("#wh-go"); go.disabled = true;
+      try {
+        const r = await API("spinWheel"), pr = r.prize, idx = []; WHEEL_SEG.forEach((k, i) => { if (k === pr.k) idx.push(i); });
+        const seg = idx[Math.floor(Math.random() * idx.length)] || 0, turn = 360 * 5 + (360 - (seg * 36 + 18));
+        const w = o.querySelector("#wh-wheel"); w.style.setProperty("--to", turn + "deg"); void w.offsetWidth; w.classList.add("spin"); buzz(15);
+        applyDoc(r.doc);
+        setTimeout(() => {
+          const res = o.querySelector("#wh-res"); if (!res) return;
+          res.innerHTML = `<b>${WHEEL_ICON[pr.k]} Tu gagnes ${C.esc(pr.text)} !</b>`; buzz([30, 40, 60]);
+          if (pr.k === "card" && pr.cardId && cardObj(pr.cardId)) { go.textContent = "Voir la carte"; go.disabled = false; go.onclick = () => { closeOverlay(); setTimeout(() => showDetail(pr.cardId), 200); }; }
+          else go.hidden = true;
+          render();
+        }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 50 : 3600);
+      } catch (er) { C.toast(er.message, "err"); go.disabled = false; }
+      finally { busy = false; }
+    });
+  }
+  function adventHtml() {
+    const at = doc && G.adventToday(Date.now());
+    if (!at) return "";
+    const opened = doc.advent && doc.advent.y === at.y ? doc.advent.o : [];
+    const cells = Array.from({ length: 24 }, (_, i) => {
+      const n = i + 1, got = opened.indexOf(n) >= 0, can = !got && n <= at.d, r = G.adventReward(n);
+      return `<button type="button" class="adv-c ${got ? "got" : can ? "can" : "lock"}${n === 24 ? " big" : ""}" ${can ? `data-advent="${n}"` : "disabled"} aria-label="Case ${n}${got ? " ouverte" : can ? " à ouvrir" : " pas encore"}"><b>${n}</b><span>${got ? "✓" : can ? (n === 24 ? "🎄" : "🎁") : "🔒"}</span>${got ? `<small>${C.esc(G.adventLabel(r).replace(/ cristaux/, "💎"))}</small>` : ""}</button>`;
+    }).join("");
+    return `<section class="cg-block cg-advent" aria-label="Calendrier de l'Avent"><header class="cg-bh"><h3>🎄 Calendrier de l'Avent</h3><span class="cg-sub">${opened.length} / 24 · une case par jour jusqu'au 24 décembre</span></header><div class="adv-grid">${cells}</div></section>`;
+  }
+  async function adventOpen(n) {
+    if (busy || !C.requireLogin()) return;
+    busy = true;
+    try { const r = await API("openAdvent", { day: n }); applyDoc(r.doc); C.toast(`🎄 Case ${n} : ${r.text} !`, "ok"); buzz([20, 30, 40]); }
+    catch (e) { C.toast(e.message, "err"); }
+    finally { busy = false; render(); }
+  }
+  const isLk = (id) => !!(doc && doc.locked && doc.locked[id]);
+  async function toggleLock(id) {
+    if (busy || !C.requireLogin()) return;
+    busy = true;
+    try {
+      const on = !isLk(id), r = await API("lockCard", { id, on });
+      applyDoc(r.doc); C.toast(on ? "🔒 Carte verrouillée : ni vente, ni échange, ni fusion, ni recyclage." : "Carte déverrouillée.", "ok"); refreshDetail(id); renderGrid();
+    } catch (e) { C.toast(e.message, "err"); }
+    finally { busy = false; }
+  }
+  /** origine de chaque exemplaire : 6 dernières arrivées + total */
+  function histHtml(id) {
+    const h = doc && doc.hist && doc.hist[id], L = G.HIST_LABEL || {};
+    if (countOf(id) < 1) return "";
+    const fmt = (ms) => { const d = new Date(ms); return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Paris" }); };
+    if (!h || !h.e || !h.e.length) return `<details class="cg-hist"><summary>Historique de la carte</summary><p class="tcg-hint">Origine inconnue (avant la mise en place de l'historique).</p></details>`;
+    return `<details class="cg-hist"><summary>Historique de la carte · ${h.n} exemplaire${h.n > 1 ? "s" : ""} reçu${h.n > 1 ? "s" : ""}</summary><ul>${h.e.slice().reverse().map((x) => `<li><span>${C.esc(fmt(x[0]))}</span><b>${C.esc(L[x[1]] || x[1])}</b></li>`).join("")}</ul>${h.n > h.e.length ? `<p class="tcg-hint">Les ${h.e.length} plus récents sont affichés.</p>` : ""}</details>`;
+  }
+  // ------------------------------------------------------------------ recyclage manuel des doublons
+  function recycleOpen() {
+    if (!doc || !C.requireLogin()) return;
+    const rows = Object.keys(doc.owned || {}).filter((id) => countOf(id) > 1 && !isLk(id) && !G.isSpecial(id) && cardObj(id)).map((id) => ({ id, car: cardObj(id), spare: countOf(id) - 1, unit: RAR[rarityOf(cardObj(id))].dust || 0 })).filter((r) => r.unit > 0)
+      .sort((a, b) => b.unit - a.unit || a.car.brand.localeCompare(b.car.brand));
+    const sel = {};
+    const o = mountOverlay("recycle", "Recycler des doublons", `<div class="rc-box"><h2>♻️ Recycler des doublons</h2><p class="tcg-hint">Tu gardes toujours 1 exemplaire. Les cartes verrouillées 🔒 n'apparaissent pas.</p>
+      ${rows.length ? `<div class="rc-list">${rows.map((r) => `<div class="rc-row" data-id="${C.esc(r.id)}"><span class="rc-n"><b>${C.esc(r.car.brand + " " + String(r.car.model).replace(/\s*\(.*$/, ""))}</b><small class="${rarityOf(r.car)}">${RAR[rarityOf(r.car)].label} · +${r.unit} / doublon</small></span><span class="rc-q"><button type="button" data-d="-1" aria-label="Moins">−</button><output>0</output><button type="button" data-d="1" aria-label="Plus">+</button><small>/ ${r.spare}</small></span></div>`).join("")}</div>` : `<div class="empty-note">Aucun doublon à recycler pour l'instant.</div>`}
+      <div class="rc-foot"><button type="button" class="cta-btn btn-ghost" id="rc-all" ${rows.length ? "" : "disabled"}>Tout sélectionner</button><button type="button" class="cta-btn fill-btn" id="rc-go" disabled>Recycler</button><button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div>`);
+    const upd = () => {
+      const tot = Object.keys(sel).reduce((a, id) => a + sel[id], 0), gain = rows.reduce((a, r) => a + (sel[r.id] || 0) * r.unit, 0), go = o.querySelector("#rc-go");
+      go.disabled = !tot; go.innerHTML = tot ? `Recycler ${tot} doublon${tot > 1 ? "s" : ""} · +${gain} ${window.MA.dustIcon(14)}` : "Recycler";
+    };
+    const set = (id, v) => { const r = rows.find((x) => x.id === id); v = Math.max(0, Math.min(r.spare, v)); if (v) sel[id] = v; else delete sel[id]; const out = o.querySelector(`.rc-row[data-id="${CSS.escape(id)}"] output`); if (out) out.textContent = v; };
+    o.addEventListener("click", async (e) => {
+      if (e.target === o || e.target.closest("[data-close]")) return closeOverlay();
+      const b = e.target.closest("[data-d]");
+      if (b) { const id = b.closest(".rc-row").dataset.id; set(id, (sel[id] || 0) + Number(b.dataset.d)); upd(); return; }
+      if (e.target.closest("#rc-all")) { let left = G.RECYCLE_MAX; rows.forEach((r) => { const v = Math.min(r.spare, left); left -= v; set(r.id, v); }); upd(); return; }
+      if (e.target.closest("#rc-go")) {
+        const items = Object.keys(sel).map((id) => ({ id, n: sel[id] }));
+        if (items.length > G.RECYCLE_MAX) { C.toast(`${G.RECYCLE_MAX} cartes différentes au maximum par recyclage.`, "err"); return; }
+        if (busy) return; busy = true;
+        try { const r = await API("recycleCards", { items }); applyDoc(r.doc); C.toast(`♻️ +${r.gain} cristaux (${r.count} doublon${r.count > 1 ? "s" : ""} recyclé${r.count > 1 ? "s" : ""})`, "ok"); closeOverlay(); }
+        catch (er) { C.toast(er.message, "err"); }
+        finally { busy = false; render(); }
+      }
+    });
+  }
   async function craft(id) {
     if (busy || !C.requireLogin()) return;
     const car = cardObj(id); if (!car) return;
@@ -281,7 +377,17 @@
         <div class="pk3-sum" id="tcg-sum" hidden></div>
         <div class="tcg-actions" id="tcg-end" hidden><button type="button" class="cta-btn fill-btn" id="tcg-done">Terminer</button></div>`;
       let shown = 0;
+      const SUSP = { epic: 450, legendary: 900, shiny: 1200, special: 1200, mythic: 1400 };
       const reveal = (el) => {
+        if (el.classList.contains("on") || el.classList.contains("pend")) return;
+        const w = SUSP[el.dataset.r];
+        if (w && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          el.classList.add("pend", "susp-" + el.dataset.r); buzz([10, 60, 10]); o.classList.add("dim");
+          return void setTimeout(() => { el.classList.remove("pend"); o.classList.remove("dim"); doReveal(el); }, w);
+        }
+        doReveal(el);
+      };
+      const doReveal = (el) => {
         if (el.classList.contains("on")) return;
         el.classList.add("on"); shown++;
         const rr = el.dataset.r;
@@ -364,17 +470,18 @@
       : peek === id && !countOf(id) ? "Carte liée à cette fiche ou partagée par un pilote : tu ne l'as pas encore dans ta collection."
       : n > 0 ? `Tu possèdes cette carte${n > 1 ? " en " + n + " exemplaires" : ""}.` : (R.craft ? `Carte ${R.label.toLowerCase()} · fabrication : ${R.craft} \u0001 (tu en as ${doc ? doc.dust : 0}).` : `Carte ${R.label.toLowerCase()} : elle ne s'achète pas avec des cristaux, elle se gagne en complétant un album.`);
     const lv = lvOf(id), next = lv < G.LV_MAX ? G.upgradeCost(sp ? "special" : rarityOf(car), lv + 1) : 0;
-    const lvBlock = n > 0 ? `<div class="cg-lvbox"><span class="cg-lvpips" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</span><b>Niveau ${lv} · ${G.LV_NAMES[lv]}</b>${lv < G.LV_MAX ? `<button type="button" class="cta-btn fill-btn compact-btn" data-upgrade ${doc && doc.dust >= next && !peek ? "" : "disabled"}>Améliorer (${next} ${window.MA.dustIcon(14)})</button>` : `<span class="tcg-hint">niveau maximum</span>`}</div>` : "";
+    const lvBlock = n > 0 ? `<div class="cg-lvbox"><span class="cg-lvpips" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</span><b>Niveau ${lv} · ${G.LV_NAMES[lv]}</b>${lv < G.LV_MAX ? `<button type="button" class="cta-btn fill-btn compact-btn${doc && doc.dust < next ? " lack" : ""}" data-upgrade ${doc && doc.dust >= next && !peek ? "" : "disabled"}>Améliorer (${next} ${window.MA.dustIcon(14)})${doc && doc.dust < next ? ` · il manque ${next - doc.dust}` : ""}</button>` : `<span class="tcg-hint">niveau maximum</span>`}</div>` : "";
     const actions = [`<button type="button" class="cta-btn btn-ghost" data-flipcard>↻ Retourner</button>`];
     if (n > 0 && !sp) actions.push(`<a class="cta-btn btn-ghost" href="#/voiture/${encodeURIComponent(id)}" data-close>Voir la fiche</a>`);
     if (n > 1) actions.push(`<button type="button" class="cta-btn fill-btn" data-swap>🔄 Proposer à l'échange</button>`);
+    if (n > 0 && !peek && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-lock aria-pressed="${isLk(id)}">${isLk(id) ? "🔓 Déverrouiller" : "🔒 Verrouiller"}</button>`);
     if (n > 0) actions.push(`<button type="button" class="cta-btn btn-ghost" data-share>↗ Partager</button>`);
     if (n > 0) actions.push(`<button type="button" class="cta-btn btn-ghost" data-chatshare>💬 Dans un chat</button>`);
-    if (n === 0 && !sp && R.craft > 0) actions.push(`<button type="button" class="cta-btn fill-btn" data-craft ${doc && doc.dust >= R.craft ? "" : "disabled"}>Fabriquer (${R.craft} ${window.MA.dustIcon(14)})</button>`);
+    if (n === 0 && !sp && R.craft > 0) actions.push(`<button type="button" class="cta-btn fill-btn${doc && doc.dust < R.craft ? " lack" : ""}" data-craft ${doc && doc.dust >= R.craft ? "" : "disabled"}>Fabriquer (${R.craft} ${window.MA.dustIcon(14)})${doc && doc.dust < R.craft ? ` · il manque ${R.craft - doc.dust}` : ""}</button>`);
     if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-wish aria-pressed="${inWish}">${inWish ? "★ Dans ma wishlist" : "☆ Wishlist"}</button>`);
     actions.push(`<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button>`);
     const i = navIds.indexOf(id), nav = i >= 0 && navIds.length > 1 ? `<div class="tcg-nav"><button type="button" data-nav="-1" aria-label="Carte précédente" ${i > 0 ? "" : "disabled"}>‹</button><span class="tcg-hint">${i + 1} / ${navIds.length}</span><button type="button" data-nav="1" aria-label="Carte suivante" ${i < navIds.length - 1 ? "" : "disabled"}>›</button></div>` : "";
-    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n, lv: n > 0 && !peek ? lv : 1 })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${lvBlock}${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}<div class="tcg-actions">${actions.join("")}</div></div>`;
+    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n, lv: n > 0 && !peek ? lv : 1 })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${lvBlock}${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}${peek ? "" : histHtml(id)}<div class="tcg-actions">${actions.join("")}</div></div>`;
   }
   function showDetail(id, ids, opts) {
     peek = opts && opts.peek ? id : "";
@@ -387,6 +494,7 @@
       if (e.target === o || e.target.closest("[data-close]")) closeOverlay();
       else if (e.target.closest("[data-craft]")) craft(id);
       else if (e.target.closest("[data-upgrade]")) upgrade(id);
+      else if (e.target.closest("[data-lock]")) toggleLock(id);
       else if (e.target.closest("[data-wish]")) toggleWish(id);
       else if (e.target.closest("[data-flipcard]") || e.target.closest(".tcg-3d")) { const t = o.querySelector("#tcg-3d"); if (t) t.classList.toggle("back"); }
       else if (e.target.closest("[data-pic]")) { const k = e.target.closest("[data-pic]").dataset.pic; try { localStorage.setItem(picPrefKey(id), k); } catch (_) { /* facultatif */ } refreshDetail(id); renderGrid(); }
@@ -486,10 +594,10 @@
     const dust = doc.dust, cost = o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
     const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
     const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>2 cartes</em></span>` : packInner(p.id);
-    const price = o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
+    const lack = dust < cost, price = o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
     return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}${o.cost != null ? " promo" : ""}" data-pack="shop" data-shop="${p.id}"${o.offer ? ` data-offer="1"` : ""} ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${cost} cristaux">
       ${o.cost != null ? `<span class="cg-ribbon">-${G.OFFER_PCT} %</span>` : ""}<span class="cg-art" ${st}>${art}</span>
-      <span class="cg-pm"><b>${p.id === "world" ? "Pack mondial" : C.esc(p.label)}</b><span class="cg-price">${price}</span></span>
+      <span class="cg-pm"><b>${p.id === "world" ? "Pack mondial" : C.esc(p.label)}</b><span class="cg-price${lack ? " lack" : ""}">${price}</span></span>
       <span class="cg-have">${gauge(p.have, p.total, full ? "full" : "")}<small>${p.have} / ${p.total} cartes${full ? " · complet" : ""}</small></span>
       ${o.used ? `<small class="cg-note">Offre déjà utilisée aujourd'hui</small>` : !ok && miss && !full ? `<small class="cg-note">il manque ${miss}</small>` : ""}</button>`;
   }
@@ -501,26 +609,41 @@
       return { id: k.id, label: k.label, cost: k.cost, total: list.length, have: list.filter((c) => countOf(c.id) > 0).length };
     }));
   }
+  /** temps restant avant minuit (heure de Paris) */
+  function leftToday() {
+    const ms = Math.max(0, G.parisMidnight(G.dayKey(Date.now() + 86400000)) - Date.now()), h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+    return (h ? h + " h " : "") + String(m).padStart(2, "0") + " min";
+  }
+  let shownDay = "";
+  /** à minuit : la boutique, le pack du jour et les missions se renouvellent sans recharger la page */
+  function dayWatch() {
+    const t = day();
+    if (!shownDay) { shownDay = t; return; }
+    document.querySelectorAll("[data-nextday]").forEach((el) => { el.textContent = leftToday(); });
+    if (t === shownDay) return;
+    shownDay = t;
+    if (doc) load(true).then(() => { if (C.Router.is("play", { tab: "collection" }) || C.Router.is("play", { tab: "boutique" })) render(); }).catch(() => {});
+  }
   function offersHtml(rows) {
     indexCars();
-    const of = G.dailyOffers(day(), C.cars, rarityMap), used = doc.offers && doc.offers.day === day() ? doc.offers : { pack: 0, card: 0 };
+    const of = doc.offerToday && doc.offerToday.day === day() ? doc.offerToday : G.dailyOffers(day(), C.cars, rarityMap), used = doc.offers && doc.offers.day === day() ? doc.offers : { pack: 0, card: 0 };
     const row = rows.find((r) => r.id === of.pack), car = of.card ? cardObj(of.card) : null;
     const packOffer = row ? packTileHtml(row, { cost: G.offerPackCost(row.id), offer: true, used: !!used.pack }) : "";
     const owned = car && countOf(car.id) > 0, can = car && !owned && !used.card && doc.dust >= of.cardCost && !busy;
     const cardOffer = car ? `<div class="cg-cardoffer${used.card || owned ? " off" : ""}"><span class="cg-ribbon">-30 %</span><div class="cg-co-card">${cardHtml(car, { owned: !!owned, count: 0, cls: "tcg-mini" })}</div>
-      <div class="cg-co-info"><b>Carte du jour</b><span>${C.esc(car.brand + " " + String(car.model).replace(/\s*\(.*$/, ""))}</span><span class="cg-price"><s>${of.cardFull}</s> <b>${of.cardCost}</b> ${window.MA.dustIcon(14)}</span>
+      <div class="cg-co-info"><b>Carte du jour</b><span>${C.esc(car.brand + " " + String(car.model).replace(/\s*\(.*$/, ""))}</span><span class="cg-price${doc.dust < of.cardCost && !owned ? " lack" : ""}"><s>${of.cardFull}</s> <b>${of.cardCost}</b> ${window.MA.dustIcon(14)}</span>
       <button type="button" class="cta-btn fill-btn compact-btn" data-offer-card="${C.esc(car.id)}" ${can ? "" : "disabled"}>${owned ? "Tu l'as déjà" : used.card ? "Offre utilisée" : "Acheter"}</button></div></div>` : "";
-    return `<section class="cg-block cg-offers" aria-label="Offres du jour"><header class="cg-bh"><h3>Offres du jour</h3><span class="cg-sub">changent chaque jour à minuit</span></header><div class="cg-offer-row">${packOffer}${cardOffer}</div></section>`;
+    return `<section class="cg-block cg-offers" aria-label="Offres du jour"><header class="cg-bh"><h3>Offres du jour</h3><span class="cg-sub">changent à minuit · <b data-nextday>${leftToday()}</b></span></header><div class="cg-offer-row">${packOffer}${cardOffer}</div></section>`;
   }
   /** compteurs de chance garantie + historique des ouvertures */
   function packStatsHtml() {
-    const op = doc.opened || 0, toRare = 10 - (op % 10), toEpic = 30 - (op % 30), all = Math.max(doc.packsAll || 0, op);
+    const op = doc.opened || 0, toRare = G.PITY.rare - (op % G.PITY.rare), toEpic = G.PITY.epic - (op % G.PITY.epic), toLeg = Math.max(1, G.PITY.legend - (doc.pity || 0)), all = Math.max(doc.packsAll || 0, op);
     const best = String(doc.best || "").split("|"), bc = best[0] && cardObj(best[0]), br = best[1] && RAR[best[1]];
     const log = (doc.log || []).slice(-8).reverse();
     const kinds = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté" };
     const bar = (n, tot, lbl, cls) => `<div class="pity ${cls}"><div class="pity-t"><b>${n === 1 ? "Le prochain pack" : "Plus que " + n + " packs"}</b><small>${lbl}</small></div><span class="pity-bar" aria-hidden="true"><u style="width:${Math.round(100 * (tot - n) / tot)}%"></u></span></div>`;
     return `<section class="cg-block cg-pity" aria-label="Chance garantie et historique"><header class="cg-bh"><h3>Chance garantie</h3><span class="cg-sub">sur les packs du jour et les packs bonus</span></header>
-      ${bar(toRare, 10, "contient une carte rare ou mieux, garantie", "rare")}${bar(toEpic, 30, "contient une carte épique ou mieux, garantie", "epic")}
+      ${bar(toRare, G.PITY.rare, "contient une carte rare ou mieux, garantie", "rare")}${bar(toEpic, G.PITY.epic, "contient une carte épique ou mieux, garantie", "epic")}${bar(toLeg, G.PITY.legend, "contient une carte légendaire ou mieux, garantie", "legendary")}
       <div class="pity-stats"><div><b>${all}</b><small>packs ouverts</small></div>${bc && br ? `<div class="pity-best"><b class="${best[1]}">${br.label}</b><small>meilleure pioche : ${C.esc((bc.brand || "") + " " + (bc.model || ""))}</small></div>` : `<div><b>–</b><small>meilleure pioche</small></div>`}</div>
       ${log.length ? `<details class="pity-log"><summary>Historique des derniers packs</summary><ul>${log.map((l) => { const c = cardObj(l.id), rr = RAR[l.r]; return `<li><span class="pl-d">${C.esc(String(l.t || "").slice(5).split("-").reverse().join("/"))}</span><span class="pl-k">${kinds[l.k] || "Pack"}</span><span class="pl-r tcg-rar-chip ${l.r}">${rr ? rr.label : l.r}</span><span class="pl-c">${c ? C.esc((c.brand || "") + " " + (c.model || "")) : ""}</span></li>`; }).join("")}</ul></details>` : ""}</section>`;
   }
@@ -529,7 +652,7 @@
         return `<div class="cg-free">
         <button type="button" class="cg-gift ${canDaily ? "ready" : "off"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="cg-gi">🎁</span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
-      </div>${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
+      </div>${wheelHtml()}${adventHtml()}${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
       <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">2 voitures du pays, dont 1 rare ou mieux · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
   }
 
@@ -754,7 +877,7 @@
       root.innerHTML = `<div class="cg"><div class="cg-top" id="cg-top"></div>
         <div id="cg-shop" role="tabpanel"></div>
         <div id="cg-mine" role="tabpanel" hidden><div id="cg-mine-top"></div>
-          <section class="cg-block" aria-label="Collection"><header class="cg-bh"><h3>Collection</h3><span class="tcg-count" id="tcg-count" aria-live="polite"></span></header>
+          <section class="cg-block" aria-label="Collection"><header class="cg-bh"><h3>Collection</h3><button type="button" class="cg-recycle" data-recycle>♻️ Recycler</button><span class="tcg-count" id="tcg-count" aria-live="polite"></span></header>
             <div class="cg-tools"><input type="search" id="cards-search" placeholder="Rechercher une carte…" aria-label="Rechercher une carte" value="${C.esc(query)}" autocomplete="off">
               <select id="cards-rar" aria-label="Rareté"><option value="all">Toutes raretés</option>${ORDER.map((r) => `<option value="${r}">${RAR[r].label}</option>`).join("")}</select>
               <select id="cards-country" aria-label="Pays"><option value="all">Tous pays</option>${countries}</select>
@@ -826,6 +949,9 @@
     document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (ctx.Router.is("play", { tab: "collection" }) || ctx.Router.is("play", { tab: "boutique" })) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-dust-log]")) { showDustLog(); return; }
+      if (e.target.closest("#cards-root [data-recycle]")) { recycleOpen(); return; }
+      if (e.target.closest("#cards-root [data-wheel]")) { wheelOpen(); return; }
+      const adv = e.target.closest("#cards-root [data-advent]"); if (adv) { adventOpen(Number(adv.dataset.advent)); return; }
       const pk = e.target.closest("[data-pack]");
       if (pk) { openPack(pk.dataset.pack, pk.dataset.shop, pk.dataset.offer === "1"); return; }
       const ct = e.target.closest("#cards-root [data-ctab]");
@@ -864,6 +990,7 @@
       else if (e.target.id === "cards-minp") { minPower = Number(e.target.value) || 0; renderGrid(); }
       else if (e.target.id === "cards-sort") { sortBy = e.target.value; store.set("ma_cards_sort", sortBy); renderGrid(); }
     });
+    shownDay = day(); setInterval(dayWatch, 20000); document.addEventListener("visibilitychange", () => { if (!document.hidden) dayWatch(); });
     document.addEventListener("ma:game", () => { if (doc && (ctx.Router.is("play", { tab: "collection" }) || ctx.Router.is("play", { tab: "boutique" }))) load(true).then(render).catch(() => {}); });
   });
 })();

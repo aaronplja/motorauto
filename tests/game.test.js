@@ -309,6 +309,40 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   ok(db.raw("collections", "ca1").cosm.includes("t:clubwin") && !db.raw("collections", "cb1").cosm.includes("t:clubwin"), "titre de champion aux membres actifs du club gagnant");
   const cdust = db.raw("collections", "ca1").dust; r = await G.clubClash(U1); ok(db.raw("collections", "ca1").dust === cdust, "récompense versée une seule fois");
 
+  // ---- lot 1 : verrou, recyclage, historique, garantie légendaire, roue, Avent
+  {
+    const W = { uid: "w1" }; db.seed("users", "w1", { username: "Pilote_w1" });
+    const ids = pool.map((c) => c.id).filter((id) => PRAR.get(id) === "common").slice(0, 4);
+    db.seed("collections", "w1", Object.assign(core.blankCollection(), { owned: { [ids[0]]: 4, [ids[1]]: 3, [ids[2]]: 1 }, dust: 10 }));
+    r = await G.lockCard(W, { id: ids[1], on: true }); ok(r.doc.locked[ids[1]], "carte verrouillée");
+    await rejects(G.recycleCards(W, { items: [{ id: ids[1], n: 1 }] }), null, "recyclage d'une carte verrouillée refusé");
+    await rejects(G.recycleCards(W, { items: [{ id: ids[0], n: 4 }] }), null, "on garde toujours 1 exemplaire");
+    r = await G.recycleCards(W, { items: [{ id: ids[0], n: 3 }] });
+    ok(r.gain === core.RAR.common.dust * 3 && r.doc.owned[ids[0]] === 1 && r.doc.dust === 10 + r.gain, "recyclage : gain " + r.gain);
+    await rejects(G.proposeTrade(W, { give: ids[1], want: ids[3], to: "u2" }), null, "échange d'une carte verrouillée refusé");
+    // garantie légendaire
+    const dd = db.raw("collections", "w1"); dd.pity = core.PITY.legend - 1; dd.lastPack = ""; db.seed("collections", "w1", dd);
+    r = await G.openPack(W, { kind: "daily" });
+    ok(r.cards.some((x) => ["legendary", "shiny", "mythic"].includes(PRAR.get(x.id))) && r.doc.pity === 0, "30e pack sans légendaire : légendaire garantie, compteur remis à 0");
+    // roue
+    let spin = await G.spinWheel(W); ok(spin.prize && spin.prize.text, "roue : " + spin.prize.text);
+    await rejects(G.spinWheel(W), null, "un seul tour de roue par jour");
+    NOW += 86400000; spin = await G.spinWheel(W); ok(!!spin.prize, "roue rejouable le lendemain");
+    const wr = core.seeded("wheel"); const cnt = {}; for (let i = 0; i < 20000; i++) { const k = core.wheelDraw(wr).k; cnt[k] = (cnt[k] || 0) + 1; }
+    ok(Math.abs(cnt.dust / 200 - 55) < 2 && Math.abs(cnt.pack / 200 - 20) < 2 && Math.abs(cnt.card / 200 - 3) < 1, "répartition de la roue 55/20/10/12/3");
+    // Avent
+    const save = NOW; NOW = Date.parse("2026-11-20T12:00:00+01:00");
+    await rejects(G.openAdvent(W, { day: 1 }), null, "Avent fermé avant décembre");
+    NOW = Date.parse("2026-12-03T09:00:00+01:00"); const b0 = db.raw("collections", "w1").dust;
+    r = await G.openAdvent(W, { day: 3 }); ok(r.doc.advent.o.includes(3) && r.doc.dust > b0, "case 3 ouverte : " + r.text);
+    await rejects(G.openAdvent(W, { day: 3 }), null, "case déjà ouverte");
+    await rejects(G.openAdvent(W, { day: 4 }), null, "case du futur refusée");
+    r = await G.openAdvent(W, { day: 1 }); ok(r.doc.advent.o.length === 2, "rattrapage d'une case passée");
+    NOW = Date.parse("2026-12-24T09:00:00+01:00"); r = await G.openAdvent(W, { day: 24 });
+    ok((db.raw("collections", "w1").owned["sp-noel-2026"] || 0) === 1, "carte de Noël offerte le 24");
+    NOW = save;
+  }
+
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");
   process.exit(fails ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(2); });

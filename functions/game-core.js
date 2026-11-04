@@ -160,14 +160,15 @@
     }
     return "common";
   }
-  /** tire un pack de 3 cartes ; tous les 10 packs, une carte au moins « rare » est garantie, tous les 30 une « épique » */
-  function drawPack(rarities, ids, rng, pity, epicPity) {
+  /** tire un pack de 3 cartes ; tous les 10 packs une carte au moins « rare » est garantie, tous les 15 une « épique », et une « légendaire » après 30 packs sans légendaire */
+  const PITY = { rare: 10, epic: 15, legend: 30 };
+  function drawPack(rarities, ids, rng, pity, epicPity, legendPity) {
     ids = ids.filter((id) => rarities.get(id) !== "mythic");
     const by = {}; ORDER.forEach((r) => { by[r] = []; });
     ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
     const pick = (r) => { const list = by[r].length ? by[r] : (r === "shiny" && by.legendary.length ? by.legendary : ids); return list[Math.floor(rng() * list.length)]; };
     const out = [];
-    for (let i = 0; i < 3; i++) out.push(pick(pickRarity(rng, epicPity && i === 2 ? "epic" : pity && i === 2 ? "rare" : null)));
+    for (let i = 0; i < 3; i++) out.push(pick(pickRarity(rng, i === 2 ? (legendPity ? "legendary" : epicPity ? "epic" : pity ? "rare" : null) : null)));
     if (pity && !out.some((id) => rarities.get(id) !== "common")) out[2] = pick("rare");
     return out;
   }
@@ -218,7 +219,49 @@
     out.push(second);
     return out;
   }
-  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [], pics: {}, picClaims: {}, lv: {}, mis: { day: "", p: {}, done: [] }, offers: { day: "", pack: 0, card: 0 }, log: [], best: "", welcome: false, season: null, cosm: [] });
+
+  // ------------------------------------------------------------------ historique des cartes et verrou
+
+  // ------------------------------------------------------------------ roue quotidienne et calendrier de l'Avent
+  /** roue : 55 % cristaux, 20 % pack bonus, 10 % gel, 12 % points de saison, 3 % carte rare ou épique */
+  const WHEEL = [{ k: "dust", p: 55 }, { k: "pack", p: 20 }, { k: "freeze", p: 10 }, { k: "pts", p: 12 }, { k: "card", p: 3 }];
+  const WHEEL_DUST = [[10, 40], [20, 30], [30, 18], [50, 9], [100, 3]];
+  function wheelDraw(rng) {
+    let x = rng() * 100, k = "dust";
+    for (const w of WHEEL) { if (x < w.p) { k = w.k; break; } x -= w.p; }
+    if (k === "dust") { let y = rng() * 100, n = 10; for (const [v, p] of WHEEL_DUST) { if (y < p) { n = v; break; } y -= p; } return { k, n }; }
+    if (k === "pack") return { k, n: 1 };
+    if (k === "freeze") return { k, n: 1 };
+    if (k === "pts") return { k, n: rng() < 0.7 ? 20 : 40 };
+    return { k, rarity: rng() < 0.7 ? "rare" : "epic" };
+  }
+  const wheelLabel = (r) => (r.k === "dust" ? r.n + " cristaux" : r.k === "pack" ? "1 pack bonus" : r.k === "freeze" ? "1 gel de série" : r.k === "pts" ? r.n + " points de saison" : "une carte " + (r.rarity === "epic" ? "épique" : "rare"));
+  /** Avent : cases 1 à 24 ouvrables du 1er au 24 décembre (heure de Paris), puis rattrapables jusqu'au 31 */
+  function adventToday(ms) {
+    const k = dayKey(ms), y = Number(k.slice(0, 4)), m = Number(k.slice(5, 7)), d = Number(k.slice(8, 10));
+    return m === 12 ? { y, d: Math.min(d, 24), over: d > 24 } : null;
+  }
+  function adventReward(n) {
+    if (n === 24) return { dust: 250, bonus: 2, card: true };
+    const r = { dust: 15 + n * 3 };
+    if (n % 6 === 0) r.bonus = 1;
+    if (n === 9 || n === 15 || n === 21) r.freeze = 1;
+    if (n % 6 === 3) r.pts = 20;
+    return r;
+  }
+  const adventLabel = (r) => [r.dust && r.dust + " cristaux", r.bonus && r.bonus + " pack" + (r.bonus > 1 ? "s" : "") + " bonus", r.freeze && "1 gel de série", r.pts && r.pts + " points de saison", r.card && "la carte de Noël"].filter(Boolean).join(" + ");
+  const HIST_MAX = 6;
+  const HIST_LABEL = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté", craft: "Fabriquée", offer: "Carte du jour", fuse: "Fusion", trade: "Échange", market: "Marché", pass: "Pass de saison", album: "Album", gift: "Cadeau", wheel: "Roue", advent: "Avent" };
+  /** note l'arrivée d'un exemplaire : n = total d'exemplaires passés entre tes mains, e = 6 dernières origines [date, code] */
+  function histAdd(d, id, code, ms) {
+    if (!d || !id) return;
+    d.hist = d.hist || {};
+    const h = d.hist[id] || (d.hist[id] = { n: 0, e: [] });
+    h.n = (h.n || 0) + 1; h.e = (h.e || []).concat([[ms || Date.now(), String(code || "pack").slice(0, 8)]]).slice(-HIST_MAX);
+  }
+  const isLocked = (d, id) => !!(d && d.locked && d.locked[id]);
+  const RECYCLE_MAX = 60;
+  const blankCollection = () => ({ owned: {}, count: 0, specials: 0, dust: 0, lastPack: "", bonus: 1, claimed: [], opened: 0, trades: 0, chal: 0, dustLog: [], pics: {}, picClaims: {}, lv: {}, mis: { day: "", p: {}, done: [] }, offers: { day: "", pack: 0, card: 0 }, log: [], best: "", welcome: false, season: null, cosm: [], locked: {}, hist: {}, pity: 0 });
 
   // ------------------------------------------------------------------ cartes à plusieurs images
   /** clé courte et stable d'une image (ne change pas si l'administrateur réordonne la galerie) */
@@ -808,7 +851,7 @@
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     setsOf, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
+    WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
     SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };

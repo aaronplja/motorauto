@@ -38,7 +38,7 @@
     async function isKnownCard(pool, id) { return pool.byId.has(id) || (core.isSpecial(id) && !!(await specialCard(id))); }
 
     // ---------------------------------------------------------------- petits utilitaires
-    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()) });
+    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
     /** historique des cristaux (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
     function dustMove(d, n, why) {
       if (!n) return;
@@ -158,7 +158,7 @@
           if (d.dust < def.cost) fail("failed-precondition", "Il te faut " + def.cost + " cristaux pour ce pack (tu en as " + d.dust + ").");
           dustMove(d, -def.cost, def.country ? def.label + " acheté" : "Pack acheté");
         }
-        const ids = kind === "shop" ? core.drawShopPack(pool.rar, src, rng, def.min) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % 10 === 0, (d.opened + 1) % 30 === 0);
+        const ids = kind === "shop" ? core.drawShopPack(pool.rar, src, rng, def.min) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % core.PITY.rare === 0, (d.opened + 1) % core.PITY.epic === 0, (d.pity || 0) + 1 >= core.PITY.legend);
         let dust = 0, bonus = 0;
         d.pics = d.pics || {}; d.picClaims = d.picClaims || {};
         const cards = ids.map((id) => {
@@ -174,7 +174,7 @@
               return { id, fresh: false, rarity: rar, newPic: pick, picN: d.pics[id].length, picTotal: keys.length, reward: rw.gain };
             }
           }
-          d.owned[id] = had + 1;
+          d.owned[id] = had + 1; core.histAdd(d, id, kind === "shop" ? "shop" : kind, now());
           if (had === 0 && keys.length) d.pics[id] = [keys[0]];
           if (had > 0) dust += core.RAR[rar].dust;
           return { id, fresh: had === 0, rarity: rar, picTotal: keys.length };
@@ -185,6 +185,7 @@
           const m1 = bump(d, "open"), m2 = kind === "shop" ? bump(d, "shop", def.country || "world") : { gain: 0, names: [] }, m3 = offerUsed ? bump(d, "offer") : { gain: 0, names: [] };
           missions = { gain: m1.gain + m2.gain + m3.gain, names: m1.names.concat(m2.names, m3.names) };
         }
+        if (kind === "daily" || kind === "bonus") d.pity = cards.some((c) => c.rarity === "legendary" || c.rarity === "shiny" || c.rarity === "mythic") ? 0 : (d.pity || 0) + 1;
         if (kind !== "test") packLog(d, kind, cards, today);
         if (kind !== "test") { core.seasonAdd(d, core.SEASON_PTS.pack, { packs: 1 }, now()); }
         if (kind === "shop") { writeCol(tx, uid, d); return { cards, dust, bonus, missions, doc: view(d) }; }   // n'entre ni dans les packs ouverts, ni dans les défis
@@ -212,7 +213,7 @@
         }
         if ((d.owned[id] || 0) > 0) fail("failed-precondition", "Tu possèdes déjà cette carte.");
         if (d.dust < cost) fail("failed-precondition", "Il te faut " + cost + " cristaux (tu en as " + d.dust + ").");
-        dustMove(d, -cost, offerUsed ? "Carte du jour achetée" : "Carte fabriquée"); d.owned[id] = 1;
+        dustMove(d, -cost, offerUsed ? "Carte du jour achetée" : "Carte fabriquée"); d.owned[id] = 1; core.histAdd(d, id, offerUsed ? "offer" : "craft", now());
         const missions = offerUsed ? bump(d, "offer") : { gain: 0, names: [] };
         core.seasonAdd(d, core.SEASON_PTS.craft, null, now());
         writeCol(tx, uid, d);
@@ -252,7 +253,7 @@
           done[st.id] = now(); won.push({ id: st.id, name: st.name, reward: st.reward, legend: st.legend || "" });
           if (st.legend && pool.byId.has(st.legend)) {
             if ((d.owned[st.legend] || 0) > 0) dustMove(d, core.RAR.mythic.dust, "Légende déjà possédée");
-            else { d.owned[st.legend] = 1; legends.push(st.legend); }
+            else { d.owned[st.legend] = 1; core.histAdd(d, st.legend, "album", now()); legends.push(st.legend); }
           }
         });
         if (!won.length) return { claimed: [], legends: [], doc: view(d), done };
@@ -318,9 +319,9 @@
             const offer = core.legendOffer(pool.ids, pool.rar, d.owned, uid, sn.n), pick = String((data && data.pick) || "");
             if (!pick) return { need: "pick", offer, doc: view(d) };
             if (offer.indexOf(pick) < 0) fail("invalid-argument", "Cette carte ne fait pas partie de ton choix.");
-            d.owned[pick] = (d.owned[pick] || 0) + 1; extra.push(pick);
+            d.owned[pick] = (d.owned[pick] || 0) + 1; core.histAdd(d, pick, "pass", now()); extra.push(pick);
           }
-          if (r.epic) { const id = core.epicPick(pool.ids, pool.rar, d.owned, uid, sn.n, t); if (id) { d.owned[id] = (d.owned[id] || 0) + 1; extra.push(id); } }
+          if (r.epic) { const id = core.epicPick(pool.ids, pool.rar, d.owned, uid, sn.n, t); if (id) { d.owned[id] = (d.owned[id] || 0) + 1; core.histAdd(d, id, "pass", now()); extra.push(id); } }
           sn.claimed.push(t);
           let dust = r.dust, fz = null;
           if (r.freeze) {
@@ -353,6 +354,59 @@
         return { text, cards, doc: view(d) };
       });
     }
+    // ---------------------------------------------------------------- roue quotidienne et calendrier de l'Avent
+    async function giveFreezeTx(tx, uid, pre) {
+      const ref = col("streaks").doc(uid), cur = pre.exists ? pre.data() : { days: 0, best: 0, last: "" };
+      if ((cur.freezes || 0) >= core.FREEZE_MAX) return false;
+      tx.set(ref, Object.assign({}, cur, { freezes: (cur.freezes || 0) + 1, updatedAt: ts() })); return true;
+    }
+    async function spinWheel(caller) {
+      const uid = caller.uid, today = core.dayKey(now()), pool = await getPool();
+      return db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid), ss = await tx.get(col("streaks").doc(uid));
+        if (d.wheelDay === today) fail("failed-precondition", "Tu as déjà tourné la roue aujourd'hui. Reviens à minuit !");
+        const res = core.wheelDraw(rng); let text = core.wheelLabel(res), cardId = "", fell = 0;
+        if (res.k === "dust") dustMove(d, res.n, "Roue du jour");
+        else if (res.k === "pack") d.bonus = (d.bonus || 0) + 1;
+        else if (res.k === "freeze") { if (!(await giveFreezeTx(tx, uid, ss))) { fell = 50; dustMove(d, fell, "Roue du jour"); text = "50 cristaux (stock de gels plein)"; } }
+        else if (res.k === "pts") core.seasonAdd(d, res.n, null, now(), true);
+        else {
+          const all = pool.ids.filter((id) => pool.rar.get(id) === res.rarity).sort(), fresh = all.filter((id) => !(d.owned[id] > 0)), from = fresh.length ? fresh : all;
+          if (from.length) { cardId = from[Math.floor(rng() * from.length) % from.length]; d.owned[cardId] = (d.owned[cardId] || 0) + 1; core.histAdd(d, cardId, "wheel", now()); }
+          else { dustMove(d, 100, "Roue du jour"); text = "100 cristaux"; }
+        }
+        d.wheelDay = today; d.wheelN = (d.wheelN || 0) + 1;
+        writeCol(tx, uid, d);
+        return { prize: Object.assign({ text, cardId }, res), doc: view(d) };
+      });
+    }
+    async function openAdvent(caller, data) {
+      const uid = caller.uid, at = core.adventToday(now()), n = Math.floor(Number(data && data.day));
+      if (!at) fail("failed-precondition", "Le calendrier de l'Avent ouvre le 1er décembre.");
+      if (!(n >= 1 && n <= 24)) fail("invalid-argument", "Case inconnue.");
+      if (n > at.d) fail("failed-precondition", "Cette case ouvre le " + n + " décembre.");
+      const reward = core.adventReward(n), cid = "sp-noel-" + at.y;
+      if (reward.card) {
+        const sref = col("special_cards").doc(cid), cs = await sref.get();
+        if (!cs.exists) await sref.set({ name: "Carte de Noël " + at.y, edition: "Calendrier de l'Avent " + at.y, image: "", images: [], text: "Offerte aux pilotes qui ont ouvert la dernière case du calendrier de l'Avent.", supply: 0, granted: 0, active: true, kind: "advent", color: "gold", createdAt: ts() });
+      }
+      const out = await db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid), ss = await tx.get(col("streaks").doc(uid));
+        const av = d.advent && d.advent.y === at.y ? d.advent : { y: at.y, o: [] };
+        if (av.o.indexOf(n) >= 0) fail("already-exists", "Case déjà ouverte.");
+        av.o = av.o.concat([n]); d.advent = av;
+        if (reward.dust) dustMove(d, reward.dust, "Avent, case " + n);
+        if (reward.bonus) d.bonus = (d.bonus || 0) + reward.bonus;
+        let fz = reward.freeze ? await giveFreezeTx(tx, uid, ss) : true;
+        if (reward.freeze && !fz) dustMove(d, 75, "Avent, case " + n);
+        if (reward.pts) core.seasonAdd(d, reward.pts, null, now(), true);
+        writeCol(tx, uid, d);
+        return { reward, doc: view(d) };
+      });
+      if (reward.card) await adminGrantCard({ uid: "system", system: true }, { uid, cardId: cid, qty: 1 }).catch(() => {});
+      return Object.assign(out, { text: core.adventLabel(reward) });
+    }
+
     /** pack de bienvenue : une seule fois par compte */
     async function claimWelcome(caller) {
       const uid = caller.uid;
@@ -523,6 +577,7 @@
       const fromName = (await nameOf(uid)) || caller.name || "Pilote";
       const [a, b] = await Promise.all([col("collections").doc(uid).get(), col("collections").doc(to).get()]);
       const mine = a.exists ? a.data().owned || {} : {}, theirs = b.exists ? b.data().owned || {} : {};
+      if (a.exists && a.data().locked && a.data().locked[give]) fail("failed-precondition", "🔒 Cette carte est verrouillée : déverrouille-la pour l'échanger.");
       if ((mine[give] || 0) < 2) fail("failed-precondition", "Tu ne peux échanger qu'un doublon : tu n'as qu'un exemplaire de cette carte.");
       if ((mine[want] || 0) > 0) fail("failed-precondition", "Tu possèdes déjà la carte demandée.");
       if ((theirs[want] || 0) < 2) fail("failed-precondition", "Ce pilote n'a pas cette carte en double.");
@@ -574,12 +629,16 @@
         if (!accept) { tx.update(ref, { status: "declined", updatedAt: ts() }); return; }
         const from = await readCol(tx, t.fromUid), to = await readCol(tx, uid);
         const wf = await readWeekly(tx, t.fromUid, wk), wt = await readWeekly(tx, uid, wk);
+        if (core.isLocked(from, t.give) || core.isLocked(to, t.want)) {
+          ok = false; msg = "Une des cartes est verrouillée : échange annulé.";
+          tx.update(ref, { status: "cancelled", updatedAt: ts() }); return;
+        }
         if ((from.owned[t.give] || 0) < 2 || (to.owned[t.want] || 0) < 2 || (from.owned[t.want] || 0) > 0) {
           ok = false; msg = "Les cartes ne sont plus disponibles : proposition annulée.";
           tx.update(ref, { status: "cancelled", updatedAt: ts() }); return;
         }
-        from.owned[t.give]--; from.owned[t.want] = (from.owned[t.want] || 0) + 1;
-        to.owned[t.want]--; to.owned[t.give] = (to.owned[t.give] || 0) + 1;
+        from.owned[t.give]--; from.owned[t.want] = (from.owned[t.want] || 0) + 1; core.histAdd(from, t.want, "trade", now());
+        to.owned[t.want]--; to.owned[t.give] = (to.owned[t.give] || 0) + 1; core.histAdd(to, t.give, "trade", now());
         from.trades = (from.trades || 0) + 1; to.trades = (to.trades || 0) + 1; wf.trades++; wt.trades++;
         bump(from, "trade"); bump(to, "trade");
         core.seasonAdd(from, core.SEASON_PTS.trade, null, now()); core.seasonAdd(to, core.SEASON_PTS.trade, null, now());
@@ -790,7 +849,7 @@
       if (!candidates.length) fail("unavailable", "Aucune carte de cette rareté n'est disponible pour l'instant.");
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid), g = await readStats(tx, uid);
-        const spare = (id) => (core.isSpecial(id) || pool.rar.get(id) !== from ? 0 : Math.max(0, (d.owned[id] || 0) - 1));
+        const spare = (id) => (core.isSpecial(id) || core.isLocked(d, id) || pool.rar.get(id) !== from ? 0 : Math.max(0, (d.owned[id] || 0) - 1));
         let used = [];
         if (chosen && chosen.length) {
           if (chosen.length !== core.FUSE_COUNT) fail("invalid-argument", "Choisis exactement " + core.FUSE_COUNT + " doublons.");
@@ -805,10 +864,46 @@
         used.forEach((id) => { d.owned[id]--; });
         const fresh = candidates.filter((id) => !(d.owned[id] > 0)), bag = fresh.length ? fresh : candidates;
         const got = bag[Math.floor(rng() * bag.length)];
-        d.owned[got] = (d.owned[got] || 0) + 1; g.fuse++;
+        d.owned[got] = (d.owned[got] || 0) + 1; core.histAdd(d, got, "fuse", now()); g.fuse++;
         core.seasonAdd(d, core.SEASON_PTS.fuse, null, now());
         writeCol(tx, uid, d); writeStats(tx, uid, g);
         return { from, to, used, got, isNew: fresh.length > 0, fuse: g.fuse, doc: view(d) };
+      });
+    }
+
+
+    // ---------------------------------------------------------------- verrou et recyclage de doublons
+    async function lockCard(caller, data) {
+      const uid = caller.uid, id = str(data && data.id, 90), on = !(data && data.on === false), pool = await getPool();
+      if (!(await isKnownCard(pool, id))) fail("not-found", "Carte inconnue.");
+      return db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid);
+        if (!(d.owned[id] > 0)) fail("failed-precondition", "Tu ne possèdes pas cette carte.");
+        d.locked = d.locked || {};
+        if (on) { if (Object.keys(d.locked).length >= 400) fail("resource-exhausted", "Trop de cartes verrouillées (400 maximum)."); d.locked[id] = 1; } else delete d.locked[id];
+        writeCol(tx, uid, d);
+        return { locked: on, doc: view(d) };
+      });
+    }
+    /** recycle des doublons choisis : [{ id, n }] → cristaux (on garde toujours 1 exemplaire ; les cartes verrouillées sont refusées) */
+    async function recycleCards(caller, data) {
+      const uid = caller.uid, pool = await getPool();
+      const items = (Array.isArray(data && data.items) ? data.items : []).slice(0, core.RECYCLE_MAX).map((x) => ({ id: str(x && x.id, 90), n: Math.max(1, Math.min(50, Math.floor(Number(x && x.n) || 1))) }));
+      if (!items.length) fail("invalid-argument", "Choisis au moins un doublon à recycler.");
+      return db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid); let gain = 0, count = 0; const seen = {};
+        items.forEach((it) => {
+          if (seen[it.id]) fail("invalid-argument", "Carte choisie deux fois."); seen[it.id] = 1;
+          if (core.isSpecial(it.id) || !pool.byId.has(it.id)) fail("invalid-argument", "Cette carte ne se recycle pas.");
+          if (core.isLocked(d, it.id)) fail("failed-precondition", "🔒 Une carte choisie est verrouillée.");
+          const spare = Math.max(0, (d.owned[it.id] || 0) - 1);
+          if (it.n > spare) fail("failed-precondition", "Tu n'as pas autant de doublons de cette carte.");
+          const rar = pool.rar.get(it.id);
+          d.owned[it.id] -= it.n; gain += core.RAR[rar].dust * it.n; count += it.n;
+        });
+        dustMove(d, gain, "Recyclage de " + count + " doublon" + (count > 1 ? "s" : ""));
+        writeCol(tx, uid, d);
+        return { gain, count, doc: view(d) };
       });
     }
 
@@ -876,6 +971,7 @@
       const name = (await nameOf(uid)) || caller.name || "Pilote", label = await cardLabel(pool, cardId), ref = col("card_listings").doc();
       await db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid);
+        if (core.isLocked(d, cardId)) fail("failed-precondition", "🔒 Cette carte est verrouillée : déverrouille-la pour la vendre.");
         if ((d.owned[cardId] || 0) < 2) fail("failed-precondition", "Tu ne peux vendre qu'un doublon : tu n'as qu'un exemplaire de cette carte.");
         d.owned[cardId]--; writeCol(tx, uid, d);
         tx.set(ref, { uid, name, cardId, label, rar, price, status: "open", createdAt: ts() });
@@ -899,7 +995,7 @@
         const buyer = await readCol(tx, uid), seller = await readCol(tx, l.uid), gb = await readStats(tx, uid), gs = await readStats(tx, l.uid);
         if (buyer.dust < l.price) fail("failed-precondition", "Il te faut " + l.price + " cristaux (tu en as " + buyer.dust + ").");
         net = core.marketNet(l.price);
-        dustMove(buyer, -l.price, "Marché : achat"); buyer.owned[l.cardId] = (buyer.owned[l.cardId] || 0) + 1; gb.bought++;
+        dustMove(buyer, -l.price, "Marché : achat"); buyer.owned[l.cardId] = (buyer.owned[l.cardId] || 0) + 1; core.histAdd(buyer, l.cardId, "market", now()); gb.bought++;
         dustMove(seller, net, "Marché : vente"); gs.sold++;
         writeCol(tx, uid, buyer); writeCol(tx, l.uid, seller); writeStats(tx, uid, gb); writeStats(tx, l.uid, gs);
         tx.update(ref, { status: "sold", buyerUid: uid, soldAt: ts() });
@@ -955,7 +1051,7 @@
       return sent;
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, _getPool: getPool };
+    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, _getPool: getPool };
   }
   return { createGame, GameError };
 });
