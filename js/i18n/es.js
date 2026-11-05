@@ -1041,5 +1041,12 @@
 "Choisis au moins une photo.": "Elige al menos una foto.",
 "Supprimer cette photo de l'album ?": "¿Eliminar esta foto del álbum?",
 "Aucun pilote nommé @": "Ningún piloto llamado @",
-"pays": "país"
+"pays": "país",
+"Salut": "Hola",
+"Cristaux": "Cristales",
+"Reviens chaque jour": "Vuelve cada día",
+"Ouvrir mon pack du jour": "Abrir mi sobre del día",
+"Ouvrir un pack bonus": "Abrir un sobre extra",
+"Voir ma collection": "Ver mi colección",
+"pilote": "piloto"
 }]);

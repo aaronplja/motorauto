@@ -1041,5 +1041,12 @@
 "Choisis au moins une photo.": "Choose at least one photo.",
 "Supprimer cette photo de l'album ?": "Delete this photo from the album?",
 "Aucun pilote nommé @": "No driver named @",
-"pays": "country"
+"pays": "country",
+"Salut": "Hi",
+"Cristaux": "Crystals",
+"Reviens chaque jour": "Come back every day",
+"Ouvrir mon pack du jour": "Open my daily pack",
+"Ouvrir un pack bonus": "Open a bonus pack",
+"Voir ma collection": "View my collection",
+"pilote": "driver"
 }]);

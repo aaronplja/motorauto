@@ -1041,5 +1041,12 @@
 "Choisis au moins une photo.": "Wähle mindestens ein Foto.",
 "Supprimer cette photo de l'album ?": "Dieses Foto aus dem Album löschen?",
 "Aucun pilote nommé @": "Kein Fahrer namens @",
-"pays": "Land"
+"pays": "Land",
+"Salut": "Hallo",
+"Cristaux": "Kristalle",
+"Reviens chaque jour": "Komm jeden Tag wieder",
+"Ouvrir mon pack du jour": "Mein Tagespaket öffnen",
+"Ouvrir un pack bonus": "Bonuspaket öffnen",
+"Voir ma collection": "Meine Sammlung ansehen",
+"pilote": "Fahrer"
 }]);

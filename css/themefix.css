@@ -149,3 +149,41 @@
 .mi-new,.mi-hundred{width:1.5em}
 .mi-star_c,.mi-star_o,.mi-heart_c,.mi-heart_o,.mi-check,.mi-cross,.mi-sparkle_c,.mi-caret_d,.mi-play,.mi-play_l,.mi-dot_k{width:1em;height:1em;vertical-align:-.12em}
 button .mi,.btn .mi,a .mi{pointer-events:none}
+
+/* ===== Accueil « Garage » (js/garage-home.js) — uniquement les couleurs des thèmes ===== */
+.gh{padding-top:1.1rem;padding-bottom:.4rem}
+.gh-k{font-size:.72rem;letter-spacing:.18em;font-weight:800;text-transform:uppercase;color:var(--accent)}
+.gh-title{font-size:clamp(1.7rem,6vw,2.4rem);font-weight:900;letter-spacing:-.03em;margin:.15rem 0 .8rem;color:var(--color-ink)}
+.gh-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
+@media(min-width:760px){.gh-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.gh-tile{position:relative;display:flex;flex-direction:column;gap:.15rem;padding:.9rem 1rem;border-radius:20px;border:1px solid var(--stroke-line);background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));color:var(--color-ink);text-decoration:none;min-height:112px;overflow:hidden;transition:transform var(--m-fast,.18s) var(--m-spring,ease),border-color .2s}
+.gh-tile:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 55%,var(--stroke-line))}
+.gh-tile:active{transform:scale(.98)}
+.gh-lab{font-size:.74rem;color:var(--color-muted);font-weight:600}
+.gh-num{font-size:clamp(1.8rem,7vw,2.3rem);font-weight:900;letter-spacing:-.04em;line-height:1.05;font-variant-numeric:tabular-nums}
+.gh-num i{font-style:normal;font-size:.5em;font-weight:700;color:var(--color-muted);margin-left:.3em;letter-spacing:0}
+.gh-row{display:flex;align-items:center;gap:.4rem}.gh-row .mi{width:.85em;height:.85em}
+.gh-tile small{font-size:.74rem;color:var(--color-muted)}
+.gh-ring{position:absolute;right:.7rem;top:.7rem;width:46px;height:46px;transform:rotate(-90deg)}
+.gh-ring circle{fill:none;stroke-width:3.4}.gh-ring-bg{stroke:color-mix(in srgb,var(--color-ink) 12%,transparent)}.gh-ring-fg{stroke:var(--accent);stroke-linecap:round;transition:stroke-dasharray .8s var(--m-smooth,ease)}
+.gh-bar{display:block;height:6px;border-radius:6px;background:color-mix(in srgb,var(--color-ink) 12%,transparent);margin-top:auto;overflow:hidden}.gh-bar u{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),#fbbf24);text-decoration:none}
+.gh-cta{display:flex;align-items:center;justify-content:center;gap:.6rem;margin-top:.8rem;height:56px;border-radius:28px;font-weight:800;text-decoration:none;color:var(--color-ink);border:1px solid var(--stroke-line);background:var(--bg-elevated)}
+.gh-cta .mi{width:1.3em;height:1.3em}
+.gh-cta.ready{color:var(--on-accent,#fff);border-color:transparent;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 65%,#000));box-shadow:0 10px 28px color-mix(in srgb,var(--accent) 38%,transparent)}
+.gh-cta:active{transform:scale(.985)}
+.gh-links{display:flex;gap:.5rem;margin-top:.7rem;overflow-x:auto;scrollbar-width:none;padding-bottom:.2rem}.gh-links::-webkit-scrollbar{display:none}
+.gh-links a{display:inline-flex;align-items:center;gap:.4rem;flex:none;padding:.5rem .85rem;border-radius:99px;border:1px solid var(--stroke-line);background:var(--bg-surface);color:var(--color-ink);text-decoration:none;font-weight:700;font-size:.85rem}
+/* pilotes connectés : on remplace le grand hero par le Garage et on range les blocs par priorité */
+html.ma-garage #page-home .hero-stage{display:none}
+html.ma-garage #page-home.page.active,html.ma-garage #page-home:not([hidden]){display:flex;flex-direction:column}
+html.ma-garage #page-home>#home-garage{order:1}
+html.ma-garage #page-home>#cod-home{order:2}
+html.ma-garage #page-home>#home-contest{order:3}
+html.ma-garage #page-home>#home-play-sec{order:4}
+html.ma-garage #page-home>section:has(#home-events){order:5}
+html.ma-garage #page-home>#home-feed-sec{order:6}
+html.ma-garage #page-home>section:has(#home-community){order:7}
+html.ma-garage #page-home>.brand-marquee{order:8}
+html.ma-garage #page-home>section:has(.cta-band){display:none}
+@media(prefers-reduced-motion:reduce){.gh-tile,.gh-ring-fg{transition:none}}
+html.ma-garage #page-home>#cod-home{width:min(var(--st-w,1360px),100% - 2rem);max-width:none;margin-inline:auto;padding:0}
