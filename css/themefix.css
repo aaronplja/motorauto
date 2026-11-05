@@ -175,7 +175,7 @@ button .mi,.btn .mi,a .mi{pointer-events:none}
 .gh-links a{display:inline-flex;align-items:center;gap:.4rem;flex:none;padding:.5rem .85rem;border-radius:99px;border:1px solid var(--stroke-line);background:var(--bg-surface);color:var(--color-ink);text-decoration:none;font-weight:700;font-size:.85rem}
 /* pilotes connectés : on remplace le grand hero par le Garage et on range les blocs par priorité */
 html.ma-garage #page-home .hero-stage{display:none}
-html.ma-garage #page-home.page.active,html.ma-garage #page-home:not([hidden]){display:flex;flex-direction:column}
+html.ma-garage #page-home.page-on{display:flex;flex-direction:column}
 html.ma-garage #page-home>#home-garage{order:1}
 html.ma-garage #page-home>#cod-home{order:2}
 html.ma-garage #page-home>#home-contest{order:3}
