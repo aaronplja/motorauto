@@ -1054,5 +1054,11 @@
 "Voir les voitures": "Ver coches",
 "Carte possédée": "Carta conseguida",
 "Carte à gagner": "Carta por ganar",
-"Parcourir le catalogue": "Explorar el catálogo"
+"Parcourir le catalogue": "Explorar el catálogo",
+"Bannière du profil": "Banner del perfil",
+"Choisis une photo parmi mes voitures": "Elige una foto de mis coches",
+"Ajoute d'abord une voiture avec photo dans « Mes voitures » pour la choisir ici.": "Primero añade un coche con foto en «Mis coches» para elegirlo aquí.",
+"Bannière choisie : pense à enregistrer ton profil.": "Banner elegido: no olvides guardar tu perfil.",
+"Voiture": "Coche",
+"Classeur": "Archivador"
 }]);

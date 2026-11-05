@@ -78,3 +78,19 @@
     setInterval(() => { if (document.getElementById("page-home") && !document.hidden) paint(); }, 4000);
   });
 })();
+
+/** écran de chargement : retiré dès que le catalogue et la connexion sont prêts (ou après 8 s au plus) */
+(function () {
+  "use strict";
+  const el = () => document.getElementById("boot-splash");
+  let gone = false, t0 = Date.now();
+  function hide() {
+    if (gone) return; gone = true; const e = el(); if (!e) return;
+    const wait = Math.max(0, 600 - (Date.now() - t0));
+    setTimeout(() => { e.classList.add("out"); setTimeout(() => e.remove(), 520); }, wait);
+  }
+  setTimeout(hide, 8000);
+  (window.MAModules = window.MAModules || []).push(function (ctx) {
+    Promise.all([ctx.authReady, ctx.catReady]).then(() => setTimeout(hide, 250), hide);
+  });
+})();

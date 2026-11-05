@@ -875,7 +875,7 @@
     if (sig !== gridSig) { gridSig = sig; gridPage = 0; }
     if (gridPage * PAGE >= curList.length) gridPage = Math.max(0, Math.ceil(curList.length / PAGE) - 1);
     const cnt = document.getElementById("tcg-count"); if (cnt) cnt.textContent = curList.length + " carte" + (curList.length > 1 ? "s" : "");
-    el.className = "tcg-grid" + (view === "compact" ? " compact" : "");
+    el.className = "tcg-grid" + (view === "compact" ? " compact" : view === "binder" ? " binder" : "");
     const sp = Array.from(specials.values()).filter((s) => (filter === "all" ? (countOf(s.id) > 0 || (s.claimable && s.active !== false)) : filter === "owned" ? countOf(s.id) > 0 : false) && rarFilter === "all" && countryFilter === "all" && !minPower && sortBy === "num");
     const sn = seenSet();
     el.innerHTML = sp.length && !query ? `<div class="tcg-sec">✦ Éditions limitées</div>${sp.map((s) => cardHtml(cardObj(s.id), { owned: countOf(s.id) > 0, count: countOf(s.id), isNew: countOf(s.id) > 0 && !sn.has(s.id), lv: lvOf(s.id) })).join("")}<div class="tcg-sec">Catalogue</div>` : "";
@@ -925,7 +925,7 @@
               <select id="cards-minp" aria-label="Puissance minimale">${[[0, "Toute puissance"], [150, "150 ch et +"], [300, "300 ch et +"], [500, "500 ch et +"], [800, "800 ch et +"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
               <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : rareté"], ["owned", "Tri : doublons d'abord"], ["level", "Tri : niveau"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
             <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"], ["circuits", "🏁 Circuits et livrées"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}
-              <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>
+              <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"], ["binder", "Classeur"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>
             <div class="tcg-grid" id="tcg-grid"></div></section></div></div>`;
     }
     syncToolbar(); renderHero(); if (ctab === "mine") renderGrid();

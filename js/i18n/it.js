@@ -1054,5 +1054,11 @@
 "Voir les voitures": "Mostra le auto",
 "Carte possédée": "Carta posseduta",
 "Carte à gagner": "Carta da vincere",
-"Parcourir le catalogue": "Sfoglia il catalogo"
+"Parcourir le catalogue": "Sfoglia il catalogo",
+"Bannière du profil": "Banner del profilo",
+"Choisis une photo parmi mes voitures": "Scegli una foto tra le mie auto",
+"Ajoute d'abord une voiture avec photo dans « Mes voitures » pour la choisir ici.": "Aggiungi prima un'auto con foto in «Le mie auto» per sceglierla qui.",
+"Bannière choisie : pense à enregistrer ton profil.": "Banner scelto: ricorda di salvare il profilo.",
+"Voiture": "Auto",
+"Classeur": "Raccoglitore"
 }]);

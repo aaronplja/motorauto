@@ -91,6 +91,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 <script>try{var d=document.documentElement,sa=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true,co=window.matchMedia&&matchMedia("(pointer: coarse)").matches;if((sa||co)&&!sessionStorage.getItem("ma_splash")){sessionStorage.setItem("ma_splash","1");d.classList.add("splash-on")}}catch(e){}</script>
 </head>
 <body>
+<div id="boot-splash" aria-hidden="true"><div class="bs-wrap"><svg viewBox="0 0 120 120" class="bs-gauge"><circle cx="60" cy="60" r="52" class="bs-ring"/><path d="M23.2 96.8A52 52 0 1 1 96.8 96.8" class="bs-arc"/><g class="bs-needle"><path d="M60 60L60 24"/></g><circle cx="60" cy="60" r="5" class="bs-hub"/></svg><div class="bs-logo">MOTOR<b>AUTO</b></div><div class="bs-bar"><i></i></div></div></div>
+<script>(function(){try{var h=location.hash;if(h&&h!=="#"&&h!=="#/"){var e=document.getElementById("boot-splash");if(e)e.remove()}}catch(e){}})()</script>
   <div id="splash" aria-hidden="true"><svg class="sp-mark" viewBox="180 280 660 466" xmlns="http://www.w3.org/2000/svg"><polygon class="sp-bar1" points="415,288 544,288 320,736 192,736"/><polygon class="sp-bar2" points="703,288 832,288 608,736 480,736"/></svg><div class="sp-word"><span class="sp-m"><i style="--n:0">M</i><i style="--n:1">O</i><i style="--n:2">T</i><i style="--n:3">O</i><i style="--n:4">R</i></span><span class="sp-a"><i style="--n:5">A</i><i style="--n:6">U</i><i style="--n:7">T</i><i style="--n:8">O</i></span></div><i class="sp-line"></i></div>
   <script>(function(){var h=document.documentElement,s=document.getElementById("splash");if(!s)return;function end(){h.classList.remove("splash-on")}setTimeout(end,1550);s.addEventListener("pointerdown",end)})()</script>
   <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
@@ -235,15 +237,6 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <section class="stage-shell home-section home-contest" id="home-contest" hidden></section>
 
-  <section class="stage-shell home-section" id="home-play-sec">
-    <div class="section-head"><div><h2 class="section-title">À essayer</h2><p class="count-stream">Voiture du jour, duels, cartes à collectionner</p></div></div>
-    <div id="home-daily" class="daily-wrap"></div>
-    <div class="play-tiles">
-      <a class="play-tile" href="#/duel"><b>🏁 Duel</b><small>0-100 et 400 m en course</small></a>
-      <a class="play-tile" href="#/jouer/boutique"><b>🃏 Cartes</b><small>Un pack gratuit par jour</small></a>
-      <a class="play-tile" href="#/clubs"><b>🛡 Clubs</b><small>Par marque ou par région</small></a>
-    </div>
-  </section>
 
 
   <section class="stage-shell home-section">
@@ -1465,6 +1458,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/car-of-day.js"></script>
   <script defer src="js/garage-home.js"></script>
   <script defer src="js/catalog-ui.js"></script>
+  <script defer src="js/fab-pack.js"></script>
+  <script defer src="js/profile-banner.js"></script>
   <script defer src="js/sheet-swipe.js"></script>
   <script defer src="js/club-clash.js"></script>
   <script defer src="js/mentor.js"></script>

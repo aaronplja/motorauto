@@ -1054,5 +1054,11 @@
 "Voir les voitures": "View cars",
 "Carte possédée": "Card owned",
 "Carte à gagner": "Card to win",
-"Parcourir le catalogue": "Browse the catalogue"
+"Parcourir le catalogue": "Browse the catalogue",
+"Bannière du profil": "Profile banner",
+"Choisis une photo parmi mes voitures": "Pick a photo from my cars",
+"Ajoute d'abord une voiture avec photo dans « Mes voitures » pour la choisir ici.": "First add a car with a photo in \"My cars\" to pick it here.",
+"Bannière choisie : pense à enregistrer ton profil.": "Banner chosen: remember to save your profile.",
+"Voiture": "Car",
+"Classeur": "Binder"
 }]);

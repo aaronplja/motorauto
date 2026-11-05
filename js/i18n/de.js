@@ -482,7 +482,7 @@
 "Nouveaux abonnés": "Neue Follower",
 "Jeu": "Spiel",
 "Mes cartes": "Meine Karten",
-"Pack du jour": "Tages-Pack",
+"Pack du jour": "Tagespaket",
 "Carte du jour": "Karte des Tages",
 "Missions du jour": "Tagesaufgaben",
 "Offres du jour": "Tagesangebote",
@@ -1054,5 +1054,11 @@
 "Voir les voitures": "Autos anzeigen",
 "Carte possédée": "Karte im Besitz",
 "Carte à gagner": "Karte zu gewinnen",
-"Parcourir le catalogue": "Katalog durchsuchen"
+"Parcourir le catalogue": "Katalog durchsuchen",
+"Bannière du profil": "Profilbanner",
+"Choisis une photo parmi mes voitures": "Wähle ein Foto aus meinen Autos",
+"Ajoute d'abord une voiture avec photo dans « Mes voitures » pour la choisir ici.": "Füge zuerst ein Auto mit Foto unter „Meine Autos“ hinzu, um es hier zu wählen.",
+"Bannière choisie : pense à enregistrer ton profil.": "Banner gewählt: Profil bitte speichern.",
+"Voiture": "Auto",
+"Classeur": "Album"
 }]);
