@@ -21,8 +21,12 @@
         const rx = new RegExp("^" + k.replace(/[.*+?^$()|[\]\\]/g, "\\$&").replace(/\{n\d\}/g, "(\\d[\\d\\s.,]*)").replace(/\{\d\}/g, "(.+?)") + "$");
         tpls.push([rx, map[k]]);
       } else dict[k] = map[k];
+      // les émojis sont remplacés par des icônes (nœud séparé) : on retient aussi la phrase sans l'émoji de début/fin
+      const a = bare(k), b = bare(map[k]);
+      if (a && a !== k && dict[a] === undefined) dict[a] = b;
     });
   }
+  function bare(s) { return String(s).replace(/^[\s\u2190-\u21ff\u2300-\u23ff\u25a0-\u27bf\u2b00-\u2bff\uFE0F\u200d\u{1F000}-\u{1FAFF}]+|[\s\u2190-\u21ff\u2300-\u23ff\u25a0-\u27bf\u2b00-\u2bff\uFE0F\u200d\u{1F000}-\u{1FAFF}]+$/gu, ""); }
   function lookup(s) {
     if (lang === "fr") return null;
     const d = dict[s]; if (d !== undefined) return d;
