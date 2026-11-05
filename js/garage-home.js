@@ -19,21 +19,34 @@
     const r = 15.5, c = 2 * Math.PI * r;
     return `<svg class="gh-ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="${r}" class="gh-ring-bg"/><circle cx="18" cy="18" r="${r}" class="gh-ring-fg" style="stroke-dasharray:${(c * pct / 100).toFixed(1)} ${c.toFixed(1)}"/></svg>`;
   }
+  /** pilote déjà connu lors d'une visite précédente : on réserve la place tout de suite, sans montrer l'ancien accueil */
+  function skeleton() {
+    const page = document.getElementById("page-home");
+    if (!page || document.getElementById("home-garage") || !document.documentElement.classList.contains("ma-garage")) return;
+    const b = document.createElement("section"); b.id = "home-garage"; b.className = "stage-shell home-section gh gh-skel"; b.setAttribute("aria-busy", "true");
+    b.innerHTML = '<div class="gh-head"><div><span class="gh-k">&nbsp;</span><h2 class="gh-title">&nbsp;</h2></div></div><div class="gh-grid"><i class="gh-tile"></i><i class="gh-tile"></i><i class="gh-tile"></i><i class="gh-tile"></i></div><i class="gh-cta"></i>';
+    page.insertAdjacentElement("afterbegin", b);
+  }
   async function paint() {
     const page = document.getElementById("page-home"); if (!page) return;
     const host = page;
     let box = document.getElementById("home-garage");
-    if (!C || !C.user) { if (box) box.remove(); document.documentElement.classList.remove("ma-garage"); last = ""; return; }
+    if (!C) return;
+    try { await C.authReady; } catch (_) { /* ignoré */ }
+    box = document.getElementById("home-garage");
+    if (!C.user) { if (box) box.remove(); document.documentElement.classList.remove("ma-garage"); try { localStorage.removeItem("ma_in"); } catch (_) { /* ignoré */ } last = ""; return; }
+    try { localStorage.setItem("ma_in", "1"); } catch (_) { /* ignoré */ }
     if (!window.MACards || !window.MAGame) return;
     let doc = window.MACards.mine();
     if (!doc) { try { doc = await window.MACards.load(false); } catch (_) { doc = null; } }
-    if (!doc) return;
+    if (!doc) doc = { dust: 0, count: 0, lastPack: "", bonus: 0 };
     let st = { xp: 0, days: 0 };
     try { await window.MAGame.loadAll(); st = window.MAGame.statsOf(C.user.uid); } catch (_) { /* stats indisponibles */ }
     const lv = window.MAGame.levelOf(st.xp || 0), total = (C.cars ? C.cars.length : 0) + (G.CIRCUIT_CARDS ? G.CIRCUIT_CARDS.length : 0) + (G.LIVERIES ? G.LIVERIES.length : 0);
     const day = window.MAGame.day(), canDaily = doc.lastPack !== day, bonus = Number(doc.bonus) || 0;
     const sig = [C.user.uid, st.xp, st.days, doc.dust, doc.count, doc.lastPack, bonus, total].join("|");
-    if (box && sig === last) return; last = sig;
+    if (box && sig === last && !box.classList.contains("gh-skel")) return; last = sig;
+    if (box) { box.classList.remove("gh-skel"); box.removeAttribute("aria-busy"); }
     if (!box) { box = document.createElement("section"); box.id = "home-garage"; box.className = "stage-shell home-section gh"; box.setAttribute("aria-label", T("Mon garage")); host.insertAdjacentElement("afterbegin", box); }
     const icon = (n) => (window.MAEmoji ? window.MAEmoji.html(n) : n);
     const dust = window.MA && window.MA.dustIcon ? window.MA.dustIcon(22) : icon("💎");
@@ -52,6 +65,7 @@
   }
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx;
+    skeleton();
     ctx.Router.register("home", { enter: () => { last = ""; setTimeout(paint, 250); } });
     setTimeout(paint, 1500);
     setInterval(() => { if (document.getElementById("page-home") && !document.hidden) paint(); }, 4000);

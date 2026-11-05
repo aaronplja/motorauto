@@ -1048,5 +1048,10 @@
 "Ouvrir mon pack du jour": "Open my daily pack",
 "Ouvrir un pack bonus": "Open a bonus pack",
 "Voir ma collection": "View my collection",
-"pilote": "driver"
+"pilote": "driver",
+"Voir": "View",
+"voitures": "cars",
+"Voir les voitures": "View cars",
+"Carte possédée": "Card owned",
+"Carte à gagner": "Card to win"
 }]);

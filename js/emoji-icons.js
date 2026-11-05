@@ -33,7 +33,7 @@ function fix(root){
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 var q=false,pending=[];
 function flush(){ q=false; var l=pending; pending=[]; var seen=[];
-  l.forEach(function(r){ if(r.isConnected&&seen.indexOf(r)<0){ seen.push(r); fix(r);} }); }
+  l.forEach(function(r){ if(r&&r.isConnected&&seen.indexOf(r)<0){ seen.push(r); fix(r);} }); }
 function start(){
   fix(document.body);
   new MutationObserver(function(ms){

@@ -1048,5 +1048,10 @@
 "Ouvrir mon pack du jour": "Mein Tagespaket öffnen",
 "Ouvrir un pack bonus": "Bonuspaket öffnen",
 "Voir ma collection": "Meine Sammlung ansehen",
-"pilote": "Fahrer"
+"pilote": "Fahrer",
+"Voir": "Zeige",
+"voitures": "Autos",
+"Voir les voitures": "Autos anzeigen",
+"Carte possédée": "Karte im Besitz",
+"Carte à gagner": "Karte zu gewinnen"
 }]);
