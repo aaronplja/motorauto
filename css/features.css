@@ -59,7 +59,6 @@
 .tcg-q { font-size: 3rem; font-weight: 900; color: var(--color-muted); }
 .tcg-foil { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.45) 50%, transparent 70%); background-size: 250% 100%; }
 .tcg-epic .tcg-foil, .tcg-legendary .tcg-foil { opacity: .5; animation: foil 3.2s linear infinite; }
-@keyframes foil { from { background-position: 150% 0; } to { background-position: -100% 0; } }
 .tcg-body { padding: .5rem .6rem .7rem; display: grid; gap: .1rem; }
 .tcg-brand { font-size: .65rem; text-transform: uppercase; letter-spacing: .1em; color: var(--color-muted); }
 .tcg-name { font-size: .85rem; line-height: 1.2; }

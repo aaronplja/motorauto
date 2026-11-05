@@ -131,3 +131,11 @@
 @media (prefers-reduced-motion:reduce){.cosm-f.cf-aurora,.cosm-f.cf-prism,.cosm-f.cf-s_eclipse{animation:none!important}}
 .cg-cphoto{margin:8px 0;padding:8px;border:1px dashed var(--stroke-line);border-radius:10px}
 .cg-cphoto label{font-size:.78rem;color:var(--color-secondary);display:block;margin-bottom:4px}
+
+/* ---- attente : le bouton qui lance une action serveur affiche un petit chargement */
+.ma-busy{position:relative;pointer-events:none;color:transparent!important;text-shadow:none!important}
+.ma-busy>*{opacity:.0}
+.ma-busy::after{content:"";position:absolute;inset:0;margin:auto;width:1.05em;height:1.05em;min-width:14px;min-height:14px;border-radius:50%;border:2px solid var(--on-accent,#fff);border-right-color:transparent;animation:maSpin .7s linear infinite}
+.btn-ghost.ma-busy::after,.ghost.ma-busy::after{border-color:var(--accent);border-right-color:transparent}
+@keyframes maSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.ma-busy::after{animation-duration:1.6s!important;animation-iteration-count:infinite!important}}

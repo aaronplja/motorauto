@@ -64,7 +64,16 @@
     catch (e) { throw friendly(e); }
   }
 
+  // ---- attente visible : le bouton qui a déclenché l'appel affiche un petit chargement jusqu'à la réponse
+  let lastBtn = null, lastAt = 0;
+  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("button, [role=button], .cta-btn"); if (b) { lastBtn = b; lastAt = Date.now(); } }, true);
   async function call(name, data) {
+    const btn = lastBtn && lastBtn.isConnected && Date.now() - lastAt < 800 && !lastBtn.classList.contains("ma-busy") ? lastBtn : null;
+    if (btn) { btn.classList.add("ma-busy"); btn.setAttribute("aria-busy", "true"); }
+    try { return await callInner(name, data); }
+    finally { if (btn) { btn.classList.remove("ma-busy"); btn.removeAttribute("aria-busy"); } }
+  }
+  async function callInner(name, data) {
     if (!localMode) {
       const fns = window.MAFB && window.MAFB.functions;
       if (fns) {
