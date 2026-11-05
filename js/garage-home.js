@@ -27,6 +27,13 @@
     b.innerHTML = '<div class="gh-head"><div><span class="gh-k">&nbsp;</span><h2 class="gh-title">&nbsp;</h2></div></div><div class="gh-grid"><i class="gh-tile"></i><i class="gh-tile"></i><i class="gh-tile"></i><i class="gh-tile"></i></div><i class="gh-cta"></i>';
     page.insertAdjacentElement("afterbegin", b);
   }
+  /** visiteur : deux boutons d'action sous les chiffres du hero (créer un compte, parcourir le catalogue) */
+  function visitorCta() {
+    const st = document.querySelector("#page-home .hero-stats"); if (!st || document.getElementById("hero-cta")) return;
+    const d = document.createElement("div"); d.id = "hero-cta"; d.className = "hero-cta";
+    d.innerHTML = `<button type="button" class="cta-btn fill-btn" data-action="open-auth">${T("Créer mon compte")}</button><a class="cta-btn btn-ghost" href="#/catalogue">${T("Parcourir le catalogue")}</a>`;
+    st.insertAdjacentElement("afterend", d);
+  }
   async function paint() {
     const page = document.getElementById("page-home"); if (!page) return;
     const host = page;
@@ -34,7 +41,7 @@
     if (!C) return;
     try { await C.authReady; } catch (_) { /* ignoré */ }
     box = document.getElementById("home-garage");
-    if (!C.user) { if (box) box.remove(); document.documentElement.classList.remove("ma-garage"); try { localStorage.removeItem("ma_in"); } catch (_) { /* ignoré */ } last = ""; return; }
+    if (!C.user) { visitorCta(); if (box) box.remove(); document.documentElement.classList.remove("ma-garage"); try { localStorage.removeItem("ma_in"); } catch (_) { /* ignoré */ } last = ""; return; }
     try { localStorage.setItem("ma_in", "1"); } catch (_) { /* ignoré */ }
     if (!window.MACards || !window.MAGame) return;
     let doc = window.MACards.mine();

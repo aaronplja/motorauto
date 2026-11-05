@@ -1053,5 +1053,6 @@
 "voitures": "Autos",
 "Voir les voitures": "Autos anzeigen",
 "Carte possédée": "Karte im Besitz",
-"Carte à gagner": "Karte zu gewinnen"
+"Carte à gagner": "Karte zu gewinnen",
+"Parcourir le catalogue": "Katalog durchsuchen"
 }]);

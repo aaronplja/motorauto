@@ -216,3 +216,23 @@ html.ma-garage #page-home>#cod-home{width:min(var(--st-w,1360px),100% - 2rem);ma
 }
 @media(prefers-reduced-motion:reduce){.adv-backdrop,#adv-panel{animation:none!important}}
 @media(max-width:760px){#adv-panel .adv-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#adv-panel .adv-field,#adv-panel .adv-field *{min-width:0;max-width:100%}#adv-panel select,#adv-panel input{width:100%}}
+
+/* ===== Fiche voiture : glissement entre onglets (js/sheet-swipe.js) ===== */
+@keyframes cpNext{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes cpPrev{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+.sheet-tabbed[data-dir="next"] .tab-on{animation:cpNext .3s var(--m-spring,ease) both}
+.sheet-tabbed[data-dir="prev"] .tab-on{animation:cpPrev .3s var(--m-spring,ease) both}
+.sheet-core-body{touch-action:pan-y}
+@media(prefers-reduced-motion:reduce){.sheet-tabbed .tab-on{animation:none!important}}
+
+/* ===== Première page (visiteurs) : le texte et la recherche d'abord, le compte-tours ensuite ===== */
+.hero-cta{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.1rem}
+.hero-cta .cta-btn{flex:1 1 170px;justify-content:center;min-height:52px;border-radius:26px}
+html.ma-garage .hero-cta{display:none}
+@media(max-width:900px){
+  html:not(.ma-garage) #page-home .hero-inner{display:flex;flex-direction:column;gap:1.4rem}
+  html:not(.ma-garage) #page-home .hero-copy{order:1}
+  html:not(.ma-garage) #page-home .hero-visual{order:2;width:min(300px,78vw);margin:0 auto}
+  html:not(.ma-garage) #page-home .hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
+  html:not(.ma-garage) #page-home .hero-stats>div{padding:.7rem .8rem;border-radius:16px;border:1px solid var(--stroke-line);background:var(--bg-surface)}
+}

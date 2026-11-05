@@ -1053,5 +1053,6 @@
 "voitures": "cars",
 "Voir les voitures": "View cars",
 "Carte possédée": "Card owned",
-"Carte à gagner": "Card to win"
+"Carte à gagner": "Card to win",
+"Parcourir le catalogue": "Browse the catalogue"
 }]);

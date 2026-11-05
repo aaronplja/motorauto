@@ -1053,5 +1053,6 @@
 "voitures": "coches",
 "Voir les voitures": "Ver coches",
 "Carte possédée": "Carta conseguida",
-"Carte à gagner": "Carta por ganar"
+"Carte à gagner": "Carta por ganar",
+"Parcourir le catalogue": "Explorar el catálogo"
 }]);
