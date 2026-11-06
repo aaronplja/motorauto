@@ -35,7 +35,7 @@
       .sort((a, b) => b.xp - a.xp || b.n - a.n);
     const brands = Array.from(new Set(C.cars.map((c) => c.brand))).sort((a, b) => a.localeCompare(b, "fr"));
     root.innerHTML = `<div class="chip-row" role="group" aria-label="Type de club">${[["all", "Tous"], ["brand", "Par marque"], ["region", "Par région"]].map(([k, l]) => `<button type="button" class="chip ${kindFilter === k ? "active" : ""}" data-club-kind="${k}" aria-pressed="${kindFilter === k}">${l}</button>`).join("")}</div>
-      <ol class="top-list clubs-rank">${rows.length ? rows.map((c, i) => `<li><a class="rank-row" href="#/club/${encodeURIComponent(c.id)}"><span class="rank-pos">${i + 1}</span><span class="club-ico" aria-hidden="true">${c.kind === "brand" ? "🏎" : "📍"}</span><span class="rank-main"><b>${C.esc(c.name)}</b><small>${c.kind === "brand" ? "Club de marque" : "Club régional"} · ${c.n} membre${c.n > 1 ? "s" : ""}</small></span><span class="rank-score">${nf(c.xp)}<small>XP</small></span></a></li>`).join("") : `<li class="empty-note">Aucun club pour l'instant : crée le premier !</li>`}</ol>
+      <ol class="top-list clubs-rank">${rows.length ? rows.map((c, i) => `<li><a class="rank-row" href="#/club/${encodeURIComponent(c.id)}"><span class="rank-pos">${i + 1}</span>${imgOk(c.image) ? `<img class="club-ico club-img" src="${C.esc(c.image)}" alt="" loading="lazy">` : `<span class="club-ico" aria-hidden="true">${c.kind === "brand" ? "🏎" : "📍"}</span>`}<span class="rank-main"><b>${C.esc(c.name)}</b><small>${c.kind === "brand" ? "Club de marque" : "Club régional"} · ${c.n} membre${c.n > 1 ? "s" : ""}</small></span><span class="rank-score">${nf(c.xp)}<small>XP</small></span></a></li>`).join("") : `<li class="empty-note">Aucun club pour l'instant : crée le premier !</li>`}</ol>
       <form class="club-new" id="club-new" novalidate><h3>Créer un club</h3>
         <div class="form-grid"><div class="input-stack"><label for="cn-kind">Type</label><select id="cn-kind" class="custom-select"><option value="brand">Marque</option><option value="region">Région</option></select></div>
         <div class="input-stack"><label for="cn-key">Marque / région</label><select id="cn-key" class="custom-select">${brands.map((b) => `<option>${C.esc(b)}</option>`).join("")}</select></div>
@@ -73,7 +73,7 @@
     let posts = [];
     try { const s = await C.db.collection("club_posts").where("clubId", "==", id).limit(80).get(); posts = s.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || tsMs(b.createdAt) - tsMs(a.createdAt)); } catch (_) { /* règles */ }
     const total = ms.reduce((s, m) => s + xp(m.uid), 0), cars = C.cars.filter((c) => club.kind === "brand" && c.brand === club.key);
-    root.innerHTML = `<div class="club-head"><div class="stats-ribbon"><div class="ribbon-card"><span class="ribbon-value">${ms.length}</span><span class="ribbon-key">Membres</span></div><div class="ribbon-card"><span class="ribbon-value">${nf(total)}</span><span class="ribbon-key">XP cumulée</span></div>${club.kind === "brand" ? `<div class="ribbon-card"><span class="ribbon-value">${cars.length}</span><span class="ribbon-key">Fiches</span></div>` : ""}</div>
+    root.innerHTML = clubImgBlock(club) + `<div class="club-head"><div class="stats-ribbon"><div class="ribbon-card"><span class="ribbon-value">${ms.length}</span><span class="ribbon-key">Membres</span></div><div class="ribbon-card"><span class="ribbon-value">${nf(total)}</span><span class="ribbon-key">XP cumulée</span></div>${club.kind === "brand" ? `<div class="ribbon-card"><span class="ribbon-value">${cars.length}</span><span class="ribbon-key">Fiches</span></div>` : ""}</div>
       <button type="button" class="cta-btn ${mem ? "btn-ghost" : "fill-btn"}" data-club-join="${C.esc(id)}">${mem ? "Quitter le club" : "Rejoindre le club"}</button>${C.isAdmin || (C.user && club.ownerUid === C.user.uid) ? `<button type="button" class="secondary-destructive-btn" data-club-del="${C.esc(id)}">Supprimer le club</button>` : ""}</div>
       ${rulesBlock(club, posts)}
       <div class="club-cols"><div>
@@ -102,6 +102,25 @@
     else h += `<p class="lap-meta">Le président n'a pas encore créé de canal de discussion.</p>`;
     if (owner) h += `<div class="input-stack"><label for="club-vice">Modérateur du club</label><select id="club-vice" class="custom-select" data-club-vice="${esc(club.id)}"><option value="">Aucun</option>${ms.filter((m) => m.uid !== club.ownerUid).map((m) => `<option value="${esc(m.uid)}" ${club.viceUid === m.uid ? "selected" : ""}>${esc(m.name || "Pilote")}</option>`).join("")}</select></div>`;
     return h + "</div>";
+  }
+  const imgOk = (u) => typeof u === "string" && /^https:\/\/firebasestorage\.googleapis\.com\//.test(u);
+  /** image du club : visible par tous, modifiable par le président */
+  function clubImgBlock(club) {
+    const owner = !!C.user && club.ownerUid === C.user.uid, has = imgOk(club.image);
+    if (!has && !owner) return "";
+    return `<div class="club-cover${has ? "" : " empty"}">${has ? `<img src="${C.esc(club.image)}" alt="" loading="lazy">` : ""}${owner ? `<div class="club-cover-act"><label class="cta-btn btn-ghost compact-btn" for="club-img-file">${has ? "Changer l'image du club" : "Ajouter une image de club"}</label><input id="club-img-file" type="file" accept="image/*" hidden data-club-img="${C.esc(club.id)}">${has ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-club-img-del="${C.esc(club.id)}">Retirer</button>` : ""}</div>` : ""}</div>`;
+  }
+  async function uploadClubImg(id, file) {
+    const st = window.MAFB && window.MAFB.storage;
+    if (!file || !C.user || !st) { C.toast("Le stockage de photos n'est pas disponible.", "err"); return; }
+    if (!/^image\//.test(file.type)) { C.toast("Choisis un fichier image.", "err"); return; }
+    C.toast("Envoi de l'image…", "ok");
+    try {
+      const blob = await (C.resizeImage || window.MA.resizeImage)(file, 1400, 0.86), ref = st.ref("avatars/" + C.user.uid + "/club-" + Date.now() + ".jpg");
+      await ref.put(blob, { contentType: "image/jpeg" });
+      await updateClub(id, { image: await ref.getDownloadURL() });
+      C.toast("Image du club mise à jour.", "ok");
+    } catch (e) { C.toast("Envoi impossible : " + e.message, "err"); }
   }
   async function updateClub(id, patch) {
     try { await C.db.collection("clubs").doc(id).update(patch); const c = clubs.find((x) => x.id === id); if (c) Object.assign(c, patch); renderClub(id); }
@@ -151,10 +170,11 @@
         if (on && pinned >= 3) { C.toast("3 annonces épinglées au maximum.", "err"); return; }
         C.db.collection("club_posts").doc(pn.dataset.clubPin).update({ pinned: on }).then(() => renderClub(cur)).catch((x) => C.toast("Action impossible : " + x.message, "err")); return;
       }
+      const idl = e.target.closest("[data-club-img-del]"); if (idl) { updateClub(idl.dataset.clubImgDel, { image: "" }); return; }
       const pd = e.target.closest("[data-club-post-del]");
       if (pd && confirm("Supprimer ce message ?")) C.db.collection("club_posts").doc(pd.dataset.clubPostDel).delete().then(() => renderClub(cur)).catch((x) => C.toast("Suppression impossible : " + x.message, "err"));
     });
-    document.addEventListener("change", (e) => { const v = e.target.closest && e.target.closest("[data-club-vice]"); if (!v) return; const id = v.dataset.clubVice, m = members.find((x) => x.clubId === id && x.uid === v.value); updateClub(id, { viceUid: v.value, viceName: m ? String(m.name || "Pilote").slice(0, 40) : "" }); });
+    document.addEventListener("change", (e) => { const im = e.target.closest && e.target.closest("[data-club-img]"); if (im) { uploadClubImg(im.dataset.clubImg, im.files && im.files[0]); im.value = ""; return; } const v = e.target.closest && e.target.closest("[data-club-vice]"); if (!v) return; const id = v.dataset.clubVice, m = members.find((x) => x.clubId === id && x.uid === v.value); updateClub(id, { viceUid: v.value, viceName: m ? String(m.name || "Pilote").slice(0, 40) : "" }); });
     document.addEventListener("ma:auth", () => { if (ctx.Router.is("clubs")) renderList(); else if (ctx.Router.current() && ctx.Router.current().name === "club") renderClub(cur); });
   });
 })();

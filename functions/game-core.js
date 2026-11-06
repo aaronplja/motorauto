@@ -378,7 +378,7 @@
   }
   const adventLabel = (r) => [r.dust && r.dust + " cristaux", r.bonus && r.bonus + " pack" + (r.bonus > 1 ? "s" : "") + " bonus", r.freeze && "1 gel de série", r.pts && r.pts + " points de saison", r.card && "la carte de Noël"].filter(Boolean).join(" + ");
   const HIST_MAX = 6;
-  const HIST_LABEL = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté", craft: "Fabriquée", offer: "Carte du jour", fuse: "Fusion", trade: "Échange", market: "Marché", pass: "Pass de saison", album: "Album", gift: "Cadeau", wheel: "Roue", advent: "Avent" };
+  const HIST_LABEL = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté", craft: "Fabriquée", offer: "Carte du jour", fuse: "Fusion", trade: "Échange", market: "Marché", pass: "Pass de saison", album: "Album", gift: "Cadeau", wheel: "Roue", advent: "Avent", affiche: "Défi à cartes" };
   /** note l'arrivée d'un exemplaire : n = total d'exemplaires passés entre tes mains, e = 6 dernières origines [date, code] */
   function histAdd(d, id, code, ms) {
     if (!d || !id) return;
@@ -469,6 +469,21 @@
   const featuredItems = (name) => FEATURED.map((f) => Object.assign({}, f, { label: f.label(name) }));
   /** voiture mise en avant par défaut : tirage déterministe sur la liste triée du catalogue */
   const autoFeatured = (wk, ids) => { const l = ids.slice().sort(); return l.length ? l[hashStr("motorauto-feat-" + wk) % l.length] : ""; };
+  /** défis à cartes : une « affiche » de voiture = plusieurs défis ; tous validés = la carte de la voiture est gagnée (4 affiches par mois) */
+  const CARD_CHALS = [
+    { id: "c-react", icon: "🔥", label: (n) => "Réagis à la fiche de « " + n + " »" },
+    { id: "c-comment", icon: "✍️", label: (n) => "Donne ton avis sur « " + n + " » (commentaire)" },
+    { id: "c-brand", icon: "🏁", label: (n, b) => "Possède 3 cartes " + b }
+  ];
+  /** les affiches du mois : 1 légendaire, 1 épique, 2 rares tirées au sort (mêmes pour tous) */
+  function cardChalCars(month, ids, rar) {
+    const rnd = mulberry(hashStr("motorauto-cc-" + month)), out = [];
+    [["legendary", 1], ["epic", 1], ["rare", 2]].forEach((b) => {
+      const pool = ids.filter((id) => rar.get(id) === b[0] && out.indexOf(id) < 0).sort();
+      for (let k = 0; k < b[1] && pool.length; k++) out.push(pool.splice(Math.floor(rnd() * pool.length), 1)[0]);
+    });
+    return out;
+  }
   const PERFECT_WEEK_BONUS = 1;
   const THEMES = ["Ma voiture au lever du soleil", "Détail mécanique", "Mon garage", "Route de rêve", "Voiture en mouvement", "Noir & blanc", "Mon plus beau reflet", "Sortie entre pilotes", "Voiture sous la pluie", "Intérieur et cockpit", "Avant / après", "Ma voiture de collection"];
 
@@ -1321,6 +1336,6 @@ Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
-    SHINY, CHALLENGES, DAILY, FEATURED, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
+    SHINY, CHALLENGES, DAILY, FEATURED, CARD_CHALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

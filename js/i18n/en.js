@@ -1060,5 +1060,10 @@
 "Ajoute d'abord une voiture avec photo dans « Mes voitures » pour la choisir ici.": "First add a car with a photo in \"My cars\" to pick it here.",
 "Bannière choisie : pense à enregistrer ton profil.": "Banner chosen: remember to save your profile.",
 "Voiture": "Car",
-"Classeur": "Binder"
+"Classeur": "Binder",
+"Défis à cartes": "Card challenges",
+"Gagner la carte": "Win the card",
+"✓ Carte gagnée": "✓ Card won",
+"Ajouter une image de club": "Add a club image",
+"Changer l'image du club": "Change club image"
 }]);

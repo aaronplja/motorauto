@@ -20,20 +20,26 @@
     const MAX_OPEN_TRADES = 5;
 
     // ---------------------------------------------------------------- catalogue (réduit à identifiant + puissance)
-    let poolCache = { at: 0, ids: [] };
+    let poolCache = { at: 0, ids: [] }, autoSig = "";
     async function getPool() {
       if (poolCache.ids.length && now() - poolCache.at < 300000) return poolCache;
       const list = await deps.cardPool();
       if (!list.length) fail("unavailable", "Catalogue indisponible, réessaie dans un instant.");
       const rar = core.computeRarities(list);
       core.circuitRarities().forEach((v, k) => rar.set(k, v));
+      const baseOf = new Map(list.map((c) => [c.id, c])), lvs = deps.noCircuits ? [] : core.LIVERIES.filter((r) => baseOf.has(r[1])).map((r) => core.liveryCard(r[0], baseOf.get(r[1])));
+      lvs.forEach((c) => rar.set(c.id, c.rar));
+      // le site affiche la même rareté que celle utilisée ici (marché, packs) : on la publie quand elle change
+      try {
+        const auto = {}; list.forEach((c) => { auto[c.id] = rar.get(c.id); });
+        const sig = Object.keys(auto).sort().map((k) => k + auto[k][0]).join("").length + ":" + Object.keys(auto).sort().map((k) => k + auto[k]).join("|");
+        if (sig !== autoSig) { await col("config").doc("rarityAuto").set({ map: auto, n: list.length }); autoSig = sig; }
+      } catch (_) { /* publication facultative */ }
       try { // raretés modifiées à la main par l'admin (config/rarities)
         const ov = await col("config").doc("rarities").get();
         const m = ov.exists ? ov.data().map || {} : {};
         Object.keys(m).forEach((id) => { if (rar.has(id) && core.ORDER.indexOf(m[id]) >= 0) rar.set(id, m[id]); });
       } catch (_) { /* pas de surcharge */ }
-      const baseOf = new Map(list.map((c) => [c.id, c])), lvs = deps.noCircuits ? [] : core.LIVERIES.filter((r) => baseOf.has(r[1])).map((r) => core.liveryCard(r[0], baseOf.get(r[1])));
-      lvs.forEach((c) => rar.set(c.id, c.rar));
       poolCache = { at: now(), list, ids: list.map((c) => c.id).concat(deps.noCircuits ? [] : core.CIRCUIT_CARDS.map((r) => r[0])).concat(lvs.map((c) => c.id)), byId: new Map(list.map((c) => [c.id, c]).concat(Array.from(core.CIRCUIT_BY_ID.entries())).concat(lvs.map((c) => [c.id, c]))), rar };
       return poolCache;
     }
@@ -571,6 +577,50 @@
         core.seasonAdd(d, core.SEASON_PTS.challenge + (perfect ? 30 : 0), null, now(), true);
         writeCol(tx, uid, d); writeWeekly(tx, uid, w);
         return { reward: r, perfect, doc: view(d) };
+      });
+    }
+
+    // ---------------------------------------------------------------- défis à cartes (affiches du mois)
+    async function cardChalPosters(uid) {
+      const pool = await getPool(), month = core.monthKey(now());
+      const ids = core.cardChalCars(month, pool.ids.filter((x) => !core.isExtra(x) && pool.byId.has(x)), pool.rar);
+      const [cs, cl] = await Promise.all([col("collections").doc(uid).get(), col("card_chals").doc(uid).get()]);
+      const owned = cs.exists ? cs.data().owned || {} : {}, claimed = cl.exists ? cl.data().claimed || {} : {};
+      const ownedIds = Object.keys(owned).filter((k) => owned[k] > 0);
+      let comments = null;
+      const posters = [];
+      for (const id of ids) {
+        const c = pool.byId.get(id) || {}, name = str(c.name || id, 80), brand = str(c.brand || "", 40);
+        const exists = (n) => col(n).doc("cat_" + id + "_" + uid).get().then((x) => x.exists).catch(() => false);
+        const [lk, rc] = await Promise.all([exists("likes"), exists("reactions")]);
+        if (comments === null) comments = await col("comments").where("uid", "==", uid).limit(500).get().then((r) => r.docs.map((d) => d.data())).catch(() => []);
+        const cm = comments.some((x) => x.target === id && x.kind === "cat");
+        const nb = brand ? ownedIds.filter((k) => ((pool.byId.get(k) || {}).brand || "") === brand).length : 0;
+        const tasks = core.CARD_CHALS.filter((t) => t.id !== "c-brand" || brand).map((t) => ({ id: t.id, icon: t.icon, label: t.label(name, brand), done: t.id === "c-react" ? lk || rc : t.id === "c-comment" ? cm : nb >= 3, value: t.id === "c-brand" ? Math.min(3, nb) : undefined, goal: t.id === "c-brand" ? 3 : undefined }));
+        posters.push({ id, name, brand, image: str(c.image || c.img || "", 400), rar: pool.rar.get(id), owned: owned[id] || 0, claimed: !!claimed[id], tasks, ready: !claimed[id] && tasks.every((t) => t.done) });
+      }
+      return { month, posters, claimed };
+    }
+    async function cardChallenges(caller) {
+      const r = await cardChalPosters(caller.uid);
+      return { month: r.month, endsAt: monthEnd(), posters: r.posters };
+    }
+    function monthEnd() { const k = core.monthKey(now()).split("-"), y = Number(k[0]), m = Number(k[1]); return core.parisMidnight(y + (m === 12 ? 1 : 0) + "-" + String(m === 12 ? 1 : m + 1).padStart(2, "0") + "-01"); }
+    async function claimCardChallenge(caller, data) {
+      const uid = caller.uid, carId = str(data && data.carId, 90);
+      const r = await cardChalPosters(uid), p = r.posters.find((x) => x.id === carId);
+      if (!p) fail("not-found", "Cette affiche n'est pas disponible ce mois-ci.");
+      if (p.claimed) fail("failed-precondition", "Carte déjà gagnée avec cette affiche.");
+      if (!p.tasks.every((t) => t.done)) fail("failed-precondition", "Il reste des défis à accomplir sur cette affiche.");
+      return db.runTransaction(async (tx) => {
+        const ref = col("card_chals").doc(uid), cs = await tx.get(ref), claimed = cs.exists ? cs.data().claimed || {} : {};
+        if (claimed[carId]) fail("failed-precondition", "Carte déjà gagnée avec cette affiche.");
+        const d = await readCol(tx, uid);
+        d.owned[carId] = (d.owned[carId] || 0) + 1; core.histAdd(d, carId, "affiche", now());
+        core.seasonAdd(d, core.SEASON_PTS.challenge * 2, null, now(), true);
+        claimed[carId] = now();
+        writeCol(tx, uid, d); tx.set(ref, { claimed, updatedAt: ts() });
+        return { cardId: carId, name: p.name, rar: p.rar, doc: view(d) };
       });
     }
 
@@ -1144,7 +1194,7 @@
       return sent;
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
+    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, cardChallenges, claimCardChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
   }
   return { createGame, GameError };
 });

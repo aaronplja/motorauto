@@ -1060,5 +1060,10 @@
 "Ajoute d'abord une voiture avec photo dans « Mes voitures » pour la choisir ici.": "Füge zuerst ein Auto mit Foto unter „Meine Autos“ hinzu, um es hier zu wählen.",
 "Bannière choisie : pense à enregistrer ton profil.": "Banner gewählt: Profil bitte speichern.",
 "Voiture": "Auto",
-"Classeur": "Album"
+"Classeur": "Album",
+"Défis à cartes": "Kartenchallenges",
+"Gagner la carte": "Karte gewinnen",
+"✓ Carte gagnée": "✓ Karte gewonnen",
+"Ajouter une image de club": "Clubbild hinzufügen",
+"Changer l'image du club": "Clubbild ändern"
 }]);

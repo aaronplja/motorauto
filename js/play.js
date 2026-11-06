@@ -15,11 +15,52 @@
   }
   const rewardText = (r, plain) => [r.dust ? `+${r.dust} ${plain ? "cristaux" : window.MA.dustIcon(14)}` : "", r.bonus ? `🎁 ${r.bonus} pack` : ""].filter(Boolean).join(" ");
 
+  let busyId = "", cardCh = null, ccBusy = "";
+  const readyCount = () => { const w = weekly; let n = 0; if (w) { const all = (Array.isArray(w.items) ? w.items : []).concat(w.daily ? [w.daily] : []).concat(w.featured && Array.isArray(w.featured.items) ? w.featured.items : []); n += all.filter((x) => x.done && !x.claimed).length; } if (cardCh) n += cardCh.posters.filter((p) => p.ready).length; return n; };
+  /** points rouges : défis terminés qu'il reste à récupérer */
+  function paintChalDot() {
+    const n = C.user ? readyCount() : 0;
+    window.MAChalReady = n;
+    document.documentElement.toggleAttribute("data-chal-ready", n > 0);
+    document.dispatchEvent(new CustomEvent("ma:chalready", { detail: n }));
+  }
+  async function loadCardCh(force) {
+    if (!C.user) { cardCh = null; return null; }
+    if (!force && cardCh && Date.now() - (cardCh.at || 0) < 30000) return cardCh;
+    try { const r = await window.MAGameAPI.call("cardChallenges"); cardCh = r && Array.isArray(r.posters) ? Object.assign(r, { at: Date.now() }) : null; } catch (_) { /* affiches indisponibles */ }
+    return cardCh;
+  }
+  function posterHtml(p) {
+    const esc = C.esc, R = window.MACards && window.MACards.RAR && window.MACards.RAR[p.rar], img = p.image && C.safeUrl ? C.safeUrl(p.image) : "";
+    const left = p.tasks.filter((t) => !t.done).length;
+    return `<article class="cc-poster r-${esc(p.rar || "rare")}${p.claimed ? " won" : p.ready ? " ready" : ""}">
+      <div class="cc-art">${img ? `<img src="${esc(img)}" alt="" loading="lazy" data-fallback="car">` : ""}<span class="cc-rar">${esc(R ? R.label : p.rar)}</span></div>
+      <div class="cc-body"><b class="cc-name">${esc(p.name)}</b>
+        <ul class="cc-tasks">${p.tasks.map((t) => `<li class="${t.done ? "ok" : ""}"><i aria-hidden="true">${t.done ? "✓" : t.icon}</i><span>${esc(t.label)}${t.goal ? ` <small>${t.value} / ${t.goal}</small>` : ""}</span></li>`).join("")}</ul>
+        ${p.claimed ? `<span class="chal-done">✓ Carte gagnée</span>` : p.ready ? `<button type="button" class="cta-btn fill-btn compact-btn${ccBusy === p.id ? " ma-busy" : ""}" data-cc-claim="${esc(p.id)}" ${ccBusy ? "disabled" : ""}>Gagner la carte</button>` : `<a class="cta-btn btn-ghost compact-btn" href="#/voiture/${encodeURIComponent(p.id)}">Voir la fiche · ${left} défi${left > 1 ? "s" : ""}</a>`}
+      </div></article>`;
+  }
+  function cardChHtml() {
+    if (!cardCh || !cardCh.posters.length) return "";
+    const won = cardCh.posters.filter((p) => p.claimed).length;
+    return `<section class="cc-sec"><div class="chal-head"><div><h3 class="sec-title nomargin">Défis à cartes</h3><p class="lap-meta">Relève tous les défis d'une affiche pour gagner la carte de la voiture · nouvelles affiches chaque mois</p></div><div class="chal-score"><b>${won}</b>/${cardCh.posters.length}</div></div>
+      <div class="cc-grid">${cardCh.posters.map(posterHtml).join("")}</div></section>`;
+  }
+  async function claimCard(id) {
+    if (ccBusy) return; ccBusy = id; renderChallenges();
+    try {
+      const r = await window.MAGameAPI.call("claimCardChallenge", { carId: id });
+      if (window.MACards && r.doc) window.MACards.applyDoc(r.doc);
+      C.toast(`🏆 Carte gagnée : ${r.name}`, "ok");
+    } catch (e) { C.toast(e.message, "err"); }
+    ccBusy = ""; await loadCardCh(true); renderChallenges(); paintChalDot();
+  }
   async function loadWeekly(force) {
     if (!C.user) { weekly = null; return null; }
     if (!force && weekly && Date.now() - weeklyAt < 20000) return weekly;
     try { weekly = await window.MAGameAPI.call("weeklyStatus"); weeklyErr = ""; weeklyAt = Date.now(); }
     catch (e) { weeklyErr = e.message; weekly = null; }
+    paintChalDot();
     return weekly;
   }
 
@@ -33,12 +74,12 @@
     const dailyHtml = dl ? `<section class="chal-daily"><div class="chal-head"><div><h3 class="sec-title nomargin">Défi du jour</h3><p class="lap-meta">1 nouveau défi chaque jour, à minuit</p></div></div>
       <article class="chal ${dl.claimed ? "claimed" : dl.done ? "ready" : ""}"><span class="chal-ico" aria-hidden="true">${dl.icon}</span>
         <div class="chal-main"><b>${esc(dl.label)}</b><div class="xp-bar small" aria-hidden="true"><i style="width:${dpct}%"></i></div><small>${dl.value} / ${dl.goal} · récompense ${rewardText(dl.reward)}</small></div>
-        ${dl.claimed ? `<span class="chal-done">✓ Récupéré</span>` : dl.done ? `<button type="button" class="cta-btn fill-btn compact-btn" data-chal-claim="${esc(dl.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="${hintOf(dl.id)}">Y aller</a>`}</article></section>` : "";
+        ${dl.claimed ? `<span class="chal-done">✓ Récupéré</span>` : dl.done ? `<button type="button" class="cta-btn fill-btn compact-btn${busyId === dl.id ? " ma-busy" : ""}" data-chal-claim="${esc(dl.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="${hintOf(dl.id)}">Y aller</a>`}</article></section>` : "";
     const ft = weekly.featured, fc = ft && ft.car && (C.carsById || new Map()).get ? C.carsById.get(ft.car.id) : null;
     const fImg = fc ? (C.safeUrl ? C.safeUrl(fc.image || fc.img || "") : (fc.image || fc.img || "")) : "";
     const chalRow = (x) => { const pct = Math.round((x.value / x.goal) * 100); return `<article class="chal ${x.claimed ? "claimed" : x.done ? "ready" : ""}"><span class="chal-ico" aria-hidden="true">${x.icon}</span>
           <div class="chal-main"><b>${esc(x.label)}</b><div class="xp-bar small" aria-hidden="true"><i style="width:${pct}%"></i></div><small>${x.value} / ${x.goal} · récompense ${rewardText(x.reward)}</small></div>
-          ${x.claimed ? `<span class="chal-done">✓ Récupéré</span>` : x.done ? `<button type="button" class="cta-btn fill-btn compact-btn" data-chal-claim="${esc(x.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="#/voiture/${encodeURIComponent(ft.car.id)}">Y aller</a>`}</article>`; };
+          ${x.claimed ? `<span class="chal-done">✓ Récupéré</span>` : x.done ? `<button type="button" class="cta-btn fill-btn compact-btn${busyId === x.id ? " ma-busy" : ""}" data-chal-claim="${esc(x.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="#/voiture/${encodeURIComponent(ft.car.id)}">Y aller</a>`}</article>`; };
     const featHtml = ft && ft.car && ft.car.id ? `<section class="chal-feat"><div class="feat-head">${fImg ? `<img class="feat-img" src="${esc(fImg)}" alt="" loading="lazy" data-fallback="car">` : ""}<div><span class="status-tag-verified">Voiture de la semaine</span><h3 class="sec-title nomargin">${esc(ft.car.name)}</h3>
       <p class="lap-meta">3 défis sur cette voiture · ${ft.next && ft.next.name ? `la semaine prochaine : <b>${esc(ft.next.name)}</b>` : "nouvelle voiture chaque lundi"}</p></div></div>
       <div class="chal-list">${ft.items.map(chalRow).join("")}</div></section>` : "";
@@ -49,27 +90,27 @@
         const pct = Math.round((x.value / x.goal) * 100);
         return `<article class="chal ${x.claimed ? "claimed" : x.done ? "ready" : ""}"><span class="chal-ico" aria-hidden="true">${x.icon}</span>
           <div class="chal-main"><b>${esc(x.label)}</b><div class="xp-bar small" aria-hidden="true"><i style="width:${pct}%"></i></div><small>${x.value} / ${x.goal} · récompense ${rewardText(x.reward)}</small></div>
-          ${x.claimed ? `<span class="chal-done">✓ Récupéré</span>` : x.done ? `<button type="button" class="cta-btn fill-btn compact-btn" data-chal-claim="${esc(x.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="${hintOf(x.id)}">Y aller</a>`}</article>`;
+          ${x.claimed ? `<span class="chal-done">✓ Récupéré</span>` : x.done ? `<button type="button" class="cta-btn fill-btn compact-btn${busyId === x.id ? " ma-busy" : ""}" data-chal-claim="${esc(x.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="${hintOf(x.id)}">Y aller</a>`}</article>`;
       }).join("")}</div>
-      <p class="sec-lead">🎁 Les ${weekly.items.length} défis validés dans la semaine rapportent <b>${weekly.perfectBonus} pack bonus</b> en plus.</p>`;
+      <p class="sec-lead">🎁 Les ${weekly.items.length} défis validés dans la semaine rapportent <b>${weekly.perfectBonus} pack bonus</b> en plus.</p>` + cardChHtml();
   }
   function hintOf(id) {
     id = String(id).replace(/^d-/, "").replace(/1$|3$/, (m) => m);
     return { "pack": "#/jouer/boutique", like3: "#/catalogue", comment1: "#/catalogue", react2: "#/catalogue", chat3: "chat.html", packs5: "#/jouer/boutique", comment5: "#/catalogue", duel3: "#/duel", share3: "#/catalogue", like15: "#/catalogue", chat5: "chat.html", packs3: "#/jouer/cartes", daily3: "#/jouer/cartes", comment2: "#/catalogue", duel1: "#/duel", share1: "#/catalogue", lap1: "#/classement/chronos", like5: "#/catalogue", react3: "#/catalogue", rsvp1: "#/communaute/evenements", vote1: "#/jouer/concours", trade1: "#/jouer/echanges", wish3: "#/jouer/cartes" }[id] || "#/jouer";
   }
   async function claim(id) {
-    if (busy) return; busy = true; renderChallenges();
+    if (busy) return; busy = true; busyId = id; renderChallenges();
     try {
       const r = await window.MAGameAPI.call("claimChallenge", { id });
       window.MACards.applyDoc(r.doc);
       // affichage immédiat : on marque le défi comme récupéré sans attendre un second aller-retour serveur
       if (weekly) { const all = weekly.items.concat(weekly.daily ? [weekly.daily] : []); const it = all.find((x) => x.id === id); if (it) it.claimed = true; }
       C.toast(`🎯 Défi validé : ${rewardText(r.reward, true)}${r.perfect ? " · semaine parfaite : +1 pack bonus !" : ""}`, "ok");
-      busy = false; renderChallenges();
+      busy = false; busyId = ""; renderChallenges(); paintChalDot();
       loadWeekly(true).then(renderChallenges);            // resynchronisation en arrière-plan
       return;
     } catch (e) { C.toast(e.message, "err"); }
-    busy = false; await loadWeekly(true); renderChallenges();
+    busy = false; busyId = ""; await loadWeekly(true); renderChallenges();
   }
 
   // ------------------------------------------------------------------ événements saisonniers (cartes à récupérer pendant une période)
@@ -182,13 +223,15 @@
       clearInterval(tick);
       setTimeout(paintShopDot, 80);
       if (p.tab === "cartes" || p.tab === "minijeux" || p.tab === "communaute") renderHub(p.tab);
-      else if (p.tab === "defis") { renderChallenges(); await loadWeekly(true); renderChallenges(); tick = setInterval(() => { const el = document.getElementById("chal-left"); if (el && weekly) el.textContent = remaining(weekly.endsAt - Date.now()); else clearInterval(tick); }, 30000); }
+      else if (p.tab === "defis") { renderChallenges(); await Promise.all([loadWeekly(true), loadCardCh(true)]); renderChallenges(); paintChalDot(); tick = setInterval(() => { const el = document.getElementById("chal-left"); if (el && weekly) el.textContent = remaining(weekly.endsAt - Date.now()); else clearInterval(tick); }, 30000); }
     } });
     document.addEventListener("ma:auth", () => { weekly = null; weeklyAt = 0; const cur = ["cartes", "minijeux", "communaute"].find((k) => ctx.Router.is("play", { tab: k })); if (cur) renderHub(cur); else if (ctx.Router.is("play", { tab: "defis" })) { renderChallenges(); loadWeekly(true).then(renderChallenges); } });
-    document.addEventListener("click", (e) => { const c = e.target.closest("[data-chal-claim]"); if (c) claim(c.dataset.chalClaim); });
+    document.addEventListener("click", (e) => { const c = e.target.closest("[data-chal-claim]"); if (c) claim(c.dataset.chalClaim); const k = e.target.closest("[data-cc-claim]"); if (k) claimCard(k.dataset.ccClaim); });
     document.addEventListener("ma:duel-done", () => log("duel"));
     document.addEventListener("ma:shared", () => log("share"));
     document.addEventListener("ma:cards", () => { weeklyAt = 0; paintShopDot(); });
+    document.addEventListener("ma:auth", () => { cardCh = null; setTimeout(() => { if (C.user) Promise.all([loadWeekly(true), loadCardCh(true)]).then(paintChalDot); else paintChalDot(); }, 1500); });
+    setTimeout(() => { if (C.user) Promise.all([loadWeekly(), loadCardCh()]).then(paintChalDot); }, 4000);
     document.addEventListener("ma:route", () => setTimeout(paintShopDot, 120));
   });
   document.addEventListener("click", (e) => {

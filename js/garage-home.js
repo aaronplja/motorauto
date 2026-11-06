@@ -63,11 +63,11 @@
       <div class="gh-grid">
         <a class="gh-tile gh-level" href="#/garage" aria-label="${T("Niveau")}">${ring(lv.pct)}<span class="gh-lab">${T("Niveau")}</span><b class="gh-num">${lv.level.n}</b><small>${C.esc(lv.level.name || lv.level.label || "")}${lv.next ? " · " + nf(lv.toNext) + " XP" : ""}</small></a>
         <a class="gh-tile" href="#/jouer/boutique"><span class="gh-lab">${T("Cristaux")}</span><b class="gh-num gh-row">${dust}${nf(doc.dust)}</b><small>${T("Boutique")}</small></a>
-        <a class="gh-tile" href="#/jouer/defis"><span class="gh-lab">${T("Série")}</span><b class="gh-num gh-row">${icon("🔥")}${nf(st.days || 0)}<i>${T("jours")}</i></b><small>${T("Reviens chaque jour")}</small></a>
+        <a class="gh-tile gh-chal-link" href="#/jouer/defis"><span class="gh-lab">${T("Série")}</span><b class="gh-num gh-row">${icon("🔥")}${nf(st.days || 0)}<i>${T("jours")}</i></b><small>${T("Reviens chaque jour")}</small></a>
         <a class="gh-tile" href="#/jouer/collection"><span class="gh-lab">${T("Cartes")}</span><b class="gh-num">${nf(doc.count)}<i>/ ${nf(total)}</i></b><span class="gh-bar"><u style="width:${total ? Math.min(100, Math.round((doc.count / total) * 100)) : 0}%"></u></span></a>
       </div>
       <a class="gh-cta ${cta.cl}" href="${href}">${icon(cta.ic)}<span>${cta.t}</span></a>
-      <div class="gh-links"><a href="#/quiz">${icon("🎯")}${T("Quiz")}</a><a href="#/duel">${icon("⚔")}${T("Duel")}</a><a href="#/jouer/defis">${icon("🏆")}${T("Défis")}</a><a href="#/jouer/echanges">${icon("🔄")}${T("Échanges")}</a></div>`;
+      <div class="gh-links"><a href="#/quiz">${icon("🎯")}${T("Quiz")}</a><a href="#/duel">${icon("⚔")}${T("Duel")}</a><a class="gh-chal-link" href="#/jouer/defis">${icon("🏆")}${T("Défis")}</a><a href="#/jouer/echanges">${icon("🔄")}${T("Échanges")}</a></div>`;
     document.documentElement.classList.add("ma-garage");
   }
   (window.MAModules = window.MAModules || []).push(function (ctx) {

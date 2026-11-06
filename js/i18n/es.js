@@ -1060,5 +1060,10 @@
 "Ajoute d'abord une voiture avec photo dans « Mes voitures » pour la choisir ici.": "Primero añade un coche con foto en «Mis coches» para elegirlo aquí.",
 "Bannière choisie : pense à enregistrer ton profil.": "Banner elegido: no olvides guardar tu perfil.",
 "Voiture": "Coche",
-"Classeur": "Archivador"
+"Classeur": "Archivador",
+"Défis à cartes": "Desafíos de cartas",
+"Gagner la carte": "Ganar la carta",
+"✓ Carte gagnée": "✓ Carta ganada",
+"Ajouter une image de club": "Añadir una imagen de club",
+"Changer l'image du club": "Cambiar la imagen del club"
 }]);

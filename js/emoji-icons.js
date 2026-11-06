@@ -7,7 +7,7 @@ var MAP={"🏁":"flag","🚩":"flag2","⚑":"flag2","⭐":"star","🌟":"star","
 var keys=Object.keys(MAP).sort(function(a,b){return b.length-a.length;}).map(function(k){return k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');});
 var RE=new RegExp('('+keys.join('|')+')[\\uFE0F\\uFE0E]?','g');
 var SKIP=['SCRIPT','STYLE','TEXTAREA','INPUT','SELECT','OPTION','TITLE','NOSCRIPT','CODE','PRE','SVG','CANVAS'];
-var SKIPSEL='.mi,[data-no-icons],.desktop-navigation,#desktop-nav,.pagination-bar,.pro-tabs,nav[data-section],.msg-text,.chat-text,.post-body,.comment-body,.bio-text,[contenteditable="true"]';
+var SKIPSEL='.mi,[data-no-icons],.desktop-navigation,#desktop-nav,.pagination-bar,.pro-tabs,nav[data-section],.react-row,.react-pill,.reactions,.react-btn,.react-picker,[data-react],.msg-text,.chat-text,.post-body,.comment-body,.bio-text,[contenteditable="true"]';
 function html(e){
   var k=MAP[e]; if(!k) return null; var ic=ICONS[k]; if(!ic) return null;
   return '<i class="mi mi-'+k+'" data-e="'+e+'" role="img"'+(ic.c?' style="color:'+ic.c+'"':'')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+ic.s+'</svg><b class="mi-t">'+e+'</b></i>';

@@ -910,13 +910,15 @@ service cloud.firestore {
       // le président active le canal, nomme un modérateur (viceUid) et rédige les règles ; le modérateur ne peut modifier que les règles
       allow update: if signedIn()
         && ((resource.data.ownerUid == request.auth.uid
-              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['chatEnabled', 'chatName', 'viceUid', 'viceName', 'rules']))
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['chatEnabled', 'chatName', 'viceUid', 'viceName', 'rules', 'image']))
             || (resource.data.get('viceUid', '') == request.auth.uid
               && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rules'])))
         && request.resource.data.get('chatName', '').size() <= 60
         && request.resource.data.get('viceName', '').size() <= 40
         && request.resource.data.get('viceUid', '').size() <= 60
-        && request.resource.data.get('rules', '').size() <= 600;
+        && request.resource.data.get('rules', '').size() <= 600
+        && request.resource.data.get('image', '').size() <= 600
+        && (request.resource.data.get('image', '') == '' || request.resource.data.image.matches('https://firebasestorage.googleapis.com/.*'));
       allow delete: if isAdmin() || (signedIn() && resource.data.ownerUid == request.auth.uid);
 
       // canal de discussion du club : membres + admins (modération)

@@ -408,6 +408,26 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     r = await G.dailyReminder(); ok(typeof r.sent === "number", "rappel du soir");
   }
 
+  // ---- défis à cartes (affiches du mois)
+  {
+    const U9 = { uid: "u9", name: "Nine" };
+    let cc = await G.cardChallenges(U9);
+    ok(cc.posters.length >= 2 && cc.posters.every((p) => p.tasks.length >= 2 && !p.claimed), "défis à cartes : affiches du mois");
+    const P = cc.posters[0];
+    await rejects(G.claimCardChallenge(U9, { carId: P.id }), "failed-precondition", "affiche non terminée : pas de carte");
+    await rejects(G.claimCardChallenge(U9, { carId: "nimporte" }), "not-found", "affiche inconnue refusée");
+    await db.collection("likes").doc("cat_" + P.id + "_u9").set({ createdAt: new Date(NOW) });
+    await db.collection("comments").add({ uid: "u9", target: P.id, kind: "cat", createdAt: new Date(NOW) });
+    const own = {}; const br = P.brand;
+    cc = await G.cardChallenges(U9);
+    const brandTask = cc.posters[0].tasks.find((t) => t.id === "c-brand");
+    if (brandTask) { const same = pool.filter((c) => c.brand === br && c.id !== P.id).slice(0, 3); same.forEach((c) => { own[c.id] = 1; }); await db.collection("collections").doc("u9").set(Object.assign({}, core.blankCollection(), { owned: own })); }
+    cc = await G.cardChallenges(U9);
+    ok(cc.posters[0].ready, "affiche : tous les défis accomplis → prête");
+    r = await G.claimCardChallenge(U9, { carId: P.id }); ok(r.doc.owned[P.id] === 1, "affiche terminée : la carte est gagnée");
+    await rejects(G.claimCardChallenge(U9, { carId: P.id }), "failed-precondition", "carte d'affiche une seule fois");
+  }
+
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");
   process.exit(fails ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(2); });

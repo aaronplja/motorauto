@@ -24,13 +24,13 @@
     rarityMap = G.computeRarities(cars.map((c) => ({ id: c.id, power: c.stats.power, speed: c.stats.speed || 0, zero: c.stats.zero || 0, name: (c.brand + " " + c.model).trim(), brand: c.brand, category: c.category, year: G.yearOf(c) })));
     cars.forEach((c, i) => numbering.set(c.id, i + 1));
   }
-  let rarOv = {}, circPhotos = {};
+  let rarOv = {}, rarAuto = {}, circPhotos = {};
   let cardPct = {}, pctTotal = 0;
   async function loadCardPct() { try { const s = await C.db.collection("config").doc("cardStats").get(); if (s.exists) { cardPct = s.data().map || {}; pctTotal = s.data().total || 0; } } catch (_) { /* pas de stats */ } }
   const pctHtml = (id) => pctTotal >= 5 ? `<p class="tcg-hint cg-realpct">Possédée par <b>${String(cardPct[id] || 0).replace(".", ",")} %</b> des pilotes</p>` : "";
   async function loadCircPhotos() { try { const s = await C.db.collection("config").doc("circuitPhotos").get(); circPhotos = s.exists && s.data().map ? s.data().map : {}; } catch (_) { /* pas de photos */ } }
-  async function loadRarOv() { loadCircPhotos(); loadCardPct(); try { const s = await C.db.collection("config").doc("rarities").get(); rarOv = s.exists && s.data().map ? s.data().map : {}; } catch (_) { /* pas de surcharge */ } }
-  const rarityOf = (car) => { if (car.mine) return "mine"; if (car.special) return "special"; if (car.circuit || car.livery) { const o = rarOv[car.id]; return o && ORDER.indexOf(o) >= 0 ? o : car.rar; } indexCars(); const o = rarOv[car.id]; if (o && ORDER.indexOf(o) >= 0) return o; return rarityMap.get(car.id) || "common"; };
+  async function loadRarOv() { loadCircPhotos(); loadCardPct(); try { const a = await C.db.collection("config").doc("rarityAuto").get(); rarAuto = a.exists && a.data().map ? a.data().map : {}; } catch (_) { /* calcul local */ } try { const s = await C.db.collection("config").doc("rarities").get(); rarOv = s.exists && s.data().map ? s.data().map : {}; } catch (_) { /* pas de surcharge */ } }
+  const rarityOf = (car) => { if (car.mine) return "mine"; if (car.special) return "special"; if (car.circuit || car.livery) { const o = rarOv[car.id]; return o && ORDER.indexOf(o) >= 0 ? o : car.rar; } indexCars(); const o = rarOv[car.id]; if (o && ORDER.indexOf(o) >= 0) return o; const sv = rarAuto[car.id]; if (sv && ORDER.indexOf(sv) >= 0) return sv; return rarityMap.get(car.id) || "common"; };
   const numberOf = (car) => { indexCars(); return numbering.get(car.id) || 0; };
   /** une carte, qu'elle vienne du catalogue ou d'une édition limitée */
   function cardObj(id) {
