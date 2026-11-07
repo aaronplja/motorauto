@@ -1276,18 +1276,21 @@
       if (b.phase === "lead") {
         const stat = str(data && data.stat, 10);
         if (!BSTATS.some((s) => s[0] === stat)) fail("invalid-argument", "Choisis une caractéristique.");
-        await ref.update({ phase: "reply", lead: { idx, stat, id: mine[idx] }, turnAt: now() });
+        await ref.collection("hands").doc(caller.uid).set({ ids: mine, lead: { idx, id: mine[idx] } });   // la carte jouée reste secrète jusqu'au résultat
+        await ref.update({ phase: "reply", lead: { stat }, turnAt: now() });
         return { status: "reply" };
       }
       if (b.phase !== "reply") fail("failed-precondition", "La bataille n'est pas en cours.");
       if (b.leader === me) fail("failed-precondition", "C'est à ton adversaire de répondre.");
       const pool = await getPool(), L = b.leader, k = b.lead.stat;
-      const lv = bval(pool.byId.get(b.lead.id), k), rv = bval(pool.byId.get(mine[idx]), k), r = bBeats(lv, rv, k);
+      const lh = await ref.collection("hands").doc(b[L]).get(), led = lh.exists ? lh.data().lead : null;
+      if (!led) fail("failed-precondition", "Carte du meneur introuvable.");
+      const lv = bval(pool.byId.get(led.id), k), rv = bval(pool.byId.get(mine[idx]), k), r = bBeats(lv, rv, k);
       const score = { a: b.score.a, b: b.score.b }, winner = r > 0 ? L : r < 0 ? me : "";
       if (winner) score[winner]++;
       const used = { a: b.used.a.slice(), b: b.used.b.slice() };
-      used[L].push(b.lead.idx); used[me].push(idx);
-      const last = { round: b.round, lead: L, stat: k, ids: { [L]: b.lead.id, [me]: mine[idx] }, vals: { [L]: lv, [me]: rv }, winner };
+      used[L].push(led.idx); used[me].push(idx);
+      const last = { round: b.round, lead: L, stat: k, ids: { [L]: led.id, [me]: mine[idx] }, vals: { [L]: lv, [me]: rv }, winner };
       const round = b.round + 1;
       if (round >= b.n) {
         await ref.update({ used, score, last, round, phase: "end" });

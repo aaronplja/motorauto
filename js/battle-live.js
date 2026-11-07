@@ -7,7 +7,7 @@
  */
 (function () {
   "use strict";
-  let C = null, ov = null, unsub = null, timer = null, bid = "", bt = null, hand = [], pick = -1, busy = false, sentNote = "";
+  let ledId = "", C = null, ov = null, unsub = null, timer = null, bid = "", bt = null, hand = [], pick = -1, busy = false, sentNote = "";
   let incUnsub = null, toastEl = null, toastId = "", toastTimer = null;
   const LS = "ma_battle_alert";
   const STATS = [["power", "Puissance", "ch"], ["speed", "Vitesse", "km/h"], ["zero", "0 à 100", "s"]];
@@ -135,7 +135,7 @@
       body = `<div class="bt-res ${bt.winner === me ? "win" : bt.winner ? "lose" : "tie"}">${res} ${bt.score[me]} – ${bt.score[foe]}${note}</div><div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-bl="close">Fermer</button></div>`;
       if (last) { mine = last.ids[me]; theirs = last.ids[foe]; }
     } else {
-      if (bt.phase === "reply") { const L = bt.leader; if (L === me) mine = bt.lead.id; else theirs = bt.lead.id; }
+      if (bt.phase === "reply" && bt.leader === me) mine = ledId || null;   // la carte de l'adversaire reste cachée jusqu'au résultat
       if (myTurn()) {
         if (bt.phase === "lead") {
           hint = pick < 0 ? "Tu mènes : choisis la carte que tu joues." : "Tu mènes : choisis la caractéristique.";
@@ -143,7 +143,7 @@
           if (pick >= 0) mine = hand[pick];
         } else {
           const s = STATS.find((x) => x[0] === bt.lead.stat);
-          hint = `${nm(foe)} joue cette carte et défie ta ${C.esc(s[1])} (${val(bt.lead.id, s[0])} ${s[2]}). Réponds avec une de tes cartes.`;
+          hint = `${nm(foe)} joue une carte secrète et défie ta ${C.esc(s[1])}. Réponds avec une de tes cartes : les deux se révèlent au résultat.`;
           body = `<div class="bt-hand">${handHtml()}</div>`;
         }
       } else {
@@ -151,11 +151,14 @@
         body = `<div class="bt-hand dim">${handHtml(true)}</div>`;
       }
     }
+    // résultat de la manche précédente : les deux cartes restent visibles tant qu'on n'a pas choisi la suivante
+    const showLast = !done && last && bt.phase === "lead" && !(myTurn() && pick >= 0);
+    if (showLast) { mine = last.ids[me]; theirs = last.ids[foe]; }
     const total = bt.n, round = Math.min(bt.round + 1, total);
     box.innerHTML = `<h2>Bataille en direct</h2>
       <div class="bt-score"><span>${nm(me)} <b>${bt.score[me]}</b></span><span>Manche ${round} / ${total}${done ? "" : ` · <span id="bl-clock">${fmtT(bt.turnAt + 90000 - Date.now())}</span>`}</span><span>${nm(foe)} <b>${bt.score[foe]}</b></span></div>
       <div class="bt-field"><div>${mine ? card(mine) : `<div class="bt-hidden">?</div>`}</div><span class="bt-vs">VS</span><div>${theirs ? card(theirs) : `<div class="bt-hidden">MOTOR<br>AUTO</div>`}</div></div>
-      ${!done && last && !(bt.phase === "reply") ? lastTxt : done ? "" : ""}
+      ${showLast ? lastTxt : ""}
       ${hint ? `<p class="tcg-hint" role="status">${hint}</p>` : ""}${body}
       ${!done && waitingForOpp() && Date.now() - bt.turnAt > 90000 ? `<div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-bl="claim">Ton adversaire ne joue plus : réclamer la victoire</button></div>` : ""}
       <p class="bt-note">Mains tirées dans la collection de chacun · aucune récompense · 90 s maximum par coup.</p>`;
@@ -190,7 +193,7 @@
         if (bt.phase === "lead") { pick = i; render(); }
         else { busy = true; try { await call("battlePlay", { id: bid, idx: i }); } finally { busy = false; } }
       } else if (s && pick >= 0 && bt.phase === "lead" && !busy) {
-        busy = true; try { const i = pick; pick = -1; await call("battlePlay", { id: bid, idx: i, stat: s.dataset.bst }); } finally { busy = false; }
+        busy = true; try { const i = pick; ledId = hand[i]; pick = -1; await call("battlePlay", { id: bid, idx: i, stat: s.dataset.bst }); } finally { busy = false; }
       }
     } catch (err) { busy = false; C.toast(err.message, "err"); }
   }

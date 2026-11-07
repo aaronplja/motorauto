@@ -84,7 +84,7 @@
     if (!ov || !st) return;
     const total = st.hand.length, over = st.shown && st.round >= total - 1;
     const my = st.pick >= 0 ? st.hand[st.pick] : null;
-    const foe = st.foePick >= 0 && (st.shown || st.leader === "ai") ? st.foes[st.foePick] : null;
+    const foe = st.foePick >= 0 && st.shown ? st.foes[st.foePick] : null;   // sa carte reste cachée tant que tu n'as pas choisi : elle se révèle au résultat
     const sName = st.stat ? STATS.find((x) => x[0] === st.stat) : null;
     let body = "";
     if (over) {
@@ -93,7 +93,7 @@
     } else if (st.shown) {
       body = `<div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-bt="next">Manche suivante</button></div>`;
     } else if (st.leader === "ai") {
-      body = `<p class="tcg-hint">L'adversaire joue cette carte et défie ta <b>${C.esc(sName[1])}</b> (${val(foe, st.stat) || "—"} ${C.esc(sName[2])}). Choisis la carte avec laquelle tu réponds.</p><div class="bt-hand">${handHtml()}</div>`;
+      body = `<p class="tcg-hint">L'adversaire joue cette carte et défie ta <b>${C.esc(sName[1])}</b> avec une carte secrète. Choisis la carte avec laquelle tu réponds : les deux se révèlent au résultat.</p><div class="bt-hand">${handHtml()}</div>`;
     } else if (my) {
       body = `<p class="tcg-hint">Tu mènes : choisis la caractéristique. L'adversaire répondra avec l'une de ses cartes.</p><div class="bt-stats">${STATS.map((s) => `<button type="button" class="cta-btn fill-btn" data-stat="${s[0]}">${s[1]} · ${val(my, s[0]) || "—"} ${s[2]}</button>`).join("")}</div>`;
     } else {
