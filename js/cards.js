@@ -175,7 +175,7 @@
   }
   function packInner(id, sub) {
     const t = packTheme(id);
-    return `<i class="pkart-flag" data-f="${t.f}" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>${C.esc(t.label)}</b><em>${C.esc(sub || "2 cartes")}</em></span>`;
+    return `<i class="pkart-flag" data-f="${t.f}" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>${C.esc(t.label)}</b><em>${C.esc(sub || "3 cartes")}</em></span>`;
   }
   async function openPack(kind, packId, offer) {
     if (busy || !C.requireLogin()) return;
@@ -632,7 +632,8 @@
     o = o || {};
     const dust = doc.dust, cost = o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
     const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
-    const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>2 cartes</em></span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : "");
+    const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>3 cartes</em>
+</span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : "");
     const lack = dust < cost, price = o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
     return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}${o.cost != null ? " promo" : ""}" data-pack="shop" data-shop="${p.id}"${o.offer ? ` data-offer="1"` : ""} ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${cost} cristaux">
       ${o.cost != null ? `<span class="cg-ribbon">-${G.OFFER_PCT} %</span>` : ""}<span class="cg-art" ${st}>${art}</span>
@@ -693,7 +694,7 @@
         <button type="button" class="cg-gift ${canDaily ? "ready" : "off"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="cg-gi">🎁</span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
       </div>${wheelHtml()}${adventHtml()}${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
-      <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">2 voitures du pays, dont 1 rare ou mieux · Pack Circuit : 3 circuits · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
+      <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">3 voitures du pays, dont 1 rare ou mieux · Pack Circuit : 3 circuits · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
   }
 
   // ----- Mes cartes
@@ -791,25 +792,40 @@
   }
   function editShowcase() {
     if (!doc || !C.requireLogin()) return;
-    let sel = ((showcase && showcase.ids) || []).filter(isOwned).slice(0, 6), q = "", bg = (showcase && showcase.bg) || "";
-    const owned = Object.keys(doc.owned).filter((id) => doc.owned[id] > 0 && cardObj(id)).map(cardObj).sort((a, b) => ORDER.indexOf(rarityOf(a)) - ORDER.indexOf(rarityOf(b)) || (b.stats.power || 0) - (a.stats.power || 0));
-    const o = mountOverlay("showcase", "Choisir ma vitrine", `<div class="tcg-stage cg-pick"><h2>Ma vitrine</h2><p class="tcg-hint" id="sc-count"></p><input type="search" id="sc-q" placeholder="Rechercher parmi tes cartes…" aria-label="Rechercher une carte" autocomplete="off"><div class="sc-order" id="sc-order"></div><div class="sc-bgs" id="sc-bgs" role="group" aria-label="Fond de la vitrine"></div><div class="tcg-grid compact" id="sc-grid"></div><div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-sc-save>Enregistrer</button><button type="button" class="cta-btn btn-ghost" data-close>Annuler</button></div></div>`);
-    const paint = () => {
-      const nq = C.normalize(q), list = owned.filter((c) => !nq || C.normalize(c.brand + " " + c.model).includes(nq)).slice(0, 150);
-      o.querySelector("#sc-count").textContent = sel.length + " / 6 cartes choisies · utilise les flèches pour changer l'ordre";
-      o.querySelector("#sc-order").innerHTML = sel.map((id, i) => { const c = cardObj(id); return `<div class="sc-ord"><span>${i + 1}</span><b>${C.esc(c ? (c.brand + " " + c.model).slice(0, 22) : id)}</b><button type="button" data-sc-mv="${i}" data-d="-1" ${i ? "" : "disabled"} aria-label="Avancer">◀</button><button type="button" data-sc-mv="${i}" data-d="1" ${i < sel.length - 1 ? "" : "disabled"} aria-label="Reculer">▶</button></div>`; }).join("");
-      o.querySelector("#sc-bgs").innerHTML = `<button type="button" class="sc-bg${bg ? "" : " on"}" data-sc-bg="">Aucun</button>` + Object.keys(SC_BG).map((k) => `<button type="button" class="sc-bg${bg === k ? " on" : ""}" data-sc-bg="${k}" data-bg="${k}">${SC_BG[k]}</button>`).join("");
-      o.querySelector("#sc-grid").innerHTML = list.map((c) => `<div class="cg-pickcard${sel.indexOf(c.id) >= 0 ? " on" : ""}" data-pick="${C.esc(c.id)}">${cardHtml(c, { owned: true, count: 0 })}<span class="cg-tick" aria-hidden="true">${sel.indexOf(c.id) >= 0 ? sel.indexOf(c.id) + 1 : ""}</span></div>`).join("") || `<p class="lap-meta">Aucune carte.</p>`;
+    let sel = ((showcase && showcase.ids) || []).filter(isOwned).slice(0, 6), q = "", bg = (showcase && showcase.bg) || "", rf = "";
+    const owned = Object.keys(doc.owned).filter((id) => doc.owned[id] > 0 && cardObj(id)).map(cardObj).sort((a, b) => ORDER.indexOf(rarityOf(b)) - ORDER.indexOf(rarityOf(a)) || (b.stats.power || 0) - (a.stats.power || 0));
+    const acts = (cls) => `<div class="vt-actions ${cls}"><button type="button" class="cta-btn fill-btn" data-sc-save>Enregistrer ma vitrine</button><button type="button" class="cta-btn btn-ghost" data-close>Annuler</button></div>`;
+    const o = mountOverlay("showcase", "Choisir ma vitrine", `<div class="vt">
+      <header class="vt-top"><div><h2>Ma vitrine</h2><p id="sc-count" class="vt-sub"></p></div><button type="button" class="vt-x" data-close aria-label="Fermer">×</button></header>
+      <div class="vt-body">
+        <aside class="vt-side"><div class="vt-prev" id="sc-prev"></div><h3 class="vt-h">Fond</h3><div class="vt-bgs" id="sc-bgs" role="group" aria-label="Fond de la vitrine"></div>${acts("d")}</aside>
+        <section class="vt-main"><div class="vt-tools"><input type="search" id="sc-q" placeholder="Rechercher parmi tes cartes…" aria-label="Rechercher une carte" autocomplete="off"><div class="vt-chips" id="sc-rf" role="group" aria-label="Rareté"></div></div><div class="vt-grid" id="sc-grid"></div></section>
+      </div>${acts("m")}</div>`);
+    const slot = (i) => { const c = sel[i] ? cardObj(sel[i]) : null, u = c && c.image && C.safeUrl(c.image);
+      return c ? `<div class="vt-slot on r-${rarityOf(c)}"><span class="vt-n">${i + 1}</span>${u ? `<img src="${C.esc(u)}" alt="" data-fallback="car">` : ""}<b>${C.esc((c.brand + " " + c.model).slice(0, 26))}</b><div class="vt-sb"><button type="button" data-sc-mv="${i}" data-d="-1" ${i ? "" : "disabled"} aria-label="Avancer">◀</button><button type="button" data-sc-rm="${i}" aria-label="Retirer">✕</button><button type="button" data-sc-mv="${i}" data-d="1" ${i < sel.length - 1 ? "" : "disabled"} aria-label="Reculer">▶</button></div></div>` : `<div class="vt-slot"><span class="vt-n">${i + 1}</span><small>Libre</small></div>`; };
+    const paint = (full) => {
+      const nq = C.normalize(q), list = owned.filter((c) => (!rf || rarityOf(c) === rf) && (!nq || C.normalize(c.brand + " " + c.model).includes(nq))).slice(0, 240);
+      o.querySelector("#sc-count").textContent = sel.length + " / 6 cartes · touche une carte pour l'ajouter ou la retirer";
+      const pv = o.querySelector("#sc-prev"); pv.dataset.bg = bg; pv.innerHTML = [0, 1, 2, 3, 4, 5].map(slot).join("");
+      o.querySelector("#sc-bgs").innerHTML = `<button type="button" class="vt-bg${bg ? "" : " on"}" data-sc-bg="" title="Aucun fond"><i></i><span>Aucun</span></button>` + Object.keys(SC_BG).map((k) => `<button type="button" class="vt-bg${bg === k ? " on" : ""}" data-sc-bg="${k}" title="${SC_BG[k]}"><i data-bg="${k}"></i><span>${SC_BG[k]}</span></button>`).join("");
+      if (full !== false) {
+        const have = ORDER.filter((r) => owned.some((c) => rarityOf(c) === r)).reverse();
+        o.querySelector("#sc-rf").innerHTML = `<button type="button" class="vt-chip${rf ? "" : " on"}" data-sc-rf="">Toutes</button>` + have.map((r) => `<button type="button" class="vt-chip${rf === r ? " on" : ""}" data-sc-rf="${r}">${C.esc((RAR[r] || {}).label || r)}</button>`).join("");
+      }
+      o.querySelector("#sc-grid").innerHTML = list.map((c) => `<div class="cg-pickcard${sel.indexOf(c.id) >= 0 ? " on" : ""}" data-pick="${C.esc(c.id)}" role="button" tabindex="0" aria-pressed="${sel.indexOf(c.id) >= 0}">${cardHtml(c, { owned: true, count: 0 })}<span class="cg-tick" aria-hidden="true">${sel.indexOf(c.id) >= 0 ? sel.indexOf(c.id) + 1 : ""}</span></div>`).join("") || `<p class="lap-meta">Aucune carte.</p>`;
     };
     paint();
-    o.addEventListener("input", (e) => { if (e.target.id === "sc-q") { q = e.target.value; paint(); } });
+    o.addEventListener("input", (e) => { if (e.target.id === "sc-q") { q = e.target.value; paint(false); } });
+    o.addEventListener("keydown", (e) => { const pk = e.target.closest && e.target.closest("[data-pick]"); if (pk && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pk.click(); } });
     o.addEventListener("click", async (e) => {
       if (e.target === o || e.target.closest("[data-close]")) { closeOverlay(); return; }
       const mv = e.target.closest("[data-sc-mv]");
-      if (mv) { const i = Number(mv.dataset.scMv), j = i + Number(mv.dataset.d); if (j >= 0 && j < sel.length) { const t = sel[i]; sel[i] = sel[j]; sel[j] = t; paint(); } return; }
-      const gb = e.target.closest("[data-sc-bg]"); if (gb) { bg = gb.dataset.scBg; paint(); return; }
+      if (mv) { const i = Number(mv.dataset.scMv), j = i + Number(mv.dataset.d); if (j >= 0 && j < sel.length) { const t = sel[i]; sel[i] = sel[j]; sel[j] = t; paint(false); } return; }
+      const rm = e.target.closest("[data-sc-rm]"); if (rm) { sel.splice(Number(rm.dataset.scRm), 1); paint(false); return; }
+      const rfb = e.target.closest("[data-sc-rf]"); if (rfb) { rf = rfb.dataset.scRf; paint(); return; }
+      const gb = e.target.closest("[data-sc-bg]"); if (gb) { bg = gb.dataset.scBg; paint(false); return; }
       const pk = e.target.closest("[data-pick]");
-      if (pk) { const id = pk.dataset.pick, i = sel.indexOf(id); if (i >= 0) sel.splice(i, 1); else if (sel.length < 6) sel.push(id); else C.toast("6 cartes maximum.", "err"); paint(); return; }
+      if (pk) { const id = pk.dataset.pick, i = sel.indexOf(id); if (i >= 0) sel.splice(i, 1); else if (sel.length < 6) sel.push(id); else C.toast("6 cartes maximum.", "err"); paint(false); return; }
       if (e.target.closest("[data-sc-save]")) { if (await saveShowcase({ ids: sel, bg })) { C.toast("Vitrine enregistrée.", "ok"); closeOverlay(); } }
     });
   }

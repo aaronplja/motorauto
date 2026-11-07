@@ -201,7 +201,7 @@
     for (const [rx, id] of BRAND_COUNTRY) if (rx.test(b)) return id;
     return "xx";
   }
-  /** packs de la boutique : « world » (toutes les voitures) et un pack par pays ; 2 cartes dont 1 « rare » ou mieux */
+  /** packs de la boutique : « world » (toutes les voitures) et un pack par pays ; 3 cartes dont 1 « rare » ou mieux */
 
   // ------------------------------------------------------------------ cartes Circuit (famille à part : tracé, longueur, pays ; l'administrateur peut ajouter une photo par URL)
   const CIRCUIT_COUNTRY = {"ae": "Émirats arabes unis", "ar": "Argentine", "at": "Autriche", "au": "Australie", "az": "Azerbaïdjan", "be": "Belgique", "bh": "Bahreïn", "br": "Brésil", "ca": "Canada", "cn": "Chine", "cz": "Tchéquie", "de": "Allemagne", "es": "Espagne", "fr": "France", "gb": "Royaume-Uni", "hu": "Hongrie", "in": "Inde", "it": "Italie", "jp": "Japon", "kr": "Corée du Sud", "mc": "Monaco", "mx": "Mexique", "my": "Malaisie", "nl": "Pays-Bas", "pt": "Portugal", "qa": "Qatar", "ru": "Russie", "sa": "Arabie saoudite", "se": "Suède", "sg": "Singapour", "tr": "Turquie", "us": "États-Unis", "za": "Afrique du Sud", "ch": "Suisse"};
@@ -324,10 +324,10 @@
   const isCircuit = (id) => String(id).indexOf("ci-") === 0;
   const CIRCUIT_BY_ID = new Map(CIRCUIT_CARDS.map((r) => [r[0], { id: r[0], circuit: true, name: r[1], brand: "Circuit", model: r[1], country: r[2], countryLabel: CIRCUIT_COUNTRY[r[2]] || "", km: r[3], since: r[4], rar: r[5], trace: !!r[6] }]));
   const circuitRarities = () => new Map(CIRCUIT_CARDS.map((r) => [r[0], r[5]]));
-  const PACKS = { world: { id: "world", label: "Pack mondial", cost: 200, cards: 2, min: "rare", country: "" } };
-  COUNTRIES.forEach((k) => { PACKS[k.id] = { id: k.id, label: "Pack " + k.label, cost: k.cost, cards: 2, min: "rare", country: k.id }; });
+  const PACKS = { world: { id: "world", label: "Pack mondial", cost: 200, cards: 3, min: "rare", country: "" } };
+  COUNTRIES.forEach((k) => { PACKS[k.id] = { id: k.id, label: "Pack " + k.label, cost: k.cost, cards: 3, min: "rare", country: k.id }; });
   PACKS.circuit = { id: "circuit", label: "Pack Circuit", cost: 400, cards: 3, min: "rare", country: "", circuit: true };
-  const SHOP_PACK = { cost: PACKS.world.cost, cards: 2 };
+  const SHOP_PACK = { cost: PACKS.world.cost, cards: 3 };
   function drawShopPack(rarities, ids, rng, min, n) {
     ids = ids.filter((id) => rarities.get(id) !== "mythic");
     const by = {}; ORDER.forEach((r) => { by[r] = []; });
@@ -473,8 +473,13 @@
   const CARD_CHALS = [
     { id: "c-react", icon: "🔥", label: (n) => "Réagis à la fiche de « " + n + " »" },
     { id: "c-comment", icon: "✍️", label: (n) => "Donne ton avis sur « " + n + " » (commentaire)" },
-    { id: "c-brand", icon: "🏁", label: (n, b) => "Possède 3 cartes " + b }
+    { id: "c-brand", icon: "🏁", label: (n, b, g) => "Possède " + g + " cartes " + b },
+    { id: "c-quiz", icon: "🧠", label: (n, b, g) => "Réussis " + g + " quiz parfaits ce mois-ci" },
+    { id: "c-packs", icon: "📦", label: (n, b, g) => "Ouvre " + g + " packs ce mois-ci" },
+    { id: "c-trade", icon: "🔁", label: (n, b, g) => "Réalise " + g + " échange" + (g > 1 ? "s" : "") + " de cartes ce mois-ci" }
   ];
+  /** objectifs chiffrés selon la rareté de la carte à gagner */
+  const CARD_GOALS = { rare: { brand: 5, quiz: 2, packs: 8, trade: 0 }, epic: { brand: 7, quiz: 4, packs: 14, trade: 1 }, legendary: { brand: 9, quiz: 6, packs: 20, trade: 2 } };
   /** les affiches du mois : 1 légendaire, 1 épique, 2 rares tirées au sort (mêmes pour tous) */
   function cardChalCars(month, ids, rar) {
     const rnd = mulberry(hashStr("motorauto-cc-" + month)), out = [];
@@ -1040,7 +1045,7 @@ Q("circuits", 4, "Quel virage célèbre se trouve à Spa-Francorchamps ?", ["Eau
 Q("circuits", 4, "Quelle est la longueur de la Nordschleife du Nürburgring ?", ["20,8 km", "12,5 km", "25,4 km", "15,1 km"], "How long is the Nürburgring Nordschleife?", ["20.8 km", "12.5 km", "25.4 km", "15.1 km"]),
 Q("circuits", 4, "Dans quel état américain se trouve le circuit de Laguna Seca et son célèbre « Corkscrew » ?", ["La Californie", "La Floride", "Le Texas", "L'Ohio"], "In which US state is Laguna Seca, with its famous “Corkscrew”?", ["California", "Florida", "Texas", "Ohio"]),
 Q("numbers", 4, "Quelle puissance a la McLaren F1 de 1992 ?", ["Environ 630 ch", "Environ 450 ch", "Environ 800 ch", "Environ 1 000 ch"], "How much power does the 1992 McLaren F1 have?", ["About 630 hp", "About 450 hp", "About 800 hp", "About 1,000 hp"]),
-Q("numbers", 4, "Quelle vitesse maximale a atteint la McLaren F1 en 1998 ?", ["391 km/h", "330 km/h", "420 km/h", "450 km/h"], "What top speed did the McLaren F1 reach in 1998?"),
+Q("numbers", 4, "Quelle vitesse maximale a atteint la McLaren F1 en 1998 ?", ["386 km/h", "330 km/h", "420 km/h", "450 km/h"], "What top speed did the McLaren F1 reach in 1998?"),
 Q("numbers", 4, "Quelle vitesse a atteint la Bugatti Chiron prototype en 2019 ?", ["Environ 490 km/h", "Environ 440 km/h", "Environ 520 km/h", "Environ 560 km/h"], "What speed did the prototype Bugatti Chiron reach in 2019?", ["About 490 km/h", "About 440 km/h", "About 520 km/h", "About 560 km/h"]),
 Q("numbers", 4, "Quelle cylindrée ont les moteurs de F1 depuis 2014 ?", ["1,6 L", "2,4 L", "3,0 L", "1,0 L"], "What is the displacement of Formula 1 engines since 2014?", ["1.6 L", "2.4 L", "3.0 L", "1.0 L"]),
 Q("numbers", 4, "Quelle distance a parcouru l'Audi R15 TDI aux 24 Heures du Mans 2010 ?", ["Plus de 5 400 km", "Environ 4 000 km", "Environ 6 000 km", "Moins de 3 500 km"], "What distance did the Audi R15 TDI cover at the 2010 24 Hours of Le Mans?", ["More than 5,400 km", "About 4,000 km", "About 6,000 km", "Less than 3,500 km"]),
@@ -1050,7 +1055,7 @@ Q("trivia", 4, "Environ combien de Coccinelle ont été produites ?", ["21,5 mil
 Q("trivia", 4, "À qui doit-on l'emblème du cheval cabré de Ferrari ?", ["À l'aviateur Francesco Baracca", "À Enzo Ferrari seul", "À Ferruccio Lamborghini", "À Benito Mussolini"], "Whose emblem inspired Ferrari's prancing horse?", ["The pilot Francesco Baracca", "Enzo Ferrari alone", "Ferruccio Lamborghini", "Benito Mussolini"]),
 Q("trivia", 4, "D'où vient le trident du logo Maserati ?", ["De la fontaine de Neptune à Bologne", "Des armoiries de Modène", "D'un emblème naval", "D'une pièce de monnaie"], "Where does the Maserati trident come from?", ["The Neptune fountain in Bologna", "The arms of Modena", "A naval emblem", "A coin"]),
 Q("trivia", 4, "Quel signe astrologique a inspiré le taureau de Lamborghini ?", ["Le Taureau", "Le Bélier", "Le Lion", "Le Scorpion"], "Which zodiac sign inspired the Lamborghini bull?", ["Taurus", "Aries", "Leo", "Scorpio"]),
-Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom ?", ["Antoine de la Mothe Cadillac, fondateur de Détroit", "Henry Leland", "Louis Chevrolet", "William Durant"], "After whom is Cadillac named?", ["Antoine de la Mothe Cadillac, founder of Detroit", "Henry Leland", "Louis Chevrolet", "William Durant"])
+Q("trivia", 4, "De qui la marque Cadillac porte-t-elle le nom ?", ["Antoine de la Mothe Cadillac, fondateur de Détroit", "Henry Leland", "Louis Chevrolet", "William Durant"], "After whom is Cadillac named?", ["Antoine de la Mothe Cadillac, founder of Detroit", "Henry Leland", "Louis Chevrolet", "William Durant"])
   );
 
   // questions à PLUSIEURS bonnes réponses : [catégorie, niveau, question fr, options fr, indices corrects, question en, options en]
@@ -1145,8 +1150,825 @@ Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom
     ["countries", 2, "De quel pays vient la marque Subaru ?", ["Japon", "Corée du Sud", "États-Unis", "Chine"], "Which country does the Subaru brand come from?", ["Japan", "South Korea", "United States", "China"]]
   );
 
+  // ---------------------------------------------------------------- banque écrite supplémentaire (français ; l'anglais reprend le texte français)
+  const F = (c, l, f, fo) => [c, l, f, fo, f, fo];
+  QBANK.push(
+// ---- trivia : cinéma, séries, culture
+F("trivia", 1, "Quelle voiture est la star du film « Retour vers le futur » ?", ["La DeLorean DMC-12", "La Ford Mustang", "La Chevrolet Camaro", "La Dodge Charger"]),
+F("trivia", 1, "Quelle voiture James Bond conduit-il dans « Goldfinger » (1964) ?", ["Une Aston Martin DB5", "Une Jaguar E-Type", "Une Lotus Esprit", "Une Bentley Mark IV"]),
+F("trivia", 1, "Quelle voiture Mr. Bean conduit-il dans la série ?", ["Une Mini", "Une Fiat 500", "Une Citroën 2CV", "Une Austin Allegro"]),
+F("trivia", 1, "Quelle voiture est « Herbie », héros d'« Un amour de Coccinelle » ?", ["Une Volkswagen Coccinelle", "Une Mini", "Une Fiat 500", "Une Citroën 2CV"]),
+F("trivia", 1, "Quelle marque de voiture est « K 2000 », la voiture qui parle ?", ["Pontiac", "Chevrolet", "Dodge", "Ford"]),
+F("trivia", 2, "Dans le film « Bullitt » (1968), quelle voiture Steve McQueen conduit-il ?", ["Une Ford Mustang GT 390", "Une Dodge Charger", "Une Chevrolet Corvette", "Une Pontiac GTO"]),
+F("trivia", 2, "Quelle voiture Peugeot est la vedette du film « Taxi » (1998) ?", ["La 406", "La 205", "La 306", "La 607"]),
+F("trivia", 2, "Quelle voiture conduit Bourvil dans « Le Corniaud » (1965) ?", ["Une Citroën 2CV", "Une Renault 4L", "Une Simca 1000", "Une Peugeot 403"]),
+F("trivia", 2, "Quelle voiture Steve McQueen fait-il courir dans le film « Le Mans » (1971) ?", ["Une Porsche 917", "Une Ferrari 512", "Une Ford GT40", "Une Lola T70"]),
+F("trivia", 2, "Quelle voiture Louis de Funès utilise-t-il dans la série de films « Fantômas » ?", ["Une Citroën DS", "Une Peugeot 404", "Une Renault Floride", "Une Simca Aronde"]),
+F("trivia", 2, "Quel pilote est surnommé « Le Professeur » ?", ["Alain Prost", "Ayrton Senna", "Niki Lauda", "Nigel Mansell"]),
+F("trivia", 2, "Quel pilote est surnommé « Iceman » ?", ["Kimi Räikkönen", "Mika Häkkinen", "Fernando Alonso", "Jenson Button"]),
+F("trivia", 2, "Quel pilote est surnommé « le Baron rouge » ?", ["Michael Schumacher", "Sebastian Vettel", "Gerhard Berger", "Rubens Barrichello"]),
+F("trivia", 3, "Quel pilote britannique a gagné trois titres mondiaux de F1 en 1969, 1971 et 1973 ?", ["Jackie Stewart", "Graham Hill", "Jim Clark", "John Surtees"]),
+F("trivia", 1, "Combien de roues possède une voiture standard ?", ["4", "3", "5", "6"]),
+F("trivia", 1, "Quelle couleur est traditionnellement associée aux voitures de course italiennes ?", ["Le rouge", "Le bleu", "Le vert", "Le jaune"]),
+F("trivia", 1, "Quelle couleur est traditionnellement associée aux voitures de course britanniques ?", ["Le vert", "Le rouge", "Le bleu", "Le jaune"]),
+F("trivia", 1, "Quelle couleur est traditionnellement associée aux voitures de course françaises ?", ["Le bleu", "Le rouge", "Le vert", "Le blanc"]),
+F("trivia", 2, "Quelle couleur est traditionnellement associée aux voitures de course allemandes (les « flèches d'argent ») ?", ["L'argent", "Le rouge", "Le vert", "Le bleu"]),
+F("trivia", 2, "Quel véhicule est surnommé « la Tin Lizzie » ?", ["La Ford Model T", "La Ford Mustang", "La Chevrolet Corvette", "La Dodge Viper"]),
+F("trivia", 2, "Quel véhicule est surnommé « la Deuche » ?", ["La Citroën 2CV", "La Renault 4L", "La Peugeot 203", "La Simca 1000"]),
+F("trivia", 2, "Quelle voiture est surnommée « la Pagode » ?", ["La Mercedes-Benz SL (W113)", "La Mercedes 300 SL", "La Porsche 356", "La Jaguar E-Type"]),
+F("trivia", 3, "Quelle voiture est surnommée « la brique » ?", ["La Volvo 240", "La Volvo P1800", "La Saab 99", "La Renault 12"]),
+F("trivia", 3, "Quelle voiture est surnommée « œil de grenouille » (Frogeye) ?", ["L'Austin-Healey Sprite", "La MG Midget", "La Triumph Spitfire", "La Lotus Elan"]),
+F("trivia", 2, "Quelle voiture est surnommée « Godzilla » ?", ["La Nissan GT-R", "La Toyota Supra", "La Mazda RX-7", "La Honda NSX"]),
+F("trivia", 2, "Quelle voiture est surnommée « la Vette » ?", ["La Chevrolet Corvette", "La Chevrolet Camaro", "La Dodge Viper", "La Ford GT"]),
+F("trivia", 3, "Qui a dessiné la Lamborghini Miura ?", ["Marcello Gandini (Bertone)", "Giorgetto Giugiaro", "Sergio Pininfarina", "Flaminio Bertoni"]),
+F("trivia", 3, "Qui a dessiné la Ferrari 250 GTO ?", ["Giotto Bizzarrini (sa carrosserie par Scaglietti)", "Marcello Gandini", "Gordon Murray", "Adrian Newey"]),
+F("trivia", 3, "Quel designer est à l'origine de la Volkswagen Golf de première génération ?", ["Giorgetto Giugiaro", "Marcello Gandini", "Sergio Pininfarina", "Walter de Silva"]),
+F("trivia", 3, "Quel constructeur de carrosseries italien a dessiné la Ferrari 308 ?", ["Pininfarina", "Bertone", "Zagato", "Italdesign"]),
+F("trivia", 3, "Qui a conçu la McLaren F1 ?", ["Gordon Murray", "Adrian Newey", "Colin Chapman", "Bruce McLaren"]),
+F("trivia", 3, "Qui a fondé l'écurie Lotus et conçu la Lotus Seven ?", ["Colin Chapman", "Bruce McLaren", "Enzo Ferrari", "Jack Brabham"]),
+F("trivia", 3, "Quelle équipe de F1 est la plus titrée au championnat constructeurs ?", ["Ferrari", "McLaren", "Williams", "Mercedes"]),
+F("trivia", 2, "Quel pays a vu naître le championnat du monde de F1 en 1950, à Silverstone ?", ["Le Royaume-Uni", "L'Italie", "La France", "Monaco"]),
+F("trivia", 3, "Quel pilote est mort sur le circuit d'Imola en 1994 ?", ["Ayrton Senna", "Alain Prost", "Gilles Villeneuve", "Niki Lauda"]),
+F("trivia", 2, "Quel pilote canadien est le père de Jacques Villeneuve ?", ["Gilles Villeneuve", "Ayrton Senna", "Alain Prost", "Jean Alesi"]),
+F("trivia", 3, "Quel pilote a survécu à un terrible accident au Nürburgring en 1976 ?", ["Niki Lauda", "James Hunt", "Clay Regazzoni", "Jody Scheckter"]),
+F("trivia", 2, "Quel film de Ron Howard (2013) raconte la rivalité Hunt-Lauda ?", ["Rush", "Ford v Ferrari", "Senna", "Le Mans"]),
+F("trivia", 2, "Quel film (2019) raconte la bataille Ford contre Ferrari au Mans ?", ["Le Mans 66", "Rush", "Gran Turismo", "Senna"]),
+F("trivia", 2, "Quelle voiture Dominic Toretto conduit-il dans le premier film « Fast & Furious » ?", ["Une Dodge Charger R/T", "Une Chevrolet Camaro", "Une Ford Mustang", "Une Plymouth Barracuda"]),
+// ---- chiffres
+F("numbers", 1, "Combien de cylindres compte un moteur V12 ?", ["12", "6", "8", "16"]),
+F("numbers", 1, "Quelle tension a une batterie de démarrage classique ?", ["12 volts", "6 volts", "24 volts", "48 volts"]),
+F("numbers", 1, "Combien de roues motrices a une propulsion ?", ["2", "1", "3", "4"]),
+F("numbers", 1, "Combien de pilotes sont sur la grille de F1 en 2024 ?", ["20", "16", "24", "18"]),
+F("numbers", 1, "Combien d'écuries participent au championnat de F1 en 2024 ?", ["10", "8", "12", "14"]),
+F("numbers", 2, "Combien de points rapporte une victoire en F1 aujourd'hui ?", ["25", "10", "15", "20"]),
+F("numbers", 2, "Combien de titres de champion du monde de F1 ont Schumacher et Hamilton chacun ?", ["7", "5", "6", "8"]),
+F("numbers", 2, "Combien de titres de champion du monde de F1 a gagné Juan Manuel Fangio ?", ["5", "3", "4", "7"]),
+F("numbers", 2, "Combien de titres WRC a gagné Sébastien Loeb ?", ["9", "7", "8", "10"]),
+F("numbers", 2, "Combien de victoires au Mans compte Tom Kristensen ?", ["9", "7", "11", "5"]),
+F("numbers", 2, "Combien de Grands Prix Michael Schumacher a-t-il remportés ?", ["91", "51", "41", "105"]),
+F("numbers", 3, "Combien de Grands Prix Ayrton Senna a-t-il remportés ?", ["41", "31", "51", "61"]),
+F("numbers", 3, "Combien de Grands Prix Alain Prost a-t-il remportés ?", ["51", "41", "61", "31"]),
+F("numbers", 2, "Quelle est la puissance de la Bugatti Veyron 16.4 ?", ["1 001 ch", "800 ch", "1 500 ch", "650 ch"]),
+F("numbers", 3, "Quelle est la puissance de la Bugatti Chiron d'origine ?", ["1 500 ch", "1 200 ch", "1 000 ch", "1 800 ch"]),
+F("numbers", 3, "Quelle est la puissance de la Ferrari F40 ?", ["478 ch", "350 ch", "600 ch", "400 ch"]),
+F("numbers", 3, "Quelle vitesse maximale annonce la Ferrari F40 ?", ["324 km/h", "280 km/h", "350 km/h", "300 km/h"]),
+F("numbers", 4, "Quelle vitesse a atteint la Bugatti Veyron Super Sport lors de son record en 2010 ?", ["431 km/h", "407 km/h", "460 km/h", "390 km/h"]),
+F("numbers", 2, "Combien de Ford Model T ont été produites environ ?", ["15 millions", "5 millions", "1 million", "30 millions"]),
+F("numbers", 3, "Quelle est la cylindrée de la Citroën 2CV d'origine ?", ["375 cm³", "600 cm³", "250 cm³", "1 000 cm³"]),
+F("numbers", 3, "Quelle puissance développe la Ford Model T ?", ["Environ 20 ch", "Environ 50 ch", "Environ 100 ch", "Environ 5 ch"]),
+F("numbers", 3, "Combien de vitesses compte la boîte de la Bugatti Chiron ?", ["7", "6", "8", "9"]),
+F("numbers", 3, "Combien de cylindres compte le moteur de la Ferrari Testarossa ?", ["12", "8", "10", "6"]),
+F("numbers", 3, "Combien de cylindres compte le moteur de la Ferrari F40 ?", ["8", "6", "10", "12"]),
+F("numbers", 2, "Combien de temps dure une course des 24 Heures du Mans ?", ["24 heures", "12 heures", "48 heures", "6 heures"]),
+F("numbers", 3, "Quelle distance minimale parcourt un Grand Prix de F1 (hors Monaco) ?", ["Environ 305 km", "Environ 200 km", "Environ 500 km", "Environ 100 km"]),
+F("numbers", 2, "Quelle puissance approximative correspond à 100 kW ?", ["136 ch", "73 ch", "200 ch", "100 ch"]),
+F("numbers", 3, "En quelle année la Formule 1 a-t-elle adopté les moteurs V6 turbo hybrides ?", ["2014", "2009", "2018", "2005"]),
+F("numbers", 3, "Combien de moteurs électriques a la Tesla Model S Plaid ?", ["3", "1", "2", "4"]),
+F("numbers", 2, "Quelle est l'autonomie en kilomètres typique d'une citadine électrique récente ?", ["Environ 300 à 400 km", "Environ 50 km", "Environ 1 500 km", "Environ 3 000 km"]),
+F("numbers", 3, "Quel est le régime de rotation maximal d'une F1 de la période 2006-2013 ?", ["18 000 tr/min", "8 000 tr/min", "12 000 tr/min", "25 000 tr/min"]),
+F("numbers", 4, "Combien de cylindres avait le moteur de la Ferrari 312 T (F1) des années 1970 ?", ["12 (à plat)", "8", "10", "6"]),
+// ---- brands : compléments
+F("brands", 1, "Quelle marque produit la 911 ?", ["Porsche", "Ferrari", "Lamborghini", "Maserati"]),
+F("brands", 1, "Quelle marque produit la Golf ?", ["Volkswagen", "Audi", "Opel", "Seat"]),
+F("brands", 1, "Quelle marque produit la Clio ?", ["Renault", "Peugeot", "Citroën", "Dacia"]),
+F("brands", 1, "Quelle marque produit la 208 ?", ["Peugeot", "Renault", "Citroën", "Opel"]),
+F("brands", 1, "Quelle marque produit la Panda ?", ["Fiat", "Lancia", "Seat", "Skoda"]),
+F("brands", 1, "Quelle marque produit la Model S ?", ["Tesla", "Lucid", "Polestar", "Rivian"]),
+F("brands", 1, "Quelle marque produit la Mustang ?", ["Ford", "Chevrolet", "Dodge", "Pontiac"]),
+F("brands", 1, "Quelle marque produit la Corvette ?", ["Chevrolet", "Ford", "Dodge", "Cadillac"]),
+F("brands", 1, "Quelle marque produit la Huracán ?", ["Lamborghini", "Ferrari", "McLaren", "Maserati"]),
+F("brands", 1, "Quelle marque produit la Quattroporte ?", ["Maserati", "Alfa Romeo", "Ferrari", "Lancia"]),
+F("brands", 2, "Quelle marque produit la Giulia ?", ["Alfa Romeo", "Lancia", "Fiat", "Maserati"]),
+F("brands", 2, "Quelle marque produit la Octavia ?", ["Škoda", "Seat", "Dacia", "Opel"]),
+F("brands", 2, "Quelle marque produit la Ibiza ?", ["SEAT", "Škoda", "Fiat", "Renault"]),
+F("brands", 2, "Quelle marque produit la Corsa ?", ["Opel", "Volkswagen", "Fiat", "Ford"]),
+F("brands", 2, "Quelle marque produit la C3 Aircross ?", ["Citroën", "Peugeot", "Renault", "DS"]),
+F("brands", 2, "Quelle marque produit la Sandero ?", ["Dacia", "Renault", "Skoda", "Seat"]),
+F("brands", 2, "Quelle marque produit la Elise ?", ["Lotus", "TVR", "Morgan", "Caterham"]),
+F("brands", 2, "Quelle marque produit la Vantage ?", ["Aston Martin", "Bentley", "Jaguar", "Lotus"]),
+F("brands", 2, "Quelle marque produit la Continental GT ?", ["Bentley", "Rolls-Royce", "Aston Martin", "Jaguar"]),
+F("brands", 2, "Quelle marque produit la Cullinan ?", ["Rolls-Royce", "Bentley", "Maybach", "Land Rover"]),
+F("brands", 3, "Quelle marque produit la Zonda ?", ["Pagani", "Koenigsegg", "Ferrari", "Lamborghini"]),
+F("brands", 3, "Quelle marque produit l'Agera ?", ["Koenigsegg", "Pagani", "Bugatti", "McLaren"]),
+F("brands", 3, "Quelle marque produit la Chiron ?", ["Bugatti", "Pagani", "Koenigsegg", "Lamborghini"]),
+F("brands", 3, "Quelle marque produit la Huayra ?", ["Pagani", "Bugatti", "Koenigsegg", "Rimac"]),
+F("brands", 3, "Quelle marque produit la P1 ?", ["McLaren", "Ferrari", "Porsche", "Lamborghini"]),
+F("brands", 3, "Quelle marque produit la Viper ?", ["Dodge", "Chevrolet", "Ford", "Pontiac"]),
+F("brands", 3, "Quelle marque produit la Stratos ?", ["Lancia", "Alfa Romeo", "Fiat", "Ferrari"]),
+F("brands", 3, "Quelle marque produit la Delta Integrale ?", ["Lancia", "Fiat", "Alfa Romeo", "Maserati"]),
+F("brands", 3, "Quelle marque produit la Giulietta ?", ["Alfa Romeo", "Lancia", "Fiat", "Maserati"]),
+F("brands", 3, "Quelle marque produit la Defender ?", ["Land Rover", "Jeep", "Toyota", "Mitsubishi"]),
+F("brands", 3, "Quelle marque produit la Wrangler ?", ["Jeep", "Land Rover", "Ford", "Toyota"]),
+F("brands", 3, "Quelle marque produit la Karmann Ghia ?", ["Volkswagen", "Porsche", "Audi", "Opel"]),
+F("brands", 2, "Quelle marque a lancé la Mégane ?", ["Renault", "Peugeot", "Citroën", "Opel"]),
+F("brands", 1, "Quelle marque française de luxe a produit la Veyron ?", ["Bugatti", "Alpine", "DS", "Venturi"]),
+F("brands", 2, "Quelle marque haut de gamme appartient au groupe Citroën-Peugeot (Stellantis) et s'appelle « DS » ?", ["DS Automobiles", "Alpine", "Lancia", "Maserati"]),
+F("brands", 2, "À quel groupe appartient Lamborghini ?", ["Volkswagen (via Audi)", "Fiat", "Renault", "BMW"]),
+F("brands", 2, "À quel groupe appartient Bentley ?", ["Volkswagen", "BMW", "Tata", "Daimler"]),
+F("brands", 3, "À quel groupe appartient Rolls-Royce Motor Cars ?", ["BMW", "Volkswagen", "Tata", "Daimler"]),
+F("brands", 3, "À quel groupe indien appartiennent Jaguar et Land Rover ?", ["Tata", "Mahindra", "Maruti", "Bajaj"]),
+F("brands", 3, "À quel groupe appartient Mini ?", ["BMW", "Volkswagen", "Renault", "Stellantis"]),
+F("brands", 3, "À quel groupe appartient Alfa Romeo ?", ["Stellantis", "Volkswagen", "BMW", "Renault"]),
+F("brands", 3, "À quel groupe appartient Škoda ?", ["Volkswagen", "Renault", "Stellantis", "Toyota"]),
+F("brands", 3, "À quel groupe chinois appartient Volvo Cars ?", ["Geely", "BYD", "SAIC", "Great Wall"]),
+// ---- countries : compléments (marques)
+F("countries", 1, "De quel pays vient la marque Lamborghini ?", ["Italie", "Allemagne", "France", "Espagne"]),
+F("countries", 1, "De quel pays vient la marque Tesla ?", ["États-Unis", "Allemagne", "Chine", "Canada"]),
+F("countries", 1, "De quel pays vient la marque Citroën ?", ["France", "Italie", "Belgique", "Suisse"]),
+F("countries", 1, "De quel pays vient la marque Volkswagen ?", ["Allemagne", "Autriche", "Suisse", "Pays-Bas"]),
+F("countries", 2, "De quel pays vient la marque Kia ?", ["Corée du Sud", "Japon", "Chine", "Thaïlande"]),
+F("countries", 2, "De quel pays vient la marque Jaguar ?", ["Royaume-Uni", "États-Unis", "Allemagne", "Australie"]),
+F("countries", 2, "De quel pays vient la marque Lotus ?", ["Royaume-Uni", "Italie", "États-Unis", "Allemagne"]),
+F("countries", 2, "De quel pays vient la marque Opel ?", ["Allemagne", "Pays-Bas", "Belgique", "Autriche"]),
+F("countries", 2, "De quel pays vient la marque Suzuki ?", ["Japon", "Corée du Sud", "Inde", "Chine"]),
+F("countries", 2, "De quel pays vient la marque Lancia ?", ["Italie", "France", "Espagne", "Portugal"]),
+F("countries", 3, "De quel pays vient la marque Rimac ?", ["Croatie", "Serbie", "Slovénie", "Hongrie"]),
+F("countries", 3, "De quel pays vient la marque Tatra ?", ["République tchèque", "Pologne", "Hongrie", "Roumanie"]),
+F("countries", 3, "De quel pays vient la marque Lada ?", ["Russie", "Ukraine", "Pologne", "Bulgarie"]),
+F("countries", 3, "De quel pays vient la marque Tata ?", ["Inde", "Pakistan", "Indonésie", "Malaisie"]),
+F("countries", 3, "De quel pays vient la marque BYD ?", ["Chine", "Japon", "Corée du Sud", "Taïwan"]),
+F("countries", 3, "De quel pays vient la marque Polestar ?", ["Suède", "Norvège", "Danemark", "Finlande"]),
+F("countries", 3, "De quel pays vient la marque Morgan ?", ["Royaume-Uni", "Irlande", "Australie", "Nouvelle-Zélande"]),
+F("countries", 3, "De quel pays vient la marque Holden ?", ["Australie", "Nouvelle-Zélande", "Afrique du Sud", "Canada"]),
+F("countries", 2, "Dans quel pays se trouve l'usine historique de Ferrari à Maranello ?", ["Italie", "France", "Suisse", "Monaco"]),
+F("countries", 2, "Dans quel pays est fabriquée la Mini actuelle (usine d'Oxford) ?", ["Royaume-Uni", "Allemagne", "Pays-Bas", "Autriche"]),
+// ---- circuits : compléments
+F("circuits", 1, "Quel circuit accueille le Grand Prix de F1 de Monaco ?", ["Les rues de Monte-Carlo", "Monza", "Spa-Francorchamps", "Imola"]),
+F("circuits", 1, "Dans quel pays se trouve le circuit de Silverstone ?", ["Royaume-Uni", "Irlande", "France", "États-Unis"]),
+F("circuits", 1, "Dans quel pays se trouve le circuit de Suzuka ?", ["Japon", "Chine", "Corée du Sud", "Malaisie"]),
+F("circuits", 1, "Dans quel pays se trouve le circuit d'Interlagos ?", ["Brésil", "Argentine", "Mexique", "Chili"]),
+F("circuits", 2, "Dans quel pays se trouve le circuit d'Imola ?", ["Italie", "Espagne", "France", "Suisse"]),
+F("circuits", 2, "Dans quel pays se trouve le circuit de Zandvoort ?", ["Pays-Bas", "Belgique", "Allemagne", "Danemark"]),
+F("circuits", 2, "Dans quel pays se trouve le circuit d'Albert Park ?", ["Australie", "Nouvelle-Zélande", "Afrique du Sud", "Singapour"]),
+F("circuits", 2, "Dans quelle ville se déroulent les 500 miles d'Indianapolis ?", ["Indianapolis", "Detroit", "Daytona Beach", "Chicago"]),
+F("circuits", 2, "Quel circuit français accueille la course de moto du Grand Prix de France depuis longtemps ?", ["Le Mans (Bugatti)", "Magny-Cours", "Paul Ricard", "Albi"]),
+F("circuits", 2, "Quel circuit est situé dans le Var, près du Castellet ?", ["Paul Ricard", "Magny-Cours", "Dijon-Prenois", "Nevers"]),
+F("circuits", 3, "Quel circuit se trouve dans la Nièvre, en Bourgogne ?", ["Magny-Cours", "Paul Ricard", "Le Mans", "Charade"]),
+F("circuits", 3, "Quel circuit, près de Clermont-Ferrand, a accueilli le GP de France de F1 en 1965, 1969, 1970 et 1972 ?", ["Charade", "Magny-Cours", "Reims-Gueux", "Rouen-les-Essarts"]),
+F("circuits", 3, "Quel circuit des Ardennes belges accueille le Grand Prix de Belgique ?", ["Spa-Francorchamps", "Zolder", "Zandvoort", "Nivelles"]),
+F("circuits", 3, "Quel circuit de Floride accueille les 12 Heures de Sebring ?", ["Sebring", "Daytona", "Homestead", "Road Atlanta"]),
+F("circuits", 3, "Quel circuit accueille les 24 Heures de Daytona ?", ["Daytona International Speedway", "Sebring", "Road America", "Laguna Seca"]),
+F("circuits", 3, "Quelle montagne accueille une célèbre course de côte du Colorado ?", ["Pikes Peak", "Mont Ventoux", "Mont Washington", "Stelvio"]),
+F("circuits", 3, "Quelle ville accueille le circuit de Bathurst, dont la course est un classique australien ?", ["Bathurst", "Sydney", "Melbourne", "Adélaïde"]),
+F("circuits", 4, "Quel circuit est surnommé « le Brickyard » ?", ["Indianapolis Motor Speedway", "Daytona", "Talladega", "Watkins Glen"]),
+F("circuits", 4, "Quel circuit français de la Marne accueillait le GP de France de F1 dans les années 1950 ?", ["Reims-Gueux", "Rouen-les-Essarts", "Montlhéry", "Pau"]),
+F("circuits", 3, "Dans quelle ville se déroule le Grand Prix automobile historique de Pau ?", ["Pau", "Bordeaux", "Toulouse", "Biarritz"]),
+// ---- history : compléments
+F("history", 1, "Quelle voiture est la première à avoir été produite à la chaîne par Ford ?", ["La Model T", "La Mustang", "La Fiesta", "La Focus"]),
+F("history", 1, "Quelle voiture, produite de 1938 à 2003, est surnommée « la Cox » ou « la Coccinelle » ?", ["La Volkswagen Coccinelle", "La Fiat 500", "La Citroën 2CV", "La Renault 4CV"]),
+F("history", 2, "Qui a fondé la marque automobile Ford ?", ["Henry Ford", "Walter Chrysler", "Louis Chevrolet", "John Dodge"]),
+F("history", 2, "Quel inventeur allemand a déposé le brevet de la première automobile en 1886 ?", ["Karl Benz", "Gottlieb Daimler", "Rudolf Diesel", "Nikolaus Otto"]),
+F("history", 2, "Quel ingénieur français a conçu la première voiture à vapeur, le « fardier », en 1769 ?", ["Nicolas Cugnot", "Louis Renault", "Émile Levassor", "Armand Peugeot"]),
+F("history", 2, "Quelle voiture Citroën, de 1955, est célèbre pour sa suspension hydropneumatique ?", ["La DS", "La 2CV", "La Traction Avant", "La Dyane"]),
+F("history", 2, "Quelle voiture a démocratisé l'automobile en France à la fin des années 1940 chez Renault ?", ["La 4CV", "La Dauphine", "La 4L", "La R8"]),
+F("history", 3, "Quelle voiture Renault, lancée en 1961, a été produite à plus de 8 millions d'exemplaires ?", ["La 4L", "La 5", "La Clio", "La 12"]),
+F("history", 3, "Quel drame a marqué les 24 Heures du Mans de 1955 ?", ["Une collision impliquant la Mercedes de Pierre Levegh, qui a fait plus de 80 morts", "Un incendie dans les stands", "Une panne générale d'électricité", "Une tempête qui a emporté les tribunes"]),
+F("history", 3, "En quelle année a eu lieu la première édition des 24 Heures du Mans ?", ["1923", "1903", "1946", "1960"]),
+F("history", 3, "En quelle année a eu lieu la première course du Mans Classic ?", ["2002", "1990", "2015", "1978"]),
+F("history", 3, "Quelle voiture électrique est considérée comme la première à avoir dépassé 100 km/h, en 1899 ?", ["La Jamais Contente", "La Jeantaud", "La Lohner-Porsche", "La Baker Electric"]),
+F("history", 4, "Quelle voiture est la première production de la marque Lamborghini en 1964 ?", ["La 350 GT", "La Miura", "La Countach", "La Espada"]),
+F("history", 4, "En quelle année la Porsche 911 a-t-elle été présentée au Salon de Francfort ?", ["1963", "1948", "1970", "1955"]),
+F("history", 4, "Quelle voiture Alfa Romeo, de 1950, a remporté les deux premiers championnats de F1 ?", ["L'Alfetta 158/159", "La 8C", "La Giulia Sprint", "La 33"]),
+F("history", 4, "En quelle année Renault a-t-il présenté l'Alpine A110 Berlinette ?", ["1961", "1955", "1970", "1948"]),
+// ---- engines : compléments
+F("engines", 1, "À quoi sert le radiateur d'une voiture ?", ["À refroidir le moteur", "À chauffer l'habitacle", "À recharger la batterie", "À filtrer l'huile"]),
+F("engines", 1, "À quoi sert la batterie 12 V ?", ["À démarrer le moteur et alimenter l'électronique", "À refroidir le moteur", "À augmenter la vitesse", "À remplacer l'essence"]),
+F("engines", 1, "Quels sont les quatre temps d'un moteur à essence ?", ["Admission, compression, combustion, échappement", "Allumage, refroidissement, injection, filtrage", "Démarrage, accélération, freinage, arrêt", "Aspiration, soufflage, filtrage, rejet"]),
+F("engines", 2, "Quelle pièce transmet la puissance du moteur aux roues, via l'embrayage ?", ["La boîte de vitesses", "Le radiateur", "L'alternateur", "Le pot d'échappement"]),
+F("engines", 2, "À quoi sert le différentiel ?", ["À laisser les roues d'un même essieu tourner à des vitesses différentes en virage", "À refroidir l'huile", "À augmenter le couple", "À allumer le mélange"]),
+F("engines", 2, "À quoi sert un turbo à géométrie variable ?", ["À s'adapter au régime moteur pour réduire le temps de réponse", "À refroidir l'huile", "À filtrer l'air", "À augmenter la cylindrée"]),
+F("engines", 2, "Que veut dire « 4x4 » ?", ["Quatre roues dont quatre motrices", "Quatre cylindres, quatre soupapes", "Quatre portes, quatre sièges", "Quatre vitesses, quatre freins"]),
+F("engines", 2, "Quel carburant est utilisé par un moteur diesel ?", ["Le gazole", "L'essence sans plomb", "L'éthanol seul", "Le kérosène"]),
+F("engines", 2, "Quel élément provoque l'allumage du mélange dans un moteur à essence ?", ["La bougie", "La soupape", "Le piston", "Le turbo"]),
+F("engines", 2, "Quel élément provoque l'allumage dans un moteur diesel ?", ["La compression de l'air", "La bougie d'allumage", "L'étincelle du delco", "Le démarreur"]),
+F("engines", 3, "Comment appelle-t-on la technique qui coupe des cylindres à faible charge pour économiser du carburant ?", ["La désactivation de cylindres", "Le downsizing", "Le stop-and-start", "Le décalage de phase"]),
+F("engines", 3, "Que veut dire « downsizing » en motorisation ?", ["Réduire la cylindrée et compenser avec un turbo", "Réduire la taille de la voiture", "Réduire le prix", "Réduire le nombre de portes"]),
+F("engines", 3, "Quel moteur à quatre cylindres à plat (boxer) équipe la Subaru BRZ ?", ["Un 2,4 L à plat", "Un 3,0 L en V", "Un 1,5 L en ligne", "Un 2,0 L diesel"]),
+F("engines", 3, "Quel est le rapport de compression d'un moteur à essence classique ?", ["Environ 10:1", "Environ 2:1", "Environ 40:1", "Environ 100:1"]),
+F("engines", 3, "Quel moteur est célèbre pour son « chant » à 9 000 tr/min dans la Honda S2000 ?", ["F20C", "K20A", "B16A", "J35"]),
+F("engines", 3, "Quel moteur V10 équipe la BMW M5 E60 ?", ["S85", "S65", "S54", "N54"]),
+F("engines", 3, "Quel moteur six cylindres en ligne turbo équipe la BMW 335i de 2007 ?", ["N54", "N52", "S54", "B58"]),
+F("engines", 4, "Quel moteur japonais de 1,6 L, 4 cylindres, est célèbre sur la Toyota AE86 ?", ["4A-GE", "3S-GE", "2JZ-GE", "1G-FE"]),
+F("engines", 4, "Quel moteur américain à gros cubage est surnommé « Hemi » ?", ["Le V8 Chrysler à chambres hémisphériques", "Le V8 Ford Coyote", "Le V6 GM", "Le V12 Packard"]),
+F("engines", 4, "Quel type de distribution est utilisé par les moteurs Honda VTEC ?", ["Calage et levée des soupapes variables", "Aucune distribution", "Courroie en caoutchouc seule", "Rampe commune"]),
+F("engines", 4, "Quel moteur pèse environ 150 kg et équipe la Lotus Seven Caterham 7 d'entrée de gamme ?", ["Un trois cylindres Suzuki", "Un V8 Rover", "Un diesel", "Un six cylindres BMW"]),
+// ---- motorsport : compléments
+F("motorsport", 1, "Combien de roues motrices compte une F1 ?", ["2", "4", "3", "6"]),
+F("motorsport", 1, "De quelle couleur est la Ferrari de F1 ?", ["Rouge", "Bleu", "Vert", "Jaune"]),
+F("motorsport", 1, "Quelle écurie de F1 est célèbre pour ses « flèches d'argent » ?", ["Mercedes", "Ferrari", "Red Bull", "McLaren"]),
+F("motorsport", 2, "Quelle écurie de F1 a Max Verstappen comme pilote titulaire depuis 2016 ?", ["Red Bull", "Ferrari", "Mercedes", "McLaren"]),
+F("motorsport", 2, "Quel pilote monégasque pilote pour Ferrari ?", ["Charles Leclerc", "Carlos Sainz", "Lance Stroll", "Pierre Gasly"]),
+F("motorsport", 2, "Quel pilote français a gagné le GP d'Italie 2020 sur Alpha Tauri ?", ["Pierre Gasly", "Esteban Ocon", "Romain Grosjean", "Jean Alesi"]),
+F("motorsport", 2, "Quel pilote français a gagné le GP de Hongrie 2021 ?", ["Esteban Ocon", "Pierre Gasly", "Romain Grosjean", "Alain Prost"]),
+F("motorsport", 3, "Quel pilote français est quadruple champion du monde de F1 ?", ["Alain Prost", "Jean Alesi", "Olivier Panis", "Didier Pironi"]),
+F("motorsport", 3, "Quel pilote belge a gagné six fois les 24 Heures du Mans ?", ["Jacky Ickx", "Thierry Boutsen", "Jacques Laffite", "Olivier Gendebien"]),
+F("motorsport", 3, "Quel pilote a remporté les Triples Couronnes : GP de Monaco, 500 miles d'Indianapolis et 24 Heures du Mans ?", ["Graham Hill", "Jim Clark", "Juan Manuel Fangio", "Mario Andretti"]),
+F("motorsport", 3, "Quelle voiture a gagné les 24 Heures du Mans 1998 ?", ["Porsche 911 GT1-98", "Mercedes CLK GTR", "Toyota GT-One", "BMW V12 LMR"]),
+F("motorsport", 3, "Quelle voiture a gagné les 24 Heures du Mans 1999 ?", ["BMW V12 LMR", "Toyota GT-One", "Mercedes CLR", "Audi R8R"]),
+F("motorsport", 3, "Quelle voiture a gagné les 24 Heures du Mans 2003 ?", ["Bentley Speed 8", "Audi R8", "Cadillac Northstar", "Pescarolo C60"]),
+F("motorsport", 3, "Quelle voiture a gagné les 24 Heures du Mans 2009 ?", ["Peugeot 908 HDi FAP", "Audi R15", "Aston Martin DBR1-2", "Pescarolo 01"]),
+F("motorsport", 3, "Quelle voiture a gagné les 24 Heures du Mans 2023 ?", ["Ferrari 499P", "Toyota GR010 Hybrid", "Porsche 963", "Cadillac V-Series.R"]),
+F("motorsport", 4, "Quelle écurie a gagné le championnat de F1 constructeurs avec la Lotus 72 ?", ["Lotus", "Tyrrell", "McLaren", "Brabham"]),
+F("motorsport", 4, "Quelle voiture de F1 à six roues de Tyrrell a couru en 1976 ?", ["La Tyrrell P34", "La Brabham BT46", "La Williams FW08B", "La Ferrari 312T"]),
+F("motorsport", 4, "Quelle F1 de Brabham de 1978 avait un ventilateur à l'arrière ?", ["La Brabham BT46B", "La Lotus 79", "La March 761", "La Wolf WR1"]),
+F("motorsport", 4, "Quelle écurie a utilisé le moteur Cosworth DFV pour la première fois en F1 en 1967 ?", ["Lotus", "Brabham", "Ferrari", "McLaren"]),
+// ---- japan : compléments
+F("japan", 1, "Quelle marque japonaise produit la Yaris ?", ["Toyota", "Nissan", "Mazda", "Honda"]),
+F("japan", 1, "Quelle marque japonaise produit la Qashqai ?", ["Nissan", "Toyota", "Honda", "Mazda"]),
+F("japan", 1, "Quelle marque japonaise produit la CX-5 ?", ["Mazda", "Subaru", "Suzuki", "Mitsubishi"]),
+F("japan", 1, "Quelle marque japonaise produit la Civic ?", ["Honda", "Toyota", "Nissan", "Mazda"]),
+F("japan", 2, "Quelle marque japonaise produit la Outlander ?", ["Mitsubishi", "Subaru", "Suzuki", "Nissan"]),
+F("japan", 2, "Quelle marque japonaise produit la Forester ?", ["Subaru", "Mazda", "Honda", "Suzuki"]),
+F("japan", 2, "Quelle marque japonaise produit la Skyline ?", ["Nissan", "Toyota", "Mazda", "Honda"]),
+F("japan", 2, "Quelle marque japonaise produit la Silvia ?", ["Nissan", "Toyota", "Honda", "Mazda"]),
+F("japan", 2, "Quelle marque japonaise produit la Supra ?", ["Toyota", "Nissan", "Honda", "Mazda"]),
+F("japan", 2, "Quelle marque japonaise produit la RX-7 ?", ["Mazda", "Toyota", "Honda", "Nissan"]),
+F("japan", 2, "Quelle marque japonaise produit la NSX ?", ["Honda", "Toyota", "Nissan", "Mazda"]),
+F("japan", 2, "Quelle marque japonaise produit la Lancer Evolution ?", ["Mitsubishi", "Subaru", "Nissan", "Suzuki"]),
+F("japan", 3, "Quelle marque japonaise produit la Celica ?", ["Toyota", "Nissan", "Honda", "Mitsubishi"]),
+F("japan", 3, "Quelle marque japonaise produit la Pajero ?", ["Mitsubishi", "Toyota", "Isuzu", "Nissan"]),
+F("japan", 3, "Quelle marque japonaise produit la Legacy ?", ["Subaru", "Mazda", "Honda", "Suzuki"]),
+F("japan", 3, "Quelle marque japonaise produit la Cosmo ?", ["Mazda", "Toyota", "Nissan", "Honda"]),
+F("japan", 3, "Quel circuit japonais a une ligne droite « Dunlop » et un virage « 130R » ?", ["Suzuka", "Fuji", "Motegi", "Okayama"]),
+F("japan", 3, "Quelle discipline japonaise consiste à contrôler de grands dérapages ?", ["Le drift", "Le rallye", "Le kart", "Le slalom"]),
+F("japan", 3, "Quel manga raconte la vie d'un livreur de tofu pilote de AE86 ?", ["Initial D", "Wangan Midnight", "Capeta", "Over Rev"]),
+F("japan", 3, "Quel pilote de rallye japonais a gagné le Dakar 2002 ?", ["Hiroshi Masuoka", "Kenjiro Shinozuka", "Yoshimasa Sugawara", "Toshihiro Arai"]),
+F("japan", 4, "Quel est le plus gros fabricant d'automobiles du Japon ?", ["Toyota", "Honda", "Nissan", "Suzuki"]),
+F("japan", 4, "Quelle voiture japonaise de 1967 est le premier modèle de série à moteur rotatif à deux rotors ?", ["La Mazda Cosmo Sport", "La Mazda RX-7", "La Nissan Silvia", "La Toyota 2000GT"]),
+// ---- rally : compléments
+F("rally", 1, "Quelle voiture Peugeot a dominé les rallyes de 1985-1986 ?", ["La 205 T16", "La 206 WRC", "La 106", "La 306"]),
+F("rally", 2, "Quelle marque japonaise a gagné trois titres consécutifs de constructeurs entre 1995 et 1997 ?", ["Subaru", "Toyota", "Mitsubishi", "Mazda"]),
+F("rally", 2, "Quel pilote britannique a été champion du monde des rallyes en 2001 ?", ["Richard Burns", "Colin McRae", "Mark Higgins", "Alister McRae"]),
+F("rally", 2, "Quel pilote norvégien a été champion du monde des rallyes en 2003 ?", ["Petter Solberg", "Henning Solberg", "Mads Østberg", "Oliver Solberg"]),
+F("rally", 2, "Quel pilote finlandais a été champion du monde des rallyes en 2000 et 2002 ?", ["Marcus Grönholm", "Tommi Mäkinen", "Hannu Mikkola", "Jari-Matti Latvala"]),
+F("rally", 3, "Quel pilote est mort lors du Tour de Corse 1986 en Lancia Delta S4 ?", ["Henri Toivonen", "Attilio Bettega", "Markku Alén", "Juha Kankkunen"]),
+F("rally", 3, "Quel col du Rallye Monte-Carlo se situe dans les Alpes-Maritimes et est cher aux fans de la « nuit des longs couteaux » ?", ["Le col de Turini", "Le col de Vence", "Le col de Braus", "Le col d'Èze"]),
+F("rally", 3, "Quelle voiture a gagné le Rallye du Japon, courue à Hokkaido en 2004 ?", ["Subaru Impreza", "Peugeot 307 WRC", "Citroën Xsara", "Ford Focus"]),
+F("rally", 4, "Quelle Ford a gagné les titres du WRC en 1979, avec Björn Waldegård ?", ["L'Escort RS1800", "La Sierra RS", "La Fiesta WRC", "La Focus WRC"]),
+// ---- ev : compléments
+F("ev", 1, "Quelle marque produit la Zoe ?", ["Renault", "Peugeot", "Citroën", "Dacia"]),
+F("ev", 1, "Quelle marque produit la Leaf ?", ["Nissan", "Toyota", "Mazda", "Honda"]),
+F("ev", 1, "Quelle marque produit la Taycan ?", ["Porsche", "Audi", "Volkswagen", "Mercedes"]),
+F("ev", 1, "Quelle marque produit la e-208 ?", ["Peugeot", "Renault", "Citroën", "Opel"]),
+F("ev", 2, "Quelle marque produit la i3 ?", ["BMW", "Mercedes", "Audi", "Volkswagen"]),
+F("ev", 2, "Quelle marque produit la ID.3 ?", ["Volkswagen", "Audi", "Skoda", "Seat"]),
+F("ev", 2, "Quelle marque produit l'Ioniq 5 ?", ["Hyundai", "Kia", "Toyota", "Genesis"]),
+F("ev", 2, "Quelle marque produit le Cybertruck ?", ["Tesla", "Rivian", "Ford", "GMC"]),
+F("ev", 3, "Quelle marque produit la Mirai à hydrogène ?", ["Toyota", "Honda", "Hyundai", "Nissan"]),
+F("ev", 3, "Que signifie « BEV » ?", ["Véhicule électrique à batterie", "Boîte à embrayage variable", "Batterie à énergie variable", "Brevet européen de voiture"]),
+F("ev", 3, "Que signifie « kW » comme unité sur une borne de recharge ?", ["Kilowatt", "Kilowattheure", "Kilovolt", "Kilowatt par heure"]),
+F("ev", 3, "Quel type de prise de recharge est le plus courant en Europe ?", ["Type 2 / CCS", "CHAdeMO", "Type 1", "NACS"]),
+F("ev", 3, "Quel système de recharge japonais, nommé CHAdeMO, est utilisé par la Nissan Leaf ?", ["CHAdeMO", "CCS", "NACS", "GB/T"]),
+F("ev", 4, "Quel est le nom de la norme de recharge de Tesla en Amérique du Nord ?", ["NACS", "CCS", "CHAdeMO", "GB/T"]),
+F("ev", 4, "Quelle voiture a remporté les 24 Heures du Mans 2012, la première hybride gagnante ?", ["Audi R18 e-tron quattro", "Toyota TS030", "Peugeot 908", "Porsche 919"]),
+  );
+
+
+  // ---------------------------------------------------------------- banque de faits : tables vérifiées → des milliers de questions générées
+  /** « 1954-1957:Nom ; 1958:Nom » → [[année, nom], …] */
+  const runs = (s) => s.trim().split(/\s*;\s*/).reduce((o, p) => { const m = /^(\d{4})(?:-(\d{4}))?:(.+)$/.exec(p.trim()); if (m) for (let y = +m[1]; y <= +(m[2] || m[1]); y++) o.push([y, m[3].trim()]); return o; }, []);
+  const tab = (s) => s.trim().split("\n").map((l) => l.trim()).filter(Boolean).map((l) => l.split("|").map((x) => x.trim()));
+  const QT = {
+    f1: runs("1950:Nino Farina;1951:Juan Manuel Fangio;1952-1953:Alberto Ascari;1954-1957:Juan Manuel Fangio;1958:Mike Hawthorn;1959-1960:Jack Brabham;1961:Phil Hill;1962:Graham Hill;1963:Jim Clark;1964:John Surtees;1965:Jim Clark;1966:Jack Brabham;1967:Denny Hulme;1968:Graham Hill;1969:Jackie Stewart;1970:Jochen Rindt;1971:Jackie Stewart;1972:Emerson Fittipaldi;1973:Jackie Stewart;1974:Emerson Fittipaldi;1975:Niki Lauda;1976:James Hunt;1977:Niki Lauda;1978:Mario Andretti;1979:Jody Scheckter;1980:Alan Jones;1981:Nelson Piquet;1982:Keke Rosberg;1983:Nelson Piquet;1984:Niki Lauda;1985-1986:Alain Prost;1987:Nelson Piquet;1988:Ayrton Senna;1989:Alain Prost;1990-1991:Ayrton Senna;1992:Nigel Mansell;1993:Alain Prost;1994-1995:Michael Schumacher;1996:Damon Hill;1997:Jacques Villeneuve;1998-1999:Mika Häkkinen;2000-2004:Michael Schumacher;2005-2006:Fernando Alonso;2007:Kimi Räikkönen;2008:Lewis Hamilton;2009:Jenson Button;2010-2013:Sebastian Vettel;2014-2015:Lewis Hamilton;2016:Nico Rosberg;2017-2020:Lewis Hamilton;2021-2024:Max Verstappen"),
+    wrc: runs("1979:Björn Waldegård;1980:Walter Röhrl;1981:Ari Vatanen;1982:Walter Röhrl;1983:Hannu Mikkola;1984:Stig Blomqvist;1985:Timo Salonen;1986-1987:Juha Kankkunen;1988-1989:Miki Biasion;1990:Carlos Sainz;1991:Juha Kankkunen;1992:Carlos Sainz;1993:Juha Kankkunen;1994:Didier Auriol;1995:Colin McRae;1996-1999:Tommi Mäkinen;2000:Marcus Grönholm;2001:Richard Burns;2002:Marcus Grönholm;2003:Petter Solberg;2004-2012:Sébastien Loeb;2013-2018:Sébastien Ogier;2019:Ott Tänak;2020-2021:Sébastien Ogier;2022-2023:Kalle Rovanperä;2024:Thierry Neuville"),
+    lemans: runs("1949:Ferrari;1951:Jaguar;1953:Jaguar;1955-1957:Jaguar;1959:Aston Martin;1960-1965:Ferrari;1966-1969:Ford;1970-1971:Porsche;1972-1974:Matra;1976-1977:Porsche;1978:Renault-Alpine;1979:Porsche;1981-1987:Porsche;1988:Jaguar;1990:Jaguar;1991:Mazda;1992-1993:Peugeot;1995:McLaren;1996-1998:Porsche;1999:BMW;2000-2002:Audi;2003:Bentley;2004-2008:Audi;2009:Peugeot;2010-2014:Audi;2015-2017:Porsche;2018-2022:Toyota;2023-2025:Ferrari"),
+    // marque | fondateur | année | ville | pays | emblème | niveau
+    brands: tab(`
+Ferrari|Enzo Ferrari|1947|Maranello|Italie|un cheval cabré noir sur fond jaune|1
+Lamborghini|Ferruccio Lamborghini|1963|Sant'Agata Bolognese|Italie|un taureau|1
+Porsche|Ferdinand Porsche|1931|Stuttgart|Allemagne|un cheval noir sur un blason aux armes de Stuttgart|1
+Peugeot||| Sochaux|France|un lion|1
+Renault|Louis Renault|1899|Boulogne-Billancourt|France|un losange|1
+Citroën|André Citroën|1919|Paris|France|deux chevrons|1
+Bugatti|Ettore Bugatti|1909|Molsheim|France|un macaron ovale rouge|2
+Alpine|Jean Rédélé|1955|Dieppe|France||2
+Mazda|Jujiro Matsuda|1920|Hiroshima|Japon||2
+Honda|Soichiro Honda|1948|Hamamatsu|Japon|un « H » stylisé|1
+Toyota|Kiichiro Toyoda|1937||Japon|trois ellipses entrelacées|1
+Nissan|Yoshisuke Aikawa|1933|Yokohama|Japon||3
+Subaru||1953||Japon|six étoiles (les Pléiades)|2
+Mitsubishi|Yataro Iwasaki|1870||Japon|trois diamants rouges|2
+Suzuki|Michio Suzuki|1909|Hamamatsu|Japon|un « S » stylisé|3
+BMW||1916|Munich|Allemagne|un cercle bleu et blanc, comme une hélice|1
+Mercedes-Benz|||Stuttgart|Allemagne|une étoile à trois branches|1
+Audi|August Horch|1909|Ingolstadt|Allemagne|quatre anneaux entrelacés|1
+Opel|Adam Opel|1862|Rüsselsheim|Allemagne|un éclair|2
+Volkswagen||1937|Wolfsburg|Allemagne|un V au-dessus d'un W dans un cercle|1
+Škoda|Václav Laurin et Václav Klement|1895|Mladá Boleslav|République tchèque|une flèche ailée|2
+Fiat|Giovanni Agnelli|1899|Turin|Italie||2
+Alfa Romeo||1910|Milan|Italie|un serpent (le biscione) et une croix rouge|1
+Maserati|Alfieri Maserati|1914|Bologne|Italie|un trident|1
+Lancia|Vincenzo Lancia|1906|Turin|Italie||2
+Abarth|Carlo Abarth|1949|Turin|Italie|un scorpion|2
+Ford|Henry Ford|1903|Dearborn|États-Unis|un ovale bleu|1
+Chevrolet|Louis Chevrolet|1911|Détroit|États-Unis|un nœud papillon doré|2
+Cadillac|Henry Leland|1902|Détroit|États-Unis||3
+Tesla|Martin Eberhard et Marc Tarpenning|2003||États-Unis||2
+Aston Martin|Lionel Martin et Robert Bamford|1913|Gaydon|Royaume-Uni|des ailes|1
+Bentley|W. O. Bentley|1919|Crewe|Royaume-Uni|un « B » ailé|2
+Rolls-Royce|Charles Rolls et Henry Royce|1906|Goodwood|Royaume-Uni|la Spirit of Ecstasy|2
+Jaguar|William Lyons|1922|Coventry|Royaume-Uni|un félin bondissant|1
+McLaren|Bruce McLaren|1963|Woking|Royaume-Uni||2
+Lotus|Colin Chapman|1952|Hethel|Royaume-Uni||2
+Morgan|H. F. S. Morgan|1909|Malvern|Royaume-Uni||3
+Volvo|Assar Gabrielsson et Gustaf Larson|1927|Göteborg|Suède|une flèche en diagonale dans un cercle|2
+Saab||1937|Trollhättan|Suède|un griffon|2
+Koenigsegg|Christian von Koenigsegg|1994|Ängelholm|Suède||2
+Pagani|Horacio Pagani|1992|San Cesario sul Panaro|Italie||3
+Hyundai|Chung Ju-yung|1967|Séoul|Corée du Sud||2
+Kia||1944|Séoul|Corée du Sud||3
+SEAT||1950|Martorell|Espagne||2
+Dacia||1966|Mioveni|Roumanie||2
+`),
+    // marque | modèle | année de lancement | niveau | drapeaux (j = Japon, e = électrique / hybride)
+    models: tab(`
+Ford|Model T|1908|1
+Citroën|2CV|1948|1
+Citroën|DS|1955|1
+Citroën|Traction Avant|1934|2
+Citroën|SM|1970|3
+Citroën|Xsara|1997|3
+Peugeot|205|1983|1
+Peugeot|205 GTI|1984|2
+Peugeot|404|1960|2
+Peugeot|504|1968|2
+Peugeot|106|1991|2
+Peugeot|306|1993|2
+Renault|4L|1961|1
+Renault|5|1972|1
+Renault|5 Turbo|1980|3
+Renault|Espace|1984|2
+Renault|Clio|1990|1
+Renault|Twingo|1992|1
+Alpine|A110 d'origine|1961|2
+Volkswagen|Combi (Type 2)|1950|2
+Volkswagen|Passat|1973|2
+Volkswagen|Golf|1974|1
+Volkswagen|Polo|1975|2
+Volkswagen|Golf GTI|1976|1
+BMW|2002|1966|3
+BMW|M1|1978|3
+BMW|M3 (E30)|1986|2
+Mercedes-Benz|300 SL « Papillon »|1954|2
+Mercedes-Benz|190 E 2.3-16|1983|3
+Audi|Quattro|1980|1
+Audi|TT|1998|2
+Audi|R8|2006|2
+Porsche|356|1948|2
+Porsche|911|1963|1
+Porsche|928|1977|3
+Porsche|944|1982|3
+Porsche|959|1986|3
+Porsche|Boxster|1996|2
+Porsche|Cayenne|2002|2
+Porsche|Carrera GT|2003|3
+Porsche|918 Spyder|2013|3
+Porsche|Taycan|2019|2|e
+Ferrari|250 GTO|1962|2
+Ferrari|308 GTB|1975|3
+Ferrari|Testarossa|1984|1
+Ferrari|288 GTO|1984|3
+Ferrari|F40|1987|1
+Ferrari|F50|1995|2
+Ferrari|Enzo|2002|1
+Ferrari|458 Italia|2009|2
+Ferrari|LaFerrari|2013|2
+Lamborghini|Miura|1966|1
+Lamborghini|Countach|1974|1
+Lamborghini|Diablo|1990|2
+Lamborghini|Murciélago|2001|2
+Lamborghini|Gallardo|2003|2
+Lamborghini|Aventador|2011|2
+Lamborghini|Huracán|2014|2
+Lamborghini|Urus|2017|2
+Fiat|500 (Nuova)|1957|1
+Fiat|Panda|1980|2
+Fiat|Uno|1983|2
+Lancia|Stratos|1973|2
+Lancia|Delta Integrale|1987|2
+Alfa Romeo|Spider « Duetto »|1966|2
+Alfa Romeo|33 Stradale|1967|3
+Alfa Romeo|156|1997|3
+Alfa Romeo|8C Competizione|2007|3
+Pagani|Zonda|1999|3
+Pagani|Huayra|2011|3
+Bugatti|Type 57 Atlantic|1936|3
+Bugatti|Veyron|2005|1
+Bugatti|Chiron|2016|2
+McLaren|F1|1992|1
+McLaren|P1|2013|2
+Jaguar|E-Type|1961|1
+Aston Martin|DB5|1963|1
+Aston Martin|Vanquish|2001|3
+Lotus|Seven|1957|2
+Lotus|Elan|1962|3
+Lotus|Esprit|1976|3
+Lotus|Elise|1996|2
+Mini|Mini d'origine|1959|1
+Land Rover|Series I|1948|3
+Land Rover|Range Rover|1970|2
+Ford|Mustang|1964|1
+Ford|GT40|1964|2
+Ford|Fiesta|1976|2
+Ford|Sierra Cosworth|1986|3
+Ford|Escort Cosworth|1992|3
+Ford|Focus|1998|2
+Chevrolet|Corvette|1953|1
+Chevrolet|Camaro|1966|2
+Dodge|Charger|1966|3
+Dodge|Viper|1992|3
+Pontiac|GTO|1964|3
+Tesla|Roadster|2008|2|e
+Tesla|Model S|2012|1|e
+Tesla|Model X|2015|3|e
+Tesla|Model 3|2017|1|e
+Nissan|Leaf|2010|1|e
+Renault|Zoe|2012|2|e
+BMW|i3|2013|2|e
+Toyota|Prius|1997|1|e
+Honda|Insight|1999|3|e
+Hyundai|Ioniq 5|2021|2|e
+Rimac|Nevera|2021|2|e
+Citroën|Ami|2020|3|e
+Toyota|Corolla|1966|2|j
+Toyota|2000GT|1967|2|j
+Toyota|AE86 (Sprinter Trueno)|1983|2|j
+Toyota|MR2|1984|2|j
+Toyota|Celica GT-Four (ST165)|1986|3|j
+Toyota|Supra (A80)|1993|1|j
+Toyota|GR Yaris|2020|2|j
+Nissan|Fairlady Z (S30)|1969|2|j
+Nissan|Micra|1982|2|j
+Nissan|GT-R (R32)|1989|1|j
+Nissan|Skyline GT-R (R34)|1999|2|j
+Nissan|Silvia (S15)|1999|3|j
+Nissan|350Z|2002|2|j
+Nissan|GT-R (R35)|2007|1|j
+Mazda|Cosmo Sport|1967|3|j
+Mazda|RX-7 (première génération)|1978|2|j
+Mazda|MX-5 (NA)|1989|1|j
+Mazda|RX-7 (FD)|1992|2|j
+Mazda|RX-8|2003|2|j
+Honda|Civic|1972|2|j
+Honda|CR-X|1983|3|j
+Honda|NSX|1990|1|j
+Honda|Integra Type R (DC2)|1995|3|j
+Honda|Civic Type R (EK9)|1997|3|j
+Honda|S2000|1999|2|j
+Subaru|360|1958|3|j
+Subaru|Impreza WRX|1992|2|j
+Subaru|BRZ|2012|3|j
+Mitsubishi|3000GT|1990|3|j
+Mitsubishi|Lancer Evolution I|1992|2|j
+Mitsubishi|Pajero|1982|3|j
+Suzuki|Jimny|1970|2|j
+Lexus|LS 400|1989|3|j
+Lexus|LFA|2010|2|j
+`),
+    // code moteur | voiture | niveau
+    engines: tab(`
+2JZ-GTE|Toyota Supra (A80)|1
+RB26DETT|Nissan Skyline GT-R (R32 à R34)|1
+SR20DET|Nissan Silvia (S13 à S15)|2
+4A-GE|Toyota AE86 (Sprinter Trueno)|2
+3S-GTE|Toyota Celica GT-Four|3
+13B-REW|Mazda RX-7 (FD)|2
+R26B|Mazda 787B (Le Mans 1991)|3
+F20C|Honda S2000|2
+C30A|Honda NSX|3
+B16B|Honda Civic Type R (EK9)|3
+4G63|Mitsubishi Lancer Evolution|2
+VR38DETT|Nissan GT-R (R35)|2
+VQ35DE|Nissan 350Z|3
+1LR-GUE|Lexus LFA|4
+6G72|Mitsubishi 3000GT|4
+XU9JA|Peugeot 205 GTI 1.9|3
+Cléon-Fonte|Renault 5 et Renault 4L|3
+YB Cosworth|Ford Sierra RS Cosworth|3
+S14|BMW M3 (E30)|3
+S54|BMW M3 (E46)|3
+S65|BMW M3 (E92)|3
+M88|BMW M1|4
+M156|Mercedes-AMG C 63 (W204)|3
+M159|Mercedes-Benz SLS AMG|4
+F136|Ferrari 458 Italia|4
+F140|Ferrari Enzo|4
+EA888|Volkswagen Golf GTI (2.0 TSI)|3
+VR6|Volkswagen Golf VR6|3
+DFV|Lotus 49 (F1, 1967)|3
+LS3|Chevrolet Corvette (C6)|4
+Hemi 426|Dodge Charger R/T (1968)|3
+`),
+    // pilote(s) | surnom / fait
+    glossary: tab(`
+ABS|Système qui empêche le blocage des roues au freinage|1|engines
+ESP|Correcteur électronique de trajectoire|1|engines
+Turbo|Compresseur entraîné par les gaz d'échappement|1|engines
+Compresseur volumétrique|Compresseur entraîné mécaniquement par le moteur|2|engines
+Intercooler|Radiateur qui refroidit l'air comprimé avant l'admission|2|engines
+Common rail|Rampe d'injection commune à haute pression, sur les diesels modernes|3|engines
+Injection directe|Carburant injecté directement dans la chambre de combustion|2|engines
+Cylindrée|Volume total balayé par les pistons|1|engines
+Couple|Force de rotation du moteur, exprimée en newton-mètres|1|engines
+Moteur boxer|Moteur dont les cylindres sont à plat, opposés deux à deux|2|engines
+Moteur rotatif (Wankel)|Moteur à rotor triangulaire qui tourne dans une chambre|2|engines
+VTEC|Distribution variable de Honda à deux profils de came|2|engines
+DOHC|Double arbre à cames en tête|3|engines
+Culasse|Pièce qui ferme le haut des cylindres|2|engines
+Vilebrequin|Arbre qui transforme le mouvement des pistons en rotation|2|engines
+Bielle|Pièce qui relie le piston au vilebrequin|3|engines
+Soupape|Pièce qui ouvre et ferme l'admission et l'échappement|2|engines
+Arbre à cames|Arbre qui commande l'ouverture des soupapes|2|engines
+Carburateur|Organe qui mélange l'air et l'essence avant l'admission|2|engines
+Catalyseur|Organe qui réduit les polluants des gaz d'échappement|1|engines
+FAP|Filtre à particules des diesels|2|engines
+AdBlue|Solution d'urée qui réduit les oxydes d'azote des diesels|3|engines
+Différentiel autobloquant|Dispositif qui limite le patinage d'une roue en répartissant le couple|3|engines
+Embrayage|Organe qui sépare le moteur de la boîte de vitesses|1|engines
+Boîte DSG|Boîte à double embrayage|2|engines
+Traction|Transmission aux roues avant|1|engines
+Propulsion|Transmission aux roues arrière|1|engines
+Transmission intégrale|Les quatre roues sont motrices|1|engines
+Moteur central arrière|Moteur placé derrière les sièges, devant l'essieu arrière|2|engines
+Empattement|Distance entre l'essieu avant et l'essieu arrière|2|engines
+Voie|Distance entre les deux roues d'un même essieu|3|engines
+Carrossage|Inclinaison de la roue vue de face|3|engines
+Parallélisme|Réglage de l'alignement des roues|3|engines
+Sous-virage|Tendance de l'avant à glisser et à aller tout droit en virage|3|engines
+Survirage|Tendance de l'arrière à décrocher en virage|3|engines
+Appui aérodynamique|Force qui plaque la voiture au sol à haute vitesse|2|motorsport
+Aileron|Appendice aérodynamique qui crée de l'appui|1|motorsport
+Diffuseur|Partie arrière du dessous de caisse qui accélère l'air et crée de l'appui|3|motorsport
+Effet de sol|Dépression sous la voiture qui la plaque sur la piste|3|motorsport
+DRS|Aileron arrière mobile qui facilite les dépassements en F1|2|motorsport
+Pole position|Première place sur la grille de départ|1|motorsport
+Safety car|Voiture de sécurité qui neutralise la course|1|motorsport
+Pit stop|Arrêt au stand pour changer les pneus ou réparer|1|motorsport
+Drapeau jaune|Danger sur la piste : dépassement interdit|2|motorsport
+Drapeau bleu|Ordre de laisser passer un concurrent plus rapide|2|motorsport
+Drapeau rouge|Course interrompue|2|motorsport
+Drapeau à damier|Signal d'arrivée de la course|1|motorsport
+Drapeau noir|Disqualification du pilote|2|motorsport
+Parc fermé|Régime où les voitures ne peuvent plus être modifiées|3|motorsport
+Pneu slick|Pneu lisse, sans sculptures, pour piste sèche|2|motorsport
+Undercut|Stratégie : s'arrêter plus tôt que son rival pour le devancer|4|motorsport
+Spéciale|Portion chronométrée d'un rallye, fermée à la circulation|2|rally
+Notes (pacenotes)|Descriptif de la route que lit le copilote|2|rally
+Parc d'assistance|Zone où les mécaniciens réparent la voiture entre les spéciales|2|rally
+Groupe B|Catégorie de rallye de 1982 à 1986, aux voitures très puissantes|2|rally
+Power Stage|Dernière spéciale d'un rallye WRC, qui rapporte des points bonus|3|rally
+Rallye-raid|Course d'endurance en pleine nature, comme le Dakar|2|rally
+Kilowattheure (kWh)|Unité d'énergie qui mesure la capacité d'une batterie|1|ev
+Autonomie|Distance qu'une voiture électrique parcourt avec une charge|1|ev
+Freinage régénératif|Freinage qui récupère de l'énergie pour recharger la batterie|2|ev
+Hybride rechargeable|Hybride dont la batterie se recharge sur une prise|2|ev
+Wallbox|Borne de recharge installée à domicile|2|ev
+CCS|Prise de charge rapide en courant continu en Europe|3|ev
+WLTP|Cycle d'homologation qui mesure consommation et autonomie|2|ev
+Moteur synchrone|Moteur électrique dont le rotor tourne à la vitesse du champ tournant|4|ev
+Couple instantané|Particularité des moteurs électriques : le couple est disponible dès l'arrêt|2|ev
+`),
+    // circuit | pays | ville | longueur (km) | niveau
+    circuits: tab(`
+Monza|Italie|Monza|5,8|1
+Imola|Italie|Imola|4,9|2
+Mugello|Italie|Scarperia|5,2|3
+Spa-Francorchamps|Belgique|Stavelot|7,0|1
+Silverstone|Royaume-Uni|Silverstone|5,9|1
+Suzuka|Japon|Suzuka|5,8|1
+Fuji|Japon|Oyama|4,6|3
+Monaco|Monaco|Monte-Carlo|3,3|1
+Interlagos|Brésil|São Paulo|4,3|2
+Nürburgring (Nordschleife)|Allemagne|Nürburg|20,8|1
+Hockenheim|Allemagne|Hockenheim|4,6|2
+Circuit de la Sarthe (24 Heures du Mans)|France|Le Mans|13,6|1
+Magny-Cours|France|Magny-Cours|4,4|2
+Paul Ricard|France|Le Castellet|5,8|2
+Barcelona-Catalunya|Espagne|Montmeló|4,7|2
+Jerez|Espagne|Jerez de la Frontera|4,4|3
+Estoril|Portugal|Estoril|4,2|3
+Portimão|Portugal|Portimão|4,7|3
+Zandvoort|Pays-Bas|Zandvoort|4,3|2
+Red Bull Ring|Autriche|Spielberg|4,3|2
+Hungaroring|Hongrie|Mogyoród|4,4|3
+Albert Park|Australie|Melbourne|5,3|2
+Marina Bay|Singapour|Singapour|4,9|2
+Yas Marina|Émirats arabes unis|Abou Dabi|5,3|2
+Sakhir|Bahreïn|Sakhir|5,4|2
+Circuit Gilles-Villeneuve|Canada|Montréal|4,4|2
+Circuit des Amériques (COTA)|États-Unis|Austin|5,5|2
+Indianapolis Motor Speedway|États-Unis|Indianapolis|4,0|2
+Daytona International Speedway|États-Unis|Daytona Beach|4,0|2
+Laguna Seca|États-Unis|Monterey|3,6|3
+Sebring|États-Unis|Sebring|6,0|3
+Autódromo Hermanos Rodríguez|Mexique|Mexico|4,3|3
+Circuit urbain de Bakou|Azerbaïdjan|Bakou|6,0|3
+Circuit de Djeddah|Arabie saoudite|Djeddah|6,2|3
+Shanghai|Chine|Shanghai|5,5|3
+Sepang|Malaisie|Sepang|5,5|3
+Kyalami|Afrique du Sud|Midrand|4,5|3
+Mount Panorama|Australie|Bathurst|6,2|2
+`),
+    // virage | circuit | niveau
+    corners: tab(`
+Eau Rouge / Raidillon|Spa-Francorchamps|1
+Pouhon|Spa-Francorchamps|3
+Les Combes|Spa-Francorchamps|3
+Blanchimont|Spa-Francorchamps|4
+La Source|Spa-Francorchamps|3
+Parabolica|Monza|2
+Curva Grande|Monza|4
+Lesmo|Monza|3
+Variante Ascari|Monza|3
+Tamburello|Imola|3
+Tosa|Imola|3
+Rivazza|Imola|4
+Casino|Monaco|2
+Sainte-Dévote|Monaco|3
+Mirabeau|Monaco|4
+Piscine|Monaco|3
+130R|Suzuka|2
+Spoon|Suzuka|3
+Degner|Suzuka|4
+Becketts|Silverstone|2
+Copse|Silverstone|3
+Maggotts|Silverstone|3
+Stowe|Silverstone|3
+Hunaudières (ligne droite des Hunaudières)|Circuit de la Sarthe (24 Heures du Mans)|1
+Tertre Rouge|Circuit de la Sarthe (24 Heures du Mans)|3
+Arnage|Circuit de la Sarthe (24 Heures du Mans)|2
+Courbes Porsche|Circuit de la Sarthe (24 Heures du Mans)|3
+Karussell|Nürburgring (Nordschleife)|2
+Flugplatz|Nürburgring (Nordschleife)|3
+Fuchsröhre|Nürburgring (Nordschleife)|4
+Pflanzgarten|Nürburgring (Nordschleife)|4
+Tire-bouchon (Corkscrew)|Laguna Seca|2
+Senna S|Interlagos|3
+Mur des Champions|Circuit Gilles-Villeneuve|3
+`),
+    // rallye | pays | niveau
+    rallies: tab(`
+Rallye Monte-Carlo|Monaco|1
+Rallye de Finlande|Finlande|1
+Rallye de Suède|Suède|2
+Safari Rally|Kenya|2
+Tour de Corse|France|2
+Rallye d'Argentine|Argentine|3
+Rallye d'Acropole|Grèce|3
+Rallye Sanremo|Italie|3
+Rallye de Nouvelle-Zélande|Nouvelle-Zélande|3
+Rallye d'Australie|Australie|3
+Rallye du Portugal|Portugal|3
+Rallye de Sardaigne|Italie|3
+Rallye du Japon|Japon|3
+Rallye de Croatie|Croatie|3
+Rallye d'Estonie|Estonie|3
+Rallye du Chili|Chili|3
+Rallye de Catalogne|Espagne|3
+Rallye du Mexique|Mexique|3
+RAC Rally|Royaume-Uni|3
+Dakar (depuis 2020)|Arabie saoudite|2
+`),
+    // voiture de rallye | marque | niveau
+    rallycars: tab(`
+Stratos|Lancia|2
+Delta Integrale|Lancia|1
+037|Lancia|3
+Quattro (Groupe B)|Audi|1
+205 Turbo 16|Peugeot|1
+RS200|Ford|3
+Metro 6R4|MG|4
+5 Turbo|Renault|2
+A110 1600 S|Alpine|2
+Celica GT-Four|Toyota|2
+Impreza WRC|Subaru|1
+Lancer Evolution WRC|Mitsubishi|1
+Xsara WRC|Citroën|2
+C4 WRC|Citroën|3
+DS3 WRC|Citroën|2
+Focus WRC|Ford|2
+Fiesta WRC|Ford|2
+Fabia R5|Škoda|3
+i20 WRC|Hyundai|2
+Polo R WRC|Volkswagen|2
+Yaris WRC|Toyota|2
+GR Yaris Rally1|Toyota|2
+Ascona 400|Opel|3
+131 Abarth|Fiat|3
+206 WRC|Peugeot|2
+Escort RS Cosworth|Ford|3
+Fulvia HF|Lancia|4
+240Z|Datsun|4
+`),
+    // surnom | voiture | niveau
+    nicks: tab(`
+Godzilla|Nissan GT-R|1
+Hachi-Roku|Toyota AE86|2
+Deuche|Citroën 2CV|1
+Tin Lizzie|Ford Model T|3
+Vette|Chevrolet Corvette|2
+Stang|Ford Mustang|3
+Papillon (gullwing)|Mercedes-Benz 300 SL|2
+Pagode|Mercedes-Benz SL (W113)|3
+Frogeye (œil de grenouille)|Austin-Healey Sprite|3
+Cobra|Shelby Cobra|2
+La Brique|Volvo 240|3
+Le Taureau de Sant'Agata|Lamborghini|3
+Le Cheval cabré|Ferrari|2
+`)
+  };
+  // marques → pays (sert aux questions « pays » et aux modèles)
+  const QT_BRAND_COUNTRY = { Mini: "Royaume-Uni", "Land Rover": "Royaume-Uni", Pontiac: "États-Unis", Dodge: "États-Unis", Lexus: "Japon", Rimac: "Croatie", Datsun: "Japon", MG: "Royaume-Uni", Toyota: "Japon", Alfa: "Italie" };
+
+  /** générateurs de questions à partir des tables (déterministes : même graine = mêmes questions sur le site et sur le serveur) */
+  function quizTables(x) {
+    const { mk, pick, shuffle, T, fmt, level } = x;
+    const near = (arr, lv) => { const a = arr.filter((r) => Math.abs(r[lv] - level) <= 1 && (level === 1 ? r[lv] <= 2 : level === 4 ? r[lv] >= 3 : true)); return a.length ? a : arr; };
+    const pickN = (arr, lv) => pick(near(arr, lv));
+    const others = (arr, get, good, n) => { const pool = Array.from(new Set(arr.map(get).filter((v) => v && v !== good))); return shuffle(pool).slice(0, n); };
+    const four = (good, pool) => (pool.length >= 3 ? [good].concat(pool.slice(0, 3)) : null);
+    const ctry = (b) => (QT.brands.find((r) => r[0] === b) || [])[4] || QT_BRAND_COUNTRY[b] || "";
+    const yearOpts = (y) => { const st = [0, 12, 6, 3, 2][level], s = new Set([y]); for (const k of shuffle([-3, -2, -1, 1, 2, 3, 4, -4])) { if (s.size >= 4) break; const v = y + k * st; if (v <= 2027 && v > 1880) s.add(v); } return s.size === 4 ? Array.from(s).map(String) : null; };
+    const F1 = QT.f1.map(([y, n]) => [y, n, /Schumacher|Hamilton|Verstappen|Vettel|Alonso|Senna|Prost|Fangio|Lauda/.test(n) ? (y >= 1985 ? 1 : 2) : y >= 1990 ? 2 : y >= 1970 ? 3 : 4]);
+    const WRC = QT.wrc.map(([y, n]) => [y, n, /Loeb|Ogier|Mäkinen|McRae|Sainz|Auriol/.test(n) ? 2 : y >= 1995 ? 3 : 4]);
+    const LM = QT.lemans.map(([y, n]) => [y, n, /Porsche|Ferrari|Audi|Ford|Peugeot|Toyota|Jaguar/.test(n) ? (y >= 1990 ? 2 : 3) : 3]);
+    const B = QT.brands, M = QT.models.map((r) => [r[0], r[1], +r[2], +r[3], r[4] || ""]);
+    const G = QT.glossary.map((r) => [r[0], r[1], +r[2], r[3]]);
+    const C = QT.circuits.map((r) => [r[0], r[1], r[2], r[3], +r[4]]), K = QT.corners.map((r) => [r[0], r[1], +r[2]]);
+    const out = { brands: [], history: [], engines: [], motorsport: [], countries: [], circuits: [], numbers: [], trivia: [], japan: [], rally: [], ev: [] };
+    // levels : index du niveau dans chaque ligne (brands → 6, models → 3, glossary → 2, circuits → 4, corners → 2, engines → 2, nicks → 2…)
+    const bf = (i) => B.filter((r) => r[i]).map((r) => r.slice(0, 6).concat([+r[6]]));
+    out.brands.push(
+      () => { const rows = bf(1), r = pickN(rows, 6), o = four(r[1], others(rows, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Qui a fondé la marque {0} ?"), [r[0]]), o, 0, "brand-founder", { note: r[0] + " : " + r[1] + (r[2] ? ", " + r[2] : "") + (r[3] ? ", " + r[3] : "") + "." }); },
+      () => { const rows = bf(5), r = pickN(rows, 6), o = four(r[0], others(rows, (z) => z[0], r[0], 3)); return o && mk(fmt(T("Quelle marque a pour emblème {0} ?"), [r[5]]), o, 0, "brand-emblem", { note: r[0] + " : " + r[5] + "." }); },
+      () => { const rows = bf(3), r = pickN(rows, 6), o = four(r[3], others(rows, (z) => z[3], r[3], 3)); return o && mk(fmt(T("Dans quelle ville se trouve le siège ou le berceau de la marque {0} ?"), [r[0]]), o, 0, "brand-city", { note: r[0] + " : " + r[3] + ", " + r[4] + "." }); },
+      () => { const r = pickN(M, 3), brands = Array.from(new Set(M.map((z) => z[0]))), w = shuffle(brands.filter((b) => b !== r[0] && (level < 3 || ctry(b) === ctry(r[0])))).slice(0, 3), o = w.length === 3 ? [r[0]].concat(w) : four(r[0], shuffle(brands.filter((b) => b !== r[0])).slice(0, 3)); return o && mk(fmt(T("Quelle marque a lancé la {0} ?"), [r[1]]), o, 0, "brand-of", { note: r[0] + " " + r[1] + " (" + r[2] + ")." }); }
+    );
+    out.history.push(
+      () => { const r = pickN(M, 3), o = yearOpts(r[2]); return o && mk(fmt(T("En quelle année a été lancée la {0} {1} ?"), [r[0], r[1]]), o, 0, "model-year", { note: r[0] + " " + r[1] + " : " + r[2] + "." }); },
+      () => { const rows = bf(2), r = pickN(rows, 6), o = yearOpts(+r[2]); return o && mk(fmt(T("En quelle année la marque {0} a-t-elle été fondée ?"), [r[0]]), o, 0, "brand-year", { note: r[0] + " : " + r[2] + "." }); },
+      () => { const s = shuffle(M).slice(0, 4), ys = s.map((r) => r[2]).sort((a, b) => a - b); if (new Set(ys).size < 4 || ys[1] - ys[0] < [0, 14, 7, 3, 2][level]) return null; const g = s.reduce((m, r) => (r[2] < m[2] ? r : m)); return mk(T("Laquelle de ces voitures est la plus ancienne ?"), s.map((r) => r[0] + " " + r[1]), s.indexOf(g), "oldest", { note: g[0] + " " + g[1] + " : " + g[2] + "." }); },
+      () => { const s = shuffle(M).slice(0, 4), ys = s.map((r) => r[2]).sort((a, b) => b - a); if (new Set(ys).size < 4 || ys[0] - ys[1] < [0, 14, 7, 3, 2][level]) return null; const g = s.reduce((m, r) => (r[2] > m[2] ? r : m)); return mk(T("Laquelle de ces voitures est la plus récente ?"), s.map((r) => r[0] + " " + r[1]), s.indexOf(g), "newest", { note: g[0] + " " + g[1] + " : " + g[2] + "." }); },
+      () => { const r = pickN(F1.filter((z) => /Schumacher|Hamilton|Prost|Verstappen|Vettel/.test(z[1])), 2), y = F1.find((z) => z[1] === r[1])[0], o = yearOpts(y); return o && mk(fmt(T("En quelle année {0} a-t-il remporté son premier titre mondial de F1 ?"), [r[1]]), o, 0, "first-title", { note: r[1] + " : premier titre en " + y + "." }); }
+    );
+    const EN = QT.engines.map((r) => [r[0], r[1], +r[2]]), GE = G.filter((r) => r[3] === "engines");
+    const gl = (arr, T2) => [
+      () => { const r = pickN(arr, 2), o = four(r[1], others(arr, (z) => z[1], r[1], 3)); return o && mk(fmt(T2("Que désigne le terme « {0} » ?"), [r[0]]), o, 0, "glossary", { note: r[0] + " : " + r[1] + "." }); },
+      () => { const r = pickN(arr, 2), o = four(r[0], others(arr, (z) => z[0], r[0], 3)); return o && mk(fmt(T2("De quoi parle-t-on : « {0} » ?"), [r[1]]), o, 0, "glossary-rev", { note: r[0] + " : " + r[1] + "." }); }
+    ];
+    out.engines.push(
+      () => { const r = pickN(EN, 2), o = four(r[1], others(EN, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Quelle voiture est équipée du moteur {0} ?"), [r[0]]), o, 0, "engine-car", { note: r[0] + " : " + r[1] + "." }); },
+      () => { const r = pickN(EN, 2), o = four(r[0], others(EN, (z) => z[0], r[0], 3)); return o && mk(fmt(T("Quel moteur équipe : {0} ?"), [r[1]]), o, 0, "car-engine", { note: r[1] + " : " + r[0] + "." }); }
+    ); gl(GE, T).forEach((f) => out.engines.push(f));
+    const GM = G.filter((r) => r[3] === "motorsport");
+    out.motorsport.push(
+      () => { const r = pickN(F1, 2), o = four(r[1], others(F1, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Qui a été sacré champion du monde de F1 en {0} ?"), [r[0]]), o, 0, "f1-champion", { note: r[0] + " : " + r[1] + "." }); },
+      () => { const r = pickN(LM, 2), o = four(r[1], others(LM, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Quel constructeur a remporté les 24 Heures du Mans en {0} ?"), [r[0]]), o, 0, "lemans-winner", { note: r[0] + " : " + r[1] + "." }); }
+    ); gl(GM, T).forEach((f) => out.motorsport.push(f));
+    out.circuits.push(
+      () => { const r = pickN(C, 4), o = four(r[1], others(C, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Dans quel pays se trouve le circuit : {0} ?"), [r[0]]), o, 0, "circuit-country", { note: r[0] + " : " + r[2] + ", " + r[1] + "." }); },
+      () => { const r = pickN(C, 4), o = four(r[0], others(C, (z) => z[0], r[0], 3)); return o && mk(fmt(T("Quel circuit se trouve à {0} ({1}) ?"), [r[2], r[1]]), o, 0, "circuit-city", { note: r[0] + " : " + r[2] + ", " + r[1] + "." }); },
+      () => { const r = pickN(K, 2), o = four(r[1], others(K, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Sur quel circuit trouve-t-on le virage ou la section : {0} ?"), [r[0]]), o, 0, "corner", { note: r[0] + " : " + r[1] + "." }); },
+      () => { const r = pickN(C, 4), km = parseFloat(String(r[3]).replace(",", ".")), st = [0, 4, 2, 1, 0.6][level], s = new Set([km]); for (const k of shuffle([-2, -1, 1, 2, 3, -3])) { if (s.size >= 4) break; const v = Math.round((km + k * st) * 10) / 10; if (v > 1.5) s.add(v); } if (s.size < 4) return null; return mk(fmt(T("Quelle est la longueur approximative du circuit : {0} ?"), [r[0]]), Array.from(s).map((v) => String(v).replace(".", ",") + " km"), 0, "circuit-len", { note: r[0] + " : environ " + r[3] + " km." }); }
+    );
+    const allCountries = Array.from(new Set(B.map((z) => z[4]).concat(Object.keys(QT_BRAND_COUNTRY).map((k) => QT_BRAND_COUNTRY[k])))).filter(Boolean);
+    out.countries.push(
+      () => { const r = pickN(M, 3), c = ctry(r[0]); if (!c) return null; const o = four(c, shuffle(allCountries.filter((p) => p !== c)).slice(0, 3)); return o && mk(fmt(T("De quel pays vient la {0} {1} ?"), [r[0], r[1]]), o, 0, "model-country", { note: r[0] + " : " + c + "." }); },
+      () => { const rows = bf(4), r = pickN(rows, 6), o = four(r[4], others(rows, (z) => z[4], r[4], 3)); return o && mk(fmt(T("Dans quel pays est née la marque {0} ?"), [r[0]]), o, 0, "brand-country2", { note: r[0] + " : " + r[4] + "." }); },
+      () => { const rows = bf(4), r = pickN(rows, 6), good = rows.filter((z) => z[4] === r[4]).map((z) => z[0]), w = shuffle(rows.filter((z) => z[4] !== r[4]).map((z) => z[0])).slice(0, 3); if (w.length < 3) return null; const g = pick(good); return mk(fmt(T("Laquelle de ces marques est née en {0} ?"), [r[4]]), [g].concat(w), 0, "brand-in", { note: g + " : " + r[4] + "." }); },
+      () => { const r = pickN(C, 4), o = four(r[1], others(C, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Dans quel pays se trouve la ville de {0}, qui accueille le circuit : {1} ?"), [r[2], r[0]]), o, 0, "city-country", { note: r[2] + " : " + r[1] + "." }); }
+    );
+    out.numbers.push(out.circuits[3], out.history[0], out.history[1]);
+    const JP = M.filter((r) => r[4] === "j");
+    out.japan.push(
+      () => { const r = pickN(JP, 3), o = yearOpts(r[2]); return o && mk(fmt(T("En quelle année a été lancée la {0} {1} ?"), [r[0], r[1]]), o, 0, "model-year", { note: r[0] + " " + r[1] + " : " + r[2] + "." }); },
+      () => { const r = pickN(JP, 3), o = four(r[0], shuffle(Array.from(new Set(JP.map((z) => z[0]))).filter((b) => b !== r[0])).slice(0, 3)); return o && mk(fmt(T("Quelle marque japonaise a lancé la {0} ?"), [r[1]]), o, 0, "jp-brand", { note: r[0] + " " + r[1] + "." }); },
+      () => { const jp = EN.filter((r) => /Toyota|Nissan|Mazda|Honda|Mitsubishi|Lexus|Subaru/.test(r[1])), r = pickN(jp, 2), o = four(r[1], others(jp, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Quelle voiture japonaise est équipée du moteur {0} ?"), [r[0]]), o, 0, "engine-car", { note: r[0] + " : " + r[1] + "." }); },
+      () => { const s = shuffle(JP).slice(0, 4), ys = s.map((r) => r[2]).sort((a, b) => a - b); if (new Set(ys).size < 4 || ys[1] - ys[0] < [0, 14, 7, 3, 2][level]) return null; const g = s.reduce((m, r) => (r[2] < m[2] ? r : m)); return mk(T("Laquelle de ces voitures japonaises est la plus ancienne ?"), s.map((r) => r[0] + " " + r[1]), s.indexOf(g), "oldest", { note: g[0] + " " + g[1] + " : " + g[2] + "." }); }
+    );
+    const RC = QT.rallycars.map((r) => [r[0], r[1], +r[2]]), RA = QT.rallies.map((r) => [r[0], r[1], +r[2]]), GR = G.filter((r) => r[3] === "rally");
+    out.rally.push(
+      () => { const r = pickN(WRC, 2), o = four(r[1], others(WRC, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Qui a été sacré champion du monde des rallyes (WRC) en {0} ?"), [r[0]]), o, 0, "wrc-champion", { note: r[0] + " : " + r[1] + "." }); },
+      () => { const r = pickN(RC, 2), o = four(r[1], shuffle(Array.from(new Set(RC.map((z) => z[1]))).filter((b) => b !== r[1])).slice(0, 3)); return o && mk(fmt(T("Quelle marque a engagé la {0} en rallye ?"), [r[0]]), o, 0, "rally-brand", { note: r[1] + " " + r[0] + "." }); },
+      () => { const r = pickN(RA, 2), o = four(r[1], others(RA, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Dans quel pays se dispute : {0} ?"), [r[0]]), o, 0, "rally-country", { note: r[0] + " : " + r[1] + "." }); }
+    ); gl(GR, T).forEach((f) => out.rally.push(f));
+    const EV = M.filter((r) => r[4] === "e"), GV = G.filter((r) => r[3] === "ev");
+    out.ev.push(
+      () => { const r = pickN(EV, 3), o = four(r[0], shuffle(Array.from(new Set(EV.map((z) => z[0]))).filter((b) => b !== r[0])).slice(0, 3)); return o && mk(fmt(T("Quelle marque a lancé la {0} ?"), [r[1]]), o, 0, "ev-brand", { note: r[0] + " " + r[1] + " (" + r[2] + ")." }); },
+      () => { const r = pickN(EV, 3), o = yearOpts(r[2]); return o && mk(fmt(T("En quelle année a été lancée la {0} {1} ?"), [r[0], r[1]]), o, 0, "model-year", { note: r[0] + " " + r[1] + " : " + r[2] + "." }); }
+    ); gl(GV, T).forEach((f) => out.ev.push(f));
+    const NK = QT.nicks.map((r) => [r[0], r[1], +r[2]]);
+    out.trivia.push(
+      () => { const r = pickN(NK, 2), o = four(r[1], others(NK, (z) => z[1], r[1], 3)); return o && mk(fmt(T("Quelle voiture est surnommée « {0} » ?"), [r[0]]), o, 0, "nickname", { note: "« " + r[0] + " » : " + r[1] + "." }); },
+      out.brands[0], out.brands[1], out.history[0], out.countries[1]
+    );
+    return out;
+  }
+
+
   /** nom propre d'une voiture : le catalogue répète parfois la marque (« Nissan Nissan GT-R ») */
   const cleanName = (c) => { const b = String(c.brand || "").trim(); let n = String(c.name || "").trim(); if (b) { const rx = new RegExp("^(" + b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s+){2,}", "i"); n = n.replace(rx, b + " "); } return n; };
+  const bareName = (c) => { let n = modelOf(c); [c.brand, familyOf(c.brand)].forEach((w) => { if (w) n = n.replace(new RegExp("(^|[\\s/(])" + String(w).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?=[-\\s/)]|$)-?", "ig"), "$1"); }); return n.replace(/^[\s/\-–]+/, "").replace(/\s{2,}/g, " ").trim() || modelOf(c); };
   const modelOf = (c) => { const n = cleanName(c), b = String(c.brand || ""); return n.indexOf(b) === 0 ? n.slice(b.length).trim() || n : n; };
   const ctryLabel = (id) => (COUNTRIES.find((k) => k.id === id) || {}).label || "";
   /** construit les 10 questions d'un quiz (mêmes questions, même ordre de réponses pour une même graine : le serveur peut donc corriger) */
@@ -1172,9 +1994,9 @@ Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom
     const fams = Array.from(new Set(cars.map((c) => familyOf(c.brand)))).filter((f) => cars.filter((c) => familyOf(c.brand) === f).length >= 2);
     const gens = {
       brands: [
-        () => { const c = pick(cars), fam = familyOf(c.brand), pool = level >= 2 ? fams.filter((f) => f !== fam && countryOf(f) === countryOf(fam)) : fams.filter((f) => f !== fam); const w = shuffle(pool.length >= 3 ? pool : fams.filter((f) => f !== fam)).slice(0, 3); if (w.length < 3) return null; return mk(fmt(T("Quelle marque fabrique la {0} ?"), [modelOf(c)]), [fam].concat(w), 0, "brand-of"); },
+        () => { const c = pick(cars), fam = familyOf(c.brand), pool = level >= 2 ? fams.filter((f) => f !== fam && countryOf(f) === countryOf(fam)) : fams.filter((f) => f !== fam); const w = shuffle(pool.length >= 3 ? pool : fams.filter((f) => f !== fam)).slice(0, 3); if (w.length < 3) return null; return mk(fmt(T("Quelle marque fabrique la {0} ?"), [bareName(c)]), [fam].concat(w), 0, "brand-of"); },
         () => { const f = pick(fams.filter((x) => countryOf(x) !== "xx")); const ids = shuffle(COUNTRIES.filter((k) => k.id !== "xx").map((k) => k.id).filter((i) => i !== countryOf(f))).slice(0, 3); return mk(fmt(T("De quel pays vient la marque {0} ?"), [f]), [ctryLabel(countryOf(f))].concat(ids.map(ctryLabel)), 0, "brand-country"); },
-        () => { const f = pick(fams), good = pick(cars.filter((c) => familyOf(c.brand) === f)); const others = shuffle(cars.filter((c) => familyOf(c.brand) !== f && (level < 3 || countryOf(c.brand) === countryOf(f)))).slice(0, 3); if (others.length < 3) return null; const L = [good].concat(others); return mk(fmt(T("Laquelle de ces voitures est signée {0} ?"), [f]), L.map((c) => c.name), 0, "which-brand", xt(L)); }
+        () => { const f = pick(fams), good = pick(cars.filter((c) => familyOf(c.brand) === f)); const others = shuffle(cars.filter((c) => familyOf(c.brand) !== f && (level < 3 || countryOf(c.brand) === countryOf(f)))).slice(0, 3); if (others.length < 3) return null; const L = [good].concat(others); return mk(fmt(T("Laquelle de ces voitures est signée {0} ?"), [f]), L.map((c) => bareName(c)), 0, "which-brand", xt(L)); }
       ],
       engines: [
         () => { const c = four((x) => x.power, (x) => x.power > 0); if (!c || !gapOk(c.map((x) => x.power), RATIO)) return null; const b = c.reduce((m, x) => (x.power > m.power ? x : m)); return mk(T("Laquelle est la plus puissante ?"), c.map((x) => x.name), c.indexOf(b), "most-power", xt(c)); },
@@ -1194,7 +2016,10 @@ Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom
       ]
     };
     const out = [], seen = new Set();
-    const add = (q) => { if (q && !seen.has(q.q) && distinct(q.o)) { seen.add(q.q); out.push(q); return true; } return false; };
+    const nrm = (t) => String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    /** une réponse correcte écrite dans l'énoncé est une question ratée (ex. « Quelle marque fabrique l'Opel Corsa ? » → Opel) */
+    const leaks = (q) => { const nq = nrm(q.q), goods = (q.m || [q.a]).map((i) => nrm(q.o[i])); return goods.some((g) => g.length >= 3 && !/^[\d\s.,]+$/.test(g) && nq.indexOf(g) >= 0); };
+    const add = (q) => { if (q && !seen.has(q.q) && distinct(q.o) && !leaks(q)) { seen.add(q.q); out.push(q); return true; } return false; };
     // questions écrites : niveau demandé d'abord, puis niveaux voisins
     const bank = QBANK.filter((b) => b[0] === cat);
     const wanted = shuffle(bank.filter((b) => b[1] === level)).concat(shuffle(bank.filter((b) => Math.abs(b[1] - level) === 1))).concat(shuffle(bank.filter((b) => Math.abs(b[1] - level) >= 2)));
@@ -1219,6 +2044,7 @@ Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom
     ];
     gens.rally = [gens.motorsport[1]]; gens.ev = [];
     gens.countries = [gens.brands[1], gens.brands[0]]; gens.circuits = gens.motorsport; gens.numbers = gens.engines.concat(gens.history); gens.trivia = [];
+    const tg = quizTables({ mk, pick, shuffle, T, fmt, level }); Object.keys(tg).forEach((k) => { gens[k] = (gens[k] || []).concat(tg[k]); });
     const g = gens[cat] || [];
     for (let tries = 0; tries < 400 && g.length && out.length < QUIZ_N && cars.length > 8; tries++) { let q = null; try { q = pick(g)(); } catch (e) { q = null; } add(q); }
     // complète avec des questions écrites restantes si le catalogue ne suffit pas
@@ -1336,6 +2162,6 @@ Q("trivia", 4, "Qui était le fondateur de Cadillac, dont la marque porte le nom
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
-    SHINY, CHALLENGES, DAILY, FEATURED, CARD_CHALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
+    SHINY, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

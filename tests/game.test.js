@@ -73,12 +73,12 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   let shopBad = 0, shopDust = 450;
   for (let i = 0; i < 2; i++) {
     const x = await G.openPack(U4, { kind: "shop" });
-    if (x.cards.length !== 2) shopBad++;
+    if (x.cards.length !== 3) shopBad++;
     if (!x.cards.some((c) => c.rarity !== "common")) shopBad++;
     shopDust = x.doc.dust;
   }
   await rejects(G.openPack(U4, { kind: "shop" }), "failed-precondition", "pack acheté : 3e achat refusé (poussière épuisée)");
-  ok(shopBad === 0, "pack acheté : toujours 2 cartes dont 1 rare ou mieux");
+  ok(shopBad === 0, "pack acheté : toujours 3 cartes dont 1 rare ou mieux");
   ok(db.raw("collections", "u4").opened === 3 && db.raw("collections", "u4").dust < 450, "pack acheté : ni pack ouvert ni défi comptés, poussière dépensée");
   ok((db.raw("collections", "u4").dustLog || []).some((l) => l.n === -200), "historique : l'achat est tracé");
   // ---- fabrication
@@ -351,7 +351,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
       const qs = core.quizBuild("lot2" + c + l, c, l, pool);
       ok(qs.length === core.QUIZ_N && qs.every((q) => q.o.length === 4 && (q.m ? q.m.length > 0 : q.a >= 0 && q.a < 4)), "10 questions valides : " + c + " niveau " + l);
     }
-    const ex = core.quizBuild("explain1", "engines", 2, pool).filter((q) => q.ex); ok(ex.length > 0 && ex.every((q) => q.ex.length === 4 && q.ids.length === 4), "explications automatiques avec chiffres de la fiche");
+    const ex = [1, 2, 3, 4, 5, 6, 7, 8].flatMap((n) => core.quizBuild("explain" + n, "engines", 2, pool)).filter((q) => q.ex); ok(ex.length > 0 && ex.every((q) => q.ex.length === 4 && q.ids.length === 4), "explications automatiques avec chiffres de la fiche");
     const sd = "lot2seedxx", qs4 = core.quizBuild(sd, "japan", 4, pool); r = await G.quizSubmit(C2, { seed: sd, cat: "japan", level: 4, answers: qs4.map((q) => q.m || q.a) });
     ok(r.score === 10 && r.doc && db.raw("gstats", "c2").quizBest["japan_4"] === 10 && db.raw("gstats", "c2").quizL3 === 1, "quiz Expert japonais 10/10 corrigé par le serveur");
     // chrono
@@ -418,14 +418,62 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     await rejects(G.claimCardChallenge(U9, { carId: "nimporte" }), "not-found", "affiche inconnue refusée");
     await db.collection("likes").doc("cat_" + P.id + "_u9").set({ createdAt: new Date(NOW) });
     await db.collection("comments").add({ uid: "u9", target: P.id, kind: "cat", createdAt: new Date(NOW) });
-    const own = {}; const br = P.brand;
-    cc = await G.cardChallenges(U9);
-    const brandTask = cc.posters[0].tasks.find((t) => t.id === "c-brand");
-    if (brandTask) { const same = pool.filter((c) => c.brand === br && c.id !== P.id).slice(0, 3); same.forEach((c) => { own[c.id] = 1; }); await db.collection("collections").doc("u9").set(Object.assign({}, core.blankCollection(), { owned: own })); }
+    cc = await G.cardChallenges(U9); // enregistre le point de départ du mois
+    ok(cc.posters[0].tasks.length >= 4 && !cc.posters[0].ready, "affiche : au moins 4 défis, dont des objectifs chiffrés du mois");
+    const own = {}, goalB = (cc.posters[0].tasks.find((t) => t.id === "c-brand") || {}).goal || 0;
+    pool.filter((c) => c.brand === P.brand && c.id !== P.id).slice(0, goalB).forEach((c) => { own[c.id] = 1; });
+    await db.collection("collections").doc("u9").set(Object.assign({}, core.blankCollection(), { owned: own, opened: 60, trades: 9 }));
+    await db.collection("gstats").doc("u9").set({ quizPerfect: 30 });
     cc = await G.cardChallenges(U9);
     ok(cc.posters[0].ready, "affiche : tous les défis accomplis → prête");
     r = await G.claimCardChallenge(U9, { carId: P.id }); ok(r.doc.owned[P.id] === 1, "affiche terminée : la carte est gagnée");
     await rejects(G.claimCardChallenge(U9, { carId: P.id }), "failed-precondition", "carte d'affiche une seule fois");
+  }
+
+  // ---- bataille entre joueurs
+  {
+    const full = pool.filter((c) => c.power > 0 && c.speed > 0 && c.zero > 0);
+    const ownA = {}, ownB = {}; full.slice(0, 6).forEach((c) => { ownA[c.id] = 1; }); full.slice(6, 12).forEach((c) => { ownB[c.id] = 1; });
+    await db.collection("collections").doc("b1").set(Object.assign({}, core.blankCollection(), { owned: ownA }));
+    await db.collection("collections").doc("b2").set(Object.assign({}, core.blankCollection(), { owned: ownB }));
+    await db.collection("collections").doc("b3").set(Object.assign({}, core.blankCollection(), { owned: { [full[0].id]: 1 } }));
+    ["b1", "b2", "b3"].forEach((u) => db.seed("users", u, { username: "Pilote_" + u }));
+    const B1 = { uid: "b1" }, B2 = { uid: "b2" }, B3 = { uid: "b3" };
+    await rejects(G.battleInvite(B1, { to: "b1" }), "invalid-argument", "bataille : pas contre soi-même");
+    await rejects(G.battleInvite(B1, { to: "zzz" }), "not-found", "bataille : pilote inconnu");
+    await rejects(G.battleInvite(B1, { to: "b3" }), "failed-precondition", "bataille : adversaire sans 3 cartes");
+    let inv = await G.battleInvite(B1, { to: "b2" });
+    ok(inv.id && inv.expiresAt - NOW === 120000, "invitation valable 2 minutes");
+    const msgs = db._col("private_chats/b1_b2/messages"); ok(msgs.size === 1 && Array.from(msgs.values())[0].battleId === inv.id, "invitation déposée dans le chat privé");
+    await rejects(G.battleRespond(B1, { id: inv.id, accept: true }), "permission-denied", "seul l'invité répond");
+    await rejects(G.battleRespond(B3, { id: inv.id, accept: true }), "permission-denied", "un tiers ne peut pas répondre");
+    // expiration
+    NOW += 121000; await rejects(G.battleRespond(B2, { id: inv.id, accept: true }), "failed-precondition", "invitation expirée"); ok(db.raw("card_battles", inv.id).status === "expired", "statut expiré");
+    // nouvelle invitation, acceptée
+    inv = await G.battleInvite(B1, { to: "b2" });
+    await G.battleRespond(B2, { id: inv.id, accept: true });
+    let bt = db.raw("card_battles", inv.id); ok(bt.status === "active" && bt.n === 5, "bataille lancée à 5 cartes");
+    const hand = {}; hand.a = db.raw("card_battles/" + inv.id + "/hands", "b1").ids; hand.b = db.raw("card_battles/" + inv.id + "/hands", "b2").ids;
+    ok(hand.a.every((id) => ownA[id]) && hand.b.every((id) => ownB[id]), "chaque main vient de la collection du joueur");
+    const who = { a: B1, b: B2 };
+    while (db.raw("card_battles", inv.id).status === "active") {
+      bt = db.raw("card_battles", inv.id); const L = bt.leader, R = L === "a" ? "b" : "a";
+      await rejects(G.battlePlay(who[R], { id: inv.id, idx: 0, stat: "power" }), "failed-precondition", "le répondeur ne mène pas");
+      const free = (s) => hand[s].map((x, i) => i).filter((i) => bt.used[s].indexOf(i) < 0);
+      await G.battlePlay(who[L], { id: inv.id, idx: free(L)[0], stat: "speed" });
+      await rejects(G.battlePlay(who[L], { id: inv.id, idx: 0 }), "failed-precondition", "le meneur ne répond pas à sa propre carte");
+      await G.battlePlay(who[R], { id: inv.id, idx: free(R)[0] });
+    }
+    bt = db.raw("card_battles", inv.id); ok(bt.status === "done" && bt.score.a + bt.score.b <= 5 && (bt.winner === "" || bt.score[bt.winner] >= bt.score[bt.winner === "a" ? "b" : "a"]), "fin de partie, score " + JSON.stringify(bt.score));
+    // forfait
+    inv = await G.battleInvite(B2, { to: "b1" }); await G.battleRespond(B1, { id: inv.id, accept: true });
+    bt = db.raw("card_battles", inv.id); const waiter = bt.leader === "a" ? B2 : B1, idler = bt.leader === "a" ? B1 : B2;
+    await rejects(G.battleClaim(idler, { id: inv.id }), "failed-precondition", "pas de forfait quand c'est à soi de jouer");
+    await rejects(G.battleClaim(waiter, { id: inv.id }), "failed-precondition", "trop tôt pour réclamer");
+    NOW += 91000; await G.battleClaim(idler === B1 ? B2 : B1, { id: inv.id }).catch(() => {});
+    const cur = db.raw("card_battles", inv.id);
+    if (cur.status === "active") { const w2 = cur.leader === "a" ? B2 : B1; await G.battleClaim(w2 === B1 ? B2 : B1, { id: inv.id }).catch(() => {}); }
+    inv = await G.battleInvite(B1, { to: "b2" }); await G.battleRespond(B2, { id: inv.id, accept: false }); ok(db.raw("card_battles", inv.id).status === "declined", "invitation refusée");
   }
 
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");

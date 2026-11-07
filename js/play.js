@@ -31,12 +31,12 @@
     return cardCh;
   }
   function posterHtml(p) {
-    const esc = C.esc, R = window.MACards && window.MACards.RAR && window.MACards.RAR[p.rar], img = p.image && C.safeUrl ? C.safeUrl(p.image) : "";
+    const esc = C.esc, R = window.MACards && window.MACards.RAR && window.MACards.RAR[p.rar], co = window.MACards && window.MACards.cardObj ? window.MACards.cardObj(p.id) : null, src = (co && co.image) || p.image || "", img = src && C.safeUrl ? C.safeUrl(src) : "";
     const left = p.tasks.filter((t) => !t.done).length;
     return `<article class="cc-poster r-${esc(p.rar || "rare")}${p.claimed ? " won" : p.ready ? " ready" : ""}">
       <div class="cc-art">${img ? `<img src="${esc(img)}" alt="" loading="lazy" data-fallback="car">` : ""}<span class="cc-rar">${esc(R ? R.label : p.rar)}</span></div>
       <div class="cc-body"><b class="cc-name">${esc(p.name)}</b>
-        <ul class="cc-tasks">${p.tasks.map((t) => `<li class="${t.done ? "ok" : ""}"><i aria-hidden="true">${t.done ? "✓" : t.icon}</i><span>${esc(t.label)}${t.goal ? ` <small>${t.value} / ${t.goal}</small>` : ""}</span></li>`).join("")}</ul>
+        <ul class="cc-tasks">${p.tasks.map((t) => `<li class="${t.done ? "ok" : ""}"><i aria-hidden="true">${t.done ? "✓" : t.icon}</i><span>${esc(t.label)}${t.goal && !t.done ? ` <small>${t.value} / ${t.goal}</small>` : ""}</span></li>`).join("")}</ul>
         ${p.claimed ? `<span class="chal-done">✓ Carte gagnée</span>` : p.ready ? `<button type="button" class="cta-btn fill-btn compact-btn${ccBusy === p.id ? " ma-busy" : ""}" data-cc-claim="${esc(p.id)}" ${ccBusy ? "disabled" : ""}>Gagner la carte</button>` : `<a class="cta-btn btn-ghost compact-btn" href="#/voiture/${encodeURIComponent(p.id)}">Voir la fiche · ${left} défi${left > 1 ? "s" : ""}</a>`}
       </div></article>`;
   }
@@ -160,7 +160,7 @@
         ${tile("#/quiz", HUBI.quiz, T("Quiz"), T("8 catégories, 3 niveaux"), "")}
         ${tile("#/plusmoins", HUBI.pm, T("Plus ou moins"), T("Séries sans faute = cristaux"), "")}
         ${tile("#/duel", "🏁", "Duel", "0-100 km/h et 400 m en course", "")}
-        <a class="hub-tile" href="#/jouer/minijeux" data-battle-tile role="button"><i class="hub-ico hub-ico-svg" aria-hidden="true"><svg viewBox="0 0 48 48" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="9" width="21" height="30" rx="4" transform="rotate(-14 15.5 24)"/><rect x="22" y="9" width="21" height="30" rx="4" transform="rotate(14 32.5 24)" fill="var(--accent)" stroke="var(--accent)"/><path d="M26.5 14l-5 10h6l-4 10" stroke="#fff" stroke-width="2.6"/></svg></i><b>Bataille contre l'IA</b><small>Entraînement avec tes cartes, sans récompense</small></a>
+        <a class="hub-tile" href="#/jouer/minijeux" data-battle-tile role="button"><i class="hub-ico hub-ico-svg" aria-hidden="true"><svg viewBox="0 0 48 48" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="9" width="21" height="30" rx="4" transform="rotate(-14 15.5 24)"/><rect x="22" y="9" width="21" height="30" rx="4" transform="rotate(14 32.5 24)" fill="var(--accent)" stroke="var(--accent)"/><path d="M26.5 14l-5 10h6l-4 10" stroke="#fff" stroke-width="2.6"/></svg></i><b>Bataille</b><small>Contre l'IA ou contre un joueur, avec tes cartes</small></a>
       </div>` : `<div class="hub-grid">
         ${tile("#/jouer/defis", "🎯", "Défis", st.chal, st.chalBadge)}
         ${tile("#/jouer/concours", "📸", "Concours photo", st.contest, "")}

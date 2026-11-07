@@ -792,6 +792,17 @@ service cloud.firestore {
     }
 
     // --- Propositions d'échange : visibles par les deux pilotes et l'admin ; créées / traitées par le serveur (Cloud Functions)
+    // --- Batailles de cartes entre joueurs : créées et menées par le serveur (Cloud Functions) ; lisibles par les deux joueurs
+    match /card_battles/{bid} {
+      allow read: if signedIn() && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid);
+      allow write: if false;
+      // la main de chaque joueur n'est lisible que par lui (l'adversaire ne voit que les cartes jouées)
+      match /hands/{huid} {
+        allow read: if signedIn() && request.auth.uid == huid;
+        allow write: if false;
+      }
+    }
+
     match /trades/{tid} {
       allow read: if signedIn() && (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid || isAdmin());
       allow write: if false;

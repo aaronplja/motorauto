@@ -35,7 +35,9 @@
         <p class="lap-meta">Les messages de modération (grade, sourdine) sont toujours envoyés.</p></section>
       <section class="set-card col"><h3>🌙 Ne pas déranger</h3><p class="lap-meta">Pendant cette plage (heure de Paris), ton appareil reste silencieux. Tu retrouves tout dans la cloche du site.</p>
         <label class="set-toggle"><span><b>Activer</b><small>Aucune notification sur l'appareil pendant la plage</small></span><input type="checkbox" id="dnd-on" ${P.dnd().on ? "checked" : ""}><i class="set-sw" aria-hidden="true"></i></label>
-        <div class="dnd-times"><label>De <input type="time" id="dnd-from" value="${P.dnd().from}"></label><label>à <input type="time" id="dnd-to" value="${P.dnd().to}"></label></div></section>`;
+        <div class="dnd-times"><label>De <input type="time" id="dnd-from" value="${P.dnd().from}"></label><label>à <input type="time" id="dnd-to" value="${P.dnd().to}"></label></div></section>
+      <section class="set-card col"><h3>⚔️ Invitations de bataille</h3><p class="lap-meta">Quand un pilote te défie, une notification volante apparaît sur tout le site pendant 2 minutes.</p>
+        <label class="set-toggle"><span><b>Notification volante</b><small>Sur cet appareil, pour ne pas rater une invitation</small></span><input type="checkbox" id="battle-alert" ${window.MABattleLive && !window.MABattleLive.alertOn() ? "" : "checked"}><i class="set-sw" aria-hidden="true"></i></label></section>`;
   }
   async function pushAction(a) {
     const err = $("push-err"); if (err) err.textContent = "";
@@ -88,6 +90,7 @@
     }, true);
     document.addEventListener("change", async (e) => {
       const id = e.target.id;
+      if (id === "battle-alert") { if (window.MABattleLive) window.MABattleLive.setAlert(e.target.checked); C.toast(e.target.checked ? "Alertes de bataille activées." : "Alertes de bataille désactivées.", "ok"); return; }
       if (id === "dnd-on" || id === "dnd-from" || id === "dnd-to") {
         const patch = id === "dnd-on" ? { on: e.target.checked } : id === "dnd-from" ? { from: e.target.value || "22:00" } : { to: e.target.value || "08:00" };
         try { await window.MAPush.setDnd(ctx.user.uid, patch); C.toast("Enregistré.", "ok"); } catch (ex) { C.toast("Enregistrement impossible : " + ex.message, "err"); }

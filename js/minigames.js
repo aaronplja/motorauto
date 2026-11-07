@@ -131,6 +131,7 @@
         ${multi && !done ? `<button type="button" class="cta-btn fill-btn mt" data-qz-ok ${sel.length ? "" : "disabled"}>${T("Valider")}</button>` : ""}
         ${done && qz.train ? explainHtml(q) : ""}
         ${done ? `<button type="button" class="cta-btn fill-btn mt" data-qz-next autofocus>${qz.i + 1 >= qz.qs.length ? T("Voir mon résultat") : T("Question suivante")}</button>` : ""}</section>`;
+      const key = qz.seed + ":" + qz.i; if (qz._top !== key) { qz._top = key; topOf(root); }
       return;
     }
     if (qz.state === "sending") { root.innerHTML = `<div class="empty-note">${T("Correction par le serveur…")}</div>`; return; }
@@ -148,6 +149,8 @@
     else if (q.note) body = `<p class="qz-note">${q.ids && q.ids[0] ? link(q.ids[0], q.note) : C.esc(q.note)}</p>`;
     return `<div class="qz-explain" role="status"><b>${T("Bonne réponse")} : ${C.esc(good)}</b>${body}</div>`;
   }
+  /** ramène en haut de la zone de jeu (sinon on arrive au milieu / en bas de la page après le menu) */
+  function topOf(el) { try { const y = el.getBoundingClientRect().top + window.pageYOffset - 70; window.scrollTo({ top: Math.max(0, y), behavior: "auto" }); } catch (_) { /* ignoré */ } }
   function qzTrain(cat, level) {
     qz.train = true; qz.cat = cat; qz.level = level; qz.seed = newSeed(); qz.i = 0; qz.answers = []; qz.picked = -1; qz.sel = []; qz.result = null; qz.err = "";
     try { qz.qs = G.quizBuild(qz.seed, cat, level, quizPool(), { t: T, lang: lang() }); } catch (e) { qz.err = T("Impossible de préparer le quiz."); }
@@ -169,6 +172,7 @@
     root.innerHTML = `<section class="mg-card qz-card qz-chrono"><div class="qz-head"><span>${T(G.QLEVELS[ch.level])} · ${T("Chrono")}</span><b>✓ ${ch.ok}</b></div>
       <div class="qz-clock"><b id="qz-left">${Math.ceil(ch.left)}</b><span>s</span>${ch.flash ? `<em class="qz-fl ${ch.flash[0] === "-" ? "bad" : "good"}">${C.esc(ch.flash)}</em>` : ""}</div>
       <h2 class="qz-q">${C.esc(q.q)}</h2><div class="qz-opts">${q.o.map((o, i) => `<button type="button" class="qz-opt" data-qz-cpick="${i}">${C.esc(o)}</button>`).join("")}</div></section>`;
+    if (!ch._t) { ch._t = 1; topOf(root); }
   }
   function chronoTick() {
     ch.left = Math.max(0, (ch.end - Date.now()) / 1000);

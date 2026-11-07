@@ -426,6 +426,7 @@
     return `<div class="voice-msg"><audio controls preload="none" src="${esc(u)}"></audio><small>${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}</small></div>`;
   }
   function carCardHtml(m) {
+    if (m.battleId) return `<a class="car-share card-share" href="index.html?bataille=${encodeURIComponent(m.battleId)}"><span><small>⚔️ Bataille de cartes</small><b>Répondre à l'invitation</b></span></a>`;
     if (!m.carId) return "";
     const img = safeUrl(m.carImage);
     const isCard = !!m.cardRarity, href = isCard ? "index.html?carte=" + encodeURIComponent(m.carId) + "#/jouer/collection" : "index.html#/voiture/" + encodeURIComponent(m.carId);

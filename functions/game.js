@@ -584,25 +584,35 @@
     async function cardChalPosters(uid) {
       const pool = await getPool(), month = core.monthKey(now());
       const ids = core.cardChalCars(month, pool.ids.filter((x) => !core.isExtra(x) && pool.byId.has(x)), pool.rar);
-      const [cs, cl] = await Promise.all([col("collections").doc(uid).get(), col("card_chals").doc(uid).get()]);
-      const owned = cs.exists ? cs.data().owned || {} : {}, claimed = cl.exists ? cl.data().claimed || {} : {};
+      const [cs, cl, gs] = await Promise.all([col("collections").doc(uid).get(), col("card_chals").doc(uid).get(), col("gstats").doc(uid).get()]);
+      const dd = cs.exists ? cs.data() : {}, owned = dd.owned || {}, ex = cl.exists ? cl.data() : {}, claimed = ex.claimed || {}, g = gs.exists ? gs.data() : {};
+      const now_ = { quiz: g.quizPerfect || 0, packs: dd.opened || 0, trade: dd.trades || 0 };
+      const hasBase = !!(ex.base && ex.base[month]), base = hasBase ? ex.base[month] : now_;
       const ownedIds = Object.keys(owned).filter((k) => owned[k] > 0);
       let comments = null;
       const posters = [];
       for (const id of ids) {
-        const c = pool.byId.get(id) || {}, name = str(c.name || id, 80), brand = str(c.brand || "", 40);
+        const c = pool.byId.get(id) || {}, name = str(c.name || id, 80), brand = str(c.brand || "", 40), rar = pool.rar.get(id), goals = core.CARD_GOALS[rar] || core.CARD_GOALS.rare;
         const exists = (n) => col(n).doc("cat_" + id + "_" + uid).get().then((x) => x.exists).catch(() => false);
         const [lk, rc] = await Promise.all([exists("likes"), exists("reactions")]);
         if (comments === null) comments = await col("comments").where("uid", "==", uid).limit(500).get().then((r) => r.docs.map((d) => d.data())).catch(() => []);
         const cm = comments.some((x) => x.target === id && x.kind === "cat");
+        const brandTotal = brand ? pool.ids.filter((k) => (pool.byId.get(k) || {}).brand === brand && !core.isExtra(k)).length : 0;
         const nb = brand ? ownedIds.filter((k) => ((pool.byId.get(k) || {}).brand || "") === brand).length : 0;
-        const tasks = core.CARD_CHALS.filter((t) => t.id !== "c-brand" || brand).map((t) => ({ id: t.id, icon: t.icon, label: t.label(name, brand), done: t.id === "c-react" ? lk || rc : t.id === "c-comment" ? cm : nb >= 3, value: t.id === "c-brand" ? Math.min(3, nb) : undefined, goal: t.id === "c-brand" ? 3 : undefined }));
-        posters.push({ id, name, brand, image: str(c.image || c.img || "", 400), rar: pool.rar.get(id), owned: owned[id] || 0, claimed: !!claimed[id], tasks, ready: !claimed[id] && tasks.every((t) => t.done) });
+        const bg = Math.min(goals.brand, Math.max(3, brandTotal - 1));
+        const defs = [["c-react", lk || rc], ["c-comment", cm]];
+        if (brand) defs.push(["c-brand", nb >= bg, Math.min(bg, nb), bg]);
+        defs.push(["c-quiz", now_.quiz - (base.quiz || 0) >= goals.quiz, Math.min(goals.quiz, now_.quiz - (base.quiz || 0)), goals.quiz]);
+        defs.push(["c-packs", now_.packs - (base.packs || 0) >= goals.packs, Math.min(goals.packs, now_.packs - (base.packs || 0)), goals.packs]);
+        if (goals.trade) defs.push(["c-trade", now_.trade - (base.trade || 0) >= goals.trade, Math.min(goals.trade, now_.trade - (base.trade || 0)), goals.trade]);
+        const tasks = defs.map((x) => { const t = core.CARD_CHALS.find((y) => y.id === x[0]); return { id: x[0], icon: t.icon, label: t.label(name, brand, x[3]), done: !!x[1], value: x[2], goal: x[3] }; });
+        posters.push({ id, name, brand, image: str(c.image || c.img || "", 400), rar, owned: owned[id] || 0, claimed: !!claimed[id], tasks, ready: !claimed[id] && tasks.every((t) => t.done) });
       }
-      return { month, posters, claimed };
+      return { month, posters, claimed, base: hasBase ? null : { [month]: now_ } };
     }
     async function cardChallenges(caller) {
       const r = await cardChalPosters(caller.uid);
+      if (r.base) await col("card_chals").doc(caller.uid).set({ base: r.base }, { merge: true }).catch(() => {});
       return { month: r.month, endsAt: monthEnd(), posters: r.posters };
     }
     function monthEnd() { const k = core.monthKey(now()).split("-"), y = Number(k[0]), m = Number(k[1]); return core.parisMidnight(y + (m === 12 ? 1 : 0) + "-" + String(m === 12 ? 1 : m + 1).padStart(2, "0") + "-01"); }
@@ -619,7 +629,7 @@
         d.owned[carId] = (d.owned[carId] || 0) + 1; core.histAdd(d, carId, "affiche", now());
         core.seasonAdd(d, core.SEASON_PTS.challenge * 2, null, now(), true);
         claimed[carId] = now();
-        writeCol(tx, uid, d); tx.set(ref, { claimed, updatedAt: ts() });
+        writeCol(tx, uid, d); tx.set(ref, { claimed, updatedAt: ts() }, { merge: true });
         return { cardId: carId, name: p.name, rar: p.rar, doc: view(d) };
       });
     }
@@ -1194,7 +1204,112 @@
       return sent;
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, cardChallenges, claimCardChallenge, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
+    // ---------------------------------------------------------------- bataille de cartes entre joueurs (en direct, sans récompense)
+    const BATTLE_INVITE_MS = 120000, BATTLE_TURN_MS = 90000;
+    const BSTATS = [["power", 1], ["speed", 1], ["zero", -1]];
+    const bval = (c, k) => Number(c && c[k]) || 0;
+    const bBeats = (a, b, k) => Math.sign((a - b) * BSTATS.find((s) => s[0] === k)[1]);
+    async function battleHand(uid, pool) {
+      const s = await col("collections").doc(uid).get(), d = s.exists ? s.data() : {};
+      return Object.keys(d.owned || {}).filter((id) => (d.owned[id] || 0) > 0).map((id) => pool.byId.get(id)).filter((c) => c && BSTATS.every(([k]) => bval(c, k) > 0)).map((c) => c.id);
+    }
+    const shuffled = (a) => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = r[i]; r[i] = r[j]; r[j] = t; } return r; };
+    async function readBattle(id, caller) {
+      const ref = col("card_battles").doc(str(id, 60)), s = await ref.get();
+      if (!s.exists) fail("not-found", "Bataille introuvable.");
+      const b = s.data();
+      if (!b.uids || b.uids.indexOf(caller.uid) < 0) fail("permission-denied", "Cette bataille ne te concerne pas.");
+      return { ref, b };
+    }
+    const sideOf = (b, uid) => (b.a === uid ? "a" : "b");
+    async function battleInvite(caller, data) {
+      const to = str(data && data.to, 128);
+      if (!to || to === caller.uid) fail("invalid-argument", "Choisis un autre pilote.");
+      const toName = await nameOf(to);
+      if (!toName) fail("not-found", "Pilote introuvable.");
+      if (await isMuted(caller.uid)) fail("permission-denied", "Tu ne peux pas envoyer d'invitation pour le moment.");
+      const pool = await getPool(), mine = await battleHand(caller.uid, pool), his = await battleHand(to, pool);
+      if (mine.length < 3) fail("failed-precondition", "Il te faut au moins 3 cartes complètes (chevaux, vitesse max et 0 à 100).");
+      if (his.length < 3) fail("failed-precondition", toName + " n'a pas encore 3 cartes complètes : la bataille est impossible.");
+      // une seule invitation en attente par pilote : la précédente est annulée
+      const old = await col("card_battles").where("a", "==", caller.uid).get();
+      for (const d of old.docs) { const x = d.data(); if (x.status === "pending") await d.ref.update({ status: "cancelled" }); }
+      const myName = (await nameOf(caller.uid)) || str(caller.name, 40) || "Pilote";
+      const t = now(), ref = col("card_battles").doc();
+      await ref.set({ a: caller.uid, b: to, uids: [caller.uid, to], names: { a: myName, b: toName }, status: "pending", createdAt: t, expiresAt: t + BATTLE_INVITE_MS });
+      const conv = [caller.uid, to].sort().join("_"), text = "⚔️ " + myName + " te défie à la bataille de cartes ! Réponds dans les 2 minutes.";
+      try {
+        await col("private_chats/" + conv + "/messages").add({ uid: caller.uid, pilot: myName, avatar: "", text, battleId: ref.id, timestamp: ts() });
+        await col("private_chats").doc(conv).set({ uids: [caller.uid, to], lastUid: caller.uid, lastName: myName, lastText: text.slice(0, 160), lastAt: ts() });
+      } catch (_) { /* le chat est facultatif : l'invitation reste valable */ }
+      return { id: ref.id, expiresAt: t + BATTLE_INVITE_MS };
+    }
+    async function battleRespond(caller, data) {
+      const { ref, b } = await readBattle(data && data.id, caller);
+      if (b.b !== caller.uid) fail("permission-denied", "Seul le pilote invité peut répondre.");
+      if (b.status !== "pending") fail("failed-precondition", b.status === "active" ? "Bataille déjà lancée." : "Cette invitation n'est plus valable.");
+      if (now() > b.expiresAt) { await ref.update({ status: "expired" }); fail("failed-precondition", "L'invitation a expiré (2 minutes)."); }
+      if (!(data && data.accept)) { await ref.update({ status: "declined" }); return { status: "declined" }; }
+      const pool = await getPool(), ha = await battleHand(b.a, pool), hb = await battleHand(b.b, pool), n = Math.min(5, ha.length, hb.length);
+      if (n < 3) { await ref.update({ status: "cancelled" }); fail("failed-precondition", "Un des deux pilotes n'a plus 3 cartes complètes."); }
+      await ref.collection("hands").doc(b.a).set({ ids: shuffled(ha).slice(0, n) });
+      await ref.collection("hands").doc(b.b).set({ ids: shuffled(hb).slice(0, n) });
+      await ref.update({ status: "active", n, round: 0, leader: rng() < 0.5 ? "a" : "b", phase: "lead", lead: null, used: { a: [], b: [] }, score: { a: 0, b: 0 }, last: null, turnAt: now(), startedAt: now() });
+      return { status: "active" };
+    }
+    async function finishBattle(ref, winner, why) { await ref.update({ status: "done", winner: winner || "", why: why || "", doneAt: now() }); }
+    async function battleCancel(caller, data) {
+      const { ref, b } = await readBattle(data && data.id, caller);
+      if (b.status === "pending" && b.a === caller.uid) await ref.update({ status: "cancelled" });
+      else if (b.status === "active") await finishBattle(ref, sideOf(b, caller.uid) === "a" ? "b" : "a", "forfeit");
+      return { status: "ok" };
+    }
+    /** un tour : le meneur envoie { idx, stat } ; l'autre pilote répond { idx } ; la manche se règle, le répondeur mène la suivante */
+    async function battlePlay(caller, data) {
+      const { ref, b } = await readBattle(data && data.id, caller);
+      if (b.status !== "active") fail("failed-precondition", "La bataille n'est pas en cours.");
+      const me = sideOf(b, caller.uid), idx = Math.floor(Number(data && data.idx));
+      const hs = await ref.collection("hands").doc(caller.uid).get(), mine = hs.exists ? hs.data().ids : [];
+      if (b.phase === "lead" && b.leader !== me) fail("failed-precondition", "Ce n'est pas à toi de mener.");
+      if (b.phase === "reply" && b.leader === me) fail("failed-precondition", "C'est à ton adversaire de répondre.");
+      if (!(idx >= 0 && idx < mine.length) || b.used[me].indexOf(idx) >= 0) fail("invalid-argument", "Carte non jouable.");
+      if (b.phase === "lead") {
+        const stat = str(data && data.stat, 10);
+        if (!BSTATS.some((s) => s[0] === stat)) fail("invalid-argument", "Choisis une caractéristique.");
+        await ref.update({ phase: "reply", lead: { idx, stat, id: mine[idx] }, turnAt: now() });
+        return { status: "reply" };
+      }
+      if (b.phase !== "reply") fail("failed-precondition", "La bataille n'est pas en cours.");
+      if (b.leader === me) fail("failed-precondition", "C'est à ton adversaire de répondre.");
+      const pool = await getPool(), L = b.leader, k = b.lead.stat;
+      const lv = bval(pool.byId.get(b.lead.id), k), rv = bval(pool.byId.get(mine[idx]), k), r = bBeats(lv, rv, k);
+      const score = { a: b.score.a, b: b.score.b }, winner = r > 0 ? L : r < 0 ? me : "";
+      if (winner) score[winner]++;
+      const used = { a: b.used.a.slice(), b: b.used.b.slice() };
+      used[L].push(b.lead.idx); used[me].push(idx);
+      const last = { round: b.round, lead: L, stat: k, ids: { [L]: b.lead.id, [me]: mine[idx] }, vals: { [L]: lv, [me]: rv }, winner };
+      const round = b.round + 1;
+      if (round >= b.n) {
+        await ref.update({ used, score, last, round, phase: "end" });
+        await finishBattle(ref, score.a > score.b ? "a" : score.b > score.a ? "b" : "", "score");
+        return { status: "done" };
+      }
+      await ref.update({ used, score, last, round, leader: me, phase: "lead", lead: null, turnAt: now() });
+      return { status: "next" };
+    }
+    /** le pilote qui attend peut déclarer forfait l'autre s'il ne joue plus depuis 90 s */
+    async function battleClaim(caller, data) {
+      const { ref, b } = await readBattle(data && data.id, caller);
+      if (b.status === "pending" && now() > b.expiresAt) { await ref.update({ status: "expired" }); return { status: "expired" }; }
+      if (b.status !== "active") return { status: b.status };
+      const me = sideOf(b, caller.uid), waiting = b.phase === "lead" ? b.leader : (b.leader === "a" ? "b" : "a");
+      if (waiting === me) fail("failed-precondition", "C'est à toi de jouer.");
+      if (now() - b.turnAt < BATTLE_TURN_MS) fail("failed-precondition", "Ton adversaire a encore un peu de temps.");
+      await finishBattle(ref, me, "timeout");
+      return { status: "done" };
+    }
+
+    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, cardChallenges, claimCardChallenge, battleInvite, battleRespond, battleCancel, battlePlay, battleClaim, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
   }
   return { createGame, GameError };
 });

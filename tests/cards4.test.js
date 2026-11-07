@@ -66,7 +66,7 @@ const col = async () => (await db.collection("collections").doc("u1").get()).dat
   db.seed("collections", "u1", Object.assign(core.blankCollection(), { dust: 1000, bonus: 0 }));
   const cost = core.offerPackCost(o1.pack);
   r = await G.openPack(U, { kind: "shop", pack: o1.pack, offer: true });
-  ok(r.cards.length === 2 && r.doc.dust >= 1000 - cost && r.doc.dust <= 1000 - cost + 200, "pack en offre payé " + cost + " (reste " + r.doc.dust + ")");
+  ok(r.cards.length === 3 && r.doc.dust >= 1000 - cost && r.doc.dust <= 1000 - cost + 400, "pack en offre payé " + cost + " (reste " + r.doc.dust + ")");
   ok(r.missions && r.doc.mis.day === today, "missions suivies");
   await rejects(G.openPack(U, { kind: "shop", pack: o1.pack, offer: true }), "offre pack déjà utilisée");
   const other = core.COUNTRIES.find((k) => k.id !== o1.pack).id;

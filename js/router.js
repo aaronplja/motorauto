@@ -150,7 +150,7 @@
   const PLAY_GROUPS = [["cartes", "Cartes"], ["minijeux", "Mini-jeux"], ["communaute", "Défis"]];
   const PLAY_SUBS = {
     cartes: [["Collection", "#/jouer/collection", (r) => r.name === "play" && r.params.tab === "collection"], ["Échanges", "#/jouer/echanges", (r) => r.name === "play" && r.params.tab === "echanges"], ["Fusion", "#/fusion", (r) => r.name === "fusion"], ["Marché", "#/marche", (r) => r.name === "cardmarket"], ["Souhaits", "#/souhaits", (r) => r.name === "wishfeed"], ["Boutique", "#/jouer/boutique", (r) => r.name === "play" && r.params.tab === "boutique"]],
-    minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Bataille IA", "#/jouer/minijeux", () => false, "data-battle-tile"]],
+    minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Bataille", "#/jouer/minijeux", () => false, "data-battle-tile"]],
     communaute: [["Semaine", "#/jouer/defis", (r) => r.name === "play" && r.params.tab === "defis"], ["Concours photo", "#/jouer/concours", (r) => r.name === "play" && r.params.tab === "concours"], ["Succès", "#/succes", (r) => r.name === "achievements"], ["Classements", "#/classement", () => false]]
   };
   function playGroup(r) {
