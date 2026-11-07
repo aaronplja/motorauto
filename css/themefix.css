@@ -452,3 +452,17 @@ html[data-chal-ready] .gh-chal-link::after,html[data-chal-ready] .play-subtabs a
 @keyframes bx-bub{0%{transform:translateY(8px);opacity:0}10%,80%{transform:none;opacity:1}100%{opacity:0}}
 @media (max-width:640px){.bx-row{grid-template-columns:4.4rem 1fr 4.4rem}.bx-bar{grid-template-columns:1fr 1fr}.bx-mid{grid-column:1/-1;order:-1}}
 @media (prefers-reduced-motion:reduce){.bx-pl.on,.bx-banner.me,.bx-slot.flip .tcg,.bx-end.anim,.bx-conf i,.bx-cmp.anim .bx-bars i::after{animation:none}}
+
+/* ---- Batailles : tout doit tenir dans l'écran (hauteur) */
+.bx{gap:.5rem}
+.bx-banner{padding:.45rem .8rem}.bx-banner b{font-size:clamp(1.05rem,4.5vw,1.45rem)}.bx-banner small{font-size:.82rem}
+.bx-slot .tcg,.bx-slot .bt-hidden{width:min(150px,34vw,21dvh)}
+.bx .bt-hand{flex-wrap:nowrap;gap:.35rem;justify-content:center}
+.bx .bt-hand .tcg{width:min(88px,17.5vw,12dvh)}
+.bx-row{padding:.2rem .45rem}
+.bx-recap{width:min(520px,100%);padding:.35rem .7rem;border-radius:10px;font-size:.82rem;font-weight:700;text-align:center;background:var(--bg-surface);color:var(--color-muted);border-left:4px solid var(--stroke-line)}
+.bx-recap.win{border-color:#4ade80;color:#4ade80}.bx-recap.lose{border-color:#f87171;color:#f87171}.bx-recap.tie{border-color:#fbbf24;color:#fbbf24}
+.bx .tcg-hint{margin:0}.bx .bt-note{margin:0}
+@media (max-height:800px){.bx .bt-note{display:none}}
+@media (max-height:700px){.bx-bars{display:none}.bx-row{grid-template-columns:5rem 1fr 5rem}.bx-end{padding:.6rem 1rem}.bx-end b{font-size:1.5rem}}
+@media (max-height:700px){.bx-slot .tcg,.bx-slot .bt-hidden{width:min(130px,32vw,17dvh)}.bx .bt-hand .tcg{width:min(80px,17vw,11dvh)}.bx-banner small{display:none}.bx{gap:.35rem}}

@@ -7,7 +7,7 @@
  */
 (function () {
   "use strict";
-  let ledId = "", C = null, ov = null, unsub = null, timer = null, bid = "", bt = null, hand = [], pick = -1, busy = false, sentNote = "";
+  let holdUntil = 0, ledId = "", C = null, ov = null, unsub = null, timer = null, bid = "", bt = null, hand = [], pick = -1, busy = false, sentNote = "";
   let incUnsub = null, toastEl = null, toastId = "", toastTimer = null;
   const LS = "ma_battle_alert";
   const STATS = [["power", "Puissance", "ch"], ["speed", "Vitesse", "km/h"], ["zero", "0 à 100", "s"]];
@@ -92,7 +92,7 @@
     unsub = C.db.collection("card_battles").doc(id).onSnapshot((s) => {
       if (!s.exists) { C.toast("Bataille introuvable.", "err"); close(); return; }
       const was = bt; bt = s.data();
-      if (bt.status === "active" && !hand.length) loadHand().then(render); else { if (was && was.round !== bt.round) pick = -1; render(); }
+      if (bt.status === "active" && !hand.length) loadHand().then(render); else { if (was && was.round !== bt.round) { pick = -1; holdUntil = Date.now() + 4500; setTimeout(() => { if (ov && bt) render(); }, 4600); } render(); }
     }, () => { C.toast("Connexion à la bataille impossible.", "err"); close(); });
     timer = setInterval(() => { if (bt && ov) tick(); }, 1000);
   }
@@ -127,7 +127,7 @@
     }
     const done = bt.status === "done", last = bt.last, UI = window.MABattleUI, total = bt.n;
     const mark = (w) => (w === me ? "w" : w ? "l" : "t"), hist = bt.hist || [], mk = (f) => hist.map(f).concat(Array(Math.max(0, total - hist.length)).fill(""));
-    const showLast = !!last && (done || (bt.phase === "lead" && !(myTurn() && pick >= 0)));   // résultat de la manche : les deux cartes se révèlent
+    const holding = Date.now() < holdUntil, showLast = !!last && !(myTurn() && pick >= 0 && bt.phase === "lead") && (done || holding || bt.phase === "lead");   // résultat de la manche : les deux cartes se révèlent
     let myCard = "", foeCard = "";
     if (showLast) { myCard = card(last.ids[me]); foeCard = card(last.ids[foe]); }
     else if (bt.phase === "lead" && myTurn() && pick >= 0) myCard = card(hand[pick]);
@@ -143,6 +143,7 @@
       note: "Mains équilibrées" + (bt.profile ? " : " + profileTxt(bt.profile) : "") + " · 90 s maximum par coup."
     };
     if (bt.emote && Date.now() - bt.emote.t < 3500) { const em = EMOTES.find((x) => x[0] === bt.emote.k); if (em) m.bubble = { side: bt.emote.s === me ? "me" : "foe", label: em[1], t: bt.emote.t }; }
+    if (last && !showLast) { const win = last.winner, st1 = STATS.find((x) => x[0] === last.stat); m.recap = { cls: win === me ? "win" : win ? "lose" : "tie", text: "Manche " + (last.round + 1) + " : " + (win === me ? "gagnée" : win ? "perdue" : "égalité") + " · " + st1[1] + " " + last.vals[me] + " contre " + last.vals[foe] + " " + st1[2] }; }
     if (showLast) {
       const win = last.winner;
       m.cmp = STATS.map(([k, label, unit, dir]) => { const a = k === last.stat ? last.vals[me] : val(last.ids[me], k), b2 = k === last.stat ? last.vals[foe] : val(last.ids[foe], k), r = (a - b2) * dir; return { label, unit, my: a || "—", foe: b2 || "—", dir, hot: k === last.stat, win: r > 0 ? "me" : r < 0 ? "foe" : "tie" }; });

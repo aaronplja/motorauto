@@ -35,7 +35,7 @@
         <span class="bx-vs">VS</span>
         <div class="bx-slot foe${turn === "foe" ? " on" : ""}${m.reveal && fresh ? " flip" : ""}">${m.reveal && m.foeCard ? m.foeCard : back}${bubble("foe")}</div>
       </div>
-      ${cmp}${m.verdict ? `<div class="bt-res ${m.verdict.cls}" role="status">${esc(m.verdict.text)}</div>` : ""}${end}
+      ${m.recap ? `<div class="bx-recap ${m.recap.cls}">${esc(m.recap.text)}</div>` : ""}${cmp}${m.verdict ? `<div class="bt-res ${m.verdict.cls}" role="status">${esc(m.verdict.text)}</div>` : ""}${end}
       ${m.hint ? `<p class="tcg-hint">${m.hint}</p>` : ""}${stats}${hand}${actions}${emotes}
       ${m.note ? `<p class="bt-note">${esc(m.note)}</p>` : ""}</div>`;
   }
