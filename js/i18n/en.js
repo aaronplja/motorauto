@@ -1113,5 +1113,20 @@
 "Entraînement tout de suite, sans récompense": "Practice right away, no reward",
 "Il reçoit une invitation dans le chat, vous jouez en direct": "He gets an invitation in the chat, you play live",
 "Aucun pilote trouvé.": "No driver found.",
-"Contre l'IA ou contre un joueur, avec tes cartes": "Against the AI or a player, with your cards"
+"Contre l'IA ou contre un joueur, avec tes cartes": "Against the AI or a player, with your cards",
+"C'est à toi !": "Your turn!",
+"Choisis la carte que tu joues": "Choose the card you play",
+"Choisis la caractéristique": "Choose the stat",
+"Changer de carte": "Change card",
+"Manche suivante": "Next round",
+"Revanche": "Rematch",
+"Victoire !": "Victory!",
+"Défaite": "Defeat",
+"Match nul": "Draw",
+"Terminé": "Finished",
+"Adversaire (IA)": "Opponent (AI)",
+"Toi": "You",
+"Ta carte reste cachée de l'adversaire jusqu'au résultat.": "Your card stays hidden from your opponent until the result.",
+"Il ne joue plus : réclamer la victoire": "He stopped playing: claim the win",
+"Entraînement équitable : mains de force égale. Aucune récompense.": "Fair practice: hands of equal strength. No reward."
 }]);

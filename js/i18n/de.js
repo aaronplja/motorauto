@@ -1113,5 +1113,20 @@
 "Entraînement tout de suite, sans récompense": "Sofort trainieren, ohne Belohnung",
 "Il reçoit une invitation dans le chat, vous jouez en direct": "Er erhält eine Einladung im Chat, ihr spielt live",
 "Aucun pilote trouvé.": "Kein Fahrer gefunden.",
-"Contre l'IA ou contre un joueur, avec tes cartes": "Gegen die KI oder einen Spieler, mit deinen Karten"
+"Contre l'IA ou contre un joueur, avec tes cartes": "Gegen die KI oder einen Spieler, mit deinen Karten",
+"C'est à toi !": "Du bist dran!",
+"Choisis la carte que tu joues": "Wähle die Karte, die du spielst",
+"Choisis la caractéristique": "Wähle den Wert",
+"Changer de carte": "Karte wechseln",
+"Manche suivante": "Nächste Runde",
+"Revanche": "Revanche",
+"Victoire !": "Sieg!",
+"Défaite": "Niederlage",
+"Match nul": "Unentschieden",
+"Terminé": "Beendet",
+"Adversaire (IA)": "Gegner (KI)",
+"Toi": "Du",
+"Ta carte reste cachée de l'adversaire jusqu'au résultat.": "Deine Karte bleibt bis zum Ergebnis verborgen.",
+"Il ne joue plus : réclamer la victoire": "Er spielt nicht mehr: Sieg einfordern",
+"Entraînement équitable : mains de force égale. Aucune récompense.": "Faires Training: gleich starke Hände. Keine Belohnung."
 }]);

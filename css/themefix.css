@@ -394,3 +394,61 @@ html[data-chal-ready] .gh-chal-link::after,html[data-chal-ready] .play-subtabs a
 .bl-toast-x{justify-self:start;background:none;border:0;color:var(--color-muted);font:inherit;font-size:.8rem;text-decoration:underline;cursor:pointer;padding:0}
 @media (max-width:640px){.bl-modes{grid-template-columns:1fr}.bl-toast{right:8px;left:8px;width:auto;top:auto;bottom:calc(86px + env(safe-area-inset-bottom,0px))}}
 @media (prefers-reduced-motion:reduce){.bl-toast{transition:none}}
+
+/* ---- Batailles v2 : arène commune (IA et joueur) */
+.bx{display:grid;gap:.7rem;width:100%;justify-items:center}
+.bx-bar{display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem;align-items:center;width:100%}
+.bx-pl{display:flex;align-items:center;gap:.5rem;padding:.4rem .55rem;border-radius:14px;border:1px solid var(--stroke-line);background:var(--bg-elevated);min-width:0;transition:box-shadow .25s,border-color .25s}
+.bx-pl.foe{flex-direction:row-reverse;text-align:right}
+.bx-pl>span:not(.bx-pips){display:grid;gap:.15rem;min-width:0}.bx-pl b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem}
+.bx-pl em{font-style:normal;font-weight:900;font-size:1.5rem;color:var(--accent);font-variant-numeric:tabular-nums}
+.bx-pl.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent),0 0 24px -2px var(--accent);animation:bx-pulse 1.4s ease-in-out infinite}
+.bx-av{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;color:#fff;background:hsl(var(--h) 55% 38%)}
+.bx-pips{display:flex!important;gap:4px;flex-wrap:nowrap}.bx-pl.foe .bx-pips{justify-content:flex-end}.bx-pips i{width:10px;height:10px;border-radius:50%;background:var(--stroke-line)}
+.bx-pips i.w{background:#4ade80}.bx-pips i.l{background:#f87171}.bx-pips i.t{background:#fbbf24}
+.bx-mid{font-size:.8rem;color:var(--color-muted);text-align:center;font-weight:700}
+.bx-banner{display:grid;gap:.1rem;width:100%;padding:.7rem 1rem;border-radius:16px;text-align:center}
+.bx-banner b{font-size:clamp(1.2rem,5vw,1.7rem);letter-spacing:.04em;text-transform:uppercase}
+.bx-banner small{font-size:.9rem}
+.bx-banner.me{background:var(--accent);color:var(--on-accent);animation:bx-pulse 1.4s ease-in-out infinite}
+.bx-banner.foe,.bx-banner:not(.me){background:var(--bg-elevated);color:var(--color-muted);border:1px dashed var(--stroke-line)}
+.bx-time{width:100%;height:8px;border-radius:99px;background:var(--stroke-line);overflow:hidden}
+.bx-time i{display:block;height:100%;background:var(--color-muted);transform-origin:left;animation:bx-drain var(--d) linear forwards;animation-delay:calc(-1 * var(--e))}
+.bx-time.me i{background:var(--accent);animation-name:bx-drain,bx-late}
+.bx-time.me i{animation-duration:var(--d),var(--d);animation-timing-function:linear;animation-fill-mode:forwards;animation-delay:calc(-1 * var(--e)),calc(-1 * var(--e))}
+.bx-arena{display:grid;grid-template-columns:1fr auto 1fr;gap:.6rem;align-items:center;justify-items:center;width:100%}
+.bx-slot{position:relative;border-radius:18px;padding:6px;transition:box-shadow .25s}
+.bx-slot.on{box-shadow:0 0 0 2px var(--accent),0 0 28px -2px var(--accent)}
+.bx-slot .tcg,.bx-slot .bt-hidden{width:min(150px,34vw)}
+.bx-slot.flip .tcg{animation:bx-flip .6s cubic-bezier(.2,.8,.2,1) both}
+.bx-vs{font-weight:900;font-size:1.2rem;color:var(--accent)}
+.bx-cmp{display:grid;gap:.4rem;width:min(520px,100%)}
+.bx-row{display:grid;grid-template-columns:5.2rem 1fr 5.2rem;align-items:center;gap:.5rem;padding:.35rem .5rem;border-radius:12px;background:var(--bg-surface);border:1px solid transparent}
+.bx-row.hot{border-color:var(--accent);background:var(--bg-elevated)}
+.bx-v{font-weight:800;font-variant-numeric:tabular-nums;color:var(--color-muted)}.bx-v.me{text-align:left}.bx-v.foe{text-align:right}.bx-v.w{color:#4ade80}.bx-v small{font-weight:500;font-size:.7rem}
+.bx-k{display:grid;gap:3px;text-align:center;font-size:.75rem;color:var(--color-muted)}
+.bx-bars{display:grid;grid-template-columns:1fr 1fr;gap:4px}.bx-bars i{display:block;height:6px;border-radius:99px;background:var(--stroke-line);position:relative;overflow:hidden}
+.bx-bars i::after{content:"";position:absolute;inset:0;width:var(--w);background:var(--color-muted);border-radius:inherit}
+.bx-bars i.me{transform:scaleX(-1)}.bx-bars i.w::after{background:#4ade80}
+.bx-cmp.anim .bx-bars i::after{animation:bx-grow .7s ease-out both}
+.bx-end{position:relative;display:grid;gap:.3rem;text-align:center;padding:1rem 1.4rem;border-radius:20px;border:2px solid var(--stroke-line);background:var(--bg-elevated);overflow:hidden;width:min(420px,100%)}
+.bx-end b{font-size:2rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.bx-end.win{border-color:#4ade80}.bx-end.win b{color:#4ade80}.bx-end.lose b{color:#f87171}.bx-end.tie b{color:#fbbf24}
+.bx-end.anim{animation:bx-pop .5s cubic-bezier(.2,1.4,.4,1) both}
+.bx-prize{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;font-weight:800;color:var(--accent)}
+.bx-conf i{position:absolute;top:-10px;left:calc(var(--i) * 5.5%);width:8px;height:14px;border-radius:2px;background:hsl(calc(var(--i) * 40) 80% 60%);animation:bx-fall 2.2s ease-in calc(var(--i) * .08s) both}
+.bx-emotes{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center}
+.bx-emotes button{padding:.35rem .7rem;border-radius:99px;border:1px solid var(--stroke-line);background:var(--bg-elevated);color:var(--color-ink);font:inherit;font-size:.85rem;cursor:pointer}
+.bx-emotes button:hover,.bx-emotes button:focus-visible{border-color:var(--accent)}
+.bx-bub{position:absolute;top:-14px;z-index:2;padding:.3rem .7rem;border-radius:99px;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:.85rem;white-space:nowrap;animation:bx-bub 3s ease both}
+.bx-bub.me{left:6px}.bx-bub.foe{right:6px}
+@keyframes bx-pulse{0%,100%{filter:none}50%{filter:brightness(1.18)}}
+@keyframes bx-drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes bx-late{0%,70%{background:var(--accent)}85%,100%{background:#ef4444}}
+@keyframes bx-flip{from{transform:perspective(600px) rotateY(90deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes bx-grow{from{width:0}}
+@keyframes bx-pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes bx-fall{from{transform:translateY(0) rotate(0);opacity:1}to{transform:translateY(260px) rotate(540deg);opacity:0}}
+@keyframes bx-bub{0%{transform:translateY(8px);opacity:0}10%,80%{transform:none;opacity:1}100%{opacity:0}}
+@media (max-width:640px){.bx-row{grid-template-columns:4.4rem 1fr 4.4rem}.bx-bar{grid-template-columns:1fr 1fr}.bx-mid{grid-column:1/-1;order:-1}}
+@media (prefers-reduced-motion:reduce){.bx-pl.on,.bx-banner.me,.bx-slot.flip .tcg,.bx-end.anim,.bx-conf i,.bx-cmp.anim .bx-bars i::after{animation:none}}

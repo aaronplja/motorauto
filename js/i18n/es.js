@@ -1113,5 +1113,20 @@
 "Entraînement tout de suite, sans récompense": "Entrenamiento al instante, sin recompensa",
 "Il reçoit une invitation dans le chat, vous jouez en direct": "Recibe una invitación en el chat y jugáis en directo",
 "Aucun pilote trouvé.": "Ningún piloto encontrado.",
-"Contre l'IA ou contre un joueur, avec tes cartes": "Contra la IA o un jugador, con tus cartas"
+"Contre l'IA ou contre un joueur, avec tes cartes": "Contra la IA o un jugador, con tus cartas",
+"C'est à toi !": "¡Te toca!",
+"Choisis la carte que tu joues": "Elige la carta que juegas",
+"Choisis la caractéristique": "Elige la característica",
+"Changer de carte": "Cambiar de carta",
+"Manche suivante": "Siguiente ronda",
+"Revanche": "Revancha",
+"Victoire !": "¡Victoria!",
+"Défaite": "Derrota",
+"Match nul": "Empate",
+"Terminé": "Terminado",
+"Adversaire (IA)": "Rival (IA)",
+"Toi": "Tú",
+"Ta carte reste cachée de l'adversaire jusqu'au résultat.": "Tu carta queda oculta para el rival hasta el resultado.",
+"Il ne joue plus : réclamer la victoire": "Ya no juega: reclamar la victoria",
+"Entraînement équitable : mains de force égale. Aucune récompense.": "Entrenamiento justo: manos de igual fuerza. Sin recompensa."
 }]);

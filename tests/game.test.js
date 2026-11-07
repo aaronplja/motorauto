@@ -432,8 +432,11 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
 
   // ---- bataille entre joueurs
   {
-    const full = pool.filter((c) => c.power > 0 && c.speed > 0 && c.zero > 0);
-    const ownA = {}, ownB = {}; full.slice(0, 6).forEach((c) => { ownA[c.id] = 1; }); full.slice(6, 12).forEach((c) => { ownB[c.id] = 1; });
+    const rars = core.computeRarities(pool), full = pool.filter((c) => c.power > 0 && c.speed > 0 && c.zero > 0);
+    const byR = {}; full.forEach((c) => { const r = rars.get(c.id) || "common"; (byR[r] = byR[r] || []).push(c.id); });
+    // A et B possèdent des cartes DIFFÉRENTES mais de mêmes raretés (3 communes + 2 rares chacun) : la main doit avoir le même profil
+    const ownA = {}, ownB = {}; byR.common.slice(0, 3).forEach((i) => { ownA[i] = 1; }); byR.common.slice(3, 6).forEach((i) => { ownB[i] = 1; });
+    const rr = byR.rare || byR.common; rr.slice(6, 8).forEach((i) => { ownA[i] = 1; }); rr.slice(8, 10).forEach((i) => { ownB[i] = 1; });
     await db.collection("collections").doc("b1").set(Object.assign({}, core.blankCollection(), { owned: ownA }));
     await db.collection("collections").doc("b2").set(Object.assign({}, core.blankCollection(), { owned: ownB }));
     await db.collection("collections").doc("b3").set(Object.assign({}, core.blankCollection(), { owned: { [full[0].id]: 1 } }));
@@ -455,6 +458,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     let bt = db.raw("card_battles", inv.id); ok(bt.status === "active" && bt.n === 5, "bataille lancée à 5 cartes");
     const hand = {}; hand.a = db.raw("card_battles/" + inv.id + "/hands", "b1").ids; hand.b = db.raw("card_battles/" + inv.id + "/hands", "b2").ids;
     ok(hand.a.every((id) => ownA[id]) && hand.b.every((id) => ownB[id]), "chaque main vient de la collection du joueur");
+    const prof = (h) => h.map((id) => rars.get(id) || "common").sort().join(","); ok(prof(hand.a) === prof(hand.b) && bt.profile.length === 5, "mêmes raretés des deux côtés : " + prof(hand.a));
     const who = { a: B1, b: B2 };
     while (db.raw("card_battles", inv.id).status === "active") {
       bt = db.raw("card_battles", inv.id); const L = bt.leader, R = L === "a" ? "b" : "a";
@@ -465,6 +469,18 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
       await G.battlePlay(who[R], { id: inv.id, idx: free(R)[0] });
     }
     bt = db.raw("card_battles", inv.id); ok(bt.status === "done" && bt.score.a + bt.score.b <= 5 && (bt.winner === "" || bt.score[bt.winner] >= bt.score[bt.winner === "a" ? "b" : "a"]), "fin de partie, score " + JSON.stringify(bt.score));
+    // récompenses : cristaux selon les manches gagnées, 1 pack bonus pour une victoire nette, plafond par adversaire (3 / jour)
+    ok(bt.reward && bt.reward.a.dust + bt.reward.b.dust > 0, "cristaux versés : " + JSON.stringify(bt.reward));
+    ok(bt.reward.a.dust === bt.score.a * 6 + (bt.winner === "a" ? 15 : bt.winner === "" ? 5 : 0), "cristaux = 6 par manche + bonus de victoire");
+    let nb = 0; for (let k = 0; k < 4; k++) { const iv = await G.battleInvite(B1, { to: "b2" }); await G.battleRespond(B2, { id: iv.id, accept: true }); let cur = db.raw("card_battles", iv.id);
+      const hh = { a: db.raw("card_battles/" + iv.id + "/hands", "b1").ids, b: db.raw("card_battles/" + iv.id + "/hands", "b2").ids };
+      while (cur.status === "active") { const L = cur.leader, R = L === "a" ? "b" : "a"; const fr = (sd) => hh[sd].map((x, i) => i).filter((i) => cur.used[sd].indexOf(i) < 0)[0];
+        await G.battlePlay(who[L], { id: iv.id, idx: fr(L), stat: "power" }); await G.battlePlay(who[R], { id: iv.id, idx: fr(R) }); cur = db.raw("card_battles", iv.id); }
+      if (cur.reward && cur.reward.a.capped === "pair") nb++; }
+    ok(nb >= 1, "plafond par adversaire atteint après 3 parties dans la journée");
+    // émotes
+    await G.battleEmote(B1, { id: inv.id, e: "gg" }); ok(db.raw("card_battles", inv.id).emote.k === "gg", "émote envoyée");
+    await G.battleEmote(B1, { id: inv.id, e: "gg" }); await G.battleEmote(B1, { id: inv.id, e: "pirate" }); ok(db.raw("card_battles", inv.id).emote.k === "gg", "émote inconnue ou trop rapide ignorée");
     // forfait
     inv = await G.battleInvite(B2, { to: "b1" }); await G.battleRespond(B1, { id: inv.id, accept: true });
     bt = db.raw("card_battles", inv.id); const waiter = bt.leader === "a" ? B2 : B1, idler = bt.leader === "a" ? B1 : B2;

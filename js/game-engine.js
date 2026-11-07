@@ -946,7 +946,7 @@
     }
 
     // ---------------------------------------------------------------- compteurs de jeu supplémentaires (fusion, marché, Plus ou moins, quiz)
-    const blankStats = () => ({ fuse: 0, sold: 0, bought: 0, pmBest: 0, pmStreak: 0, pmPair: null, pmDay: { day: "", dust: 0 }, quizDone: 0, quizPerfect: 0, quizL3: 0, quizBest: {}, quizPts: 0, quizDay: { day: "", dust: 0 }, wishAt: 0 });
+    const blankStats = () => ({ bpDay: { day: "", dust: 0 }, bpPack: "", bpPair: null, fuse: 0, sold: 0, bought: 0, pmBest: 0, pmStreak: 0, pmPair: null, pmDay: { day: "", dust: 0 }, quizDone: 0, quizPerfect: 0, quizL3: 0, quizBest: {}, quizPts: 0, quizDay: { day: "", dust: 0 }, wishAt: 0 });
     async function readStats(tx, uid) { const s = await tx.get(col("gstats").doc(uid)); return s.exists ? Object.assign(blankStats(), s.data()) : blankStats(); }
     function writeStats(tx, uid, g) { g.updatedAt = ts(); tx.set(col("gstats").doc(uid), g); }
     const dayOf = (g, key) => { const today = core.dayKey(now()); if (!g[key] || g[key].day !== today) g[key] = { day: today, dust: 0 }; return g[key]; };
@@ -1213,6 +1213,17 @@
       const s = await col("collections").doc(uid).get(), d = s.exists ? s.data() : {};
       return Object.keys(d.owned || {}).filter((id) => (d.owned[id] || 0) > 0).map((id) => pool.byId.get(id)).filter((c) => c && BSTATS.every(([k]) => bval(c, k) > 0)).map((c) => c.id);
     }
+    const BRANK = ["special", "mythic", "shiny", "legendary", "epic", "rare", "common"];   // de la plus haute à la plus basse
+    /** mains équilibrées : mêmes raretés des deux côtés (on prend les plus hautes raretés que les deux joueurs possèdent en assez grand nombre) */
+    function balancedHands(ha, hb, pool, want) {
+      const group = (ids) => { const g = {}; shuffled(ids).forEach((id) => { const r = pool.rar.get(id) || "common"; (g[r] = g[r] || []).push(id); }); return g; };
+      const ga = group(ha), gb = group(hb), profile = [];
+      BRANK.concat(Object.keys(ga).filter((r) => BRANK.indexOf(r) < 0)).forEach((r) => { const n = Math.min((ga[r] || []).length, (gb[r] || []).length); for (let i = 0; i < n; i++) profile.push(r); });
+      const prof = profile.slice(0, want);
+      if (prof.length < 3) return null;
+      const pick = (g) => { const used = {}; return shuffled(prof.map((r) => { used[r] = (used[r] || 0) + 1; return g[r][used[r] - 1]; })); };
+      return { a: pick(ga), b: pick(gb), profile: prof };
+    }
     const shuffled = (a) => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = r[i]; r[i] = r[j]; r[j] = t; } return r; };
     async function readBattle(id, caller) {
       const ref = col("card_battles").doc(str(id, 60)), s = await ref.get();
@@ -1231,6 +1242,7 @@
       const pool = await getPool(), mine = await battleHand(caller.uid, pool), his = await battleHand(to, pool);
       if (mine.length < 3) fail("failed-precondition", "Il te faut au moins 3 cartes complètes (chevaux, vitesse max et 0 à 100).");
       if (his.length < 3) fail("failed-precondition", toName + " n'a pas encore 3 cartes complètes : la bataille est impossible.");
+      if (!balancedHands(mine, his, pool, 5)) fail("failed-precondition", "Vous n'avez pas assez de cartes de même rareté en commun (au moins 3) pour une bataille équilibrée.");
       // une seule invitation en attente par pilote : la précédente est annulée
       const old = await col("card_battles").where("a", "==", caller.uid).get();
       for (const d of old.docs) { const x = d.data(); if (x.status === "pending") await d.ref.update({ status: "cancelled" }); }
@@ -1250,12 +1262,36 @@
       if (b.status !== "pending") fail("failed-precondition", b.status === "active" ? "Bataille déjà lancée." : "Cette invitation n'est plus valable.");
       if (now() > b.expiresAt) { await ref.update({ status: "expired" }); fail("failed-precondition", "L'invitation a expiré (2 minutes)."); }
       if (!(data && data.accept)) { await ref.update({ status: "declined" }); return { status: "declined" }; }
-      const pool = await getPool(), ha = await battleHand(b.a, pool), hb = await battleHand(b.b, pool), n = Math.min(5, ha.length, hb.length);
-      if (n < 3) { await ref.update({ status: "cancelled" }); fail("failed-precondition", "Un des deux pilotes n'a plus 3 cartes complètes."); }
-      await ref.collection("hands").doc(b.a).set({ ids: shuffled(ha).slice(0, n) });
-      await ref.collection("hands").doc(b.b).set({ ids: shuffled(hb).slice(0, n) });
-      await ref.update({ status: "active", n, round: 0, leader: rng() < 0.5 ? "a" : "b", phase: "lead", lead: null, used: { a: [], b: [] }, score: { a: 0, b: 0 }, last: null, turnAt: now(), startedAt: now() });
+      const pool = await getPool(), ha = await battleHand(b.a, pool), hb = await battleHand(b.b, pool), bal = balancedHands(ha, hb, pool, 5);
+      if (!bal) { await ref.update({ status: "cancelled" }); fail("failed-precondition", "Vous n'avez plus assez de cartes de même rareté pour une bataille équilibrée."); }
+      const n = bal.profile.length;
+      await ref.collection("hands").doc(b.a).set({ ids: bal.a });
+      await ref.collection("hands").doc(b.b).set({ ids: bal.b });
+      await ref.update({ status: "active", n, profile: bal.profile, round: 0, leader: rng() < 0.5 ? "a" : "b", phase: "lead", lead: null, used: { a: [], b: [] }, score: { a: 0, b: 0 }, last: null, hist: [], turnAt: now(), startedAt: now() });
       return { status: "active" };
+    }
+    const BR = { round: 6, win: 15, draw: 5, dayCap: 120, pairCap: 3, packRounds: 4 };
+    /** fin normale d'une partie : cristaux selon les manches gagnées (plafonnés par jour et par adversaire), 1 pack bonus par jour pour une victoire nette */
+    async function settleBattle(ref, b, score, winner) {
+      const today = core.dayKey(now()), rw = { a: { dust: 0, pack: 0, capped: "" }, b: { dust: 0, pack: 0, capped: "" } };
+      await db.runTransaction(async (tx) => {
+        const cur = await tx.get(ref); if (!cur.exists || cur.data().status === "done") return;
+        const d = {}, g = {};
+        for (const sd of ["a", "b"]) { d[sd] = await readCol(tx, b[sd]); g[sd] = await readStats(tx, b[sd]); }
+        for (const sd of ["a", "b"]) {
+          const o = sd === "a" ? "b" : "a", pair = g[sd].bpPair && g[sd].bpPair.day === today ? g[sd].bpPair : { day: today, n: {} }, played = pair.n[b[o]] || 0;
+          if (played >= BR.pairCap) rw[sd].capped = "pair";
+          else {
+            pair.n[b[o]] = played + 1;
+            const want = score[sd] * BR.round + (winner === sd ? BR.win : winner === "" ? BR.draw : 0), day = dayOf(g[sd], "bpDay"), give = Math.max(0, Math.min(want, BR.dayCap - day.dust));
+            day.dust += give; rw[sd].dust = give; if (give < want) rw[sd].capped = "day";
+            if (winner === sd && score[sd] >= BR.packRounds && g[sd].bpPack !== today) { g[sd].bpPack = today; rw[sd].pack = 1; d[sd].bonus = (d[sd].bonus || 0) + 1; }
+            dustMove(d[sd], give, "Bataille contre " + b.names[o]);
+          }
+          g[sd].bpPair = pair; writeCol(tx, b[sd], d[sd]); writeStats(tx, b[sd], g[sd]);
+        }
+        tx.update(ref, { status: "done", winner: winner || "", why: "score", doneAt: now(), reward: rw });
+      });
     }
     async function finishBattle(ref, winner, why) { await ref.update({ status: "done", winner: winner || "", why: why || "", doneAt: now() }); }
     async function battleCancel(caller, data) {
@@ -1290,15 +1326,24 @@
       if (winner) score[winner]++;
       const used = { a: b.used.a.slice(), b: b.used.b.slice() };
       used[L].push(led.idx); used[me].push(idx);
-      const last = { round: b.round, lead: L, stat: k, ids: { [L]: led.id, [me]: mine[idx] }, vals: { [L]: lv, [me]: rv }, winner };
+      const hist = (b.hist || []).concat([winner]), last = { round: b.round, lead: L, stat: k, ids: { [L]: led.id, [me]: mine[idx] }, vals: { [L]: lv, [me]: rv }, winner };
       const round = b.round + 1;
       if (round >= b.n) {
-        await ref.update({ used, score, last, round, phase: "end" });
-        await finishBattle(ref, score.a > score.b ? "a" : score.b > score.a ? "b" : "", "score");
+        await ref.update({ used, score, last, round, hist, phase: "end" });
+        await settleBattle(ref, b, score, score.a > score.b ? "a" : score.b > score.a ? "b" : "");
         return { status: "done" };
       }
-      await ref.update({ used, score, last, round, leader: me, phase: "lead", lead: null, turnAt: now() });
+      await ref.update({ used, score, last, round, hist, leader: me, phase: "lead", lead: null, turnAt: now() });
       return { status: "next" };
+    }
+    const BEMOTES = ["gg", "bravo", "wow", "oups", "feu"];
+    async function battleEmote(caller, data) {
+      const { ref, b } = await readBattle(data && data.id, caller), k = str(data && data.e, 10);
+      if (BEMOTES.indexOf(k) < 0 || (b.status !== "active" && b.status !== "done")) return { status: "ignored" };
+      const me = sideOf(b, caller.uid);
+      if (b.emote && b.emote.s === me && now() - b.emote.t < 1500) return { status: "ignored" };
+      await ref.update({ emote: { s: me, k, t: now() } });
+      return { status: "ok" };
     }
     /** le pilote qui attend peut déclarer forfait l'autre s'il ne joue plus depuis 90 s */
     async function battleClaim(caller, data) {
@@ -1312,7 +1357,7 @@
       return { status: "done" };
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, cardChallenges, claimCardChallenge, battleInvite, battleRespond, battleCancel, battlePlay, battleClaim, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
+    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, cardChallenges, claimCardChallenge, battleInvite, battleRespond, battleCancel, battlePlay, battleClaim, battleEmote, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
   }
   return { createGame, GameError };
 });

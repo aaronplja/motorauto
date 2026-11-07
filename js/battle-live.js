@@ -105,9 +105,8 @@
       const left = bt.expiresAt - Date.now();
       if (el) el.textContent = fmtT(left);
       if (left <= 0) { call("battleClaim", { id: bid }).catch(() => {}); bt = Object.assign({}, bt, { status: "expired" }); render(); }
-    } else if (bt.status === "active" && el) {
-      const left = bt.turnAt + 90000 - Date.now(), btn = $("[data-bl=claim]", ov);
-      el.textContent = left > 0 ? fmtT(left) : "0:00";
+    } else if (bt.status === "active") {
+      const left = bt.turnAt + 90000 - Date.now(), btn = $("[data-act=claim]", ov);
       if (left <= 0 && waitingForOpp() && !btn) render();
     }
   }
@@ -126,56 +125,63 @@
       const why = { expired: "L'invitation a expiré (2 minutes).", declined: "L'invitation a été refusée.", cancelled: "L'invitation a été annulée." }[bt.status] || "Bataille terminée.";
       box.innerHTML = `<h2>Bataille</h2><p class="tcg-hint">${why}</p><div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-bl="close">Fermer</button></div>`; return;
     }
-    const done = bt.status === "done", last = bt.last;
-    const lastTxt = last ? (() => { const s = STATS.find((x) => x[0] === last.stat), wn = last.winner; return `<div class="bt-res ${wn === me ? "win" : wn ? "lose" : "tie"}" role="status">${wn === me ? "Manche gagnée" : wn ? "Manche perdue" : "Égalité"} · ${C.esc(s[1])} : ${last.vals[me]} ${s[2]} contre ${last.vals[foe]} ${s[2]}</div>`; })() : "";
-    let body = "", mine = null, theirs = null, hint = "";
-    if (done) {
-      const res = bt.winner === me ? "Victoire !" : bt.winner ? (bt.why === "forfeit" || bt.why === "timeout" ? "Défaite" : "Défaite") : "Match nul";
-      const note = bt.why === "forfeit" ? " (forfait)" : bt.why === "timeout" ? " (temps écoulé)" : "";
-      body = `<div class="bt-res ${bt.winner === me ? "win" : bt.winner ? "lose" : "tie"}">${res} ${bt.score[me]} – ${bt.score[foe]}${note}</div><div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-bl="close">Fermer</button></div>`;
-      if (last) { mine = last.ids[me]; theirs = last.ids[foe]; }
-    } else {
-      if (bt.phase === "reply" && bt.leader === me) mine = ledId || null;   // la carte de l'adversaire reste cachée jusqu'au résultat
-      if (myTurn()) {
-        if (bt.phase === "lead") {
-          hint = pick < 0 ? "Tu mènes : choisis la carte que tu joues." : "Tu mènes : choisis la caractéristique.";
-          body = pick < 0 ? `<div class="bt-hand">${handHtml()}</div>` : `<div class="bt-stats">${STATS.map((s) => `<button type="button" class="cta-btn fill-btn" data-bst="${s[0]}">${s[1]} · ${val(hand[pick], s[0]) || "—"} ${s[2]}</button>`).join("")}</div><div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" data-bl="unpick">Changer de carte</button></div>`;
-          if (pick >= 0) mine = hand[pick];
-        } else {
-          const s = STATS.find((x) => x[0] === bt.lead.stat);
-          hint = `${nm(foe)} joue une carte secrète et défie ta ${C.esc(s[1])}. Réponds avec une de tes cartes : les deux se révèlent au résultat.`;
-          body = `<div class="bt-hand">${handHtml()}</div>`;
-        }
-      } else {
-        hint = bt.phase === "lead" ? `${nm(foe)} choisit sa carte…` : `${nm(foe)} choisit sa réponse…`;
-        body = `<div class="bt-hand dim">${handHtml(true)}</div>`;
-      }
+    const done = bt.status === "done", last = bt.last, UI = window.MABattleUI, total = bt.n;
+    const mark = (w) => (w === me ? "w" : w ? "l" : "t"), hist = bt.hist || [], mk = (f) => hist.map(f).concat(Array(Math.max(0, total - hist.length)).fill(""));
+    const showLast = !!last && (done || (bt.phase === "lead" && !(myTurn() && pick >= 0)));   // résultat de la manche : les deux cartes se révèlent
+    let myCard = "", foeCard = "";
+    if (showLast) { myCard = card(last.ids[me]); foeCard = card(last.ids[foe]); }
+    else if (bt.phase === "lead" && myTurn() && pick >= 0) myCard = card(hand[pick]);
+    else if (bt.phase === "reply" && bt.leader === me && ledId) myCard = card(ledId);
+    const myScore = bt.score[me], foeScore = bt.score[foe];
+    const m = {
+      ak: bt.round + "-" + bt.status + "-" + (showLast ? 1 : 0) + "-" + pick,
+      me: { name: bt.names[me], score: myScore, pips: mk((w) => mark(w)) }, foe: { name: bt.names[foe], score: foeScore, pips: mk((w) => (w === me ? "l" : w ? "w" : "t")) },
+      mid: done ? "Terminé" : "Manche " + Math.min(bt.round + 1, total) + " / " + total,
+      turn: done ? "" : myTurn() ? "me" : "foe", myCard, foeCard, reveal: showLast,
+      timer: done ? null : { start: bt.turnAt, dur: 90000 },
+      emotes: { list: EMOTES.map((x) => [x[0], x[1]]) },
+      note: "Mains équilibrées" + (bt.profile ? " : " + profileTxt(bt.profile) : "") + " · 90 s maximum par coup."
+    };
+    if (bt.emote && Date.now() - bt.emote.t < 3500) { const em = EMOTES.find((x) => x[0] === bt.emote.k); if (em) m.bubble = { side: bt.emote.s === me ? "me" : "foe", label: em[1], t: bt.emote.t }; }
+    if (showLast) {
+      const win = last.winner;
+      m.cmp = STATS.map(([k, label, unit, dir]) => { const a = k === last.stat ? last.vals[me] : val(last.ids[me], k), b2 = k === last.stat ? last.vals[foe] : val(last.ids[foe], k), r = (a - b2) * dir; return { label, unit, my: a || "—", foe: b2 || "—", dir, hot: k === last.stat, win: r > 0 ? "me" : r < 0 ? "foe" : "tie" }; });
+      if (!done) m.verdict = { cls: win === me ? "win" : win ? "lose" : "tie", text: (win === me ? "Manche gagnée" : win ? "Manche perdue" : "Égalité") + " · " + STATS.find((x) => x[0] === last.stat)[1] };
     }
-    // résultat de la manche précédente : les deux cartes restent visibles tant qu'on n'a pas choisi la suivante
-    const showLast = !done && last && bt.phase === "lead" && !(myTurn() && pick >= 0);
-    if (showLast) { mine = last.ids[me]; theirs = last.ids[foe]; }
-    const total = bt.n, round = Math.min(bt.round + 1, total);
-    box.innerHTML = `<h2>Bataille en direct</h2>
-      <div class="bt-score"><span>${nm(me)} <b>${bt.score[me]}</b></span><span>Manche ${round} / ${total}${done ? "" : ` · <span id="bl-clock">${fmtT(bt.turnAt + 90000 - Date.now())}</span>`}</span><span>${nm(foe)} <b>${bt.score[foe]}</b></span></div>
-      <div class="bt-field"><div>${mine ? card(mine) : `<div class="bt-hidden">?</div>`}</div><span class="bt-vs">VS</span><div>${theirs ? card(theirs) : `<div class="bt-hidden">MOTOR<br>AUTO</div>`}</div></div>
-      ${showLast ? lastTxt : ""}
-      ${hint ? `<p class="tcg-hint" role="status">${hint}</p>` : ""}${body}
-      ${!done && waitingForOpp() && Date.now() - bt.turnAt > 90000 ? `<div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-bl="claim">Ton adversaire ne joue plus : réclamer la victoire</button></div>` : ""}
-      <p class="bt-note">Mains tirées dans la collection de chacun · aucune récompense · 90 s maximum par coup.</p>`;
+    if (done) {
+      const w = bt.winner, note = bt.why === "forfeit" ? " (forfait)" : bt.why === "timeout" ? " (temps écoulé)" : "", rw = bt.reward && bt.reward[me];
+      const dust = window.MA && window.MA.dustIcon ? window.MA.dustIcon(18) : "";
+      m.end = { cls: w === me ? "win" : w ? "lose" : "tie", title: w === me ? "Victoire !" : w ? "Défaite" : "Match nul", sub: myScore + " – " + foeScore + note,
+        prize: rw && (rw.dust || rw.pack) ? (rw.dust ? `<span>+${rw.dust} ${dust} cristaux</span>` : "") + (rw.pack ? `<span>+1 pack bonus</span>` : "") : "" };
+      if (rw && rw.capped) m.note = rw.capped === "pair" ? "Plafond atteint : 3 batailles récompensées par jour contre le même pilote." : "Plafond du jour atteint (120 cristaux par jour en bataille).";
+      else if (!rw) m.note = "Pas de récompense pour une partie abandonnée.";
+      m.actions = [{ a: "rematch", label: "Revanche", primary: true }, { a: "close", label: "Fermer" }];
+      m.emotes = null;
+    } else if (myTurn()) {
+      m.banner = { main: "C'est à toi !", sub: bt.phase === "reply" ? "Réponds au défi sur la " + STATS.find((x) => x[0] === bt.lead.stat)[1].toLowerCase() : pick < 0 ? "Choisis la carte que tu joues" : "Choisis la caractéristique" };
+      if (bt.phase === "lead" && pick >= 0) { m.stats = STATS.map(([k, label, unit]) => ({ k, label, unit, val: val(hand[pick], k) })); m.actions = [{ a: "unpick", label: "Changer de carte" }]; }
+      else { m.hint = bt.phase === "reply" ? "Ton adversaire joue une carte secrète : vous la verrez toutes les deux au résultat." : "Ta carte reste cachée de l'adversaire jusqu'au résultat."; m.hand = handList(); }
+    } else {
+      m.banner = { main: "Tour de " + bt.names[foe], sub: bt.phase === "lead" ? "Il choisit sa carte…" : "Il choisit sa réponse…" };
+      m.hand = handList(); m.handOff = true;
+    }
+    if (!done && waitingForOpp() && Date.now() - bt.turnAt > 90000) m.actions = (m.actions || []).concat([{ a: "claim", label: "Il ne joue plus : réclamer la victoire", primary: true }]);
+    UI.render(box, m);
   }
-  const handHtml = (dim) => hand.map((id, i) => {
-    const used = (bt.used && bt.used[side()] || []).indexOf(i) >= 0;
-    const c = carOf(id);
-    return `<button type="button" class="pick ${used ? "used" : ""} ${pick === i ? "sel" : ""}" data-bh="${i}" ${dim ? "disabled" : ""} aria-label="${C.esc(c ? c.brand + " " + c.model : id)}">${card(id)}</button>`;
-  }).join("");
+  const EMOTES = [["gg", "GG 🤝"], ["bravo", "👏 Bravo"], ["wow", "😮 Wow"], ["oups", "😅 Oups"], ["feu", "🔥"]];
+  const RL = { common: "commune", rare: "rare", epic: "épique", legendary: "légendaire", shiny: "shiny", mythic: "légende", special: "édition limitée" };
+  const profileTxt = (p) => { const c = {}; p.forEach((r) => { c[r] = (c[r] || 0) + 1; }); return Object.keys(c).map((r) => c[r] + " " + (RL[r] || r) + (c[r] > 1 && r !== "legendary" && !/s$/.test(RL[r] || "") ? "s" : "")).join(", "); };
+  const handList = () => hand.map((id, i) => { const c = carOf(id); return { i, html: card(id), used: (bt.used && bt.used[side()] || []).indexOf(i) >= 0, sel: pick === i, label: c ? c.brand + " " + c.model : id }; });
 
   async function onClick(e) {
-    const b = e.target.closest("[data-bl]"), h = e.target.closest("[data-bh]"), s = e.target.closest("[data-bst]"), u = e.target.closest("[data-to]");
+    const b = e.target.closest("[data-bl],[data-act]"), h = e.target.closest("[data-h]"), s = e.target.closest("[data-stat]"), u = e.target.closest("[data-to]"), em = e.target.closest("[data-em]");
     if (e.target === ov) { leave(); return; }
     try {
       if (u) { invite(u.dataset.to); return; }
+      if (em) { if (!busy) call("battleEmote", { id: bid, e: em.dataset.em }).catch(() => {}); return; }
       if (b) {
-        const a = b.dataset.bl;
+        const a = b.dataset.bl || b.dataset.act;
+        if (a === "rematch") { const to = bt.a === C.user.uid ? bt.b : bt.a; await invite(to); return; }
         if (a === "close") close();
         else if (a === "ai") { close(); aiOpen(); }
         else if (a === "players") { await window.MACards.load().catch(() => {}); players(); }
@@ -189,11 +195,11 @@
       }
       if (!bt || bt.status !== "active" || !myTurn()) return;
       if (h) {
-        const i = Number(h.dataset.bh); if ((bt.used[side()] || []).indexOf(i) >= 0 || busy) return;
+        const i = Number(h.dataset.h); if ((bt.used[side()] || []).indexOf(i) >= 0 || busy) return;
         if (bt.phase === "lead") { pick = i; render(); }
-        else { busy = true; try { await call("battlePlay", { id: bid, idx: i }); } finally { busy = false; } }
+        else { busy = true; try { ledId = ""; await call("battlePlay", { id: bid, idx: i }); } finally { busy = false; } }
       } else if (s && pick >= 0 && bt.phase === "lead" && !busy) {
-        busy = true; try { const i = pick; ledId = hand[i]; pick = -1; await call("battlePlay", { id: bid, idx: i, stat: s.dataset.bst }); } finally { busy = false; }
+        busy = true; try { const i = pick; ledId = hand[i]; pick = -1; await call("battlePlay", { id: bid, idx: i, stat: s.dataset.stat }); } finally { busy = false; }
       }
     } catch (err) { busy = false; C.toast(err.message, "err"); }
   }

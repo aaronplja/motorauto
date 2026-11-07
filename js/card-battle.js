@@ -47,7 +47,7 @@
       for (const tol of [0.06, 0.12, 0.25, 1]) { const i = pool.findIndex((x) => Math.abs(m.rating(x) - r) <= tol); if (i >= 0) { foes.push(pool[i]); pool.splice(i, 1); break; } }
     });
     const first = Math.random() < 0.5 ? "me" : "ai";
-    const g = { hand, foes: shuffle(foes), used: new Set(), foeUsed: new Set(), round: 0, me: 0, ai: 0, pick: -1, foePick: -1, stat: "", shown: false, msg: "", cls: "", first, leader: first };
+    const g = { hand, foes: shuffle(foes), used: new Set(), foeUsed: new Set(), res: [], round: 0, me: 0, ai: 0, pick: -1, foePick: -1, stat: "", shown: false, msg: "", cls: "", first, leader: first };
     startRound(g);
     return g;
   }
@@ -73,7 +73,7 @@
   function resolve() {
     const k = st.stat, s = STATS.find((x) => x[0] === k), mine = st.hand[st.pick], foe = st.foes[st.foePick];
     const a = val(mine, k), b = val(foe, k), r = beats(a, b, k);
-    st.shown = true; st.used.add(st.pick); st.foeUsed.add(st.foePick);
+    st.shown = true; st.res.push(r > 0 ? "w" : r < 0 ? "l" : "t"); st.used.add(st.pick); st.foeUsed.add(st.foePick);
     if (r > 0) { st.me++; st.cls = "win"; st.msg = `Manche gagnée ! ${s[1]} : ${a} ${s[2]} contre ${b} ${s[2]}`; }
     else if (r < 0) { st.ai++; st.cls = "lose"; st.msg = `Manche perdue. ${s[1]} : ${a} ${s[2]} contre ${b} ${s[2]}`; }
     else { st.cls = "tie"; st.msg = `Égalité (${s[1]})`; }
@@ -82,32 +82,36 @@
 
   function view() {
     if (!ov || !st) return;
-    const total = st.hand.length, over = st.shown && st.round >= total - 1;
-    const my = st.pick >= 0 ? st.hand[st.pick] : null;
-    const foe = st.foePick >= 0 && st.shown ? st.foes[st.foePick] : null;   // sa carte reste cachée tant que tu n'as pas choisi : elle se révèle au résultat
-    const sName = st.stat ? STATS.find((x) => x[0] === st.stat) : null;
-    let body = "";
+    const total = st.hand.length, over = st.shown && st.round >= total - 1, UI = window.MABattleUI;
+    const my = st.pick >= 0 ? st.hand[st.pick] : null, foe = st.foePick >= 0 && st.shown ? st.foes[st.foePick] : null;   // sa carte reste cachée jusqu'au résultat
+    const mark = { w: "l", l: "w", t: "t" }, pad = (a) => a.concat(Array(Math.max(0, total - a.length)).fill(""));
+    const m = {
+      ak: st.round + "-" + (st.shown ? 1 : 0) + "-" + (over ? 1 : 0) + "-" + st.pick,
+      me: { name: "Toi", score: st.me, pips: pad(st.res) }, foe: { name: "Adversaire (IA)", score: st.ai, pips: pad(st.res.map((x) => mark[x])) },
+      mid: "Manche " + Math.min(st.round + 1, total) + " / " + total, turn: st.shown ? "" : "me",
+      myCard: my ? card(my) : "", foeCard: foe ? card(foe) : "", reveal: st.shown, note: "Entraînement équitable : mains de force égale. Aucune récompense."
+    };
+    if (st.shown) {
+      m.cmp = STATS.map(([k, label, unit, dir]) => { const a = val(my, k), b = val(foe, k), r = beats(a, b, k); return { label, unit, my: a || "—", foe: b || "—", dir, hot: k === st.stat, win: r > 0 ? "me" : r < 0 ? "foe" : "tie" }; });
+      if (!over) m.verdict = { cls: st.cls, text: st.msg };
+    }
     if (over) {
       const res = st.me > st.ai ? "Victoire !" : st.me < st.ai ? "Défaite" : "Match nul";
-      body = `<div class="bt-res ${st.me > st.ai ? "win" : st.me < st.ai ? "lose" : "tie"}">${res} ${st.me} – ${st.ai}</div><div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-bt="again">Rejouer</button><button type="button" class="cta-btn btn-ghost" data-bt="close">Fermer</button></div>`;
-    } else if (st.shown) {
-      body = `<div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-bt="next">Manche suivante</button></div>`;
-    } else if (st.leader === "ai") {
-      body = `<p class="tcg-hint">L'adversaire joue cette carte et défie ta <b>${C.esc(sName[1])}</b> avec une carte secrète. Choisis la carte avec laquelle tu réponds : les deux se révèlent au résultat.</p><div class="bt-hand">${handHtml()}</div>`;
-    } else if (my) {
-      body = `<p class="tcg-hint">Tu mènes : choisis la caractéristique. L'adversaire répondra avec l'une de ses cartes.</p><div class="bt-stats">${STATS.map((s) => `<button type="button" class="cta-btn fill-btn" data-stat="${s[0]}">${s[1]} · ${val(my, s[0]) || "—"} ${s[2]}</button>`).join("")}</div>`;
+      m.end = { cls: st.me > st.ai ? "win" : st.me < st.ai ? "lose" : "tie", title: res, sub: st.me + " – " + st.ai };
+      m.actions = [{ a: "again", label: "Rejouer", primary: true }, { a: "close", label: "Fermer" }];
+    } else if (st.shown) m.actions = [{ a: "next", label: "Manche suivante", primary: true }];
+    else if (!my) {
+      m.banner = { main: "C'est à toi !", sub: "Choisis la carte que tu joues" };
+      m.hint = "Ta carte reste cachée de l'adversaire jusqu'au résultat.";
+      m.hand = st.hand.map((c, i) => ({ i, html: card(c), used: st.used.has(i), label: c.brand + " " + c.model }));
     } else {
-      body = `<p class="tcg-hint">Tu mènes : choisis la carte que tu joues</p><div class="bt-hand">${handHtml()}</div>`;
+      m.banner = { main: "C'est à toi !", sub: "Choisis la caractéristique" };
+      m.stats = STATS.map(([k, label, unit]) => ({ k, label, unit, val: val(my, k) }));
+      m.actions = [{ a: "unpick", label: "Changer de carte" }];
     }
-    ov.querySelector(".bt").innerHTML = `<h2>Bataille de cartes</h2>
-      <div class="bt-score"><span>Toi <b>${st.me}</b></span><span>Manche ${Math.min(st.round + 1, total)} / ${total}${st.shown ? "" : st.leader === "me" ? " · tu mènes" : " · il mène"}</span><span>Adversaire <b>${st.ai}</b></span></div>
-      <div class="bt-field"><div>${my ? card(my) : `<div class="bt-hidden">?</div>`}</div><span class="bt-vs">VS</span><div>${foe ? card(foe) : `<div class="bt-hidden">MOTOR<br>AUTO</div>`}</div></div>
-      ${st.shown && !over ? `<div class="bt-res ${st.cls}" role="status">${C.esc(st.msg)}</div>` : over ? `<p class="bt-note">${C.esc(st.msg)}</p>` : ""}
-      ${body}
-      <p class="bt-note">Entraînement équitable : mains de force égale ; tu choisis la carte et la caractéristique, l'adversaire répond. Aucune récompense.</p>`;
-    const f = ov.querySelector("[data-bt],[data-stat],[data-h]:not(.used)"); if (f) f.focus({ preventScroll: true });
+    UI.render(ov.querySelector(".bt"), m);
+    const f = ov.querySelector("[data-act],[data-stat],[data-h]:not(.used)"); if (f) f.focus({ preventScroll: true });
   }
-  const handHtml = () => st.hand.map((c, i) => `<button type="button" class="pick ${st.used.has(i) ? "used" : ""}" data-h="${i}" aria-label="${C.esc(c.brand + " " + c.model)}">${card(c)}</button>`).join("");
   function close() {
     if (!ov) return;
     document.removeEventListener("keydown", onKey);
@@ -126,13 +130,15 @@
     document.addEventListener("keydown", onKey);
     requestAnimationFrame(() => ov && ov.classList.add("on"));
     ov.addEventListener("click", (e) => {
-      const b = e.target.closest("[data-bt]"), h = e.target.closest("[data-h]"), s = e.target.closest("[data-stat]");
+      const b = e.target.closest("[data-bt],[data-act]"), h = e.target.closest("[data-h]"), s = e.target.closest("[data-stat]");
       if (e.target === ov) { close(); return; }
       if (!st) return;
       if (b) {
-        if (b.dataset.bt === "close") close();
-        else if (b.dataset.bt === "again") { st = newGame() || st; view(); }
-        else if (b.dataset.bt === "next") { st.round++; startRound(st); view(); }
+        const a = b.dataset.bt || b.dataset.act;
+        if (a === "close") close();
+        else if (a === "again") { st = newGame() || st; view(); }
+        else if (a === "next") { st.round++; startRound(st); view(); }
+        else if (a === "unpick" && !st.shown) { st.pick = -1; view(); }
       } else if (h && !st.shown && st.pick < 0 && !st.used.has(Number(h.dataset.h))) {
         st.pick = Number(h.dataset.h);
         if (st.leader === "ai") resolve();   // l'adversaire a déjà joué : ta réponse règle la manche
