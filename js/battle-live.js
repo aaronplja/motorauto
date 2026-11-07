@@ -15,7 +15,7 @@
   const alertOn = () => { try { return localStorage.getItem(LS) !== "0"; } catch (_) { return true; } };
   const setAlert = (on) => { try { localStorage.setItem(LS, on ? "1" : "0"); } catch (_) { /* ignoré */ } if (!on) hideToast(); };
   const T = (s) => (window.MAi18n && window.MAi18n.t ? window.MAi18n.t(s) : s);
-  const carOf = (id) => (C.carsById && C.carsById.get(id)) || C.cars.find((c) => c.id === id);
+  const carOf = (id) => (C.carsById && C.carsById.get(id)) || C.cars.find((c) => c.id === id) || (window.MACards.cardObj && window.MACards.cardObj(id));   // livrées et éditions limitées ne sont pas dans la liste des voitures
   const card = (id) => { const c = carOf(id); return c ? window.MACards.cardHtml(c, { owned: true }) : `<div class="bt-hidden">?</div>`; };
   const val = (id, k) => { const c = carOf(id); return Number(c && c.stats && c.stats[k]) || 0; };
   const fmtT = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
