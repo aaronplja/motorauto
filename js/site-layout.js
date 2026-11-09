@@ -201,6 +201,8 @@
     if (fabEl) fabEl.hidden = !on;
   }
 
+  document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("#open-site-editor") && ctxRef) openEditor().catch(() => ctxRef.toast("Éditeur indisponible.", "err")); });
+
   function init(ctx) {
     ctxRef = ctx; watch();
     if (INFRAME) { editInit(); return; }
