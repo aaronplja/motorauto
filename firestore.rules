@@ -792,6 +792,17 @@ service cloud.firestore {
     }
 
     // --- Propositions d'échange : visibles par les deux pilotes et l'admin ; créées / traitées par le serveur (Cloud Functions)
+    // --- Éditeur visuel de l'interface : mise en page publiée (lisible par tous) et brouillon / versions (admins uniquement)
+    match /ui_layout/{docId} {
+      allow read: if docId == 'live' || isAdmin();
+      allow create, update: if isAdmin() && (docId == 'live' || docId == 'draft') && request.resource.data.layout is string && request.resource.data.layout.size() < 900000;
+      allow delete: if false;
+    }
+    match /ui_layout_versions/{vid} {
+      allow read, create, delete: if isAdmin();
+      allow update: if false;
+    }
+
     // --- Batailles de cartes entre joueurs : créées et menées par le serveur (Cloud Functions) ; lisibles par les deux joueurs
     match /card_battles/{bid} {
       allow read: if signedIn() && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid);
