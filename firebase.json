@@ -16,7 +16,11 @@
       "README.md",
       "tests/**",
       "app-ios/**",
-      "functions/**"
+      "functions/**",
+      "index.src.html",
+      "vercel.json",
+      ".vercelignore",
+      "IMAGES-A-AJOUTER.txt"
     ]
   },
   "functions": {

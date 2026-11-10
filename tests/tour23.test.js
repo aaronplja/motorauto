@@ -38,7 +38,7 @@ ok(JSON.stringify([...G.computeRarities(pool.slice().reverse())]) === JSON.strin
 const rules = fs.readFileSync("firestore.rules", "utf8");
 ["client_errors", "titles/{uid}", "'rules'"].forEach((k) => ok(rules.includes(k), "règle " + k));
 // le profil admin ne contient plus l'ancien bandeau en double
-const html = fs.readFileSync("index.html", "utf8");
+const html = fs.readFileSync("index.src.html", "utf8");
 ok(!/class="stats-ribbon adm-kpis"/.test(html), "ancien bandeau KPI retiré");
 ok(/data-tab="erreurs"/.test(html), "onglet Erreurs");
 console.log("tour23.test OK (" + n + " vérifications)");

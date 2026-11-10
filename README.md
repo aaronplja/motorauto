@@ -1,21 +1,33 @@
 # MOTORAUTO
 
-Site statique (HTML/CSS/JS) + Firebase (Auth, Firestore, Storage). Aucune étape de build.
+Site statique (HTML/CSS/JS) + Firebase (Auth, Firestore, Storage, Functions), hébergé sur Vercel (motorauto.fr).
+
+## Comment modifier le site (important)
+- **`index.src.html` est la source** de la page principale. `index.html`, `css/bundle.min.css` et `js/bundle*.min.js` sont **générés** : ne jamais les modifier à la main.
+- Après toute modification de `index.src.html`, d'un fichier `js/*.js` ou `css/*.css` : `node scripts/build.js` (regroupe et minifie ; `node scripts/build.js --check` vérifie que tout est à jour).
+- `chat.html` et l'éditeur visuel (`js/site-editor.js`) utilisent encore les fichiers d'origine de `js/` et `css/`.
+- Si `functions/game-core.js` doit changer : éditer `js/game-core.js` puis `node scripts/sync-functions.js` (ne jamais éditer les copies).
+
+## Mise en ligne (ordre conseillé)
+1. `node scripts/build.js` (index.html + bundles à jour) puis les tests : `node tests/game.test.js`.
+2. `git add -A; git commit -m "…"; git push` : Vercel publie.
+3. Règles modifiées : `firebase deploy --only firestore:rules,storage` · fonctions modifiées : `firebase deploy --only functions`.
+4. Plan du site : `node scripts/build-seo.js` régénère `voiture/`, `marque/` et `sitemap.xml`.
 
 ## Structure
-- `index.html` : application à pages (routeur `#/…`) : accueil, catalogue, fiche, communauté, classements, circuit, profil pilote, garage, administration, contact
-- `chat.html` : **page de chat indépendante** (salon général, canaux, messages privés) ; liens `chat.html#global`, `#channel/<id>`, `#dm/<uid>`
-- `css/base.css` (thèmes, boutons, formulaires, toasts) · `css/style.css` (accueil) · `css/chat.css` (chat)
-- `js/firebase-init.js` · `js/utils.js` · `js/common.js` (partagés) · `js/app.js` (cœur) · `js/router.js` (pages) · `js/social.js` · `js/community.js` · `js/circuits.js` · `js/admin-tools.js` · `js/garage-tools.js` · `js/chat.js` (chat) ; `css/pages.css` (pages)
-- `js/data.js`, `js/data2.js` : catalogue de base
-- `firestore.rules`, `storage.rules`, `firebase.json`
-- `scripts/set-admin.js` : attribue le droit admin (custom claim)
-- `tests/utils.test.js` : `node tests/utils.test.js`
+- `index.src.html` → `index.html` : application à pages (routeur `#/…` dans `js/router.js`)
+- `chat.html` : page de chat indépendante
+- `css/` : feuilles de style (ordre de chargement = ordre dans `index.src.html` ; `themefix.css` en dernier)
+- `js/` : modules (`window.MAModules.push(fn)`) ; `js/data*.js` : catalogue ; `js/game-*.js`, `cards*.js`, `battle-*.js` : jeu de cartes ; `js/site-layout.js` + `js/site-editor.js` : éditeur visuel de l'interface (admin)
+- `functions/` : Cloud Functions (jeu, notifications, e-mails, sauvegardes)
+- `firestore.rules`, `storage.rules`, `firebase.json`, `vercel.json` (cache et en-têtes), `.vercelignore` (fichiers non déployés)
+- `tests/` : `node tests/<nom>.test.js` · `scripts/` : outils (build, SEO, images, admin)
+- `voiture/`, `marque/`, `sitemap.xml` : pages statiques générées pour le référencement
 
-## Déploiement
-1. **Change le mot de passe du compte admin** (l'ancien était exposé dans le code).
-2. `firebase deploy --only firestore:rules,storage` (Storage doit être activé, plan Blaze).
-3. Administration : le compte `admin@motorauto.fr` est reconnu automatiquement (règles + interface). Pour un autre admin : `node scripts/set-admin.js <email>` (clé de service requise).
+## Première installation
+1. Change le mot de passe du compte admin.
+2. Active Storage (plan Blaze) puis `firebase deploy --only firestore:rules,storage`.
+3. Administration : `admin@motorauto.fr` est reconnu automatiquement ; autre admin : `node scripts/set-admin.js <email>` (clé de service requise).
 4. Restreins la clé API Firebase à ton domaine dans Google Cloud Console.
 
 ## Limites connues

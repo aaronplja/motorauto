@@ -1,0 +1,13 @@
+{
+  "name": "motorauto",
+  "private": true,
+  "description": "MOTORAUTO — site statique (index.src.html → index.html + bundles) + Firebase",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "check": "node scripts/build.js --check",
+    "test": "node tests/game.test.js && node tests/cards4.test.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.5"
+  }
+}

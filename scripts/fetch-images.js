@@ -38,7 +38,7 @@ const norm = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toL
 
 // ---------------------------------------------------------------- lecture du catalogue (mêmes fichiers que le site)
 function loadCars() {
-  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const html = fs.readFileSync(path.join(root, "index.src.html"), "utf8");
   const files = [...html.matchAll(/src="(js\/data[^"]*\.js)"/g)].map((m) => m[1]).filter((f) => !/data-enrich-zzz-images/.test(f));
   const ctx = { console: { log() {}, warn() {}, error() {} } }; ctx.window = ctx; ctx.self = ctx; vm.createContext(ctx);
   files.forEach((f) => vm.runInContext(fs.readFileSync(path.join(root, f), "utf8"), ctx, { filename: f }));
