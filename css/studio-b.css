@@ -87,3 +87,20 @@ textarea:where(:not(.app-header *, [class*="dock"] *)) { border-radius: 22px; }
 .sheet-kpis b:where(:not(.app-header *, [class*="dock"] *)),
 .sheet-stat b:where(:not(.app-header *, [class*="dock"] *)),
 [class*="big-stat"] b:where(:not(.app-header *, [class*="dock"] *)) { font-family: var(--font-display); font-weight: 400; letter-spacing: -.02em; }
+
+/* ---------- voiture du jour : suit le thème ---------- */
+.cod-card:where(:not(.app-header *, [class*="dock"] *)) { border-radius: var(--corner-md); background: var(--bg-surface); border-color: var(--stroke-line); box-shadow: var(--st-shadow); }
+.cod-card img:where(:not(.app-header *, [class*="dock"] *)), .cod-ph:where(:not(.app-header *, [class*="dock"] *)) { border-radius: var(--corner-sm); }
+
+/* ---------- police « Studio » (serif) : titres de cartes, noms et chiffres mis en avant ---------- */
+.car-model-name:where(:not(.app-header *, [class*="dock"] *)),
+.cod-txt b:where(:not(.app-header *, [class*="dock"] *)),
+.sheet-section h3:where(:not(.app-header *, [class*="dock"] *)),
+.pilot-row-name:where(:not(.app-header *, [class*="dock"] *)),
+.pro-name:where(:not(.app-header *, [class*="dock"] *)),
+.club-name:where(:not(.app-header *, [class*="dock"] *)),
+.theme-family-title:where(:not(.app-header *, [class*="dock"] *)),
+.kpi b:where(:not(.app-header *, [class*="dock"] *)),
+.stat-num:where(:not(.app-header *, [class*="dock"] *)) { font-family: var(--font-display); font-weight: 400; letter-spacing: -.015em; }
+.car-model-name:where(:not(.app-header *, [class*="dock"] *)) { font-size: 1.5rem; line-height: 1.1; }
+.cod-txt b:where(:not(.app-header *, [class*="dock"] *)) { font-size: 1.45rem; }
