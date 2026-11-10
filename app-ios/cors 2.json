@@ -1,8 +1,0 @@
-[
-  {
-    "origin": ["capacitor://localhost", "https://motorauto.fr", "https://www.motorauto.fr", "http://localhost"],
-    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
-    "maxAgeSeconds": 3600,
-    "responseHeader": ["Content-Type", "Authorization", "x-goog-resumable", "x-firebase-storage-version", "x-goog-upload-protocol", "x-goog-upload-command", "x-goog-upload-offset", "x-goog-upload-header-content-length", "x-goog-upload-header-content-type"]
-  }
-]

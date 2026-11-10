@@ -1,8 +1,0 @@
-node_modules/
-**/node_modules/
-.env
-**/.env
-scripts/serviceAccountKey.json
-*.log
-.DS_Store
-.vercel

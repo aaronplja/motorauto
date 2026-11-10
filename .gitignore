@@ -6,3 +6,7 @@ scripts/serviceAccountKey.json
 *.log
 .DS_Store
 .vercel
+
+# copies en double créées par le Finder (ex. "index 2.html")
+* [0-9].*
+* [0-9][0-9].*
