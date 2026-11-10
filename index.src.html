@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="onyx-carbon">
+<html lang="fr" data-theme="studio-creme">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -28,11 +28,11 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="MOTORAUTO">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111'/%3E%3Cpath d='M12 46 26 18h8L20 46zm18 0 14-28h8L38 46z' fill='%23ef4444'/%3E%3C/svg%3E">
-  <script>try{var t=localStorage.getItem('motorauto_theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+  <script>try{var L=localStorage,t=L.getItem('motorauto_theme');if(!L.getItem('ma_studio_b')){L.setItem('ma_studio_b','1');if(t!=='custom'){t='studio-creme';L.setItem('motorauto_theme',t)}}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -73,6 +73,7 @@
   <link rel="stylesheet" href="css/profile-v3.css">
   <link rel="stylesheet" href="css/final.css">
   <link rel="stylesheet" href="css/themefix.css">
+  <link rel="stylesheet" href="css/studio-b.css">
 <style id="splash-css">#splash{display:none}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.1rem;background:var(--bg-core,#09090b);touch-action:manipulation;contain:strict;animation:spLife 1.5s linear forwards}
 #splash .sp-mark{width:min(30vw,120px);height:auto;overflow:visible;animation:spMark 1.5s cubic-bezier(.3,.7,.2,1) forwards}
@@ -962,8 +963,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         </nav>
       </div>
       <div class="footer-legal">
-        <span>© 2026 MOTORAUTOFR — by aaronplja</span>
-        <span>Tous droits réservés</span>
+        <span>2026 MOTORAUTOFR - by aaronplja / Tous droits réservés</span>
       </div>
     </div>
   </footer>
@@ -1075,9 +1075,13 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           </div>
         </section>
         <!-- COCKPITS NOCTURNES -->
+        <div class="theme-family-title">✨ Studio (nouvelle ambiance par défaut)</div>
+        <div class="theme-palette-grid">
+          <button class="theme-tile active" data-set-theme="studio-creme"><span class="swatch-circle" style="background:#f6f3ec; border:2px solid #1f6b45;"></span><span class="tile-meta"><span class="tile-title">Studio Crème</span><span class="tile-sub">Crème chaud &amp; vert profond</span></span></button>
+        </div>
         <div class="theme-family-title">🌙 Cockpits Nocturnes (8 Univers Sombres)</div>
         <div class="theme-palette-grid">
-          <button class="theme-tile active" data-set-theme="onyx-carbon"><span class="swatch-circle" style="background:#09090b; border:2px solid #ef4444;"></span><span class="tile-meta"><span class="tile-title">Onyx Carbon</span><span class="tile-sub">Noir pur & rouge racing</span></span></button>
+          <button class="theme-tile" data-set-theme="onyx-carbon"><span class="swatch-circle" style="background:#09090b; border:2px solid #ef4444;"></span><span class="tile-meta"><span class="tile-title">Onyx Carbon</span><span class="tile-sub">Noir pur & rouge racing</span></span></button>
           <button class="theme-tile" data-set-theme="midnight-blue"><span class="swatch-circle" style="background:#060913; border:2px solid #3b82f6;"></span><span class="tile-meta"><span class="tile-title">Midnight Blue</span><span class="tile-sub">Bleu nuit métallisé profond</span></span></button>
           <button class="theme-tile" data-set-theme="asphalt-smoke"><span class="swatch-circle" style="background:#111111; border:2px solid #f59e0b;"></span><span class="tile-meta"><span class="tile-title">Asphalt Smoke</span><span class="tile-sub">Anthracite circuit mat</span></span></button>
           <button class="theme-tile" data-set-theme="monza-night"><span class="swatch-circle" style="background:#0a0507; border:2px solid #e11d48;"></span><span class="tile-meta"><span class="tile-title">Monza Night</span><span class="tile-sub">Carbone noir & reflets bordeaux</span></span></button>

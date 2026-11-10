@@ -12,7 +12,7 @@
   const EMOJIS = ["👍", "❤️", "🔥", "🏎️", "🏁"];
   const PICKER = ["😀", "😂", "😍", "😎", "🤝", "👏", "🙌", "💪", "🔥", "🏎️", "🏁", "🚗", "⚙️", "🔧", "🛞", "⛽", "💨", "🏆", "👍", "👎", "❤️", "😮", "🤔", "😅", "😭", "🙏", "👀", "💯", "🎉", "✅", "❌", "⚡"];
   const THEMES = [
-    ["onyx-carbon", "Onyx Carbon", "#09090b", "#ef4444"], ["midnight-blue", "Midnight Blue", "#060913", "#3b82f6"],
+    ["studio-creme", "Studio Crème", "#f6f3ec", "#1f6b45"], ["onyx-carbon", "Onyx Carbon", "#09090b", "#ef4444"], ["midnight-blue", "Midnight Blue", "#060913", "#3b82f6"],
     ["asphalt-smoke", "Asphalt Smoke", "#111111", "#f59e0b"], ["monza-night", "Monza Night", "#0a0507", "#e11d48"],
     ["tokyo-neon", "Tokyo Neon", "#050508", "#a855f7"], ["cyber-matrix", "Cyber Matrix", "#022c22", "#10b981"],
     ["abyss-titanium", "Abyss Titanium", "#070d1a", "#06b6d4"], ["velvet-gothic", "Velvet Gothic", "#18050f", "#ec4899"],
@@ -885,7 +885,7 @@
     const cu = window.MATheme ? MATheme.getCustom() : { bg: "#0f172a", accent: "#38bdf8" };
     $("theme-grid").innerHTML = THEMES.concat([["custom", "Mon thème", cu.bg, cu.accent]]).map(([id, label, bg, ac]) =>
       `<button type="button" class="theme-opt" data-set-theme="${id}"><i style="background:${bg};border-color:${ac}"></i><span>${esc(label)}</span></button>`).join("");
-    MA.applyTheme(MA.store.get("motorauto_theme") || "onyx-carbon");
+    MA.applyTheme(MA.store.get("motorauto_theme") || "studio-creme");
     $("new-dm-btn").addEventListener("click", () => { state.showPicker = !state.showPicker; renderLists(); if (state.showPicker) { const f = $("side-filter"); if (f) f.focus(); } });
     setInterval(() => { if (state.user && !document.hidden) renderLists(); }, 30000);
     $("theme-btn").addEventListener("click", () => { $("theme-sheet").hidden = false; });

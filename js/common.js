@@ -20,7 +20,7 @@
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) requestAnimationFrame(() => { meta.content = getComputedStyle(document.documentElement).getPropertyValue("--bg-core").trim() || "#09090b"; });
   };
-  MA.applyTheme(store.get("motorauto_theme") || "onyx-carbon");
+  MA.applyTheme(store.get("motorauto_theme") || "studio-creme");
 
 
   // ------------------------------------------------------------------ admin

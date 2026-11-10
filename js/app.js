@@ -2769,7 +2769,7 @@
   }
 
   function init() {
-    MA.applyTheme(storageGet("motorauto_theme") || "onyx-carbon");
+    MA.applyTheme(storageGet("motorauto_theme") || "studio-creme");
     initEffects();
 
     // catalogue local d'abord (affichage immédiat), puis fusion avec le cloud

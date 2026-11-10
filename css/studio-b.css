@@ -1,0 +1,89 @@
+/* ==========================================================================
+   MOTORAUTO — STUDIO B : la nouvelle interface (chargée en dernier, après themefix.css).
+   Crème chaud, vert profond, titres en serif élégant, boutons pilule, grands arrondis.
+   Tout passe par les variables des thèmes : les 16 ambiances et le thème sur mesure continuent de fonctionner.
+   Hors périmètre (volontairement inchangés) : l'en-tête, la barre du bas (dock.css), les cartes à collectionner, les circuits.
+   ========================================================================== */
+:root {
+  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --corner-xs: 12px; --corner-sm: 18px; --corner-md: 28px; --st-lg: 34px;
+}
+
+/* En-tête et barre du bas : intacts (polices d'origine). */
+.app-header, [class*="dock"] { --font-display: 'Big Shoulders Display', 'Arial Narrow', 'Helvetica Neue', sans-serif; --font-sans: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif; }
+
+/* ---------- ambiance par défaut : Studio Crème ---------- */
+:root[data-theme="studio-creme"] {
+  color-scheme: light;
+  --bg-core: #f6f3ec; --bg-surface: #fffdf8; --bg-elevated: #efe9dc;
+  --stroke-line: rgba(22, 35, 28, .11); --line: rgba(22, 35, 28, .11);
+  --color-ink: #16231c; --color-secondary: #3d4f43; --color-muted: #5b6b61;
+  --accent: #1f6b45; --on-accent: #ffffff; --header-bg: rgba(246, 243, 236, .88);
+  --glow: color-mix(in srgb, var(--accent) 22%, transparent); --glow-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+  --shadow-pop: 0 30px 60px -30px rgba(30, 40, 30, .32);
+  --st-shadow: 0 1px 2px rgba(40, 50, 30, .05), 0 14px 34px -22px rgba(40, 50, 30, .3);
+  --st-shadow-up: 0 2px 4px rgba(40, 50, 30, .07), 0 26px 50px -26px rgba(40, 50, 30, .38);
+  --gold: #8a5300; --bronze-ink: #8c5420; --ice-ink: #0b6fa8;
+}
+
+/* ---------- titres : serif, sans majuscules, mot clé en italique ---------- */
+h1:where(:not(.app-header *, [class*="dock"] *)),
+h2:where(:not(.app-header *, [class*="dock"] *)),
+h3:where(:not(.app-header *, [class*="dock"] *)),
+.page-title:where(:not(.app-header *, [class*="dock"] *)),
+.section-title:where(:not(.app-header *, [class*="dock"] *)),
+.dialog-title:where(:not(.app-header *, [class*="dock"] *)),
+.cta-copy h2:where(:not(.app-header *, [class*="dock"] *)),
+.hero-heroic-title:where(:not(.app-header *, [class*="dock"] *)),
+.bento-tile b:where(:not(.app-header *, [class*="dock"] *)) {
+  font-family: var(--font-display); font-weight: 400; letter-spacing: -.02em; text-transform: none;
+}
+.hero-heroic-title:where(:not(.app-header *, [class*="dock"] *)) { line-height: .98; letter-spacing: -.03em; font-size: clamp(2.8rem, 7.2vw, 5.6rem); }
+.ht-line:where(:not(.app-header *, [class*="dock"] *)) { background: none; -webkit-text-fill-color: currentColor; color: var(--color-ink); }
+.ht-line.ht-outline:where(:not(.app-header *, [class*="dock"] *)) { background: none; -webkit-text-stroke: 0; -webkit-text-fill-color: currentColor; color: var(--accent); font-style: italic; }
+.hero-stats dd:where(:not(.app-header *, [class*="dock"] *)) { font-family: var(--font-display); font-weight: 400; letter-spacing: -.02em; }
+.hero-heroic-sub:where(:not(.app-header *, [class*="dock"] *)) { color: var(--color-secondary); letter-spacing: 0; }
+em:where(:not(.app-header *, [class*="dock"] *)) { font-style: italic; }
+h1 em:where(:not(.app-header *, [class*="dock"] *)), h2 em:where(:not(.app-header *, [class*="dock"] *)) { color: var(--accent); }
+
+/* ---------- boutons et champs : toujours en pilule ---------- */
+.btn:where(:not(.app-header *, [class*="dock"] *)),
+button.btn:where(:not(.app-header *, [class*="dock"] *)),
+.btn-primary:where(:not(.app-header *, [class*="dock"] *)),
+.btn-ghost:where(:not(.app-header *, [class*="dock"] *)),
+.btn-outline:where(:not(.app-header *, [class*="dock"] *)),
+.chip:where(:not(.app-header *, [class*="dock"] *)),
+.filter-chip:where(:not(.app-header *, [class*="dock"] *)),
+.cat-pill:where(:not(.app-header *, [class*="dock"] *)) { border-radius: 999px; }
+input:where(:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], .app-header *, [class*="dock"] *)),
+select:where(:not(.app-header *, [class*="dock"] *)) { border-radius: 999px; }
+textarea:where(:not(.app-header *, [class*="dock"] *)) { border-radius: 22px; }
+
+/* ---------- cartes et panneaux : grands arrondis, ombres douces ---------- */
+.home-col:where(:not(.app-header *, [class*="dock"] *)),
+.bento-tile:where(:not(.app-header *, [class*="dock"] *)),
+.cta-band:where(:not(.app-header *, [class*="dock"] *)),
+.car-card:where(:not(.app-header *, [class*="dock"] *)),
+.pro-hero:where(:not(.app-header *, [class*="dock"] *)),
+.panel:where(:not(.app-header *, [class*="dock"] *)),
+.modal-card:where(:not(.app-header *, [class*="dock"] *)),
+.dialog-card:where(:not(.app-header *, [class*="dock"] *)) { border-radius: var(--corner-md); box-shadow: var(--st-shadow); }
+
+/* ---------- accueil : on retire les effets néon (aurore, grille, traînées) ---------- */
+:root[data-theme="studio-creme"] .hero-aurora,
+:root[data-theme="studio-creme"] .hero-grid-lines,
+:root[data-theme="studio-creme"] .hero-streaks { display: none; }
+:root[data-theme="studio-creme"] .hero-stage { background: radial-gradient(90% 80% at 85% 0, color-mix(in srgb, var(--accent) 9%, transparent), transparent 60%), var(--bg-core); }
+:root[data-theme="studio-creme"] .badge-hero-pill { background: var(--bg-surface); border-color: var(--stroke-line); }
+:root[data-theme="studio-creme"] .btn-primary,
+:root[data-theme="studio-creme"] .btn.primary { box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--accent) 70%, transparent); }
+
+/* ---------- accessibilité : le réglage « animations réduites » reste respecté ---------- */
+@media (prefers-reduced-motion: reduce) { .hero-stage * { animation: none !important; } }
+
+/* ---------- fiche voiture : grand titre et chiffres clés en serif ---------- */
+.sheet-big-title:where(:not(.app-header *, [class*="dock"] *)) { font-family: var(--font-display); font-weight: 400; letter-spacing: -.03em; text-transform: none; line-height: .95; }
+.sheet-kpis b:where(:not(.app-header *, [class*="dock"] *)),
+.sheet-stat b:where(:not(.app-header *, [class*="dock"] *)),
+[class*="big-stat"] b:where(:not(.app-header *, [class*="dock"] *)) { font-family: var(--font-display); font-weight: 400; letter-spacing: -.02em; }
