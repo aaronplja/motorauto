@@ -43,11 +43,11 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script defer src="js/bundle1.min.js?v=4dfd8b1863"></script>
   <script defer src="js/bundle2.min.js?v=ac7309a815"></script>
-  <script defer src="js/bundle3.min.js?v=8a1c73adef"></script>
+  <script defer src="js/bundle3.min.js?v=11525d8a07"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
-  <link rel="stylesheet" href="css/bundle.min.css?v=19425ad0c4">
+  <link rel="stylesheet" href="css/bundle.min.css?v=5d448d7b19">
 <style id="splash-css">#splash{display:none}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.1rem;background:var(--bg-core,#09090b);touch-action:manipulation;contain:strict;animation:spLife 1.5s linear forwards}
 #splash .sp-mark{width:min(30vw,120px);height:auto;overflow:visible;animation:spMark 1.5s cubic-bezier(.3,.7,.2,1) forwards}
@@ -252,6 +252,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page" id="page-catalog" data-page="catalog">
   <main class="stage-shell page-wrap" id="main-catalog-view">
+    <aside class="cat-side">
     <header class="page-head">
         <div class="page-head-text">
           <span class="status-tag-verified">Archive</span>
@@ -262,14 +263,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       </header>
     <a class="cta-btn btn-ghost cat-frise-btn" id="catalog-frise-btn" href="#/frise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><circle cx="7" cy="12" r="2"/><circle cx="14" cy="12" r="2"/><path d="M7 10V6M14 14v4"/></svg>Frise chronologique</a>
     <p class="count-stream" id="results-count" aria-live="polite">Calcul de l'archive en cours…</p>
-    <div class="catalog-search search-container" id="catalog-search-container">
-      <div class="command-search-wrapper">
-        <svg class="search-lens" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input type="search" id="catalog-search-input" placeholder="Rechercher un modèle, un moteur, une génération…" autocomplete="off" spellcheck="false" aria-label="Rechercher dans le catalogue" enterkeyhint="search" role="combobox" aria-expanded="false" aria-controls="catalog-suggestions">
-      </div>
-      <div class="search-suggestions-dropdown" id="catalog-suggestions" role="listbox" aria-hidden="true"></div>
-    </div>
     <div class="toolbar-cluster">
+      <span class="side-label">Catégorie</span>
       <div class="categories-scroll" id="body-filter-chips" role="group" aria-label="Carrosserie">
         <button type="button" class="filter-pill active" data-filter-type="all">Toutes</button>
         <button type="button" class="filter-pill" data-filter-type="Berline">Berline</button>
@@ -279,11 +274,17 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <button type="button" class="filter-pill" data-filter-type="Le Mans">Le Mans</button>
         <button type="button" class="filter-pill" id="noimg-pill" hidden aria-pressed="false" title="Admin : fiches qui affichent encore l'image générique">Sans image</button>
       </div>
+      <span class="side-label">Époque</span>
+      <div class="era-chips" id="era-chips" role="group" aria-label="Époque">
+        <button type="button" class="filter-pill" data-era="0-1979">Avant 1980</button>
+        <button type="button" class="filter-pill" data-era="1980-1999">1980 - 1999</button>
+        <button type="button" class="filter-pill" data-era="2000-">2000 et +</button>
+      </div>
       <div class="selectors-cluster">
         <label class="sort-cluster"><span class="sort-title">Marque</span>
           <select id="brand-select" class="custom-select" aria-label="Filtrer par marque"><option value="all">Toutes les marques</option></select>
         </label>
-        <label class="sort-cluster"><span class="sort-title">Tri</span>
+        <label class="sort-cluster"><span class="sort-title">Trier par</span>
           <select id="sort-select" class="custom-select" aria-label="Trier les véhicules">
             <option value="name-asc">Nom (A-Z)</option>
             <option value="power-desc">Puissance</option>
@@ -323,8 +324,18 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       </div>
       <div class="adv-actions"><button type="button" class="cta-btn btn-ghost" id="adv-reset">Réinitialiser les filtres</button></div>
     </div>
+    </aside>
+    <div class="cat-main">
+    <div class="catalog-search search-container" id="catalog-search-container">
+      <div class="command-search-wrapper">
+        <svg class="search-lens" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" id="catalog-search-input" placeholder="Rechercher un modèle, un moteur, une génération…" autocomplete="off" spellcheck="false" aria-label="Rechercher dans le catalogue" enterkeyhint="search" role="combobox" aria-expanded="false" aria-controls="catalog-suggestions">
+      </div>
+      <div class="search-suggestions-dropdown" id="catalog-suggestions" role="listbox" aria-hidden="true"></div>
+    </div>
     <div class="vehicles-dynamic-grid" id="vehicles-grid"></div>
     <nav class="pagination-bar" id="pagination-container" aria-label="Pagination du catalogue"></nav>
+    </div>
   </main>
 </div>
 

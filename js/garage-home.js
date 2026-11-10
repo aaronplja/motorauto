@@ -59,14 +59,14 @@
     const dust = window.MA && window.MA.dustIcon ? window.MA.dustIcon(22) : icon("💎");
     const cta = canDaily ? { t: T("Ouvrir mon pack du jour"), ic: "🎁", cl: "ready" } : bonus > 0 ? { t: T("Ouvrir un pack bonus") + " (" + bonus + ")", ic: "🎁", cl: "ready" } : { t: T("Voir ma collection"), ic: "🎴", cl: "" };
     const href = canDaily || bonus > 0 ? "#/jouer/boutique" : "#/jouer/collection";
-    box.innerHTML = `<div class="gh-head"><div><span class="gh-k">${T("Mon garage")}</span><h2 class="gh-title">${T("Salut")}, ${C.esc(who())}</h2></div></div>
+    box.innerHTML = `<div class="gh-head"><div><span class="gh-k">${T("Bon retour")}, ${C.esc(who())}</span><h2 class="gh-title">${T("Le garage,")} <em>${T("c'est ici.")}</em></h2></div></div>
       <div class="gh-grid">
         <a class="gh-tile gh-level" href="#/garage" aria-label="${T("Niveau")}">${ring(lv.pct)}<span class="gh-lab">${T("Niveau")}</span><b class="gh-num">${lv.level.n}</b><small>${C.esc(lv.level.name || lv.level.label || "")}${lv.next ? " · " + nf(lv.toNext) + " XP" : ""}</small></a>
         <a class="gh-tile" href="#/jouer/boutique"><span class="gh-lab">${T("Cristaux")}</span><b class="gh-num gh-row">${dust}${nf(doc.dust)}</b><small>${T("Boutique")}</small></a>
         <a class="gh-tile gh-chal-link" href="#/jouer/defis"><span class="gh-lab">${T("Série")}</span><b class="gh-num gh-row">${icon("🔥")}${nf(st.days || 0)}<i>${T("jours")}</i></b><small>${T("Reviens chaque jour")}</small></a>
         <a class="gh-tile" href="#/jouer/collection"><span class="gh-lab">${T("Cartes")}</span><b class="gh-num">${nf(doc.count)}<i>/ ${nf(total)}</i></b><span class="gh-bar"><u style="width:${total ? Math.min(100, Math.round((doc.count / total) * 100)) : 0}%"></u></span></a>
       </div>
-      <a class="gh-cta ${cta.cl}" href="${href}">${icon(cta.ic)}<span>${cta.t}</span></a>
+      <a class="gh-cta ${cta.cl}" href="${href}">${icon(cta.ic)}<span class="gh-cta-t"><small>${canDaily ? T("Pack du jour") : T("Ma collection")}</small>${cta.t}</span></a>
       <div class="gh-links"><a href="#/quiz">${icon("🎯")}${T("Quiz")}</a><a href="#/duel">${icon("⚔")}${T("Duel")}</a><a class="gh-chal-link" href="#/jouer/defis">${icon("🏆")}${T("Défis")}</a><a href="#/jouer/echanges">${icon("🔄")}${T("Échanges")}</a></div>`;
     document.documentElement.classList.add("ma-garage");
   }

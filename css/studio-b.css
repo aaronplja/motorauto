@@ -170,3 +170,50 @@ html:not(.ma-garage) #page-home .hero-copy { order: 1 !important; }
 }
 .car-model-name:where(:not(.app-header *, [class*="dock"] *)), .cod-txt b:where(:not(.app-header *, [class*="dock"] *)) { -webkit-text-stroke-width: .03em; }
 .ht-line.ht-outline:where(:not(.app-header *, [class*="dock"] *)), .page-title em:where(:not(.app-header *, [class*="dock"] *)) { -webkit-text-stroke: .035em currentColor; paint-order: stroke fill; }
+
+/* ======================= Catalogue (PC) : colonne de filtres à gauche, grille à droite ======================= */
+.side-label:where(:not(.app-header *, [class*="dock"] *)) { display: block; margin: 1.3rem 0 .55rem; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
+.era-chips:where(:not(.app-header *, [class*="dock"] *)) { display: flex; gap: .5rem; overflow-x: auto; padding-bottom: 2px; }
+.era-chips .filter-pill { flex: none; }
+@media (min-width: 1100px) {
+  #main-catalog-view { display: grid; grid-template-columns: 290px minmax(0, 1fr); column-gap: clamp(2rem, 3.5vw, 3.4rem); align-items: start; }
+  #main-catalog-view > .cat-side { position: sticky; top: 84px; max-height: calc(100vh - 100px); overflow-y: auto; padding-right: 4px; scrollbar-width: thin; }
+  #main-catalog-view > .cat-main { min-width: 0; }
+  .cat-side .page-head { margin-bottom: .4rem; }
+  .cat-side .toolbar-cluster { display: block; padding: 0; background: none; border: 0; box-shadow: none; border-radius: 0; }
+  .cat-side .categories-scroll { display: flex; flex-wrap: wrap; overflow: visible; gap: .5rem; padding: 0; mask-image: none; -webkit-mask-image: none; }
+  .cat-side .era-chips { flex-wrap: wrap; overflow: visible; }
+  .cat-side .selectors-cluster { display: grid; gap: .8rem; margin-top: 1.3rem; }
+  .cat-side .sort-cluster { display: grid; gap: .45rem; }
+  .cat-side .sort-title { font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
+  .cat-side .custom-select, .cat-side select { width: 100%; }
+  .cat-side .adv-toggle { justify-self: start; }
+  .cat-side .adv-panel { margin-top: 1rem; }
+  .cat-side .adv-grid { grid-template-columns: 1fr 1fr; }
+  .cat-main .catalog-search { margin-top: 0; }
+  #vehicles-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1100px) and (max-width: 1300px) { #vehicles-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) {
+  .cat-side .toolbar-cluster, .cat-side .categories-scroll, .cat-side .selectors-cluster { margin-left: 0; margin-right: 0; width: auto; max-width: 100%; transform: none; }
+  .cat-side .page-title { font-size: clamp(3rem, 4.4vw, 4.2rem); overflow-wrap: normal; word-break: normal; }
+  .cat-main .bs { margin: 1rem 0; }
+}
+@media (min-width: 1100px) {
+  .cat-side .toolbar-cluster { background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; border: 0 !important; }
+  .cat-side .toolbar-cluster::before, .cat-side .toolbar-cluster::after { display: none !important; }
+}
+
+/* ===== Accueil connecté « Garage » (mixte maquette Studio) ===== */
+html[data-theme="studio-creme"] .gh-k{font-size:.95rem;letter-spacing:0;text-transform:none;font-weight:500;color:var(--color-secondary)}
+html[data-theme="studio-creme"] .gh-title{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(2.8rem,9vw,4.6rem);line-height:1;letter-spacing:-.02em;margin:.2rem 0 1.1rem;-webkit-text-stroke:.035em currentColor;paint-order:stroke fill}
+html[data-theme="studio-creme"] .gh-title::first-line{color:var(--color-ink)}
+html[data-theme="studio-creme"] .gh-tile{border-radius:26px;background:var(--bg-surface);box-shadow:none}
+html[data-theme="studio-creme"] .gh-num{font-family:'Instrument Serif',Georgia,serif;font-weight:400;letter-spacing:-.02em;-webkit-text-stroke:.03em currentColor}
+html[data-theme="studio-creme"] .gh-chal-link.gh-tile{background:color-mix(in srgb,var(--accent) 12%,var(--bg-surface));border-color:color-mix(in srgb,var(--accent) 35%,var(--stroke-line))}
+html[data-theme="studio-creme"] .gh-cta{height:auto;min-height:92px;justify-content:space-between;padding:1.1rem 1.5rem;border-radius:28px;background:#1d2a22;color:#f6f3ec;border:0;box-shadow:none;text-align:left}
+html[data-theme="studio-creme"] .gh-cta.ready{background:#1d2a22;color:#f6f3ec;box-shadow:0 14px 30px -14px rgba(29,42,34,.6)}
+html[data-theme="studio-creme"] .gh-cta-t{display:flex;flex-direction:column;font-family:'Instrument Serif',Georgia,serif;font-size:1.7rem;line-height:1.1;order:-1;-webkit-text-stroke:.03em currentColor}
+html[data-theme="studio-creme"] .gh-cta-t small{font:700 .72rem/1 'Inter',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#7fd6a3;margin-bottom:.35rem;-webkit-text-stroke:0}
+html[data-theme="studio-creme"] .gh-cta:not(.ready){background:var(--bg-surface);color:var(--color-ink);border:1px solid var(--stroke-line)}
+html[data-theme="studio-creme"] .gh-title em{font-style:italic;color:var(--accent)}
