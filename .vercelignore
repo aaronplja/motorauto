@@ -1,12 +1,10 @@
 # Fichiers inutiles en ligne : ils restent dans le dépôt mais ne sont pas déployés sur Vercel
 tests
-scripts
 functions
 app-ios
 node_modules
 README.md
 IMAGES-A-AJOUTER.txt
-index.src.html
 firestore.rules
 storage.rules
 firebase.json
