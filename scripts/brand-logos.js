@@ -12,8 +12,9 @@
  */
 const fs = require("fs"), path = require("path");
 const root = path.join(__dirname, "..");
-let dir;
-try { dir = path.join(path.dirname(require.resolve("simple-icons/package.json")), "icons"); } catch (_) { console.error("Paquet manquant : lance d'abord  npm i --no-save simple-icons"); process.exit(1); }
+let dir = path.join(root, "node_modules", "simple-icons", "icons");
+if (!fs.existsSync(dir)) { try { dir = path.join(path.dirname(require.resolve("simple-icons")), "icons"); } catch (_) { /* ignoré */ } }
+if (!fs.existsSync(dir)) { console.error("Paquet manquant : lance d'abord  npm i --no-save simple-icons  (depuis la racine du projet)"); process.exit(1); }
 // nom MOTORAUTO (minuscules, sans accents ni espaces) -> nom simple-icons
 const MAP = {
   abarth: "abarth", alfaromeo: "alfaromeo", astonmartin: "astonmartin", audi: "audi", bentley: "bentley", bmw: "bmw", bugatti: "bugatti", cadillac: "cadillac",
