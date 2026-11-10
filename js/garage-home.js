@@ -34,6 +34,46 @@
     d.innerHTML = `<button type="button" class="cta-btn fill-btn" data-action="open-auth">${T("Créer mon compte")}</button><a class="cta-btn btn-ghost" href="#/catalogue">${T("Parcourir le catalogue")}</a>`;
     st.insertAdjacentElement("afterend", d);
   }
+  /** compte à rebours jusqu'au prochain pack du jour (minuit, heure de Paris) */
+  let cdT = null;
+  function nextMidnight() {
+    const now = Date.now(), k = G.dayKey(now);
+    for (let h = 1; h <= 30; h++) { const t = now + h * 3600000; if (G.dayKey(t) !== k) return G.parisMidnight(G.dayKey(t)); }
+    return now + 86400000;
+  }
+  function countdown(on) {
+    if (cdT) { clearInterval(cdT); cdT = null; }
+    if (!on) return;
+    const end = nextMidnight(), pad = (n) => String(n).padStart(2, "0");
+    const tick = () => {
+      const el = document.querySelector("[data-gh-cd]"); if (!el) return;
+      const d = Math.max(0, end - Date.now()), h = Math.floor(d / 3600000), m = Math.floor(d % 3600000 / 60000), s = Math.floor(d % 60000 / 1000);
+      el.textContent = pad(h) + ":" + pad(m) + ":" + pad(s);
+      if (d <= 0) { clearInterval(cdT); cdT = null; last = ""; paint(); }
+    };
+    tick(); cdT = setInterval(tick, 1000);
+  }
+  /** pilotes suivis : pastilles « en ligne » (présence réciproque, voir js/presence.js) */
+  let frFor = "";
+  async function friends() {
+    const box = document.getElementById("gh-friends"); if (!box || !C.user || !C.db) return;
+    if (frFor === C.user.uid && box.dataset.done === "1") return;
+    try {
+      const f = await C.db.collection("users").doc(C.user.uid).collection("following").limit(40).get();
+      const ids = f.docs.map((d) => d.id).slice(0, 24); if (!ids.length) { frFor = C.user.uid; box.dataset.done = "1"; return; }
+      const rows = await Promise.all(ids.map(async (uid) => {
+        let u = {}, pr = null;
+        try { const d = await C.db.collection("users").doc(uid).get(); u = d.exists ? d.data() : {}; } catch (_) { /* ignoré */ }
+        try { pr = window.MAPresence ? await window.MAPresence.get(uid) : null; } catch (_) { /* ignoré */ }
+        return { uid, name: u.username || u.pseudo || "", photo: u.photoURL || u.avatar || "", on: !!(pr && pr.online) };
+      }));
+      const on = rows.filter((r) => r.on && r.name).slice(0, 8);
+      frFor = C.user.uid; box.dataset.done = "1";
+      if (!on.length) return;
+      box.innerHTML = `<span class="gh-lab">${T("Amis en ligne")}</span><div class="gh-fr">${on.map((r) => `<a class="gh-av" href="#/pilote/${encodeURIComponent(r.uid)}" title="${C.esc(r.name)}">${r.photo ? `<img src="${C.esc(C.safeUrl(r.photo) || "")}" alt="" data-fallback="avatar">` : `<span>${C.esc(r.name.slice(0, 1).toUpperCase())}</span>`}<i class="gh-dot"></i></a>`).join("")}</div>`;
+      box.hidden = false;
+    } catch (_) { /* règles non publiées ou hors ligne : on n'affiche rien */ }
+  }
   async function paint() {
     const page = document.getElementById("page-home"); if (!page) return;
     const host = page;
@@ -66,9 +106,16 @@
         <a class="gh-tile gh-chal-link" href="#/jouer/defis"><span class="gh-lab">${T("Série")}</span><b class="gh-num gh-row">${icon("🔥")}${nf(st.days || 0)}<i>${T("jours")}</i></b><small>${T("Reviens chaque jour")}</small></a>
         <a class="gh-tile" href="#/jouer/collection"><span class="gh-lab">${T("Cartes")}</span><b class="gh-num">${nf(doc.count)}<i>/ ${nf(total)}</i></b><span class="gh-bar"><u style="width:${total ? Math.min(100, Math.round((doc.count / total) * 100)) : 0}%"></u></span></a>
       </div>
-      <a class="gh-cta ${cta.cl}" href="${href}">${icon(cta.ic)}<span class="gh-cta-t"><small>${canDaily ? T("Pack du jour") : T("Ma collection")}</small>${cta.t}</span></a>
+      <a class="gh-cta ${cta.cl}" href="${href}">${icon(cta.ic)}<span class="gh-cta-t"><small>${canDaily ? T("Pack du jour") : bonus > 0 ? T("Pack bonus") : T("Prochain pack dans") + ' <span data-gh-cd>--:--:--</span>'}</small>${cta.t}</span></a>
+      <div class="gh-duo">
+        <a class="gh-card gh-chal-link" href="#/jouer/defis"><span class="gh-lab">${T("Défi du jour")}</span><b>${T("Relève le défi")}</b><small>${T("Gagne des cristaux et de l'XP")}</small><i class="gh-go" aria-hidden="true">→</i></a>
+        <a class="gh-card" href="${lv.next ? "#/garage" : "#/jouer/collection"}"><span class="gh-lab">${T("Prochain objectif")}</span><b>${lv.next ? nf(lv.toNext) + " XP " + T("pour le niveau") + " " + (lv.level.n + 1) : nf(Math.max(0, total - doc.count)) + " " + T("cartes à trouver")}</b><span class="gh-bar"><u style="width:${lv.next ? lv.pct : (total ? Math.round(doc.count / total * 100) : 0)}%"></u></span><small>${lv.next ? nf(Math.max(0, total - doc.count)) + " " + T("cartes pour compléter la collection") : T("Collection en cours")}</small><i class="gh-go" aria-hidden="true">→</i></a>
+      </div>
+      <div class="gh-friends" id="gh-friends" hidden></div>
       <div class="gh-links"><a href="#/quiz">${icon("🎯")}${T("Quiz")}</a><a href="#/duel">${icon("⚔")}${T("Duel")}</a><a class="gh-chal-link" href="#/jouer/defis">${icon("🏆")}${T("Défis")}</a><a href="#/jouer/echanges">${icon("🔄")}${T("Échanges")}</a></div>`;
     document.documentElement.classList.add("ma-garage");
+    countdown(!canDaily && !(bonus > 0));
+    friends();
   }
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx;
