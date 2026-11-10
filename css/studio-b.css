@@ -386,3 +386,8 @@ blockquote:where(:not(.app-header *, [class*="dock"] *)), .quote-big { margin: 1
 .gh-cta-t small { opacity: 1 !important; }
 .gh-cta:not(.ready) .gh-cta-t small { color: var(--color-secondary); }
 .cod-foot li span { opacity: 1 !important; } .cod-foot { opacity: 1 !important; }
+
+/* ===== Logos de marques (masque : prennent la couleur du thème) ===== */
+.brand-dot.has-logo, .bs-ini.has-logo { background: none !important; position: relative; }
+.brand-dot.has-logo::before, .bs-ini.has-logo::before { content: ""; position: absolute; inset: 15%; background: var(--color-ink); -webkit-mask: var(--logo) center / contain no-repeat; mask: var(--logo) center / contain no-repeat; }
+.brand-dot.has-logo { width: 26px; height: 26px; }
