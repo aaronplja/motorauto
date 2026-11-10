@@ -141,3 +141,9 @@ textarea:where(:not(.app-header *, [class*="dock"] *)) { border-radius: 22px; }
 .legal-doc:where(:not(.app-header *, [class*="dock"] *)) { max-width: 760px; }
 [data-page="legal"] p:where(:not(.app-header *, [class*="dock"] *)), [data-page="legal"] li:where(:not(.app-header *, [class*="dock"] *)) { line-height: 1.7; color: var(--color-secondary); }
 [data-page="contact"] form:where(:not(.app-header *, [class*="dock"] *)), [data-page="contact"] .panel:where(:not(.app-header *, [class*="dock"] *)) { border-radius: var(--corner-md); background: var(--bg-surface); border: 1px solid var(--stroke-line); box-shadow: var(--st-shadow); padding: 1.4rem; }
+
+/* ---------- polices Studio : studio.css les redéfinissait sur le contenu de la page, on les rétablit ---------- */
+#page-main, .modal-layer, .site-footer, .toast {
+  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
