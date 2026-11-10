@@ -275,10 +275,11 @@
         </div>
         <div class="car-card-body">
           <div class="car-make-row">
-            <span class="car-brand-name">${esc(car.brand)}</span>
+            <span class="car-brand-name"><i class="brand-dot" aria-hidden="true">${esc(String(car.brand || "").replace(/[^A-Za-zÀ-ÿ0-9]/g, "").slice(0, 2).toUpperCase())}</i>${esc(car.brand)}</span>
             <span class="car-years-label">${esc(car.years)}</span>
           </div>
           <h3 class="car-model-name">${esc(car.model)}</h3>
+          ${s.power ? `<span class="car-gauge" style="--p:${Math.max(4, Math.min(100, Math.round(Math.log(s.power / 40) / Math.log(25) * 100)))}%" role="img" aria-label="${s.power} ch"></span>` : ""}
           <div class="specs-trio">
             <div class="spec-entry"><span class="spec-lbl">Puissance</span><span class="spec-val">${s.power ? s.power + '<i class="spec-u">ch</i>' : "—"}</span></div>
             <div class="spec-entry"><span class="spec-lbl">V-Max</span><span class="spec-val">${s.speed ? s.speed + '<i class="spec-u">km/h</i>' : "—"}</span></div>

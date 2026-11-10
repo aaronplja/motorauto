@@ -8,7 +8,7 @@
 (function () {
   "use strict";
   const KEY = "motorauto_custom_theme", root = typeof document !== "undefined" ? document.documentElement : { style: { setProperty() {}, removeProperty() {} }, setAttribute() {} };
-  const VARS = ["--bg-core", "--bg-surface", "--bg-elevated", "--stroke-line", "--line", "--color-ink", "--color-secondary", "--color-muted", "--accent", "--on-accent", "--header-bg", "--glow", "--glow-soft", "--shadow-pop"];
+  const VARS = ["--bg-core", "--bg-surface", "--bg-elevated", "--stroke-line", "--line", "--color-ink", "--color-secondary", "--color-muted", "--accent", "--on-accent", "--header-bg", "--glow", "--glow-soft", "--shadow-pop", "--accent-ink", "--ok", "--warn", "--err", "--r-common", "--r-rare", "--r-epic", "--r-legendary", "--r-mythic", "--gold", "--bronze-ink", "--ice-ink"];
   const store = { get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (_) { /* ignoré */ } } };
   const doc = typeof document !== "undefined" ? document : null;
 
@@ -24,19 +24,29 @@
   const DARK = [11, 13, 18], WHITE = [255, 255, 255];
   /** rapproche fg du noir ou du blanc (selon le fond) jusqu'au contraste demandé */
   function ensure(fg, bg, min) {
-    const toward = contrast(bg, [0, 0, 0]) >= contrast(bg, WHITE) ? [0, 0, 0] : WHITE;
+    const bgs = Array.isArray(bg[0]) ? bg : [bg];
+    const avg = [0, 1, 2].map((i) => bgs.reduce((n, b) => n + b[i], 0) / bgs.length);
+    const toward = contrast(avg, [0, 0, 0]) >= contrast(avg, WHITE) ? [0, 0, 0] : WHITE;
+    const worst = (c) => Math.min.apply(null, bgs.map((b) => contrast(c, b)));
     let c = fg.slice();
-    for (let i = 0; i < 30 && contrast(c, bg) < min; i++) c = mix(c, toward, 0.1);
-    return contrast(c, bg) >= min ? c : toward;
+    for (let i = 0; i < 40 && worst(c) < min; i++) c = mix(c, toward, 0.1);
+    return worst(c) >= min ? c : toward;
   }
   function derive(bgHex, accHex) {
     const bg = hex2rgb(bgHex) || [9, 9, 11], acc0 = hex2rgb(accHex) || [239, 68, 68];
     let ink = contrast(bg, DARK) >= contrast(bg, WHITE) ? DARK : WHITE;
     if (contrast(bg, ink) < 4.8) ink = contrast(bg, [0, 0, 0]) >= contrast(bg, [255, 255, 255]) ? [0, 0, 0] : [255, 255, 255];   // gris moyens : noir/blanc purs
     const light = ink === DARK;
-    const surface = mix(bg, ink, 0.05), elevated = mix(bg, ink, 0.1);
-    const secondary = ensure(mix(ink, bg, 0.26), bg, 7), muted = ensure(mix(ink, bg, 0.46), bg, 4.6);
-    const accent = ensure(acc0, bg, 3.2), onAccent = contrast(accent, WHITE) >= contrast(accent, [0, 0, 0]) ? "#ffffff" : "#000000";
+    let t1 = 0.05, t2 = 0.1;
+    while (t2 > 0 && (contrast(ink, mix(bg, ink, t2)) < 5 || contrast(ink, mix(bg, ink, t1)) < 5)) { t1 *= 0.7; t2 *= 0.7; if (t2 < 0.004) { t1 = t2 = 0; } }
+    const surface = mix(bg, ink, t1), elevated = mix(bg, ink, t2), ALL = [bg, surface, elevated];
+    const secondary = ensure(mix(ink, bg, 0.26), ALL, 7), muted = ensure(mix(ink, bg, 0.46), ALL, 4.8);
+    const accent = ensure(acc0, ALL.concat([mix(surface, acc0, 0.18), mix(elevated, acc0, 0.18)]), 4.7), onAccent = contrast(accent, WHITE) >= contrast(accent, [0, 0, 0]) ? "#ffffff" : "#000000";
+    const SEM = light
+      ? { ok: "#15803d", warn: "#a16207", err: "#b91c1c", common: "#556070", rare: "#1d56c4", epic: "#7a2fc8", legendary: "#a85c00", mythic: "#b3411a", gold: "#8a5300", bronze: "#8c5420", ice: "#0b6fa8" }
+      : { ok: "#4ade80", warn: "#fbbf24", err: "#f87171", common: "#a8b3c2", rare: "#7db1ff", epic: "#c79bff", legendary: "#ffc14d", mythic: "#ff8a5c", gold: "#e6b34a", bronze: "#e0a06a", ice: "#7cc8f0" };
+    const sem = {}; Object.keys(SEM).forEach((k) => { sem[k] = rgb2hex(ensure(hex2rgb(SEM[k]), ALL, 4.6)); });
+    const accentInk = accent;
     return {
       scheme: light ? "light" : "dark", bg, accent,
       vars: {
@@ -44,6 +54,7 @@
         "--stroke-line": rgba(ink, light ? 0.13 : 0.14), "--line": rgba(ink, light ? 0.13 : 0.14),
         "--color-ink": rgb2hex(ink), "--color-secondary": rgb2hex(secondary), "--color-muted": rgb2hex(muted),
         "--accent": rgb2hex(accent), "--on-accent": onAccent, "--header-bg": rgba(surface, 0.88),
+        "--accent-ink": rgb2hex(accentInk), "--ok": sem.ok, "--warn": sem.warn, "--err": sem.err, "--r-common": sem.common, "--r-rare": sem.rare, "--r-epic": sem.epic, "--r-legendary": sem.legendary, "--r-mythic": sem.mythic, "--gold": sem.gold, "--bronze-ink": sem.bronze, "--ice-ink": sem.ice,
         "--glow": rgba(accent, 0.38), "--glow-soft": rgba(accent, 0.14), "--shadow-pop": light ? "0 30px 60px -30px rgba(30,40,60,.35)" : "0 30px 70px -28px rgba(0,0,0,.85)"
       },
       ratio: { text: contrast(ink, bg), muted: contrast(muted, bg), accent: contrast(accent, bg), onAccent: contrast(onAccent === "#ffffff" ? [255, 255, 255] : [0, 0, 0], accent) }

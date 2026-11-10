@@ -12,7 +12,7 @@
   const EMOJIS = ["👍", "❤️", "🔥", "🏎️", "🏁"];
   const PICKER = ["😀", "😂", "😍", "😎", "🤝", "👏", "🙌", "💪", "🔥", "🏎️", "🏁", "🚗", "⚙️", "🔧", "🛞", "⛽", "💨", "🏆", "👍", "👎", "❤️", "😮", "🤔", "😅", "😭", "🙏", "👀", "💯", "🎉", "✅", "❌", "⚡"];
   const THEMES = [
-    ["studio-creme", "Studio Crème", "#f6f3ec", "#1f6b45"], ["onyx-carbon", "Onyx Carbon", "#09090b", "#ef4444"], ["midnight-blue", "Midnight Blue", "#060913", "#3b82f6"],
+    ["studio-creme", "Studio Crème", "#f6f3ec", "#1f6b45"], ["garage-nuit", "Garage de nuit", "#0b140f", "#6fcf97"], ["onyx-carbon", "Onyx Carbon", "#09090b", "#ef4444"], ["midnight-blue", "Midnight Blue", "#060913", "#3b82f6"],
     ["asphalt-smoke", "Asphalt Smoke", "#111111", "#f59e0b"], ["monza-night", "Monza Night", "#0a0507", "#e11d48"],
     ["tokyo-neon", "Tokyo Neon", "#050508", "#a855f7"], ["cyber-matrix", "Cyber Matrix", "#022c22", "#10b981"],
     ["abyss-titanium", "Abyss Titanium", "#070d1a", "#06b6d4"], ["velvet-gothic", "Velvet Gothic", "#18050f", "#ec4899"],
