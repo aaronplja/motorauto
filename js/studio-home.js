@@ -43,14 +43,8 @@
     const recent = C.cars.filter((c) => photo(c)).sort((a, b) => yEnd(b) - yEnd(a));
     const seen = new Set(), picks = [];
     for (const c of recent) { if (c.id === codId || seen.has(c.brand)) continue; seen.add(c.brand); picks.push(c); if (picks.length === 3) break; }
-    const total = C.cars.length + (G && G.CIRCUIT_CARDS ? G.CIRCUIT_CARDS.length : 0) + (G && G.LIVERIES ? G.LIVERIES.length : 0);
-    const np = await countPilots();
     box = document.createElement("div"); box.id = "sh-visitor";
-    box.innerHTML = `<section class="stage-shell sh-proof" aria-label="${T("Le site en chiffres")}">
-        <div><b>${nf(C.cars.length)}</b><span>${T("Voitures")}</span></div>
-        <div><b>${np ? nf(np) + (np >= 500 ? "+" : "") : "—"}</b><span>${T("Pilotes")}</span></div>
-        <div><b>${nf(total)}</b><span>${T("Cartes à collectionner")}</span></div></section>
-      <section class="stage-shell sh-sec" aria-label="${T("Voitures à découvrir")}"><header class="sh-h"><h2 class="sh-t">${T("À découvrir")}</h2><a class="sh-more" href="#/catalogue">${T("Tout le catalogue")} →</a></header>
+    box.innerHTML = `<section class="stage-shell sh-sec" aria-label="${T("Voitures à découvrir")}"><header class="sh-h"><h2 class="sh-t">${T("À découvrir")}</h2><a class="sh-more" href="#/catalogue">${T("Tout le catalogue")} →</a></header>
         <div class="sh-car">${today ? slide(today, T("Voiture du jour")) : ""}${picks.map((c) => slide(c, T("Récente"))).join("")}</div></section>
       <section class="stage-shell sh-sec" aria-label="${T("Comment ça marche")}"><header class="sh-h"><h2 class="sh-t">${T("Comment ça")} <em>${T("marche")}</em></h2></header>
         <ol class="sh-steps">
