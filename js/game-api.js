@@ -50,6 +50,7 @@
     const rnd = () => { const a = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(a); return a[0] / 4294967296; };
     engine = window.MAGameServer.createGame({
       db: adapter(MB.db), ts: () => MB.FieldValue.serverTimestamp(), rng: rnd, now: Date.now,
+      variants: () => (window.MA_VARIANTS || []).map((v) => ({ id: v[0], base: v[1], name: v[2], power: v[3], speed: v[4], zero: v[5], brand: "", category: "", year: 0 })),
       cardPool: async () => (window.MAApp.ctx().cars || []).map((c) => ({ id: c.id, power: Number(c.stats && c.stats.power) || 0, speed: Number(c.stats && c.stats.speed) || 0, zero: Number(c.stats && c.stats.zero) || 0, name: ((c.brand || "") + " " + (c.model || "")).trim(), brand: c.brand || "", category: c.category || "", year: window.MAGameCore.yearOf(c), pics: window.MAGameCore.picKeys(c) })),
       isAdmin: async () => !!window.MAApp.ctx().isAdmin
     });

@@ -104,3 +104,40 @@ textarea:where(:not(.app-header *, [class*="dock"] *)) { border-radius: 22px; }
 .stat-num:where(:not(.app-header *, [class*="dock"] *)) { font-family: var(--font-display); font-weight: 400; letter-spacing: -.015em; }
 .car-model-name:where(:not(.app-header *, [class*="dock"] *)) { font-size: 1.5rem; line-height: 1.1; }
 .cod-txt b:where(:not(.app-header *, [class*="dock"] *)) { font-size: 1.45rem; }
+
+/* ======================= Maquette : titres de pages ======================= */
+.page-title:where(:not(.app-header *, [class*="dock"] *)) { font-size: clamp(3rem, 8vw, 4.9rem); line-height: .94; letter-spacing: -.03em; margin: 0 0 .5rem; }
+.page-title em:where(:not(.app-header *, [class*="dock"] *)) { font-style: italic; color: var(--accent); }
+.page-title[data-words="2"] em:where(:not(.app-header *, [class*="dock"] *)) { display: block; }
+.page-sub:where(:not(.app-header *, [class*="dock"] *)) { font-size: 1.02rem; color: var(--color-secondary); }
+
+/* ======================= Maquette : cartes du catalogue ======================= */
+.car-box:where(:not(.app-header *, [class*="dock"] *)) { border-radius: var(--corner-md); overflow: hidden; background: var(--bg-surface); border: 1px solid var(--stroke-line); }
+.car-thumb-wrap:where(:not(.app-header *, [class*="dock"] *)) { aspect-ratio: 4 / 3; height: auto; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--bg-elevated)), color-mix(in srgb, var(--accent) 18%, var(--bg-elevated))); }
+.car-thumb-wrap img:where(:not(.app-header *, [class*="dock"] *)) { width: 100%; height: 100%; object-fit: cover; }
+.car-card-body:where(:not(.app-header *, [class*="dock"] *)) { padding: 1.1rem 1.3rem 1.3rem; }
+.car-make-row:where(:not(.app-header *, [class*="dock"] *)) { justify-content: flex-start; gap: .4rem; margin-bottom: .1rem; }
+.car-brand-name:where(:not(.app-header *, [class*="dock"] *)) { font-size: .82rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--color-muted); }
+.car-years-label:where(:not(.app-header *, [class*="dock"] *)) { font-size: .82rem; color: var(--color-muted); }
+.car-years-label:where(:not(.app-header *, [class*="dock"] *))::before { content: "·"; margin-right: .4rem; }
+.car-model-name:where(:not(.app-header *, [class*="dock"] *)) { font-size: 1.85rem; line-height: 1.02; margin: .15rem 0 .8rem; }
+.spec-val:where(:not(.app-header *, [class*="dock"] *)) { font-weight: 600; }
+
+/* ======================= Maquette : accueil, plus d'air ======================= */
+.hero-stage:where(:not(.app-header *, [class*="dock"] *)) { padding-bottom: clamp(2rem, 6vw, 4rem); }
+.home-section:where(:not(.app-header *, [class*="dock"] *)) { padding-top: clamp(2.4rem, 7vw, 4.5rem); }
+.home-col:where(:not(.app-header *, [class*="dock"] *)), .bento-tile:where(:not(.app-header *, [class*="dock"] *)) { padding: 1.5rem; }
+.cod-card:where(:not(.app-header *, [class*="dock"] *)) { padding: 1.3rem; gap: 1.2rem; }
+.cod-card img:where(:not(.app-header *, [class*="dock"] *)), .cod-ph:where(:not(.app-header *, [class*="dock"] *)) { width: 190px; height: 128px; border-radius: var(--corner-sm); }
+.cod-txt small:where(:not(.app-header *, [class*="dock"] *)) { font-size: .74rem; letter-spacing: .14em; }
+
+/* ======================= Maquette : pied de page, contact et pages légales ======================= */
+.footer:where(:not(.app-header *, [class*="dock"] *)) { background: var(--bg-surface); border-top: 1px solid var(--stroke-line); padding-top: clamp(2.4rem, 6vw, 4rem); }
+.footer a:where(:not(.app-header *, [class*="dock"] *)) { color: var(--color-secondary); }
+.footer a:hover:where(:not(.app-header *, [class*="dock"] *)) { color: var(--accent); }
+.footer-legal:where(:not(.app-header *, [class*="dock"] *)) { color: var(--color-muted); font-size: .85rem; }
+[data-page="legal"] h2:where(:not(.app-header *, [class*="dock"] *)), [data-page="legal"] h3:where(:not(.app-header *, [class*="dock"] *)) { font-family: var(--font-display); font-weight: 400; font-size: 1.7rem; margin: 1.8rem 0 .5rem; }
+[data-page="contact"] h2:where(:not(.app-header *, [class*="dock"] *)) { font-family: var(--font-display); font-weight: 400; letter-spacing: -.02em; font-size: clamp(2.2rem, 5vw, 3.2rem); line-height: 1.02; margin: .6rem 0 .8rem; }
+.legal-doc:where(:not(.app-header *, [class*="dock"] *)) { max-width: 760px; }
+[data-page="legal"] p:where(:not(.app-header *, [class*="dock"] *)), [data-page="legal"] li:where(:not(.app-header *, [class*="dock"] *)) { line-height: 1.7; color: var(--color-secondary); }
+[data-page="contact"] form:where(:not(.app-header *, [class*="dock"] *)), [data-page="contact"] .panel:where(:not(.app-header *, [class*="dock"] *)) { border-radius: var(--corner-md); background: var(--bg-surface); border: 1px solid var(--stroke-line); box-shadow: var(--st-shadow); padding: 1.4rem; }

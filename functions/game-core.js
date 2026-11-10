@@ -599,7 +599,7 @@
       const a = ok[Math.floor(rng() * ok.length)], va = S.get(a);
       // à partir du palier 1, on cherche un adversaire de même catégorie (moins de repères évidents) ; on relâche si la liste est vide
       const sameCat = lv >= 1 && i < 100;
-      const cand = ok.filter((c) => { if (c.id === a.id) return false; const vb = S.get(c); if (vb === va) return false; const g = gap(va, vb); return g >= lim[0] && g <= lim[1] && (!sameCat || (c.category && c.category === a.category)); });
+      const cand = ok.filter((c) => { if (c.id === a.id || (c.base || c.id) === (a.base || a.id)) return false; const vb = S.get(c); if (vb === va) return false; const g = gap(va, vb); return g >= lim[0] && g <= lim[1] && (!sameCat || (c.category && c.category === a.category)); });
       if (!cand.length) continue;
       const b = cand[Math.floor(rng() * cand.length)];
       return { a: a.id, b: b.id, stat };

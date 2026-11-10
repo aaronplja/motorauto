@@ -20,6 +20,8 @@ const { eraseUser } = require("./delete-account");
 // Doit correspondre à la région de ta base Firestore (ex. "europe-west1", "us-central1"…) — et à js/firebase-init.js.
 const REGION = "europe-west1";
 const ADMIN_MAIL = "admin@motorauto.fr";
+let VARIANTS = [];
+try { VARIANTS = require("./catalog-variants.json"); } catch (_) { /* absent : plus ou moins sur les fiches entières */ }
 
 /** voitures tirables : catalogue local (catalog-static.json) + voitures ajoutées dans l'administration (Firestore) */
 async function loadPool() {
@@ -38,7 +40,7 @@ async function isAdmin(caller) {
   return (await db.collection("admins").doc(caller.uid).get()).exists;
 }
 const game = createGame({
-  db, now: Date.now, isAdmin, cardPool: loadPool,
+  db, now: Date.now, isAdmin, cardPool: loadPool, variants: () => VARIANTS,
   accountCreatedMs: async (uid) => { try { return Date.parse((await admin.auth().getUser(uid)).metadata.creationTime) || 0; } catch (_) { return 0; } },
   ts: () => admin.firestore.FieldValue.serverTimestamp(),
   rng: () => crypto.randomInt(0, 4294967296) / 4294967296

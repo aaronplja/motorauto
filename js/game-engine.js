@@ -41,6 +41,10 @@
         Object.keys(m).forEach((id) => { if (rar.has(id) && core.ORDER.indexOf(m[id]) >= 0) rar.set(id, m[id]); });
       } catch (_) { /* pas de surcharge */ }
       poolCache = { at: now(), list, ids: list.map((c) => c.id).concat(deps.noCircuits ? [] : core.CIRCUIT_CARDS.map((r) => r[0])).concat(lvs.map((c) => c.id)), byId: new Map(list.map((c) => [c.id, c]).concat(Array.from(core.CIRCUIT_BY_ID.entries())).concat(lvs.map((c) => [c.id, c]))), rar };
+      // plus ou moins : un modèle = une entrée (les fiches multi-modèles sont éclatées par motorisation, cf. scripts/sync-functions.js)
+      const vs = (deps.variants && deps.variants()) || [], vb = new Set(vs.map((v) => v.base));
+      poolCache.pmList = list.filter((c) => !vb.has(c.id)).concat(vs);
+      poolCache.pmById = new Map(poolCache.byId); vs.forEach((v) => poolCache.pmById.set(v.id, v));
       return poolCache;
     }
     async function specialCard(id) { const s = await col("special_cards").doc(id).get(); return s.exists ? s.data() : null; }
@@ -1026,7 +1030,7 @@
         let result = null, reward = 0;
         if (answer) {
           if (!g.pmPair) fail("failed-precondition", "Aucune question en cours : relance une partie.");
-          const pick = data.pick === "b" ? "b" : "a", win = core.pmWinner(g.pmPair, pool.byId), pair = g.pmPair;
+          const pick = data.pick === "b" ? "b" : "a", win = core.pmWinner(g.pmPair, pool.pmById), pair = g.pmPair;
           if (!win) { g.pmPair = null; g.pmStreak = 0; writeStats(tx, uid, g); fail("failed-precondition", "Cette question n'est plus valable : relance une partie."); }
           const ok = win === pick;
           result = { ok, answer: win, pair };
@@ -1038,7 +1042,7 @@
           g.pmPair = null;
         } else g.pmStreak = 0;
         let next = null;
-        if (!answer || (result && result.ok)) { next = core.pmPair(pool.list, rng, result ? result.pair : null, g.pmStreak); g.pmPair = next; }
+        if (!answer || (result && result.ok)) { next = core.pmPair(pool.pmList, rng, result ? result.pair : null, g.pmStreak); g.pmPair = next; }
         if (result && result.ok) core.seasonAdd(d, core.SEASON_PTS.pmOk, { pm: 1 }, now());
         writeStats(tx, uid, g); if ((result && result.ok) || reward) writeCol(tx, uid, d);
         return { result, next, streak: g.pmStreak, best: g.pmBest, reward, doc: reward ? view(d) : null };

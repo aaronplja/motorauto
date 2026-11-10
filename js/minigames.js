@@ -13,7 +13,15 @@
   const dust = (n, px) => `${window.MA.dustIcon(px || 14)} <b>${n}</b>`;
   const rootOf = (n) => document.getElementById(n + "-root");
   const loginNote = (what) => `<div class="empty-note">${T("Connecte-toi pour")} ${what}.<br><button type="button" class="cta-btn fill-btn mt" data-action="open-auth">${T("Me connecter")}</button></div>`;
-  const car = (id) => (C.carsById && C.carsById.get(id)) || null;
+  let variantMap = null;
+  /** une voiture, ou un modèle séparé d'une fiche multi-modèles (identifiant « fiche~n », cf. js/car-variants.js) */
+  const car = (id) => {
+    const k = String(id).split("~"), b = (C.carsById && C.carsById.get(k[0])) || null;
+    if (!b || k.length < 2) return b;
+    if (!variantMap) variantMap = new Map((window.MA_VARIANTS || []).map((v) => [v[0], v]));
+    const v = variantMap.get(String(id));
+    return v ? Object.assign({}, b, { id: String(id), model: v[2], stats: { power: v[3], speed: v[4], zero: v[5] } }) : b;
+  };
   const carName = (c) => (c ? String(((c.brand || "") + " " + (c.model || "")).trim()) : "");
   const pilotName = (users, uid) => (users.get(uid) && users.get(uid).username) || T("Pilote");
   async function usersMap() { try { const a = await window.MAGame.loadAll(); return a.users || new Map(); } catch (_) { return new Map(); } }

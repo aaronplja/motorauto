@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "check": "node scripts/build.js --check",
-    "test": "node tests/game.test.js && node tests/cards4.test.js"
+    "test": "node tests/game.test.js && node tests/cards4.test.js && node tests/variants.test.js"
   },
   "devDependencies": {
     "esbuild": "^0.21.5"
