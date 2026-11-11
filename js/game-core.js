@@ -127,6 +127,9 @@
     "decade:1940": "mb-w125", "decade:1950": "mb-300-sl-gullwing", "decade:1960": "rally-citroen-ds-monte", "decade:1970": "rally-lancia-stratos", "decade:1980": "rally-lancia-delta-s4",
     "decade:1990": "mb-clk-gtr", "decade:2000": "lm-audi-r8-lmp", "decade:2010": "mb-f1-hybrid", "decade:2020": "fiat-1000tipla"
   };
+  /** icônes « Légendaires » fixées à la main (leur rareté ne dépend pas du rang calculé) */
+  const PIN_LEGENDARY = ["ferrari-250-gto", "ferrari-f40", "ferrari-f50", "ferrari-enzo", "ferrari-laferrari", "ferrari-288-gto", "mclaren-f1", "bugatti-type-57sc-atlantic", "bugatti-type-41-royale", "bugatti-eb110-super-sport",
+    "bugatti-veyron-16-4", "porsche-959", "porsche-carrera-gt", "porsche-911-carrera-rs-2-7", "lamborghini-miura-p400", "lamborghini-countach-lp400", "pagani-zonda-f", "pagani-huayra-bc", "maserati-mc12", "mclaren-p1"];
   const LEGEND_IDS = Object.keys(LEGENDS).map((k) => LEGENDS[k]);
   const PRESTIGE = /ferrari|lamborghini|porsche|mclaren|bugatti|aston martin|maserati|pagani|koenigsegg|lotus|bentley|rolls|de tomaso|shelby|jaguar|alpine|lancia|abarth/i;
   const SPORTY = /\b(gt|gti|gtr|gt-r|gto|gts|gt3|gt2|gt4|rs ?\d{0,2}|type[ -]?r|m[1-8]\d{0,2}i?|amg|cosworth|turbo|quadrifoglio|integrale|nismo|sti|evo|evolution|cup|trophy|stratos|csl|black series|competition|lightweight|clubsport|speedster|roadster|v12|v10|wrc|r5|group b|groupe b|supra|nsx|rx-7|skyline|mustang|corvette|viper|cayman|boxster|elise|exige|evora|z4|mx-5|gr ?\w*|r32|vr6|16s|s[2-8])\b/i;
@@ -136,9 +139,9 @@
    * Une Ferrari 250 GTO ou une Delta Integrale ne finit donc plus « commune » parce que sa puissance est modeste.
    */
   function computeRarities(list) {
-    const pw = list.map(rankPower).sort((a, b) => a - b), sp = list.map((c) => Number(c.speed) || 0).filter((v) => v > 0).sort((a, b) => a - b), zr = list.map((c) => Number(c.zero) || 0).filter((v) => v > 0).sort((a, b) => b - a);
+    const pw = list.map(rankPower).sort((a, b) => a - b), sp = list.map((c) => Number(c.speed) || 0).filter((v) => v > 0).sort((a, b) => a - b), zr = list.map((c) => Number(c.zero) || 0).filter((v) => v > 0).sort((a, b) => a - b);
     const score = (c) => {
-      const pp = pct(pw, rankPower(c)), ps = c.speed > 0 ? pct(sp, c.speed) : pp, pz = c.zero > 0 ? pct(zr, c.zero) : pp, id = String(c.id), name = String(c.name || ""), y = Number(c.year) || 0, cat = String(c.category || "");
+      const pp = pct(pw, rankPower(c)), ps = c.speed > 0 ? pct(sp, c.speed) : pp, pz = c.zero > 0 ? 1 - pct(zr, c.zero) : pp, id = String(c.id), name = String(c.name || ""), y = Number(c.year) || 0, cat = String(c.category || "");
       let s = (pp * 0.5 + ps * 0.25 + pz * 0.25) * 70;
       s += cat === "Supercar" ? 14 : cat === "Le Mans" || id.indexOf("lm-") === 0 ? 12 : id.indexOf("rally-") === 0 ? 12 : cat === "Coupé" ? 3 : cat === "Break" ? -4 : cat === "Berline" && !SPORTY.test(name) ? -6 : 0;
       if (PRESTIGE.test(c.brand || name)) s += 10;
@@ -150,7 +153,7 @@
     const map = new Map();
     sorted.forEach((c, i) => {
       const p = i / Math.max(1, sorted.length - 1);
-      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : SHINY.indexOf(c.id) >= 0 ? "shiny" : p < 0.06 ? "legendary" : p < 0.23 ? "epic" : p < 0.55 ? "rare" : "common");
+      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : SHINY.indexOf(c.id) >= 0 ? "shiny" : PIN_LEGENDARY.indexOf(c.id) >= 0 ? "legendary" : p < 0.06 ? "legendary" : p < 0.23 ? "epic" : p < 0.55 ? "rare" : "common");
     });
     return map;
   }
