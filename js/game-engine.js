@@ -51,7 +51,7 @@
     async function isKnownCard(pool, id) { return pool.byId.has(id) || (core.isSpecial(id) && !!(await specialCard(id))); }
 
     // ---------------------------------------------------------------- petits utilitaires
-    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, circuits: d.circuits || 0, liveries: d.liveries || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
+    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, circuits: d.circuits || 0, liveries: d.liveries || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, bt: d.bt || null, bdDay: d.bdDay || "", season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
     /** historique des cristaux (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
     function dustMove(d, n, why) {
       if (!n) return;
@@ -435,6 +435,49 @@
         d.welcome = true; d.bonus = (d.bonus || 0) + core.WELCOME.bonus; dustMove(d, core.WELCOME.dust, "Cadeau de bienvenue");
         writeCol(tx, uid, d);
         return { doc: view(d) };
+      });
+    }
+
+
+    // ---------------------------------------------------------------- batailles contre l'IA : historique, trophées, défi du jour
+    const BT_DAILY_DUST = 40, BT_KEEP = 15, BT_DAY_MAX = 40;
+    const btBlank = () => ({ w: 0, l: 0, t: 0, streak: 0, best: 0, flawless: 0, giant: 0, day: "", n: 0, dStart: 0, last: [] });
+    /** le joueur lance le défi quotidien : l'heure de départ est notée côté serveur (une partie ne peut pas être « terminée » avant 20 s) */
+    async function battleDailyStart(caller) {
+      const uid = caller.uid, today = core.dayKey(now());
+      return db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid);
+        if (d.bdDay === today) fail("failed-precondition", "Tu as déjà relevé le défi du jour. Reviens demain !");
+        d.bt = Object.assign(btBlank(), d.bt || {}); d.bt.dStart = now();
+        writeCol(tx, uid, d);
+        return { ok: true, dust: BT_DAILY_DUST };
+      });
+    }
+    /** une bataille contre l'IA est terminée : historique, séries, trophées (5-0, 10 victoires d'affilée, victoire d'une commune) et récompense fixe du défi du jour */
+    async function battleReport(caller, data) {
+      const uid = caller.uid, today = core.dayKey(now()), q = data || {};
+      const num = (v) => Math.max(0, Math.min(5, Math.floor(Number(v) || 0)));
+      const me = num(q.me), ai = num(q.ai), res = me > ai ? "w" : me < ai ? "l" : "t";
+      if (me + ai > 5) fail("invalid-argument", "Score impossible.");
+      const level = ["easy", "normal", "hard"].indexOf(q.level) >= 0 ? q.level : "normal", daily = q.daily === true;
+      return db.runTransaction(async (tx) => {
+        const d = await readCol(tx, uid), bt = Object.assign(btBlank(), d.bt || {});
+        if (bt.day !== today) { bt.day = today; bt.n = 0; }
+        if (bt.n >= BT_DAY_MAX) fail("resource-exhausted", "Beaucoup de batailles aujourd'hui, reviens demain pour les compter.");
+        bt.n++; bt[res]++;
+        if (res === "w") { bt.streak++; if (bt.streak > bt.best) bt.best = bt.streak; } else if (res === "l") bt.streak = 0;
+        const trophies = [];
+        if (res === "w" && me === 5 && ai === 0) { bt.flawless++; trophies.push("flawless"); }
+        if (res === "w" && bt.streak === 10) trophies.push("streak10");
+        if (q.giant === true && me > ai) { bt.giant++; trophies.push("giant"); }
+        let reward = 0;
+        if (daily) {
+          const ok = bt.dStart && now() - bt.dStart >= 20000 && now() - bt.dStart <= 2 * 3600 * 1000 && d.bdDay !== today;
+          if (ok) { d.bdDay = today; bt.dStart = 0; if (res === "w") { reward = BT_DAILY_DUST; dustMove(d, reward, "Défi bataille du jour"); } }
+        }
+        bt.last = [{ t: now(), lv: level, r: res, me, ai, dl: daily ? 1 : 0 }].concat(bt.last || []).slice(0, BT_KEEP);
+        d.bt = bt; writeCol(tx, uid, d);
+        return { doc: view(d), reward, trophies };
       });
     }
 
@@ -1361,7 +1404,7 @@
       return { status: "done" };
     }
 
-    return { closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, cardChallenges, claimCardChallenge, battleInvite, battleRespond, battleCancel, battlePlay, battleClaim, battleEmote, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
+    return { battleReport, battleDailyStart, closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, clubClash, logAction, weeklyStatus, claimChallenge, cardChallenges, claimCardChallenge, battleInvite, battleRespond, battleCancel, battlePlay, battleClaim, battleEmote, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
   }
   return { createGame, GameError };
 });

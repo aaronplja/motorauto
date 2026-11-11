@@ -59,7 +59,7 @@ function callable(name) {
     }
   });
 }
-["syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "buyFreeze", "seasonClaim", "claimWelcome", "clubClash", "logAction", "weeklyStatus", "claimChallenge", "cardChallenges", "claimCardChallenge", "battleInvite", "battleRespond", "battleCancel", "battlePlay", "battleClaim", "battleEmote",
+["battleReport", "battleDailyStart", "syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "buyFreeze", "seasonClaim", "claimWelcome", "clubClash", "logAction", "weeklyStatus", "claimChallenge", "cardChallenges", "claimCardChallenge", "battleInvite", "battleRespond", "battleCancel", "battlePlay", "battleClaim", "battleEmote",
   "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "claimSets", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest",
   "fuseCards", "pmPlay", "quizSubmit", "lockCard", "recycleCards", "spinWheel", "openAdvent", "chronoStart", "chronoSubmit", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
 
@@ -118,6 +118,14 @@ exports.deleteAccount = onCall({ region: REGION, maxInstances: 5, timeoutSeconds
     throw new HttpsError("internal", "La suppression n'a pas pu aboutir, réessaie ou contacte l'administrateur.");
   }
 });
+
+// rôles par « custom claims » (admin, délégué, modérateur) : voir roles.js
+{
+  const roles = require("./roles").createRoles({ db, admin, onCall, HttpsError, region: REGION, adminMail: ADMIN_MAIL });
+  exports.syncMyClaims = roles.syncMyClaims;
+  exports.setUserRole = roles.setUserRole;
+  exports.listStaff = roles.listStaff;
+}
 
 // notifications push (appareils enregistrés dans push_tokens) à chaque nouvelle notification
 exports.pushOnNotification = require("./push").createPush({ db, messaging: admin.messaging(), region: REGION });

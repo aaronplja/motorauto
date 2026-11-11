@@ -76,11 +76,16 @@
     if (def.src === "badge") { try { return window.MAGame.earned(uid).indexOf(def.v) >= 0; } catch (_) { return false; } }
     if (def.src === "tier" || def.src === "quest" || def.src === "clash") return cosm.indexOf(kind + ":" + id) >= 0;
     if (def.src === "top") return (Number(mine.top) || 99) <= def.v;
+    const bt = (doc && doc.bt) || {};
+    if (def.src === "bwin") return (Number(bt.w) || 0) >= def.v;
+    if (def.src === "bflaw") return (Number(bt.flawless) || 0) >= def.v;
+    if (def.src === "bbest") return (Number(bt.best) || 0) >= def.v;
+    if (def.src === "bgiant") return (Number(bt.giant) || 0) >= def.v;
     return false;
   }
   function req(kind, id) {
     const d = (kind === "f" ? G.FRAMES : G.TITLES)[id];
-    return d.src === "level" ? `Niveau ${d.v}` : d.src === "badge" ? `Succès « ${badgeName(d.v)} »` : d.src === "tier" ? `Palier ${d.v} du pass de saison` : d.src === "quest" ? "Terminer la chaîne de quêtes de saison" : d.src === "clash" ? "Faire gagner ton club au défi de la semaine" : `Top ${d.v} du classement des pilotes`;
+    return d.src === "bwin" ? `${d.v} victoires en bataille contre l'IA` : d.src === "bflaw" ? "Gagner une bataille 5-0" : d.src === "bbest" ? `${d.v} victoires de suite en bataille` : d.src === "bgiant" ? "Battre une Épique ou une Légendaire avec une Commune" : d.src === "level" ? `Niveau ${d.v}` : d.src === "badge" ? `Succès « ${badgeName(d.v)} »` : d.src === "tier" ? `Palier ${d.v} du pass de saison` : d.src === "quest" ? "Terminer la chaîne de quêtes de saison" : d.src === "clash" ? "Faire gagner ton club au défi de la semaine" : `Top ${d.v} du classement des pilotes`;
   }
   async function equip(uid, patch) {
     const d = dbOf(); if (!d) throw new Error("Base indisponible.");

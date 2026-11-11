@@ -649,7 +649,10 @@
     podium:   { name: "Podium du mois", src: "top", v: 3, color: "#ffd700" },
     aurora:   { name: "Aurore",       src: "level", v: 20, color: "#5eead4", anim: true },
     prism:    { name: "Prisme",       src: "level", v: 30, color: "#c084fc", anim: true },
-    s_eclipse:{ name: "Éclipse (rare)", src: "quest", v: 4, color: "#fb7185", anim: true, rare: true }
+    s_eclipse:{ name: "Éclipse (rare)", src: "quest", v: 4, color: "#fb7185", anim: true, rare: true },
+    b_arena:  { name: "Arène",        src: "bwin", v: 10,  color: "#38bdf8" },
+    b_victor: { name: "Vainqueur",    src: "bwin", v: 50,  color: "#f97316" },
+    b_champ:  { name: "Champion d'arène", src: "bwin", v: 200, color: "#facc15", anim: true }
   };
   const TITLES = {
     rookie:   { name: "Novice des circuits", src: "level", v: 2 },
@@ -667,7 +670,21 @@
     quest:    { name: "Briseur de quêtes",    src: "quest", v: 4 },
     top1:     { name: "Numéro 1 du mois",     src: "top", v: 1 },
     top3:     { name: "Sur le podium",        src: "top", v: 3 },
-    clubwin:  { name: "Champion de club",     src: "clash", v: 1 }
+    clubwin:  { name: "Champion de club",     src: "clash", v: 1 },
+    b_rookie: { name: "Gladiateur",           src: "bwin", v: 10 },
+    b_master: { name: "Maître de l'arène",    src: "bwin", v: 50 },
+    b_flaw:   { name: "Sans faute (5-0)",     src: "bflaw", v: 1 },
+    b_streak: { name: "Invaincu (10 d'affilée)", src: "bbest", v: 10 },
+    b_giant:  { name: "Tueur de géants",      src: "bgiant", v: 1 }
+  };
+  /** fonds d'arène des batailles contre l'IA (décoratifs) : débloqués par le nombre de victoires */
+  const ARENAS = {
+    classic: { name: "Piste classique", v: 0,   bg: "radial-gradient(ellipse at 50% 20%, rgba(40,44,70,.9), rgba(4,5,12,.96))" },
+    sunset:  { name: "Coucher de soleil", v: 5,  bg: "linear-gradient(180deg, rgba(255,120,60,.30), rgba(60,20,90,.55) 55%, rgba(6,4,14,.96))" },
+    neon:    { name: "Tokyo néon", v: 15,   bg: "linear-gradient(160deg, rgba(0,230,255,.22), rgba(190,40,255,.28) 55%, rgba(4,3,12,.96))" },
+    alpine:  { name: "Col alpin", v: 30,   bg: "linear-gradient(180deg, rgba(150,200,255,.28), rgba(30,60,100,.45) 60%, rgba(5,8,16,.96))" },
+    lemans:  { name: "Nuit du Mans", v: 60,  bg: "linear-gradient(180deg, rgba(255,205,70,.20), rgba(15,25,60,.5) 50%, rgba(2,3,8,.97))" },
+    gold:    { name: "Arène d'or", v: 120, bg: "radial-gradient(ellipse at 50% 0%, rgba(255,215,90,.42), rgba(70,45,10,.55) 55%, rgba(8,5,2,.97))" }
   };
   /** récompense d'un palier : cristaux, pack bonus, gel de série, carte épique, cosmétique ; palier 30 = une Légendaire au choix */
   const PASS_SPECIAL = {
@@ -2163,7 +2180,7 @@ Le Cheval cabré|Ferrari|2
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     setsOf, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
+    ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
     SHINY, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
