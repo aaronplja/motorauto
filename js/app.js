@@ -1883,25 +1883,27 @@
 
   // Ajout rapide d'une photo (admin) : sans ouvrir l'éditeur. L'image générique ou absente est remplacée ; sinon la photo est ajoutée à la galerie.
   const isGenericImg = (u) => !u || u === MA.FALLBACK_CAR || /^img\//.test(u) || /images\.unsplash\.com\/photo-1503376780353/.test(u);
-  async function quickAddPhoto(carId, url) {
-    if (!isAdmin) return;
-    const car = carsById.get(carId); if (!car) return;
+  async function quickAddPhoto(carId, url, opts) {
+    if (!isAdmin) return false;
+    const car = carsById.get(carId); if (!car) return false;
     const clean = safeUrl(url);
-    if (!clean) { MA.toast("L'adresse de l'image doit commencer par https://", "err"); return; }
+    if (!clean) { MA.toast("L'adresse de l'image doit commencer par https://", "err"); return false; }
     const raw = cloudCars.find((c) => c.id === carId) || MOTORAUTO_DATABASE.find((c) => c.id === carId) || car;
     const current = (raw.images && raw.images.length ? raw.images : [raw.image]).filter((u) => !isGenericImg(u));
-    if (current.includes(clean)) { MA.toast("Cette photo est déjà sur la fiche.", "err"); return; }
+    if (current.includes(clean)) { MA.toast("Cette photo est déjà sur la fiche.", "err"); return false; }
     const images = current.concat(clean).slice(0, 12);
     try {
       if (cloudIds.has(carId)) await db.collection("motorauto_catalog").doc(carId).update({ image: images[0], images });
       else await db.collection("motorauto_catalog").doc(carId).set(JSON.parse(JSON.stringify(Object.assign({}, raw, { id: carId, image: images[0], images }))));
       logAdmin("car-photo", { target: carId, targetName: `${car.brand} ${car.model}`, detail: current.length ? "photo ajoutée" : "photo principale définie (image générique retirée)" });
       MA.toast(current.length ? "Photo ajoutée à la fiche." : "Photo enregistrée : l'image générique est remplacée.", "ok");
+      if (opts && opts.noReload) return true;         // saisie en série (menu « Voitures sans image »)
       const y = window.scrollY;                       // on reste à la même place dans la page
       await loadPublicCatalog();
       if (/^#\/voiture\//.test(location.hash)) { try { renderVehicle(carId); } catch (_) { /* fiche rouverte au prochain affichage */ } }
       requestAnimationFrame(() => window.scrollTo(0, y));
-    } catch (err) { MA.toast("Erreur : " + err.message, "err"); }
+      return true;
+    } catch (err) { MA.toast("Erreur : " + err.message, "err"); return false; }
   }
   function quickPhotoPick(carId) {
     const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.hidden = true; document.body.appendChild(inp);
@@ -3135,7 +3137,7 @@
       get user() { return currentUser; }, get profile() { return profile; }, get isAdmin() { return isAdmin; }, get isSuper() { return isSuper; },
       get cars() { return CATALOGUE; }, get carsById() { return carsById; }, authReady, catReady,
       toast: (m, k) => MA.toast(m, k), openProfile: openPublicProfile, requireLogin, avatarImg, pilotName,
-      openModal, closeModal, carCard, commCarHtml, normalize
+      openModal, closeModal, carCard, commCarHtml, normalize, quickAddPhoto, isGenericImg, reloadCatalog: () => loadPublicCatalog()
     }),
     reloadCommunity: () => { communityCache.at = 0; if (Router.is("community", { tab: "voitures" })) loadCommunity(); },
     getCommunityCars: () => communityCache.list,

@@ -849,7 +849,9 @@
       zero: (a, b) => zeroKey(a) - zeroKey(b) || byNum(a, b),
       brand: (a, b) => a.brand.localeCompare(b.brand, "fr") || a.model.localeCompare(b.model, "fr") || byNum(a, b),
       owned: (a, b) => countOf(b.id) - countOf(a.id) || byNum(a, b),
-      level: (a, b) => lvOf(b.id) - lvOf(a.id) || byNum(a, b)
+      level: (a, b) => lvOf(b.id) - lvOf(a.id) || byNum(a, b),
+      year: (a, b) => (G.yearOf(a) || 9999) - (G.yearOf(b) || 9999) || byNum(a, b),
+      yeard: (a, b) => (G.yearOf(b) || 0) - (G.yearOf(a) || 0) || byNum(a, b)
     };
     return list.sort(cmp[sortBy] || byNum);
   }
@@ -939,7 +941,7 @@
               <select id="cards-rar" aria-label="Rareté"><option value="all">Toutes raretés</option>${ORDER.map((r) => `<option value="${r}">${RAR[r].label}</option>`).join("")}</select>
               <select id="cards-country" aria-label="Pays"><option value="all">Tous pays</option>${countries}</select>
               <select id="cards-minp" aria-label="Puissance minimale">${[[0, "Toute puissance"], [150, "150 ch et +"], [300, "300 ch et +"], [500, "500 ch et +"], [800, "800 ch et +"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
-              <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : rareté"], ["owned", "Tri : doublons d'abord"], ["level", "Tri : niveau"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
+              <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : rareté"], ["owned", "Tri : doublons d'abord"], ["level", "Tri : niveau"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"], ["year", "Tri : année (anciennes)"], ["yeard", "Tri : année (récentes)"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
             <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"], ["circuits", "🏁 Circuits et livrées"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}
               <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"], ["binder", "Classeur"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>
             <div class="tcg-grid" id="tcg-grid"></div></section></div></div>`;
