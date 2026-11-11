@@ -1,6 +1,7 @@
 rules_version = '2';
 
 // MOTORAUTO — règles Firestore
+// Phase 8 : rôle modérateur (claim), collections réservées au serveur.
 // L'admin est soit un utilisateur dont le jeton porte le claim { admin: true }
 // (voir scripts/set-admin.js), soit le compte admin@motorauto.fr (compte créé à l'avance
 // dans Firebase Authentication : personne d'autre ne peut s'inscrire avec cette adresse).
@@ -14,6 +15,8 @@ service cloud.firestore {
     // Admin = admin principal OU pilote promu (document admins/{uid} créé par l'admin principal).
     function isAdmin()  { return isSuper() || (signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); }
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    // Modérateur : claim { moderator: true } (posé par la fonction syncMyClaims / setUserRole). Peut traiter les signalements et sanctionner (mutes), rien d'autre.
+    function isModerator() { return signedIn() && request.auth.token.moderator == true; }
 
     // Réseaux sociaux du profil : pseudos seulement (le lien est reconstruit par le site)
     function validSocials() {
@@ -165,6 +168,18 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // --- Mode travaux : { on, message, image, by } — lecture publique (les visiteurs doivent savoir), écriture réservée aux administrateurs
+    match /config/maintenance {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['on', 'message', 'image', 'by'])
+        && request.resource.data.on is bool
+        && request.resource.data.message is string && request.resource.data.message.size() <= 400
+        && request.resource.data.image is string && request.resource.data.image.size() <= 500
+        && request.resource.data.by == request.auth.uid;
+      allow delete: if false;
+    }
+
     // --- Raretés modifiées à la main par l'admin : { map: { idCarte: rareté } }
     match /config/rarities {
       allow read: if true;
@@ -241,7 +256,8 @@ service cloud.firestore {
         && request.resource.data.reporter.size() <= 40
         && request.resource.data.details.size() <= 200
         && request.resource.data.createdAt == request.time;
-      allow read, update, delete: if isAdmin();
+      allow read, update: if isAdmin() || isModerator();
+      allow delete: if isAdmin();
     }
 
     // --- Catalogue public : lecture libre, écriture admin ----------------
@@ -385,14 +401,14 @@ service cloud.firestore {
     function isMember(convId) { return signedIn() && request.auth.uid in convId.split('_'); }
 
     match /mutes/{muteUid} {
-      allow read: if isOwner(muteUid) || isAdmin();
-      allow create, update: if isAdmin() && muteUid != request.auth.uid
+      allow read: if isOwner(muteUid) || isAdmin() || isModerator();
+      allow create, update: if (isAdmin() || isModerator()) && muteUid != request.auth.uid
         && request.resource.data.keys().hasOnly(['untilMs', 'perma', 'reason', 'by', 'byName', 'createdAt'])
         && request.resource.data.untilMs is number
         && request.resource.data.get('reason', '').size() <= 140
         && request.resource.data.by == request.auth.uid
         && request.resource.data.createdAt == request.time;
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || isModerator();
     }
 
     // --- Titres de succès affichés à côté du pseudo : un titre = un album terminé (revérifié ici)
@@ -692,15 +708,8 @@ service cloud.firestore {
     // Le pilote (mode navigateur) ne peut progresser que d'un pack par écriture ; l'admin peut tout écrire (cartes spéciales, concours).
     match /collections/{cid} {
       allow read: if true;
-      allow create: if isOwner(cid) && validCollection()
-        && request.resource.data.opened == 0 && request.resource.data.count == 0 && request.resource.data.dust == 0
-        && request.resource.data.bonus <= 40;
-      allow update: if (isOwner(cid) && validCollection()
-          && request.resource.data.opened <= resource.data.opened + 1
-          && request.resource.data.bonus <= resource.data.bonus + 40
-          && request.resource.data.count <= resource.data.count + 3
-          && request.resource.data.dust <= resource.data.dust + 2500)
-        || (isAdmin() && request.resource.data.updatedAt == request.time);
+      // Écritures réservées aux fonctions serveur (le jeu est géré côté serveur) ; l'admin garde la main pour les corrections.
+      allow create, update: if isAdmin() && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
     function validCollection() {
