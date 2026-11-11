@@ -1,0 +1,5 @@
+/* Fluidité : l'ombre portée du cadran d'accueil était un filtre (drop-shadow 50 px) appliqué à un SVG dont l'aiguille et l'anneau bougent en continu,
+   donc recalculé à chaque image (c'est ce qui faisait ramer la page d'accueil, barre de navigation comprise).
+   Même ombre, mais posée une fois derrière le cadran (un cercle) : aucun changement visible. */
+.gauge-svg { filter: none; }
+.hero-gauge::after { content: ""; position: absolute; inset: 3.3%; border-radius: 50%; box-shadow: 0 34px 50px rgba(0, 0, 0, 0.5); z-index: -1; pointer-events: none; }
