@@ -15,30 +15,32 @@
 
   function frameDemo(id) {
     const f = G.FRAMES[id], av = (C.profile && C.profile.avatar) || "";
-    return `<span class="ssn-av cosm-f cf-${id}" style="--cf:${f.color}">${av ? `<img src="${C.esc(av)}" alt="" data-fallback="avatar">` : "<i></i>"}</span>`;
+    return `<span class="ssn-av cosm-f cf-${id}${f.base ? " cf-" + f.base : ""}" style="--cf:${f.color}">${av ? `<img src="${C.esc(av)}" alt="" data-fallback="avatar">` : "<i></i>"}</span>`;
   }
   function tierHtml(t, sn, tier) {
-    const r = G.passReward(t), got = sn.claimed.indexOf(t) >= 0, can = !got && tier >= t, big = r.frame || r.title || r.bonus || r.freeze || r.epic || r.circuit || r.choice;
+    const r0 = G.passReward(t), cs = (doc() && doc().cosm) || [], got = sn.claimed.indexOf(t) >= 0, r = Object.assign({}, r0, { frame: r0.frame ? G.shownVariant(cs, "f", r0.frame, got) : "", title: r0.title ? G.shownVariant(cs, "t", r0.title, got) : "" }), can = !got && tier >= t, big = r.frame || r.title || r.bonus || r.freeze || r.epic || r.circuit || r.choice;
     const icons = (r.choice ? "★ " : "") + (r.epic ? "💜 " : "") + (r.circuit ? "🏁 " : "") + (r.bonus ? "🎁 " : "") + (r.freeze ? "❄ " : "") + (r.frame ? "🖼 " : "") + (r.title ? "🎖 " : "") + (r.dust ? "◆ " : "");
     const head = r.choice ? T("Légendaire au choix") : r.epic ? T("Carte Épique") : r.circuit ? T("Carte Circuit") : r.bonus ? (r.bonus > 1 ? r.bonus + " " + T("packs bonus") : T("Pack bonus")) : r.freeze ? T("Gel de série") : r.frame ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : r.title ? T("Titre") : "+" + r.dust + " " + T("cristaux");
     const more = [r.dust && (r.choice || r.epic || r.bonus || r.freeze || r.frame || r.title) ? "+" + r.dust + " " + T("cristaux") : "", r.choice && r.frame ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : "", r.epic && r.title ? T("Titre") + " « " + T(G.TITLES[r.title].name) + " »" : "", r.choice && r.title ? T("Titre") + " « " + T(G.TITLES[r.title].name) + " »" : "", !r.choice && !r.epic && r.frame && r.bonus ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : "", r.title && !r.choice && !r.epic ? "« " + T(G.TITLES[r.title].name) + " »" : ""].filter(Boolean).join(" · ");
-    return `<button type="button" class="ssn-tier ${got ? "got" : can ? "can" : "lock"}${big ? " big" : ""}" ${can ? `data-ssn-claim="${t}"` : "disabled"} title="${C.esc(T("Palier") + " " + t + " : " + G.passLabel(r))}">
+    return `<button type="button" class="ssn-tier ${got ? "got" : can ? "can" : "lock"}${big ? " big" : ""}" ${can ? `data-ssn-claim="${t}"` : "disabled"} title="${C.esc(T("Palier") + " " + t + " : " + G.passLabel(r0, cs, got))}">
       <i>${t}</i><span class="ssn-rw"><b>${C.esc(head)}</b>${more ? `<small>${C.esc(more)}</small>` : ""}</span><em>${got ? "✓" : can ? T("Récupérer") : icons.trim() ? "🔒" : "🔒"}</em></button>`;
   }
   function questHtml(sn) {
     const qs = G.questState(sn);
-    return `<ol class="ssn-quests">${G.SEASON_QUESTS.map((q, i) => {
+    const rk = sn.rk || 1, qlist = G.questList(rk);
+    return `${rk > 1 ? `<p class="ssn-rank">${T("Quêtes de saison")} ${G.romanOf(rk)} — ${T("objectifs et récompenses relevés")}</p>` : ""}<ol class="ssn-quests">${qlist.map((q, i) => {
       const done = i < sn.q, now = i === sn.q && !qs.done, prog = now ? qs.prog : done ? q.goal : 0, pct = Math.round(100 * prog / q.goal);
       return `<li class="${done ? "done" : now ? "now" : "todo"}"><i>${done ? "✓" : i + 1}</i><div><b>${T(q.label)}</b><span class="ssn-bar"><u style="width:${pct}%"></u></span><small>${prog} / ${q.goal} · +${q.dust} ${T("cristaux")}</small></div>
         ${now && qs.ready ? `<button type="button" class="cta-btn fill-btn" data-ssn-quest>${T("Récupérer")}</button>` : ""}</li>`;
-    }).join("")}<li class="final ${qs.done ? "done" : ""}"><i>★</i><div><b>${T("Récompense finale exclusive")}</b><small>${T("Cadre « Quête de saison », titre « Briseur de quêtes » et")} ${G.SEASON_QUEST_FINAL.dust} ${T("cristaux")}</small></div></li></ol>`;
+    }).join("")}<li class="final ${qs.done ? "done" : ""}"><i>★</i><div><b>${T("Récompense finale exclusive")}</b><small>${T("Cadre « Quête de saison », titre « Briseur de quêtes » et")}${rk > 1 ? " (" + G.romanOf(rk) + ")" : ""} ${G.SEASON_QUEST_FINAL.dust} ${T("cristaux")}</small></div></li></ol>`;
   }
   function cosmHtml() {
     const uid = C.user.uid, d = doc(), mine = window.MACosm ? window.MACosm.get(uid) : {};
     const ok = (k, id) => window.MACosm.unlocked(k, id, uid, d);
-    const fr = Object.keys(G.FRAMES).map((id) => { const u = ok("f", id), on = mine.frame === id;
+    const shown = (k, id) => { const df = (k === "f" ? G.FRAMES : G.TITLES)[id]; return !df.base || ok(k, id) || G.nextVariant((d && d.cosm) || [], k, df.base) === id; };
+    const fr = Object.keys(G.FRAMES).filter((id) => shown("f", id)).map((id) => { const u = ok("f", id), on = mine.frame === id;
       return `<button type="button" class="ssn-cos ${u ? "" : "lock"} ${on ? "on" : ""}" data-cos-f="${id}" ${u ? "" : "disabled"} title="${C.esc(u ? G.FRAMES[id].name : T("À débloquer : ") + T(window.MACosm.req("f", id)))}">${frameDemo(id)}<b>${T(G.FRAMES[id].name)}</b><small>${u ? (on ? T("Équipé") : "") : T(window.MACosm.req("f", id))}</small></button>`; }).join("");
-    const ti = Object.keys(G.TITLES).map((id) => { const u = ok("t", id), on = mine.title === id;
+    const ti = Object.keys(G.TITLES).filter((id) => shown("t", id)).map((id) => { const u = ok("t", id), on = mine.title === id;
       return `<button type="button" class="ssn-cos ssn-ti ${u ? "" : "lock"} ${on ? "on" : ""}" data-cos-t="${id}" ${u ? "" : "disabled"}><b>${T(G.TITLES[id].name)}</b><small>${u ? (on ? T("Équipé") : "") : T(window.MACosm.req("t", id))}</small></button>`; }).join("");
     return `<div class="ssn-cos-grid">${fr}</div><h4>${T("Titres")}</h4><div class="ssn-cos-grid ti">${ti}</div>
       ${mine.frame || mine.title ? `<button type="button" class="cta-btn btn-ghost" data-cos-clear>${T("Retirer cadre et titre")}</button>` : ""}`;

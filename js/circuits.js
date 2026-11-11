@@ -83,6 +83,7 @@
     const esc = C.esc, cars = new Map();
     t.laps.forEach((l) => { const k = l.carId || l.carName; if (!k) return; const e = cars.get(k) || { name: l.carName || k, id: l.carId, n: 0 }; e.n++; cars.set(k, e); });
     const carList = Array.from(cars.values()).sort((a, b) => b.n - a.n).slice(0, 14);
+    const winRows = String(info.winners || "").split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 80).map((l) => { const m = /^(\d{4}(?:\s*[-–]\s*\d{4})?)\s*[—–:|-]\s*(.+)$/.exec(l); return m ? { year: m[1], text: m[2] } : { year: "", text: l }; });
     const has = info.length || info.turns || info.record || info.text || info.photo;
     const ph = C.safeUrl(info.photo);
     const edit = C.isAdmin ? `<details class="circ-edit"><summary class="cta-btn btn-ghost compact-btn">✎ Éditer la fiche du circuit</summary><form id="circ-info-form" class="maint-form" novalidate>
@@ -93,10 +94,12 @@
       <div class="input-stack"><label for="ci-year">Année du record</label><input type="number" id="ci-year" min="1900" max="2100" value="${esc(info.recordYear || "")}"></div>
       <div class="input-stack"><label for="ci-photo">Photo (https://…)</label><input type="url" id="ci-photo" maxlength="400" value="${esc(info.photo || "")}"></div>
       <div class="input-stack wide"><label for="ci-text">Présentation</label><textarea id="ci-text" rows="4" maxlength="1200">${esc(info.text || "")}</textarea></div>
+      <div class="input-stack wide"><label for="ci-winners">Palmarès : un vainqueur par ligne (ex. « 2023 — Ferrari 499P · Fuoco / Molina / Nielsen »)</label><textarea id="ci-winners" rows="6" maxlength="4000" placeholder="2023 — Ferrari 499P · Fuoco / Molina / Nielsen">${esc(info.winners || "")}</textarea></div>
       <div class="wide"><div class="form-feedback error-txt" id="ci-error" role="alert"></div><button type="submit" class="cta-btn fill-btn">Enregistrer</button></div></form></details>` : "";
     box.innerHTML = `${has ? `<section class="circ-card">${ph ? `<img src="${esc(ph)}" alt="" loading="lazy" data-fallback="car">` : ""}<div class="circ-card-body">
       <div class="circ-facts">${info.length ? `<span><b>${esc(String(info.length).replace(".", ","))} km</b>longueur</span>` : ""}${info.turns ? `<span><b>${esc(info.turns)}</b>virages</span>` : ""}${info.record ? `<span><b>${esc(info.record)}</b>record absolu${info.recordBy ? " · " + esc(info.recordBy) : ""}${info.recordYear ? " (" + esc(info.recordYear) + ")" : ""}</span>` : ""}</div>
       ${info.text ? `<p>${esc(info.text)}</p>` : ""}</div></section>` : (C.isAdmin ? "" : "")}
+      ${winRows.length ? `<div class="sheet-section-head">Palmarès · historique des vainqueurs</div><ol class="circ-winners" style="list-style:none;padding:0;margin:0 0 12px;display:flex;flex-direction:column;gap:6px">${winRows.map((r) => `<li style="background:var(--bg-surface);border:1px solid var(--stroke-line);border-radius:10px;padding:8px 12px;display:flex;gap:12px;align-items:baseline">${r.year ? `<b style="color:var(--accent);min-width:3.2em">${esc(r.year)}</b>` : ""}<span>${esc(r.text)}</span></li>`).join("")}</ol>` : ""}
       ${carList.length ? `<div class="sheet-section-head">Voitures qui y ont roulé</div><div class="club-cars">${carList.map((c) => (c.id && C.carsById.has(c.id) ? `<a class="chip" href="#/voiture/${encodeURIComponent(c.id)}">${esc(c.name)} · ${c.n}</a>` : `<span class="chip">${esc(c.name)} · ${c.n}</span>`)).join("")}</div>` : ""}${edit}`;
     const f = document.getElementById("circ-info-form");
     if (f) f.addEventListener("submit", async (e) => {
@@ -105,7 +108,7 @@
       const photo = v("ci-photo"), err = document.getElementById("ci-error"); err.textContent = "";
       if (photo && !C.safeUrl(photo)) { err.textContent = "L'adresse de la photo doit commencer par https://"; return; }
       try {
-        await C.db.collection("circuit_info").doc(key).set({ length: n("ci-length"), turns: Math.round(n("ci-turns")), record: v("ci-record").slice(0, 20), recordBy: v("ci-by").slice(0, 80), recordYear: Math.round(n("ci-year")), photo: photo.slice(0, 400), text: v("ci-text").slice(0, 1200), updatedAt: C.FieldValue.serverTimestamp() });
+        await C.db.collection("circuit_info").doc(key).set({ length: n("ci-length"), turns: Math.round(n("ci-turns")), record: v("ci-record").slice(0, 20), recordBy: v("ci-by").slice(0, 80), recordYear: Math.round(n("ci-year")), photo: photo.slice(0, 400), text: v("ci-text").slice(0, 1200), winners: v("ci-winners").slice(0, 4000), updatedAt: C.FieldValue.serverTimestamp() });
         if (window.MALog) window.MALog.log("circuit-edit", { target: key, detail: "fiche circuit modifiée" });
         C.toast("Fiche du circuit enregistrée.", "ok"); renderInfo(key, t);
       } catch (ex) { err.textContent = "Enregistrement impossible : " + ex.message; }

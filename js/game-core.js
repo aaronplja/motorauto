@@ -330,6 +330,50 @@
   const PACKS = { world: { id: "world", label: "Pack mondial", cost: 200, cards: 3, min: "rare", country: "" } };
   COUNTRIES.forEach((k) => { PACKS[k.id] = { id: k.id, label: "Pack " + k.label, cost: k.cost, cards: 3, min: "rare", country: k.id }; });
   PACKS.circuit = { id: "circuit", label: "Pack Circuit", cost: 400, cards: 3, min: "rare", country: "", circuit: true };
+  // ------------------------------------------------------------------ packs thématiques temporaires (calendrier, heure de Paris)
+  /** from / to : [mois, jour] inclus, chaque année. Le pack n'est achetable que pendant sa fenêtre. */
+  const THEME_PACKS = {
+    th_rallye: { id: "th_rallye", name: "Rallye", icon: "🏔️", cost: 250, from: [1, 15], to: [2, 2], about: "Monte-Carlo, groupe B, WRC : les reines des spéciales", style: "--p1:#1e293b;--p2:#f97316;--p3:#f8fafc" },
+    th_lemans: { id: "th_lemans", name: "24 Heures du Mans", icon: "🏁", cost: 280, from: [6, 8], to: [6, 22], about: "Prototypes et GT d'endurance de la Sarthe", style: "--p1:#0b1d51;--p2:#facc15;--p3:#f8fafc" },
+    th_muscle: { id: "th_muscle", name: "Muscle cars", icon: "🇺🇸", cost: 250, from: [7, 1], to: [7, 14], about: "V8 américains : Mustang, Camaro, Charger, Corvette…", style: "--p1:#7f1d1d;--p2:#f8fafc;--p3:#1d4ed8" },
+    th_supercar: { id: "th_supercar", name: "Supercars", icon: "💎", cost: 320, from: [8, 15], to: [8, 29], about: "Les voitures de rêve : semaine de Monterey", style: "--p1:#111827;--p2:#e5e7eb;--p3:#a78bfa" },
+    th_youngtimer: { id: "th_youngtimer", name: "Youngtimers", icon: "📼", cost: 220, from: [9, 1], to: [9, 14], about: "Les années 80 et 90 : les futures collectors", style: "--p1:#4c1d95;--p2:#22d3ee;--p3:#f472b6" },
+    th_jdm: { id: "th_jdm", name: "JDM", icon: "🗾", cost: 250, from: [10, 25], to: [11, 15], about: "Le Japon sur route et sur circuit", style: "--p1:#ffffff;--p2:#bc002d;--p3:#1f2937" }
+  };
+  Object.keys(THEME_PACKS).forEach((id) => { const t = THEME_PACKS[id]; PACKS[id] = { id, label: "Pack " + t.name, cost: t.cost, cards: 3, min: "rare", country: "", theme: id }; });
+  const RALLY_RX = /rall(y|ye)\b|wrc|groupe? b\b|group b\b|integrale|stratos|037|205 t16|escort.*cosworth|sierra.*cosworth|impreza|lancer.*evo|celica.*gt-?four|quattro s1|delta s4|metro 6r4|corolla.*wrc|yaris.*wrc|i20.*wrc|puma.*rally|c3.*wrc|focus.*wrc|clio.*(williams|maxi)|a110.*(1600|1800)|r5 turbo|stratos/i;
+  const _md = (ms) => { const k = dayKey(ms === undefined ? Date.now() : ms); return Number(k.slice(5, 7)) * 100 + Number(k.slice(8, 10)); };
+  /** la voiture appartient-elle au thème ? (c : { brand, model|name, category, year|years }) */
+  function themeMatch(id, c) {
+    if (!c) return false;
+    const name = String(c.brand || "") + " " + String(c.model || c.name || ""), y = yearOf(c);
+    switch (id) {
+      case "th_lemans": return c.category === "Le Mans";
+      case "th_rallye": return RALLY_RX.test(name);
+      case "th_muscle": return countryOf(c.brand) === "us" && ((y > 0 && y <= 1978) || /mustang|camaro|charger|challenger|corvette|firebird|trans.?am|barracuda|cuda|cobra|gto|road runner|viper|hellcat|demon|gt500|boss 302|shelby/i.test(name));
+      case "th_supercar": return c.category === "Supercar";
+      case "th_youngtimer": return y >= 1980 && y <= 1999;
+      case "th_jdm": return countryOf(c.brand) === "jp";
+      default: return false;
+    }
+  }
+  /** pack actif à cette date ? (ov : exceptions { id: true | false } décidées par l'administration) */
+  function themePackActive(id, ms, ov) {
+    const t = THEME_PACKS[id]; if (!t) return false;
+    if (ov && ov[id] === true) return true;
+    if (ov && ov[id] === false) return false;
+    const v = _md(ms), a = t.from[0] * 100 + t.from[1], b = t.to[0] * 100 + t.to[1];
+    return a <= b ? v >= a && v <= b : v >= a || v <= b;
+  }
+  const themePacksNow = (ms, ov) => Object.keys(THEME_PACKS).filter((id) => themePackActive(id, ms, ov)).map((id) => THEME_PACKS[id]);
+  /** prochaine ouverture d'un pack (jours restants, 0 = actif) pour l'annonce « bientôt » */
+  function themePackNext(id, ms) {
+    const t = THEME_PACKS[id]; if (!t) return -1;
+    if (themePackActive(id, ms)) return 0;
+    const base = ms === undefined ? Date.now() : ms;
+    for (let i = 1; i <= 366; i++) if (themePackActive(id, base + i * DAY_MS)) return i;
+    return -1;
+  }
   const SHOP_PACK = { cost: PACKS.world.cost, cards: 3 };
   function drawShopPack(rarities, ids, rng, min, n) {
     ids = ids.filter((id) => rarities.get(id) !== "mythic");
@@ -501,6 +545,33 @@
   const decadeLabel = (d) => d === 1940 ? "Avant 1950" : "Années " + d;
   /** albums : un par pays, par décennie (avec une carte « Légende » à la clé), par marque et par carrosserie ; récompense en cristaux selon la taille */
   function setReward(n) { return Math.min(600, 20 + n * 10); }
+  /** collections thématiques : [identifiant, nom, marque (regex) ou "", modèle (regex), bonus de cristaux]. Au moins 3 voitures du catalogue sont nécessaires. */
+  const THEMED_SETS = [
+    ["peugeot-sport", "Peugeot Sport", /^peugeot/i, /sport|gti|rcz|905|908|t16|wrc|s16|rally|\bpse\b|9x8|\brc\b|1007 rally/i, 80],
+    ["renault-sport", "Renault Sport", /^renault/i, /sport|\brs\b|r\.?s\.?\b|r5 turbo|v6|williams|trophy|maxi|f1|alpine/i, 80],
+    ["alpine", "Alpine, la bleue", /^alpine/i, null, 60],
+    ["lancia-rallye", "Lancia rallye", /^lancia/i, /delta|stratos|037|s4|integrale|rally|fulvia/i, 80],
+    ["citroen-rallye", "Citroën rallye", /^citro/i, /wrc|rally|xsara|saxo|c4|c3|ds3|bx 4tc|visa|zx|dakar|c5 air/i, 70],
+    ["subaru-wrx", "Subaru WRX et STI", /^subaru/i, /impreza|wrx|sti|brz|22b|legacy/i, 70],
+    ["evo", "Mitsubishi Lancer Evo", /^mitsubishi/i, /evo|lancer/i, 70],
+    ["gtr", "Nissan GT-R", /^nissan/i, /gt-?r|skyline|r3\d|r-?3\d/i, 80],
+    ["type-r", "Honda Type R et NSX", /^honda/i, /type.?r|nsx|s2000|integra/i, 70],
+    ["toyota-gr", "Toyota sportives", /^toyota/i, /supra|celica|gr\b|gazoo|ae86|gt-?four|mr2|trueno|levin|2000gt|yaris gr|gt86/i, 70],
+    ["porsche-911", "Porsche 911", /^porsche/i, /911|carrera|gt3|gt2|turbo s/i, 120],
+    ["ferrari-v12", "Ferrari V12", /^ferrari/i, /f12|812|599|550|575|612|365|400|456|enzo|laferrari|daytona|testarossa|512|superfast|purosangue|gtc4|lusso|340|250|275|f50/i, 120],
+    ["bmw-m", "BMW M", /^bmw/i, /\bm[1-8]\b|\bm\d{3}|\bm[1-8] |csl|z4 m|1m\b|m coupé|m coupe|m roadster|\bx[3-6] m|\bm.?power/i, 100],
+    ["amg", "Mercedes-AMG", /^mercedes/i, /amg|sls|gt r|black series|c63|e63|cls 63|g63|one\b|\bsl 63/i, 100],
+    ["audi-sport", "Audi Sport et quattro", /^audi/i, /\brs|quattro|r8|r18|r10|tt rs|sport|s[1-8]\b/i, 100],
+    ["mustang", "Ford Mustang", /^ford|^shelby/i, /mustang|cobra|gt500|gt350|boss/i, 100],
+    ["muscle-us", "Muscle cars américaines", /^(chevrolet|dodge|pontiac|plymouth|chrysler|buick)/i, /camaro|charger|challenger|corvette|firebird|trans.?am|barracuda|gto|road runner|viper|hellcat|demon|chevelle|nova|cuda|super bee/i, 100],
+    ["hypercars", "Hypercars", /^(bugatti|koenigsegg|pagani|rimac|hennessey|ssc)/i, null, 150],
+    ["mini", "Mini", /^mini\b|^austin/i, /mini|cooper|john cooper/i, 60],
+    ["jaguar", "Jaguar, félin de légende", /^jaguar/i, null, 70],
+    ["mclaren", "McLaren", /^mclaren/i, null, 80],
+    ["lotus", "Lotus", /^lotus/i, null, 70],
+    ["groupe-b", "Les monstres du groupe B", null, /group(e)? b\b|delta s4|\b037\b|205 t16|405 t16|quattro s1|metro 6r4|rs200|ascona 400|manta 400|bx 4tc|5 maxi turbo|rx-?7 gpb/i, 150]
+  ];
+  const themedOf = (list, t) => (list || []).filter((c) => { const b = String(c.brand || ""); if (t[2] && !t[2].test(b)) return false; return !t[3] || t[3].test(b + " " + String(c.model || c.name || "")); }).map((c) => c.id);
   function setsOf(list) {
     const out = [], skip = new Set(LEGEND_IDS);
     const add = (id, name, kind, ids, legend) => {
@@ -516,7 +587,8 @@
     group((c) => decadeOf(c) || "", "decade", "decade", 2, 400, (v) => decadeLabel(Number(v)));
     group((c) => String(c.brand || "").trim(), "brand", "brand", 3, 30);
     group((c) => String(c.category || "").trim(), "cat", "category", 3, 80);
-    const rank = { country: 0, decade: 1, brand: 2, category: 3 };
+    THEMED_SETS.forEach((t) => { const ids = themedOf(list, t); if (ids.length >= 3 && ids.length <= 120) { const before = out.length; add("theme:" + t[0], t[1], "theme", ids, ""); if (out.length > before) { if (out[out.length - 1].ids.length < 3) out.pop(); else out[out.length - 1].reward += t[4]; } } });
+    const rank = { country: 0, decade: 1, brand: 2, category: 3, theme: 4 };
     return out.sort((a, b) => rank[a.kind] - rank[b.kind] || a.ids.length - b.ids.length || (a.name < b.name ? -1 : 1));
   }
 
@@ -695,7 +767,14 @@
     const sp = PASS_SPECIAL[t] || null;
     return Object.assign({ dust: sp ? 0 : 20 + Math.floor((t - 1) / 4) * 10, bonus: 0, frame: "", title: "", freeze: 0, epic: 0, circuit: 0, choice: "" }, sp || {});
   }
-  const passLabel = (r) => [r.dust ? r.dust + " cristaux" : "", r.bonus ? (r.bonus > 1 ? r.bonus + " packs bonus" : "1 pack bonus") : "", r.freeze ? "1 gel de série" : "", r.epic ? "1 carte Épique" : "", r.circuit ? "1 carte Circuit" : "", r.choice ? "1 Légendaire au choix" : "", r.frame ? "cadre " + FRAMES[r.frame].name : "", r.title ? "titre « " + TITLES[r.title].name + " »" : ""].filter(Boolean).join(" + ");
+  /** version à afficher pour une récompense : la prochaine à gagner, ou (got) la dernière obtenue ; sans inventaire, la version de base */
+  function shownVariant(cosm, kind, base, got) {
+    if (!cosm) return base;
+    if (!got) return nextVariant(cosm, kind, base);
+    let id = base; for (let k = 1; k <= TIER_MAX; k++) if (cosm.indexOf(kind + ":" + variantId(base, k)) >= 0) id = variantId(base, k);
+    return id;
+  }
+  const passLabel = (r, cosm, got) => [r.dust ? r.dust + " cristaux" : "", r.bonus ? (r.bonus > 1 ? r.bonus + " packs bonus" : "1 pack bonus") : "", r.freeze ? "1 gel de série" : "", r.epic ? "1 carte Épique" : "", r.circuit ? "1 carte Circuit" : "", r.choice ? "1 Légendaire au choix" : "", r.frame ? "cadre " + FRAMES[shownVariant(cosm, "f", r.frame, got)].name : "", r.title ? "titre « " + TITLES[shownVariant(cosm, "t", r.title, got)].name + " »" : ""].filter(Boolean).join(" + ");
   /** trois Légendaires proposées (de préférence que le joueur n'a pas), identiques pour un joueur donné pendant toute la saison */
   function legendOffer(ids, rar, owned, uid, n) {
     const leg = ids.filter((id) => rar.get(id) === "legendary").sort(), fresh = leg.filter((id) => !(owned[id] > 0)), pool = (fresh.length >= 3 ? fresh : fresh.concat(leg.filter((id) => owned[id] > 0))).slice();
@@ -714,6 +793,30 @@
     return pool.length ? pool[hashStr("circuit-" + uid + "-" + n + "-" + t) % pool.length] : "";
   }
   /** quêtes de saison enchaînées : on ne passe à l'étape suivante qu'après avoir terminé la précédente */
+  // ------------------------------------------------------------------ évolution de saison : « II », « III », « IV »…
+  // Les cadres, titres et quêtes de saison évoluent : une fois la version précédente débloquée, la saison suivante donne la suivante.
+  const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"], TIER_MAX = 10;
+  const romanOf = (k) => ROMAN[Math.max(1, Math.min(TIER_MAX, k | 0))];
+  /** identifiant de la version k d'un cosmétique de saison (k = 1 : l'identifiant de base) */
+  const variantId = (base, k) => (k <= 1 ? base : base + "_" + k);
+  [[FRAMES, "src"], [TITLES, "src"]].forEach(([tbl]) => Object.keys(tbl).slice().forEach((id) => {
+    const def = tbl[id]; if (def.src !== "tier" && def.src !== "quest") return;
+    for (let k = 2; k <= TIER_MAX; k++) tbl[variantId(id, k)] = Object.assign({}, def, { name: def.name.replace(/( \(rare\))?$/, " " + romanOf(k) + "$1"), base: id, rank: k });
+  }));
+  /** version à accorder maintenant : la première que le joueur n'a pas encore (la dernière s'il les a toutes) */
+  function nextVariant(cosm, kind, base) {
+    const have = cosm || [];
+    for (let k = 1; k <= TIER_MAX; k++) if (have.indexOf(kind + ":" + variantId(base, k)) < 0) return variantId(base, k);
+    return variantId(base, TIER_MAX);
+  }
+  /** accorde (sans doublon) la version suivante ; retourne son identifiant, ou "" si le joueur a déjà tout */
+  function grantVariant(cosm, kind, base) {
+    const id = nextVariant(cosm, kind, base);
+    if (cosm.indexOf(kind + ":" + id) >= 0) return "";
+    cosm.push(kind + ":" + id); return id;
+  }
+  /** rang de saison du joueur : 1 + nombre de versions du cadre « Quête de saison » déjà obtenues (plafonné) */
+  const seasonRank = (cosm) => { let n = 0; for (let k = 1; k <= TIER_MAX; k++) if ((cosm || []).indexOf("f:" + variantId("quest", k)) >= 0) n++; return Math.min(TIER_MAX, n + 1); };
   const SEASON_QUESTS = [
     { id: "q1", label: "Ouvrir 10 packs", act: "packs", goal: 10, dust: 60 },
     { id: "q2", label: "Réussir 8 quiz", act: "quiz", goal: 8, dust: 80 },
@@ -721,11 +824,13 @@
     { id: "q4", label: "Te connecter 14 jours", act: "days", goal: 14, dust: 120 }
   ];
   const SEASON_QUEST_FINAL = { dust: 300, frame: "quest", title: "quest" };
-  const blankSeason = (n) => ({ n, pts: 0, claimed: [], act: { packs: 0, quiz: 0, pm: 0, days: 0 }, q: 0, qDone: false, dayLog: "", dp: { d: "", p: 0 } });
+  /** quêtes de la saison à un rang donné : objectifs et récompenses montent de 25 % par rang */
+  const questList = (rk) => { const r = Math.max(1, Math.min(TIER_MAX, rk | 0 || 1)), m = 1 + (r - 1) * 0.25; return SEASON_QUESTS.map((q) => Object.assign({}, q, { goal: Math.round(q.goal * m), dust: Math.round(q.dust * m / 5) * 5, label: r > 1 ? q.label + " (" + romanOf(r) + ")" : q.label })); };
+  const blankSeason = (n, rk) => ({ n, rk: Math.max(1, rk | 0 || 1), pts: 0, claimed: [], act: { packs: 0, quiz: 0, pm: 0, days: 0 }, q: 0, qDone: false, dayLog: "", dp: { d: "", p: 0 } });
   /** met à jour (et remet à zéro si nouvelle saison) l'état de saison du joueur ; retourne l'état */
   function seasonOf(d, ms) {
     const cur = seasonInfo(ms).n;
-    if (!d.season || d.season.n !== cur) d.season = blankSeason(cur);
+    if (!d.season || d.season.n !== cur) d.season = blankSeason(cur, seasonRank(d.cosm));
     if (!d.cosm) d.cosm = [];
     return d.season;
   }
@@ -747,8 +852,8 @@
   const passTier = (s) => Math.min(PASS_TIERS, Math.floor((s.pts || 0) / PASS_STEP));
   /** étape de quête en cours : la progression est plafonnée à l'objectif, et ne compte qu'à partir de l'étape ouverte */
   function questState(s) {
-    const q = SEASON_QUESTS[s.q];
-    if (!q) return { done: true, step: SEASON_QUESTS.length };
+    const list = questList(s.rk), q = list[s.q];
+    if (!q) return { done: true, step: list.length };
     const base = (s.base && s.base[q.act]) || 0, prog = Math.min(q.goal, Math.max(0, (s.act[q.act] || 0) - base));
     return { done: false, step: s.q, quest: q, prog, ready: prog >= q.goal };
   }
@@ -2079,6 +2184,23 @@ Le Cheval cabré|Ferrari|2
     for (let b = 0; out.length < CHRONO.max && b < 40; b++) quizBuild(seed + "-" + b, cats[b % cats.length], level, list, opt).forEach((q) => { if (!q.m) out.push(q); });
     return out.slice(0, CHRONO.max);
   }
+  /** quiz « survie » : 3 vies, une erreur ou un temps écoulé coûte une vie, la partie s'arrête à 0 ; le temps par question raccourcit avec la série */
+  const SURVIVAL = { lives: 3, secs: 14, minSecs: 7, reward: 1, cap: 30, max: 80 };
+  const survivalSecs = (okSoFar) => Math.max(SURVIVAL.minSecs, SURVIVAL.secs - Math.floor(okSoFar / 8));
+  function survivalQuestions(seed, level, list, opt) {
+    const cats = Object.keys(QCATS), out = [];
+    for (let b = 0; out.length < SURVIVAL.max && b < 40; b++) quizBuild(seed + "-s" + b, cats[b % cats.length], level, list, opt).forEach((q) => { if (!q.m) out.push(q); });
+    return out.slice(0, SURVIVAL.max);
+  }
+  /** rejoue une partie : answers[i] = indice choisi, -1 = temps écoulé. Retourne { ok, wrong, used } (la partie s'arrête à la dernière vie perdue) */
+  function survivalPlay(questions, answers) {
+    let ok = 0, wrong = 0, used = 0;
+    for (let i = 0; i < answers.length && i < questions.length; i++) {
+      used = i + 1;
+      if (Number(answers[i]) === questions[i].a) ok++; else { wrong++; if (wrong >= SURVIVAL.lives) break; }
+    }
+    return { ok, wrong, used };
+  }
   const chronoField = (ms, level) => "cw" + weekKey(ms).replace("-", "") + "L" + level;
   /** corrige un quiz : renvoie le nombre de bonnes réponses (answers = indices choisis) */
   function quizScore(questions, answers) {
@@ -2178,10 +2300,10 @@ Le Cheval cabré|Ferrari|2
 
   return {
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
-    setsOf, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
+    setsOf, THEMED_SETS, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, PACKS, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
-    FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
+    ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, SURVIVAL, survivalSecs, survivalQuestions, survivalPlay, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, hashStr, PACKS, THEME_PACKS, themeMatch, themePackActive, themePacksNow, themePackNext, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
+    FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, ROMAN, TIER_MAX, romanOf, variantId, nextVariant, grantVariant, shownVariant, seasonRank, questList, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
     SHINY, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

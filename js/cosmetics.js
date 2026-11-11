@@ -56,7 +56,7 @@
     const cur = im.dataset.cosmF || "";
     if (cur === f) return;
     im.classList.remove("cosm-f", ...Array.from(im.classList).filter((x) => x.indexOf("cf-") === 0));
-    if (f) { im.classList.add("cosm-f", "cf-" + f); im.style.setProperty("--cf", G.FRAMES[f].color); }
+    if (f) { im.classList.add("cosm-f", "cf-" + f); if (G.FRAMES[f].base) im.classList.add("cf-" + G.FRAMES[f].base); im.style.setProperty("--cf", G.FRAMES[f].color); }
     im.dataset.cosmF = f;
   }
   function title(b, c) {

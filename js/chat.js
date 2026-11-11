@@ -1061,5 +1061,8 @@
     setTimeout(() => { if (!$("chat-loading").hidden && !state.user) { $("chat-loading").innerHTML = `<span>Connexion lente… vérifie ta connexion internet.</span>`; } }, 8000);
   }
 
+  // petites prises pour js/chat-plus.js (recherche dans la conversation, messages épinglés)
+  window.MAChatCtl = { conv: () => state.conv, user: () => state.user, col: (c) => collection(c), msgs: () => state.msgs };
+
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();

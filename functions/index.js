@@ -59,9 +59,9 @@ function callable(name) {
     }
   });
 }
-["battleReport", "battleDailyStart", "syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "buyFreeze", "seasonClaim", "claimWelcome", "clubClash", "logAction", "weeklyStatus", "claimChallenge", "cardChallenges", "claimCardChallenge", "battleInvite", "battleRespond", "battleCancel", "battlePlay", "battleClaim", "battleEmote",
+["battleReport", "battleDailyStart", "syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "buyFreeze", "seasonClaim", "claimWelcome", "claimDayCard", "clubClash", "logAction", "weeklyStatus", "claimChallenge", "cardChallenges", "claimCardChallenge", "battleInvite", "battleRespond", "battleCancel", "battlePlay", "battleClaim", "battleEmote",
   "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "claimSets", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest",
-  "fuseCards", "pmPlay", "quizSubmit", "lockCard", "recycleCards", "spinWheel", "openAdvent", "chronoStart", "chronoSubmit", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
+  "fuseCards", "pmPlay", "quizSubmit", "lockCard", "recycleCards", "spinWheel", "openAdvent", "chronoStart", "chronoSubmit", "survivalStart", "survivalSubmit", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
 
 
 // ---- abonnements « voiture / marque » : notifications quand une fiche change, qu'une voiture arrive ou qu'une annonce « Nouveautés » est publiée

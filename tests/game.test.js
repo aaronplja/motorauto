@@ -368,6 +368,27 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     await rejects(G.chronoSubmit(C2, { answers: cq0(st, 3).slice(0, 80).map((q) => q.a) }), null, "80 réponses en 61 s : refusé");
   }
   function cq0(st, l) { return core.chronoQuestions(st.seed, l, pool); }
+  // ---- quiz survie
+  {
+    const SV = { uid: "sv1" }; db.seed("users", "sv1", { username: "Pilote_sv1" }); db.seed("collections", "sv1", core.blankCollection());
+    await rejects(G.survivalSubmit(SV, { answers: [0] }), "failed-precondition", "survie sans départ refusée");
+    let st = await G.survivalStart(SV, { level: 2 }); const sq = core.survivalQuestions(st.seed, 2, pool);
+    ok(sq.length === core.SURVIVAL.max && sq.every((q) => !q.m && q.o.length === 4), "questions survie : " + sq.length);
+    ok(core.survivalSecs(0) === 14 && core.survivalSecs(16) === 12 && core.survivalSecs(500) === core.SURVIVAL.minSecs, "temps par question décroissant, plancher " + core.SURVIVAL.minSecs + " s");
+    // 12 bonnes puis 3 erreurs (la 3e met fin à la partie) puis des réponses « fantômes » qui doivent être ignorées
+    const ans = sq.slice(0, 20).map((q, i) => (i < 12 || i > 14 ? (i < 12 ? q.a : q.a) : (q.a + 1) % 4));
+    ok(JSON.stringify(core.survivalPlay(sq, ans)) === JSON.stringify({ ok: 12, wrong: 3, used: 15 }), "survie : s'arrête à la 3e erreur, le reste est ignoré");
+    ok(core.survivalPlay(sq, [-1, -1, sq[2].a]).wrong === 2 && core.survivalPlay(sq, [-1, -1, -1, sq[3].a]).used === 3, "temps écoulé (-1) = une vie perdue");
+    NOW += 5000; await rejects(G.survivalSubmit(SV, { answers: ans }), "failed-precondition", "survie rendue trop vite refusée");
+    st = await G.survivalStart(SV, { level: 2 }); NOW += 15 * 9000;
+    let rs = await G.survivalSubmit(SV, { answers: core.survivalQuestions(st.seed, 2, pool).slice(0, 20).map((q, i) => (i < 12 || i > 14 ? q.a : (q.a + 1) % 4)) });
+    ok(rs.score === 12 && rs.wrong === 3 && rs.reward === 12 && rs.best === 12 && rs.record === true && rs.doc.dust === 12, "survie : 12 bonnes réponses = 12 cristaux, record");
+    await rejects(G.survivalSubmit(SV, { answers: [0] }), "failed-precondition", "une partie survie ne se rend qu'une fois");
+    st = await G.survivalStart(SV, { level: 2 }); NOW += 80 * 9000;
+    rs = await G.survivalSubmit(SV, { answers: core.survivalQuestions(st.seed, 2, pool).map((q) => q.a) });
+    ok(rs.score === 80 && rs.reward === core.SURVIVAL.cap - 12 && rs.record, "plafond quotidien de cristaux respecté (" + rs.reward + ")");
+  }
+
 
   // ---- lot 3 : cartes Circuit
   {
@@ -383,6 +404,31 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     await rejects(G.openPack({ uid: "k2" }, { kind: "shop", pack: "circuit" }), "failed-precondition", "pack Circuit refusé sans assez de cristaux");
     ok(core.passReward(17).circuit === 1 && core.passReward(27).circuit === 1 && core.passLabel(core.passReward(17)).includes("Circuit"), "paliers 17 et 27 : carte Circuit");
     const cp = core.circuitPick(core.circuitRarities(), {}, "k1", 1, 17); ok(core.isCircuit(cp) && core.circuitRarities().get(cp) !== "common", "carte Circuit du palier : rare ou mieux (" + cp + ")");
+  }
+
+  // ---- carte du jour offerte + packs thématiques
+  {
+    const D = { uid: "dc1" }; db.seed("users", "dc1", { username: "Pilote_dc1" }); db.seed("collections", "dc1", Object.assign(core.blankCollection(), { dust: 1000 }));
+    const P = await G._getPool();
+    let r2 = await G.claimDayCard(D);
+    ok(r2.card.fresh && P.rar.get(r2.card.id) === "common" && r2.doc.owned[r2.card.id] === 1 && r2.doc.dcDay === core.dayKey(NOW), "carte du jour offerte : une COMMUNE inédite");
+    await rejects(G.claimDayCard(D), "failed-precondition", "une seule carte offerte par jour");
+    NOW += 86400000; r2 = await G.claimDayCard(D); ok(P.rar.get(r2.card.id) === "common", "le lendemain : une nouvelle carte commune");
+    const t0 = NOW;
+    // saison de test : 10 juin = Le Mans
+    NOW = Date.UTC(2027, 5, 10, 10); ok(core.themePackActive("th_lemans", NOW) && !core.themePackActive("th_rallye", NOW) && core.themePacksNow(NOW).map((x) => x.id).join() === "th_lemans", "fenêtre Le Mans active le 10 juin");
+    db.seed("collections", "dc1", Object.assign(core.blankCollection(), { dust: 1000 }));
+    r2 = await G.openPack(D, { kind: "shop", pack: "th_lemans" });
+    ok(r2.cards.length === 3 && r2.cards.every((c) => P.byId.get(c.id).category === "Le Mans") && r2.doc.dust === 720, "pack Le Mans : 3 cartes Le Mans, 280 cristaux");
+    await rejects(G.openPack(D, { kind: "shop", pack: "th_rallye" }), "failed-precondition", "pack hors fenêtre refusé");
+    ok(core.themePackNext("th_rallye", NOW) > 100 && core.themePackNext("th_lemans", NOW) === 0, "annonce « dans N jours »");
+    NOW = Date.UTC(2027, 7, 20, 10); db.seed("collections", "dc1", Object.assign(core.blankCollection(), { dust: 1000 }));
+    r2 = await G.openPack(D, { kind: "shop", pack: "th_supercar" }); ok(r2.cards.every((c) => P.byId.get(c.id).category === "Supercar"), "pack Supercars : que des supercars");
+    NOW = t0;
+    { const ts = core.setsOf(P.list).filter((x) => x.kind === "theme"), ps = ts.find((x) => x.id === "theme:peugeot-sport"); ok(ps && ps.ids.length >= 3 && ps.reward > core.setReward(ps.ids.length) && ts.every((x) => x.ids.length >= 3), "collections thématiques : Peugeot Sport et autres, récompense majorée (" + ts.length + " thèmes)");
+      const D2 = { uid: "dc2" }; db.seed("users", "dc2", { username: "Pilote_dc2" }); const own = {}; ps.ids.forEach((id) => { own[id] = 1; }); db.seed("collections", "dc2", Object.assign(core.blankCollection(), { owned: own }));
+      const cr = await G.claimSets(D2); ok(cr.claimed.some((x) => x.id === "theme:peugeot-sport" && x.reward === ps.reward), "collection thématique complète : récompense réclamée"); }
+    ok(["th_rallye", "th_lemans", "th_muscle", "th_supercar", "th_youngtimer", "th_jdm"].every((id) => P.ids.filter((x) => core.themeMatch(id, P.byId.get(x))).length >= 3), "chaque thème a des voitures dans le catalogue de test (le vrai catalogue en a bien plus : 91 muscle cars)");
   }
 
   // ---- livrées

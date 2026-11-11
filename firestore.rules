@@ -169,6 +169,42 @@ service cloud.firestore {
     }
 
     // --- Mode travaux : { on, message, image, by } — lecture publique (les visiteurs doivent savoir), écriture réservée aux administrateurs
+    // Profil enrichi (voiture de rêve, première voiture, ville) : lisible par tous, modifiable par son propriétaire seulement
+    match /profile_extra/{uid} {
+      allow read: if true;
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['dreamCar', 'firstCar', 'city', 'updatedAt'])
+        && request.resource.data.get('dreamCar', '') is string && request.resource.data.get('dreamCar', '').size() <= 60
+        && request.resource.data.get('firstCar', '') is string && request.resource.data.get('firstCar', '').size() <= 60
+        && request.resource.data.get('city', '') is string && request.resource.data.get('city', '').size() <= 60
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isOwner(uid);
+    }
+
+    // Questions de quiz proposées par les pilotes : relues par l'administration, puis publiées (status = approved) avec leurs traductions (tr : en, es, de, it).
+    match /quiz_proposals/{id} {
+      allow read: if resource.data.status == 'approved' || isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'username', 'cat', 'q', 'o', 'a', 'note', 'status', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.username is string && request.resource.data.username.size() <= 40
+        && request.resource.data.cat is string && request.resource.data.cat.size() >= 1 && request.resource.data.cat.size() <= 20
+        && request.resource.data.q is string && request.resource.data.q.size() >= 10 && request.resource.data.q.size() <= 200
+        && request.resource.data.o is list && request.resource.data.o.size() == 4
+        && request.resource.data.o[0] is string && request.resource.data.o[0].size() >= 1 && request.resource.data.o[0].size() <= 120
+        && request.resource.data.o[1] is string && request.resource.data.o[1].size() >= 1 && request.resource.data.o[1].size() <= 120
+        && request.resource.data.o[2] is string && request.resource.data.o[2].size() >= 1 && request.resource.data.o[2].size() <= 120
+        && request.resource.data.o[3] is string && request.resource.data.o[3].size() >= 1 && request.resource.data.o[3].size() <= 120
+        && request.resource.data.a is int && request.resource.data.a >= 0 && request.resource.data.a <= 3
+        && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 200
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['uid', 'username', 'cat', 'q', 'o', 'a', 'note', 'status', 'createdAt', 'tr', 'by', 'reviewedAt'])
+        && request.resource.data.status in ['pending', 'approved', 'rejected'];
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid && resource.data.status == 'pending');
+    }
+
     match /config/maintenance {
       allow read: if true;
       allow create, update: if isAdmin()
@@ -941,9 +977,11 @@ service cloud.firestore {
       // le président active le canal, nomme un modérateur (viceUid) et rédige les règles ; le modérateur ne peut modifier que les règles
       allow update: if signedIn()
         && ((resource.data.ownerUid == request.auth.uid
-              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['chatEnabled', 'chatName', 'viceUid', 'viceName', 'rules', 'image']))
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['chatEnabled', 'chatName', 'viceUid', 'viceName', 'rules', 'image', 'pins']))
             || (resource.data.get('viceUid', '') == request.auth.uid
-              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rules'])))
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rules', 'pins'])))
+        // messages épinglés du canal : 3 au maximum (président et modérateur du club)
+        && request.resource.data.get('pins', []) is list && request.resource.data.get('pins', []).size() <= 3
         && request.resource.data.get('chatName', '').size() <= 60
         && request.resource.data.get('viceName', '').size() <= 40
         && request.resource.data.get('viceUid', '').size() <= 60
@@ -1103,8 +1141,9 @@ service cloud.firestore {
     match /circuit_info/{key} {
       allow read: if true;
       allow write: if isAdmin()
-        && request.resource.data.keys().hasOnly(['length', 'turns', 'record', 'recordBy', 'recordYear', 'photo', 'text', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['length', 'turns', 'record', 'recordBy', 'recordYear', 'photo', 'text', 'winners', 'updatedAt'])
         && request.resource.data.get('text', '').size() <= 1200
+        && request.resource.data.get('winners', '') is string && request.resource.data.get('winners', '').size() <= 4000
         && request.resource.data.get('photo', '').size() <= 400
         && request.resource.data.updatedAt == request.time;
     }
@@ -1113,10 +1152,12 @@ service cloud.firestore {
     match /site_settings/seasons {
       allow read: if true;
       allow write: if isAdmin()
-        && request.resource.data.keys().hasOnly(['halloween', 'noel', 'nouvelan'])
+        && request.resource.data.keys().hasOnly(['halloween', 'noel', 'nouvelan', 'hiver', 'ete'])
         && request.resource.data.get('halloween', true) is bool
         && request.resource.data.get('noel', true) is bool
-        && request.resource.data.get('nouvelan', true) is bool;
+        && request.resource.data.get('nouvelan', true) is bool
+        && request.resource.data.get('hiver', true) is bool
+        && request.resource.data.get('ete', true) is bool;
     }
     // voitures mises en avant par semaine : { weeks: { "2026-W45": "id-de-la-voiture" } }
     match /site_settings/featured {

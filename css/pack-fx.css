@@ -1,0 +1,13 @@
+/* Ouverture de pack : mise en scène des cartes rares, épiques et légendaires (par-dessus les effets existants). */
+.tcg-flips .flip[data-r="rare"].on::after{content:"";position:absolute;inset:-6px;border-radius:14px;pointer-events:none;box-shadow:0 0 0 2px #3b82f6,0 0 22px 4px rgba(59,130,246,.55);animation:pfxRing 1.4s ease-out 1 both}
+.tcg-flips .flip[data-r="epic"].on::after{content:"";position:absolute;inset:-8px;border-radius:16px;pointer-events:none;box-shadow:0 0 0 2px #a855f7,0 0 34px 8px rgba(168,85,247,.6);animation:pfxRing 1.7s ease-out 1 both}
+.tcg-flips .flip[data-r="legendary"].on::after,.tcg-flips .flip[data-r="shiny"].on::after,.tcg-flips .flip[data-r="mythic"].on::after,.tcg-flips .flip[data-r="special"].on::after{content:"";position:absolute;inset:-10px;border-radius:18px;pointer-events:none;box-shadow:0 0 0 3px var(--burst,#f59e0b),0 0 50px 12px var(--burst,#f59e0b);animation:pfxRing 2.2s ease-out 1 both,pfxGlow 2.4s ease-in-out 2.2s infinite}
+/* rayons de lumière derrière une carte légendaire en attente de révélation */
+.tcg-flips .flip.pend.susp-legendary::before,.tcg-flips .flip.pend.susp-shiny::before,.tcg-flips .flip.pend.susp-mythic::before,.tcg-flips .flip.pend.susp-special::before{content:"";position:absolute;left:50%;top:50%;width:260%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;pointer-events:none;z-index:-1;background:conic-gradient(from 0deg,transparent 0 8%,var(--burst,#f59e0b) 10% 12%,transparent 14% 33%,var(--burst,#f59e0b) 35% 37%,transparent 39% 58%,var(--burst,#f59e0b) 60% 62%,transparent 64% 83%,var(--burst,#f59e0b) 85% 87%,transparent 89%);opacity:.55;filter:blur(2px);animation:pfxSpin 2.4s linear infinite}
+/* l'écran tremble légèrement quand une carte légendaire apparaît */
+.tcg-overlay.flash .tcg-flips{animation:pfxQuake .45s ease-in-out 1}
+@keyframes pfxRing{0%{opacity:0;transform:scale(.86)}25%{opacity:1}100%{opacity:.85;transform:scale(1)}}
+@keyframes pfxGlow{50%{opacity:.55}}
+@keyframes pfxSpin{to{rotate:360deg}}
+@keyframes pfxQuake{0%,100%{transform:none}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,-1px)}80%{transform:translate(2px,1px)}}
+@media (prefers-reduced-motion:reduce){.tcg-flips .flip.on::after,.tcg-flips .flip.pend::before,.tcg-overlay.flash .tcg-flips{animation:none!important}}

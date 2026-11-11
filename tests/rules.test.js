@@ -36,6 +36,18 @@ const check = async (label, p, expectOk) => { n++; try { await (expectOk ? asser
   await check("cartes spéciales : un pilote ne modifie pas", updateDoc(doc(alice, "special_cards/sp-x"), { claimable: true }), false);
   await check("wishlist : bob n'écrit pas chez alice", setDoc(doc(bob, "wishlists/alice"), { ids: [], updatedAt: serverTimestamp() }), false);
   await check("wishlist : alice écrit la sienne", setDoc(doc(alice, "wishlists/alice"), { ids: ["a"], updatedAt: serverTimestamp() }), true);
+  // questions de quiz proposées
+  const adm = env.authenticatedContext("admin1", { admin: true }).firestore();
+  const prop = (over) => Object.assign({ uid: "alice", username: "Alice", cat: "brands", q: "Quelle marque produit la 911 ?", o: ["Porsche", "Ferrari", "BMW", "Audi"], a: 0, note: "", status: "pending", createdAt: serverTimestamp() }, over || {});
+  await check("proposition : alice propose une question", setDoc(doc(alice, "quiz_proposals/p1"), prop()), true);
+  await check("proposition : pas au nom d'un autre", setDoc(doc(bob, "quiz_proposals/p2"), prop()), false);
+  await check("proposition : pas déjà approuvée", setDoc(doc(alice, "quiz_proposals/p3"), prop({ status: "approved" })), false);
+  await check("proposition : 4 réponses exactement", setDoc(doc(alice, "quiz_proposals/p4"), prop({ o: ["a", "b", "c"] })), false);
+  await check("proposition : bob ne lit pas une question en attente d'alice", getDoc(doc(bob, "quiz_proposals/p1")), false);
+  await check("proposition : alice lit la sienne", getDoc(doc(alice, "quiz_proposals/p1")), true);
+  await check("proposition : alice ne l'approuve pas elle-même", updateDoc(doc(alice, "quiz_proposals/p1"), { status: "approved" }), false);
+  await check("proposition : l'admin l'approuve avec traductions", updateDoc(doc(adm, "quiz_proposals/p1"), { status: "approved", tr: { en: { q: "Which brand makes the 911?", o: ["Porsche", "Ferrari", "BMW", "Audi"] } }, by: "admin1", reviewedAt: serverTimestamp() }), true);
+  await check("proposition : une question approuvée est lisible par tous", getDoc(doc(anon, "quiz_proposals/p1")), true);
   await env.cleanup();
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");
   process.exit(fails ? 1 : 0);

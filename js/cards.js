@@ -170,6 +170,7 @@
   /** décor d'un pack : drapeau du pays (bandes de couleur), plaque centrale lisible quel que soit le fond */
   function packTheme(id) {
     if (id === "circuit") return { label: "Circuit", f: "world", style: "--p1:#111827;--p2:#ef4444;--p3:#f9fafb" };
+    const tp = G.THEME_PACKS && G.THEME_PACKS[id]; if (tp) return { label: tp.name, f: "world", style: tp.style };
     const k = (G.COUNTRIES || []).find((x) => x.id === id);
     return k ? { label: k.label, f: k.f, style: `--p1:${k.c[0]};--p2:${k.c[1]};--p3:${k.c[2]}` } : { label: "Monde", f: "world", style: "--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24" };
   }
@@ -717,7 +718,7 @@
       ${cars.length ? `<div class="cg-mc-row">${cars.map((c) => `<div class="cg-mc"><div class="cg-mc-card">${cardHtml(myCarObj(c), { owned: true, count: 0 })}</div><button type="button" class="cta-btn ${pub.has(c.id) ? "fill-btn" : "btn-ghost"} compact-btn" data-mycar-pub="${C.esc(c.id)}" aria-pressed="${pub.has(c.id)}">${pub.has(c.id) ? "Visible sur mon profil" : "Privée · afficher sur mon profil"}</button></div>`).join("")}</div>`
         : `<p class="lap-meta">Ajoute une voiture dans ton garage (Moi › Garage) pour la transformer en carte. Elle reste privée tant que tu ne l'affiches pas sur ton profil.</p>`}</section>`;
   }
-  const kindLabel = { country: "Pays", decade: "Décennies", brand: "Marques", category: "Familles" };
+  const kindLabel = { country: "Pays", decade: "Décennies", brand: "Marques", category: "Familles", theme: "Thèmes" };
   function albumsHtml() {
     const sets = allSets().map((s) => { const have = s.ids.filter((id) => countOf(id) > 0).length; return Object.assign({ have, done: !!(claims && claims[s.id]), full: have === s.ids.length }, s); });
     const ready = sets.filter((s) => s.full && !s.done), list = sets.filter((s) => s.kind === albumKind).sort((a, b) => (b.full && !b.done) - (a.full && !a.done) || (a.done - b.done) || (b.have / b.ids.length) - (a.have / a.ids.length));

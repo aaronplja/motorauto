@@ -7,7 +7,7 @@
   const root = document.documentElement;
   const store = { get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (_) { /* ignoré */ } } };
   const OFF = "motorauto_season_off", ECO = "motorauto_eco";
-  const state = { flags: { halloween: true, noel: true, nouvelan: true }, raf: 0, canvas: null, parts: [] };
+  const state = { flags: { halloween: true, noel: true, nouvelan: true, hiver: true, ete: true }, raf: 0, canvas: null, parts: [] };
 
   const reduced = () => (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) || store.get(ECO) === "1";
   const bgNow = () => T.hex2rgb((getComputedStyle(root).getPropertyValue("--bg-core") || "").trim()) || [9, 9, 11];
@@ -36,7 +36,7 @@
     const fit = () => { w = innerWidth; h = innerHeight; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
     fit(); addEventListener("resize", fit);
     const N = Math.min(14, Math.round(w / 70));
-    const mk = (init) => ({ x: Math.random() * w, y: init ? Math.random() * h : -10, r: 1.5 + Math.random() * 2.6, v: .25 + Math.random() * .7, dx: (Math.random() - .5) * .4, c: cols[Math.random() < .6 ? 0 : 1], ph: Math.random() * 6 });
+    const up = k === "ete", mk = (init) => ({ x: Math.random() * w, y: init ? Math.random() * h : (up ? h + 10 : -10), r: 1.5 + Math.random() * 2.6, v: .25 + Math.random() * .7, dx: (Math.random() - .5) * .4, c: cols[Math.random() < .6 ? 0 : 1], ph: Math.random() * 6 });
     state.parts = Array.from({ length: N }, () => mk(true));
     let last = 0;
     (function loop(t) {
@@ -45,12 +45,13 @@
       if (t - last < 33) return; last = t;   // 30 images/s suffisent pour de petites particules
       ctx.clearRect(0, 0, w, h);
       for (const p of state.parts) {
-        p.y += p.v; p.x += p.dx + Math.sin(t / 1400 + p.ph) * .25;
-        if (p.y > h + 10) Object.assign(p, mk(false));
+        p.y += up ? -p.v * .7 : p.v; p.x += p.dx + Math.sin(t / 1400 + p.ph) * .25;
+        if (up ? p.y < -10 : p.y > h + 10) Object.assign(p, mk(false));
         ctx.globalAlpha = .55; ctx.fillStyle = p.c;
         ctx.beginPath();
         if (k === "halloween") ctx.arc(p.x, p.y, p.r * .8, 0, 6.3);       // lucioles
         else if (k === "nouvelan") { ctx.rect(p.x, p.y, p.r * 1.6, p.r * .8); } // confettis
+        else if (up) ctx.arc(p.x, p.y, p.r * .7, 0, 6.3);               // lueurs de soleil montantes
         else ctx.arc(p.x, p.y, p.r, 0, 6.3);                               // flocons
         ctx.fill();
       }

@@ -23,7 +23,8 @@ ok(T.parse("n'importe quoi") === null && T.parse("MA-12345-ABCDEF") === null, "c
 const s = (m, d) => T.seasonNow({ m, d });
 ok(s(10, 26) === null && s(10, 27) === "halloween" && s(11, 2) === "halloween" && s(11, 3) === null, "Halloween 27/10 → 2/11");
 ok(s(12, 1) === null && s(12, 2) === "noel" && s(12, 28) === "noel", "Noël 2/12 → 28/12");
-ok(s(12, 29) === "nouvelan" && s(12, 31) === "nouvelan" && s(1, 1) === "nouvelan" && s(1, 3) === "nouvelan" && s(1, 4) === null, "Nouvel an 29/12 → 3/1");
-ok(s(7, 14) === null, "été : aucune saison");
+ok(s(12, 29) === "nouvelan" && s(12, 31) === "nouvelan" && s(1, 1) === "nouvelan" && s(1, 3) === "nouvelan" && s(1, 4) === "hiver", "Nouvel an 29/12 → 3/1");
+ok(s(1, 4) === "hiver" && s(3, 19) === "hiver" && s(3, 20) === null && s(4, 10) === null, "Hiver 4/1 → 19/3");
+ok(s(6, 20) === null && s(6, 21) === "ete" && s(7, 14) === "ete" && s(9, 22) === "ete" && s(9, 23) === null, "Été 21/6 → 22/9");
 console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "themes.test : " + n + " vérifications OK");
 process.exit(fails ? 1 : 0);

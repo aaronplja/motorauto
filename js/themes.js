@@ -79,7 +79,9 @@
   const SEASONS = {
     halloween: { label: "Halloween", from: [10, 27], to: [11, 2], color: "#ff7a1a", color2: "#8b5cf6" },
     noel: { label: "Noël", from: [12, 2], to: [12, 28], color: "#e5392d", color2: "#2fa66a" },
-    nouvelan: { label: "Nouvel an", from: [12, 29], to: [1, 3], color: "#f5c542", color2: "#7dd3fc" }
+    nouvelan: { label: "Nouvel an", from: [12, 29], to: [1, 3], color: "#f5c542", color2: "#7dd3fc" },
+    hiver: { label: "Hiver", from: [1, 4], to: [3, 19], color: "#7cc8f0", color2: "#c7d2fe" },
+    ete: { label: "Été", from: [6, 21], to: [9, 22], color: "#ffb02e", color2: "#ff6b6b" }
   };
   function parisParts() {
     try { const p = new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", month: "numeric", day: "numeric" }).formatToParts(new Date()); return { m: +p.find((x) => x.type === "month").value, d: +p.find((x) => x.type === "day").value }; }
@@ -88,7 +90,7 @@
   const md = (m, d) => m * 100 + d;
   function seasonNow(dateParts) {
     const t = dateParts || parisParts(), v = md(t.m, t.d);
-    for (const k of ["nouvelan", "halloween", "noel"]) {            // nouvel an passe avant Noël le 29 décembre
+    for (const k of ["nouvelan", "halloween", "noel", "hiver", "ete"]) {            // fêtes d'abord (nouvel an passe avant Noël le 29 décembre), puis hiver et été
       const s = SEASONS[k], a = md(s.from[0], s.from[1]), b = md(s.to[0], s.to[1]);
       if (a <= b ? v >= a && v <= b : v >= a || v <= b) return k;
     }
