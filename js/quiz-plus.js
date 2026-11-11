@@ -218,7 +218,15 @@
   }
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx; let q = 0;
-    new MutationObserver(() => { if (q) return; q = requestAnimationFrame(() => { q = 0; injectTabs(); capture(); }); }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+    // surveille uniquement l'écran du quiz (et seulement quand il existe) : surveiller tout le site coûtait de la fluidité
+    let obsRoot = null;
+    const watch = () => {
+      const r = document.getElementById("quizgame-root");
+      if (!r || r === obsRoot) return; obsRoot = r;
+      new MutationObserver(() => { if (q) return; q = requestAnimationFrame(() => { q = 0; injectTabs(); capture(); }); }).observe(r, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+      injectTabs();
+    };
+    watch(); document.addEventListener("ma:route", () => setTimeout(watch, 0)); setTimeout(watch, 1500);
     Promise.resolve(C.authReady).then(() => { adminBtn(); setTimeout(adminBtn, 900); });
     document.addEventListener("ma:auth", () => setTimeout(adminBtn, 100)); document.addEventListener("ma:route", () => setTimeout(adminBtn, 250));
   });

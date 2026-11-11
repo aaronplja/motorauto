@@ -7,7 +7,9 @@
  */
 (function () {
   "use strict";
-  const KEY = "ma_maint";
+  const KEY = "ma_maint", ADM = "ma_maint_adm";
+  const knownAdmin = () => { try { return localStorage.getItem(ADM) === "1"; } catch (e) { return false; } };
+  const setAdminHint = (v) => { try { if (v) localStorage.setItem(ADM, "1"); else localStorage.removeItem(ADM); } catch (e) {} };
   let C = null, authDone = false, state = { on: false, message: "", image: "" }, unsub = null;
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const okUrl = (u) => /^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "";
@@ -21,20 +23,27 @@
     s.textContent = `
       body.ma-maint-on{overflow:hidden}
       body.ma-maint-on .modal-layer{z-index:9600!important}
-      #ma-maint{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg-base,#0f0f10);color:var(--text-main,#f3f3f3);text-align:center;overflow:auto}
+      #ma-maint{position:fixed;left:0;right:0;top:var(--mm-top,0px);bottom:var(--mm-bot,0px);z-index:9500;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg-core);color:var(--color-ink);text-align:center;overflow:auto}
       #ma-maint .mm-box{max-width:560px;width:100%;display:flex;flex-direction:column;align-items:center;gap:16px}
       #ma-maint .mm-img{max-width:min(420px,86vw);max-height:42vh;border-radius:16px;object-fit:contain}
-      #ma-maint .mm-svg{color:var(--text-main,#fff)}
+      #ma-maint .mm-svg{color:var(--color-ink)}
       #ma-maint h1{margin:0;font-size:clamp(1.6rem,5vw,2.4rem);letter-spacing:.02em}
-      #ma-maint p{margin:0;opacity:.8;line-height:1.55;white-space:pre-line}
-      #ma-maint .mm-admin{margin-top:18px;font-size:.85rem;opacity:.7}
-      #ma-maint .mm-note{font-size:.8rem;opacity:.7}
-      #ma-maint-pill{position:fixed;left:12px;bottom:84px;z-index:900;border:1px solid var(--stroke-line,#444);background:var(--bg-surface,#1a1a1a);color:var(--text-main,#fff);border-radius:999px;padding:8px 14px;font:inherit;font-size:.8rem;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35)}
-      #ma-maint-dlg{position:fixed;inset:0;z-index:9700;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55)}
-      #ma-maint-dlg .mm-card{width:min(460px,100%);max-height:92vh;overflow:auto;background:var(--bg-surface,#1a1a1a);color:var(--text-main,#fff);border:1px solid var(--stroke-line,#444);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px}
-      #ma-maint-dlg label{display:flex;flex-direction:column;gap:4px;font-size:.85rem}
-      #ma-maint-dlg textarea,#ma-maint-dlg input[type=url]{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--stroke-line,#444);background:transparent;color:inherit}
+      #ma-maint p{margin:0;color:var(--color-secondary);line-height:1.55;white-space:pre-line}
+      #ma-maint .mm-admin{margin-top:18px;font-size:.9rem;font-weight:700;background:#f5a623!important;color:#111827!important;border:0!important;border-radius:999px;padding:10px 20px;cursor:pointer}
+      #ma-maint .mm-note{font-size:.8rem;color:var(--color-muted)}
+      #ma-maint-pill{position:fixed;left:12px;bottom:calc(var(--bar-h,64px) + 28px + env(safe-area-inset-bottom,0px));z-index:900;border:1px solid #f5a623;background:#111827;color:#fff;border-radius:999px;padding:7px 13px;font:inherit;font-size:.78rem;font-weight:600;line-height:1.2;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.28);max-width:calc(100vw - 24px)}
+      #ma-maint-pill:hover{background:#1f2937}
+      #ma-maint-btn{background:#111827!important;color:#fff!important;border:1px solid #f5a623!important;font-weight:600}
+      #ma-maint-dlg{position:fixed;inset:0;z-index:9700;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.6);color-scheme:light}
+      #ma-maint-dlg .mm-card{width:min(460px,100%);max-height:92vh;overflow:auto;background:#fff;color:#111827;border:1px solid #cbd5e1;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+      #ma-maint-dlg h3{color:#111827}
+      #ma-maint-dlg label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:#111827}
+      #ma-maint-dlg textarea,#ma-maint-dlg input[type=url]{font:inherit;padding:10px;border-radius:10px;border:1px solid #94a3b8;background:#fff;color:#111827}
+      #ma-maint-dlg textarea::placeholder,#ma-maint-dlg input::placeholder{color:#64748b}
+      #ma-maint-dlg .mm-note{color:#475569!important}
       #ma-maint-dlg .mm-row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+      #ma-maint-dlg .mm-row button{border-radius:999px;padding:9px 16px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;border:1px solid #cbd5e1;background:#f1f5f9!important;color:#111827!important}
+      #ma-maint-dlg .mm-row button[type=submit]{background:#1b5f3d!important;color:#fff!important;border-color:#1b5f3d}
       #ma-maint-dlg .mm-sw{flex-direction:row;align-items:center;gap:10px;font-size:1rem}`;
     document.head.appendChild(s);
   }
@@ -53,6 +62,7 @@
     if (!el) { el = document.createElement("div"); el.id = "ma-maint"; el.setAttribute("role", "alert"); document.body.appendChild(el); }
     if (el.dataset.sig !== html) { el.innerHTML = html; el.dataset.sig = html; }
     document.body.classList.add("ma-maint-on");
+    fit();
     const b = document.getElementById("ma-maint-login");
     if (b) b.onclick = () => {
       const m = document.getElementById("auth-modal"), t = document.getElementById("tab-login-btn");
@@ -60,6 +70,15 @@
       if (C && C.openModal && m) C.openModal(m);
     };
   }
+  // la page de travaux se place ENTRE la barre haute et la barre de navigation : elles restent visibles et intactes
+  function fit() {
+    const el = document.getElementById("ma-maint"); if (!el) return;
+    const vis = (e) => { if (!e) return null; const r = e.getBoundingClientRect(), c = getComputedStyle(e); return c.display === "none" || c.visibility === "hidden" || r.height < 8 ? null : r; };
+    const h = vis(document.getElementById("app-header")), m = vis(document.getElementById("mobile-touch-bar"));
+    el.style.setProperty("--mm-top", h ? Math.max(0, Math.round(h.bottom)) + "px" : "0px");
+    el.style.setProperty("--mm-bot", m && m.top > innerHeight / 2 ? Math.max(0, Math.round(innerHeight - m.top)) + "px" : "0px");
+  }
+  window.addEventListener("resize", () => { if (document.getElementById("ma-maint")) fit(); });
   function hideOverlay() {
     const el = document.getElementById("ma-maint"); if (el) el.remove();
     document.body.classList.remove("ma-maint-on");
@@ -75,6 +94,7 @@
   function apply() {
     try { localStorage.setItem(KEY, JSON.stringify({ on: !!state.on, message: state.message, image: state.image })); } catch (e) {}
     const admin = !!(C && C.isAdmin);
+    if (admin) setAdminHint(true); else if (authDone && C && !C.user) setAdminHint(false);
     if (!authDone && state.on) { pill(); syncBtn(); return; } // on attend de savoir si le visiteur est admin (l'écran de travaux en cache reste affiché)
     if (state.on && !admin) {
       showOverlay();
@@ -100,8 +120,8 @@
       <label class="mm-sw"><input type="checkbox" id="mm-on" ${state.on ? "checked" : ""}> Bloquer le site aux visiteurs</label>
       <label>Message affiché<textarea id="mm-msg" rows="3" maxlength="400" placeholder="${esc(DEFAULT_MSG)}">${esc(state.message)}</textarea></label>
       <label>Image (lien https, facultatif)<input type="url" id="mm-img" placeholder="https://…/travaux.jpg" value="${esc(state.image)}"></label>
-      <p class="mm-note" style="margin:0;opacity:.7;font-size:.8rem">Toi (administrateur connecté) tu continues de voir le site normalement. Les visiteurs et les comptes non administrateurs voient la page de travaux avec un bouton « Connexion administrateur ».</p>
-      <div class="mm-row"><button type="button" class="cta-btn btn-ghost compact-btn" data-x>Fermer</button><button type="submit" class="cta-btn fill-btn compact-btn">Enregistrer</button></div>
+      <p class="mm-note" style="margin:0;font-size:.8rem">Toi (administrateur connecté) tu continues de voir le site normalement. Les visiteurs et les comptes non administrateurs voient la page de travaux avec un bouton « Connexion administrateur ».</p>
+      <div class="mm-row"><button type="button" data-x>Fermer</button><button type="submit">Enregistrer</button></div>
     </form>`;
     document.body.appendChild(d);
     const close = () => d.remove();
@@ -124,12 +144,12 @@
     let b = document.getElementById("ma-maint-btn");
     if (!host) return;
     if (!(C && C.isAdmin)) { if (b) b.remove(); return; }
-    if (!b) { b = document.createElement("button"); b.type = "button"; b.id = "ma-maint-btn"; b.className = "cta-btn btn-ghost"; b.onclick = openDialog; host.insertAdjacentElement("afterend", b); }
+    if (!b) { css(); b = document.createElement("button"); b.type = "button"; b.id = "ma-maint-btn"; b.className = "cta-btn btn-ghost"; b.onclick = openDialog; host.insertAdjacentElement("afterend", b); }
     b.textContent = state.on ? "🚧 Mode travaux : ACTIVÉ" : "🚧 Mode travaux";
   }
 
   // affichage immédiat depuis le dernier état connu (évite d'entrevoir le site avant la lecture Firestore)
-  try { const c = JSON.parse(localStorage.getItem(KEY) || "null"); if (c && c.on) { state = { on: true, message: c.message || "", image: c.image || "" }; document.addEventListener("DOMContentLoaded", () => { if (state.on && !(C && C.isAdmin)) showOverlay(); }); if (document.readyState !== "loading" && document.body) showOverlay(); } } catch (e) {}
+  try { const c = JSON.parse(localStorage.getItem(KEY) || "null"); if (c && c.on) { state = { on: true, message: c.message || "", image: c.image || "" }; if (!knownAdmin()) { document.addEventListener("DOMContentLoaded", () => { if (state.on && !(C && C.isAdmin)) showOverlay(); }); if (document.readyState !== "loading" && document.body) showOverlay(); } } } catch (e) {}
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx;
