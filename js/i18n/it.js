@@ -1240,5 +1240,6 @@
 "Une voiture « shooting brake » est un break élégant, pensé pour le plaisir avant le coffre.": "Una «shooting brake» è una familiare elegante, pensata per il piacere prima del bagagliaio.",
 "Sur la route, la vitesse limitée n'est pas un défi : garde les chronos pour le circuit.": "Su strada il limite di velocità non è una sfida: tieni i cronometri per il circuito.",
 "Tu peux comparer deux voitures côte à côte depuis leur fiche.": "Puoi confrontare due auto fianco a fianco dalla loro scheda.",
-"Un pack thématique ou une carte du jour peuvent se cacher dans la boutique : reviens chaque jour.": "Un pacchetto a tema o una carta del giorno possono nascondersi nel negozio: torna ogni giorno."
+"Un pack thématique ou une carte du jour peuvent se cacher dans la boutique : reviens chaque jour.": "Un pacchetto a tema o una carta del giorno possono nascondersi nel negozio: torna ogni giorno.",
+"Plus": "Altro"
 }]);

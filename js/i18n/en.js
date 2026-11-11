@@ -1240,5 +1240,6 @@
 "Une voiture « shooting brake » est un break élégant, pensé pour le plaisir avant le coffre.": "A “shooting brake” is an elegant estate, designed for pleasure before cargo space.",
 "Sur la route, la vitesse limitée n'est pas un défi : garde les chronos pour le circuit.": "On the road the speed limit isn't a challenge: keep the lap times for the track.",
 "Tu peux comparer deux voitures côte à côte depuis leur fiche.": "You can compare two cars side by side from their sheet.",
-"Un pack thématique ou une carte du jour peuvent se cacher dans la boutique : reviens chaque jour.": "A themed pack or a card of the day may be waiting in the shop: come back every day."
+"Un pack thématique ou une carte du jour peuvent se cacher dans la boutique : reviens chaque jour.": "A themed pack or a card of the day may be waiting in the shop: come back every day.",
+"Plus": "More"
 }]);

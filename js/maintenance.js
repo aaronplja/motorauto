@@ -34,6 +34,7 @@
       #ma-maint .mm-note{font-size:.8rem;color:var(--color-muted)}
       #ma-maint-pill{position:fixed;left:12px;bottom:calc(var(--bar-h,64px) + 28px + env(safe-area-inset-bottom,0px));z-index:900;border:1px solid #f5a623;background:#111827;color:#fff;border-radius:999px;padding:7px 13px;font:inherit;font-size:.78rem;font-weight:600;line-height:1.2;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.28);max-width:calc(100vw - 24px)}
       #ma-maint-pill:hover{background:#1f2937}
+      @media (max-width:720px){#ma-maint-pill{display:none}}
       #ma-maint-btn{background:#111827!important;color:#fff!important;border:1px solid #f5a623!important;font-weight:600}
       #ma-maint-dlg{position:fixed;inset:0;z-index:9700;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.6);color-scheme:light}
       #ma-maint-dlg .mm-card{width:min(460px,100%);max-height:92vh;overflow:auto;background:#fff;color:#111827;border:1px solid #cbd5e1;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.35)}

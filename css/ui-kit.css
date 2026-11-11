@@ -1,0 +1,80 @@
+/* MOTORAUTO — mini kit d'interface : jetons (alias des variables des thèmes, aucune couleur nouvelle) + menu « Plus ».
+   Tout ce qui est ajouté ici lit les variables du thème actif, donc reste lisible en clair comme en sombre. */
+:root {
+  --ui-ink: var(--color-ink);
+  --ui-muted: var(--color-secondary);
+  --ui-surface: var(--bg-surface);
+  --ui-raised: var(--bg-elevated);
+  --ui-line: var(--stroke-line);
+  --ui-accent: var(--accent);
+  --ui-on-accent: var(--on-accent, #fff);
+  --ui-r-sm: 10px; --ui-r-md: 14px; --ui-r-lg: 20px;
+  --ui-tap: 44px;
+  --ui-shadow: 0 16px 40px -12px rgba(0, 0, 0, .4);
+}
+
+/* ---- menu « Plus » : le bouton principal reste visible, le reste passe ici (feuille du bas sur téléphone) */
+.ui-more { position: relative; display: inline-flex; align-items: center; margin: 0; }
+.ui-more[hidden] { display: none; }
+.ui-more-btn { display: inline-flex; align-items: center; gap: .35rem; min-height: 36px; padding: 6px 13px; border: 1px solid var(--ui-line); border-radius: 99px; background: var(--ui-raised); color: var(--ui-ink); font: inherit; font-size: .82rem; font-weight: 600; line-height: 1.2; cursor: pointer; }
+.ui-more-btn[aria-expanded="true"] { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-on-accent); }
+.qz-tabs .ui-more-btn { padding: .45rem .95rem; font-size: .88rem; }
+.ui-more-pop { position: fixed; z-index: 1300; min-width: 230px; max-width: min(92vw, 340px); display: flex; flex-direction: column; gap: 2px; padding: 6px; background: var(--ui-surface); color: var(--ui-ink); border: 1px solid var(--ui-line); border-radius: var(--ui-r-md); box-shadow: var(--ui-shadow); }
+.ui-more-pop[hidden] { display: none; }
+.ui-more-pop > * { display: flex; align-items: center; gap: .55rem; width: 100%; min-height: var(--ui-tap); margin: 0; padding: 10px 14px; border: 0; border-radius: var(--ui-r-sm); background: transparent; color: var(--ui-ink); font: inherit; font-size: .95rem; font-weight: 600; text-align: left; cursor: pointer; box-shadow: none; }
+.ui-more-pop > *:hover, .ui-more-pop > *:focus-visible { background: var(--ui-raised); }
+.ui-more-back { position: fixed; inset: 0; z-index: 1290; background: rgba(0, 0, 0, .42); }
+@media (max-width: 720px) {
+  .ui-more-pop { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important; max-width: none; min-width: 0; border-radius: var(--ui-r-lg) var(--ui-r-lg) 0 0; padding: 14px 10px calc(10px + env(safe-area-inset-bottom, 0px)); animation: uiSheet .22s ease-out; }
+  .ui-more-pop::before { content: ""; display: block; width: 40px; height: 4px; margin: 0 auto 8px; border-radius: 4px; background: var(--ui-line); }
+}
+@keyframes uiSheet { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ui-more-pop { animation: none; } }
+
+/* en-tête de la collection : titre, puis « Recycler » et « Plus » sur la même ligne (au lieu d'une pile de boutons) */
+section[aria-label="Collection"] > header.cg-bh { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; }
+section[aria-label="Collection"] > header.cg-bh > .cg-recycle { margin: 0 0 0 auto; }
+section[aria-label="Collection"] > header.cg-bh > .ui-more { margin: 0; }
+section[aria-label="Collection"] > header.cg-bh > .tcg-sub, section[aria-label="Collection"] > header.cg-bh > .cg-sub { flex: 1 1 100%; order: 5; }
+.ui-more-ph{display:none!important}
+
+/* ===== Couche de contraste (AA 4.5:1) — les valeurs par thème viennent de css/ui-contrast.css (généré) ===== */
+/* remplissages d'accent : texte blanc/noir toujours lisible dessus */
+.fill-btn, .btn-primary { background: linear-gradient(135deg, var(--ui-accent-fill, var(--accent)), color-mix(in srgb, var(--ui-accent-fill, var(--accent)) 68%, #000)); }
+.notif-badge, .skip-link { background: var(--ui-accent-fill, var(--accent)); }
+.cg-ribbon { background: #dc2626; }
+.link-more, .panel-section-title.danger { color: var(--ui-accent-text, var(--accent)); }
+/* thèmes clairs : couleurs « signal » (difficulté, raretés) assombries avec l'encre du thème, teinte conservée */
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) {
+  --ui-sig-green: color-mix(in srgb, #22c55e 50%, var(--color-ink));
+  --ui-sig-amber: color-mix(in srgb, #f59e0b 44%, var(--color-ink));
+  --ui-sig-red: color-mix(in srgb, #ef4444 56%, var(--color-ink));
+  --ui-sig-purple: color-mix(in srgb, #b86bff 52%, var(--color-ink));
+  --ui-sig-blue: color-mix(in srgb, #3b82f6 56%, var(--color-ink));
+  --ui-sig-grey: color-mix(in srgb, #94a3b8 36%, var(--color-ink));
+}
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .qz-lv.lv1 span { color: var(--ui-sig-green); }
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .qz-lv.lv2 span, :root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-rar-chip.legendary, :root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-rar-chip.legendary b { color: var(--ui-sig-amber); }
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .qz-lv.lv3 span { color: var(--ui-sig-red); }
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .qz-lv.lv4 span, :root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-rar-chip.epic { color: var(--ui-sig-purple); }
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-rar-chip.rare { color: var(--ui-sig-blue); }
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-rar-chip.common { color: var(--ui-sig-grey); }
+/* l'aide « tcg-hint » est blanche pour les fenêtres sombres de pack ; sur une page claire elle devenait invisible */
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-hint:not(.tcg-overlay .tcg-hint, [role="dialog"] .tcg-hint) { color: var(--color-muted); }
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) :is(.cg-pack, .cg-price) :is(s, b) { color: var(--ui-sig-red); }
+
+/* ===== Mobile : zones tactiles ≥ 44 px (barre du haut et barre de navigation inchangées) ===== */
+@media (pointer: coarse), (max-width: 720px) {
+  :is(.bs-chip, .chip, .filter-pill, .seg-btn, .tr-tab, .cg-recycle, .social-count, .secondary-destructive-btn, .link-more, .gh-chal-link, .ui-more-btn, .cta-btn, .custom-select, .qz-tabs button, .page-btn):not(.app-header *, [class*="dock"] *) { min-height: var(--ui-tap); }
+  .guide-help { min-width: var(--ui-tap); min-height: var(--ui-tap); }
+}
+
+/* texte discret : la couleur « muted » (relevée par thème) porte déjà la hiérarchie — on n'y ajoute pas d'opacité */
+.cg-album :is(small, .ab-foot) { opacity: 1; }
+
+/* ===== Mobile : les fenêtres sont des feuilles du bas (angles arrondis en haut seulement, collées au bord) ===== */
+@media (max-width: 720px) {
+  .modal-layer { align-items: flex-end; padding: 0; }
+  .modal-layer .modal-dialog:where(:not(#page-circuit *, .tcg *)) { width: 100%; max-width: none; border-radius: 22px 22px 0 0; max-height: 92dvh; padding-bottom: calc(var(--safe-bottom, 0px) + .6rem); transform: translate3d(0, 36px, 0); }
+  .modal-layer.active .modal-dialog:where(:not(#page-circuit *, .tcg *)) { transform: none; }
+}

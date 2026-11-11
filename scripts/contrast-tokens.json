@@ -1,0 +1,192 @@
+{
+ "studio-creme": {
+  "bg-core": "rgb(246, 243, 236)",
+  "bg-surface": "rgb(255, 253, 248)",
+  "bg-elevated": "rgb(239, 233, 220)",
+  "color-ink": "rgb(22, 35, 28)",
+  "color-secondary": "rgb(57, 74, 63)",
+  "color-muted": "rgb(86, 101, 91)",
+  "accent": "rgb(27, 95, 61)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "carrara-white": {
+  "bg-core": "rgb(248, 250, 252)",
+  "bg-surface": "rgb(255, 255, 255)",
+  "bg-elevated": "rgb(241, 245, 249)",
+  "color-ink": "rgb(15, 23, 42)",
+  "color-secondary": "rgb(63, 75, 93)",
+  "color-muted": "rgb(91, 107, 128)",
+  "accent": "rgb(172, 30, 30)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "silver-arrow": {
+  "bg-core": "rgb(241, 245, 249)",
+  "bg-surface": "rgb(226, 232, 240)",
+  "bg-elevated": "rgb(203, 213, 225)",
+  "color-ink": "rgb(17, 23, 34)",
+  "color-secondary": "rgb(45, 57, 75)",
+  "color-muted": "rgb(71, 85, 105)",
+  "accent": "rgb(1, 80, 121)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "ivory-dune": {
+  "bg-core": "rgb(251, 249, 245)",
+  "bg-surface": "rgb(244, 236, 225)",
+  "bg-elevated": "rgb(237, 227, 210)",
+  "color-ink": "rgb(41, 34, 27)",
+  "color-secondary": "rgb(76, 64, 55)",
+  "color-muted": "rgb(111, 95, 85)",
+  "accent": "rgb(132, 61, 7)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "nordic-frost": {
+  "bg-core": "rgb(240, 253, 244)",
+  "bg-surface": "rgb(220, 252, 231)",
+  "bg-elevated": "rgb(187, 247, 208)",
+  "color-ink": "rgb(5, 46, 22)",
+  "color-secondary": "rgb(17, 79, 41)",
+  "color-muted": "rgb(29, 107, 59)",
+  "accent": "rgb(14, 106, 48)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "solar-flare": {
+  "bg-core": "rgb(255, 251, 240)",
+  "bg-surface": "rgb(254, 243, 199)",
+  "bg-elevated": "rgb(253, 230, 138)",
+  "color-ink": "rgb(69, 26, 3)",
+  "color-secondary": "rgb(113, 50, 14)",
+  "color-muted": "rgb(138, 74, 20)",
+  "accent": "rgb(132, 73, 4)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "mint-speedway": {
+  "bg-core": "rgb(240, 253, 244)",
+  "bg-surface": "rgb(236, 253, 245)",
+  "bg-elevated": "rgb(209, 250, 229)",
+  "color-ink": "rgb(2, 44, 34)",
+  "color-secondary": "rgb(5, 84, 62)",
+  "color-muted": "rgb(11, 107, 77)",
+  "accent": "rgb(9, 102, 94)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "rose-gold-gt": {
+  "bg-core": "rgb(255, 241, 242)",
+  "bg-surface": "rgb(255, 228, 230)",
+  "bg-elevated": "rgb(254, 205, 211)",
+  "color-ink": "rgb(59, 4, 20)",
+  "color-secondary": "rgb(120, 17, 49)",
+  "color-muted": "rgb(154, 35, 71)",
+  "accent": "rgb(146, 19, 47)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "alpine-horizon": {
+  "bg-core": "rgb(248, 250, 252)",
+  "bg-surface": "rgb(239, 246, 255)",
+  "bg-elevated": "rgb(219, 234, 254)",
+  "color-ink": "rgb(18, 35, 84)",
+  "color-secondary": "rgb(28, 60, 164)",
+  "color-muted": "rgb(47, 85, 184)",
+  "accent": "rgb(29, 77, 183)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "dark": {
+  "bg-core": "rgb(9, 9, 11)",
+  "bg-surface": "rgb(18, 18, 22)",
+  "bg-elevated": "rgb(26, 26, 32)",
+  "color-ink": "rgb(244, 244, 245)",
+  "color-secondary": "rgb(161, 161, 170)",
+  "color-muted": "rgb(113, 113, 122)",
+  "accent": "rgb(239, 68, 68)",
+  "on-accent": "rgb(255, 255, 255)"
+ },
+ "onyx-carbon": {
+  "bg-core": "rgb(9, 9, 11)",
+  "bg-surface": "rgb(18, 18, 22)",
+  "bg-elevated": "rgb(26, 26, 32)",
+  "color-ink": "rgb(244, 244, 245)",
+  "color-secondary": "rgb(196, 196, 204)",
+  "color-muted": "rgb(154, 154, 166)",
+  "accent": "rgb(243, 109, 109)",
+  "on-accent": "rgb(11, 13, 18)"
+ },
+ "tokyo-neon": {
+  "bg-core": "rgb(5, 5, 8)",
+  "bg-surface": "rgb(14, 13, 22)",
+  "bg-elevated": "rgb(24, 22, 36)",
+  "color-ink": "rgb(245, 243, 255)",
+  "color-secondary": "rgb(205, 200, 230)",
+  "color-muted": "rgb(162, 156, 194)",
+  "accent": "rgb(187, 122, 249)",
+  "on-accent": "rgb(11, 13, 18)"
+ },
+ "midnight-blue": {
+  "bg-core": "rgb(6, 9, 19)",
+  "bg-surface": "rgb(15, 23, 42)",
+  "bg-elevated": "rgb(30, 41, 59)",
+  "color-ink": "rgb(241, 245, 249)",
+  "color-secondary": "rgb(193, 203, 219)",
+  "color-muted": "rgb(154, 168, 189)",
+  "accent": "rgb(120, 169, 249)",
+  "on-accent": "rgb(11, 13, 18)"
+ },
+ "garage-nuit": {
+  "bg-core": "rgb(11, 20, 15)",
+  "bg-surface": "rgb(18, 30, 23)",
+  "bg-elevated": "rgb(26, 42, 33)",
+  "color-ink": "rgb(241, 237, 226)",
+  "color-secondary": "rgb(207, 214, 200)",
+  "color-muted": "rgb(162, 176, 165)",
+  "accent": "rgb(111, 207, 151)",
+  "on-accent": "rgb(11, 13, 18)"
+ },
+ "monza-night": {
+  "bg-core": "rgb(10, 5, 7)",
+  "bg-surface": "rgb(20, 10, 14)",
+  "bg-elevated": "rgb(32, 16, 22)",
+  "color-ink": "rgb(250, 240, 242)",
+  "color-secondary": "rgb(217, 195, 201)",
+  "color-muted": "rgb(176, 154, 161)",
+  "accent": "rgb(234, 99, 129)",
+  "on-accent": "rgb(11, 13, 18)"
+ },
+ "asphalt-smoke": {
+  "bg-core": "rgb(17, 17, 17)",
+  "bg-surface": "rgb(28, 28, 28)",
+  "bg-elevated": "rgb(38, 38, 38)",
+  "color-ink": "rgb(245, 245, 244)",
+  "color-secondary": "rgb(207, 207, 201)",
+  "color-muted": "rgb(163, 163, 155)",
+  "accent": "rgb(245, 158, 11)",
+  "on-accent": "rgb(11, 13, 18)"
+ },
+ "abyss-titanium": {
+  "bg-core": "rgb(7, 13, 26)",
+  "bg-surface": "rgb(15, 23, 42)",
+  "bg-elevated": "rgb(30, 41, 59)",
+  "color-ink": "rgb(238, 246, 251)",
+  "color-secondary": "rgb(191, 208, 222)",
+  "color-muted": "rgb(147, 168, 187)",
+  "accent": "rgb(35, 190, 217)",
+  "on-accent": "rgb(11, 13, 18)"
+ },
+ "cyber-matrix": {
+  "bg-core": "rgb(2, 18, 13)",
+  "bg-surface": "rgb(4, 36, 27)",
+  "bg-elevated": "rgb(8, 59, 45)",
+  "color-ink": "rgb(233, 255, 247)",
+  "color-secondary": "rgb(180, 230, 209)",
+  "color-muted": "rgb(134, 196, 172)",
+  "accent": "rgb(90, 207, 168)",
+  "on-accent": "rgb(11, 13, 18)"
+ },
+ "velvet-gothic": {
+  "bg-core": "rgb(15, 3, 9)",
+  "bg-surface": "rgb(29, 7, 18)",
+  "bg-elevated": "rgb(45, 11, 28)",
+  "color-ink": "rgb(253, 240, 246)",
+  "color-secondary": "rgb(224, 194, 208)",
+  "color-muted": "rgb(184, 152, 169)",
+  "accent": "rgb(239, 103, 170)",
+  "on-accent": "rgb(11, 13, 18)"
+ }
+}

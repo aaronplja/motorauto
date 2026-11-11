@@ -1,0 +1,20 @@
+/* GÉNÉRÉ par scripts/gen-contrast.py — ne pas éditer à la main. Relève le contraste (WCAG AA 4.5:1) des textes secondaires et des accents, thème par thème. */
+:root[data-theme="studio-creme"]{--color-muted:#4c5a51;--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="carrara-white"]{--color-muted:#4f5e72;--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="silver-arrow"]{--color-muted:#3e4b5e;--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="ivory-dune"]{--color-muted:#615349;--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="nordic-frost"]{--color-muted:#1b6638;--ui-accent-fill:var(--accent);--ui-accent-text:#0d652e}
+:root[data-theme="solar-flare"]{--color-muted:#844613;--ui-accent-fill:var(--accent);--ui-accent-text:#814704}
+:root[data-theme="mint-speedway"]{--color-muted:#0b684b;--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="rose-gold-gt"]{--color-muted:#922143;--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="alpine-horizon"]{--color-muted:#2d51b0;--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root:not([data-theme]),:root[data-theme="dark"]{--color-muted:#909098;--ui-accent-fill:#d23c3c;--ui-accent-text:#f06767}
+:root[data-theme="onyx-carbon"]{--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="tokyo-neon"]{--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="midnight-blue"]{--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="garage-nuit"]{--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="monza-night"]{--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="asphalt-smoke"]{--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="abyss-titanium"]{--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="cyber-matrix"]{--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}
+:root[data-theme="velvet-gothic"]{--ui-accent-fill:var(--accent);--ui-accent-text:var(--accent)}

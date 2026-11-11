@@ -1240,5 +1240,6 @@
 "Une voiture « shooting brake » est un break élégant, pensé pour le plaisir avant le coffre.": "Ein „Shooting Brake“ ist ein eleganter Kombi, der Fahrspaß vor Kofferraum stellt.",
 "Sur la route, la vitesse limitée n'est pas un défi : garde les chronos pour le circuit.": "Auf der Straße ist das Tempolimit keine Herausforderung: heb dir die Zeiten für die Rennstrecke auf.",
 "Tu peux comparer deux voitures côte à côte depuis leur fiche.": "Du kannst zwei Autos auf ihrer Seite nebeneinander vergleichen.",
-"Un pack thématique ou une carte du jour peuvent se cacher dans la boutique : reviens chaque jour.": "Ein Themen-Pack oder eine Tageskarte kann im Shop warten: komm jeden Tag vorbei."
+"Un pack thématique ou une carte du jour peuvent se cacher dans la boutique : reviens chaque jour.": "Ein Themen-Pack oder eine Tageskarte kann im Shop warten: komm jeden Tag vorbei.",
+"Plus": "Mehr"
 }]);
