@@ -9,8 +9,8 @@
   const write = (v) => { try { localStorage.setItem(K, JSON.stringify(v)); } catch (_) { /* ignoré */ } };
   const auto = () => {
     if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return "reduced";
-    const weak = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
-    return weak || (window.matchMedia && matchMedia("(pointer: coarse)").matches) ? "smooth" : "full";
+    // « Fluide » par défaut partout : même rendu, mais le flou est allégé pendant le défilement (« Complet » reste choisissable dans Réglages › Ambiance)
+    return "smooth";
   };
   const SIZES = { normal: 100, grand: 112.5, "tres-grand": 125 };
   function apply() {

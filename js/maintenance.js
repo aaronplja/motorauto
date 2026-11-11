@@ -3,7 +3,8 @@
  * L'administrateur (bouton dans Administration, ou pastille en bas à gauche) bloque le site aux visiteurs :
  * une page « Site en travaux » (image + message au choix) couvre tout, avec un seul bouton « Connexion administrateur ».
  * Réglage partagé dans Firestore : config/maintenance { on, message, image }.
- * Ne touche ni à la barre haute ni à la barre de navigation : la page de travaux se superpose, rien n'est modifié dessous.
+ * La page de travaux couvre tout l'écran (barres comprises) : les visiteurs ne voient et ne touchent rien du site.
+ * Un administrateur connu sur l'appareil ne la voit pas du tout (pas de flash au chargement).
  */
 (function () {
   "use strict";
@@ -23,7 +24,7 @@
     s.textContent = `
       body.ma-maint-on{overflow:hidden}
       body.ma-maint-on .modal-layer{z-index:9600!important}
-      #ma-maint{position:fixed;left:0;right:0;top:var(--mm-top,0px);bottom:var(--mm-bot,0px);z-index:9500;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg-core);color:var(--color-ink);text-align:center;overflow:auto}
+      #ma-maint{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg-core,#fff);color:var(--color-ink);text-align:center;overflow:auto}
       #ma-maint .mm-box{max-width:560px;width:100%;display:flex;flex-direction:column;align-items:center;gap:16px}
       #ma-maint .mm-img{max-width:min(420px,86vw);max-height:42vh;border-radius:16px;object-fit:contain}
       #ma-maint .mm-svg{color:var(--color-ink)}
@@ -62,7 +63,6 @@
     if (!el) { el = document.createElement("div"); el.id = "ma-maint"; el.setAttribute("role", "alert"); document.body.appendChild(el); }
     if (el.dataset.sig !== html) { el.innerHTML = html; el.dataset.sig = html; }
     document.body.classList.add("ma-maint-on");
-    fit();
     const b = document.getElementById("ma-maint-login");
     if (b) b.onclick = () => {
       const m = document.getElementById("auth-modal"), t = document.getElementById("tab-login-btn");
@@ -70,15 +70,6 @@
       if (C && C.openModal && m) C.openModal(m);
     };
   }
-  // la page de travaux se place ENTRE la barre haute et la barre de navigation : elles restent visibles et intactes
-  function fit() {
-    const el = document.getElementById("ma-maint"); if (!el) return;
-    const vis = (e) => { if (!e) return null; const r = e.getBoundingClientRect(), c = getComputedStyle(e); return c.display === "none" || c.visibility === "hidden" || r.height < 8 ? null : r; };
-    const h = vis(document.getElementById("app-header")), m = vis(document.getElementById("mobile-touch-bar"));
-    el.style.setProperty("--mm-top", h ? Math.max(0, Math.round(h.bottom)) + "px" : "0px");
-    el.style.setProperty("--mm-bot", m && m.top > innerHeight / 2 ? Math.max(0, Math.round(innerHeight - m.top)) + "px" : "0px");
-  }
-  window.addEventListener("resize", () => { if (document.getElementById("ma-maint")) fit(); });
   function hideOverlay() {
     const el = document.getElementById("ma-maint"); if (el) el.remove();
     document.body.classList.remove("ma-maint-on");

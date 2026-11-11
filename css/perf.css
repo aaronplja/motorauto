@@ -3,3 +3,8 @@
    Même ombre, mais posée une fois derrière le cadran (un cercle) : aucun changement visible. */
 .gauge-svg { filter: none; }
 .hero-gauge::after { content: ""; position: absolute; inset: 3.3%; border-radius: 50%; box-shadow: 0 34px 50px rgba(0, 0, 0, 0.5); z-index: -1; pointer-events: none; }
+
+/* 16 fenêtres (modales) restent en permanence dans la page, invisibles mais avec flou d'arrière-plan et couche GPU chacune :
+   on les masque vraiment tant qu'elles ne sont pas ouvertes. L'ouverture reste instantanée ; à la fermeture on attend la fin du fondu. */
+.modal-layer[aria-hidden="true"]:not(.active) { visibility: hidden; transition: opacity .25s linear, visibility 0s linear .4s !important; }
+.modal-layer.active { visibility: visible; transition: opacity .25s linear, visibility 0s !important; }
