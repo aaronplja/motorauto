@@ -9,10 +9,27 @@
   let C = null, added = 0, shown = 40;
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const fixed = new Set();     // voitures traitées pendant cette ouverture
-  const needs = (car) => {
-    const imgs = (car.images && car.images.length ? car.images : [car.image]).filter(Boolean);
-    return !imgs.some((u) => !C.isGenericImg(u));
-  };
+  // « générique » = pas d'image, image par défaut, ou chemin local (img/…) dont le fichier n'existe pas encore.
+  // Une fiche qui a déjà une photo (lien https, ou fichier img/ bien présent) n'est PAS listée.
+  const remoteGeneric = (u) => !u || u === (window.MA && window.MA.FALLBACK_CAR) || /images\.unsplash\.com\/photo-1503376780353/.test(u);
+  const probe = new Map();     // chemin local → true (fichier présent) / false (absent)
+  const imgsOf = (car) => (car.images && car.images.length ? car.images : [car.image]).filter(Boolean);
+  const isLocal = (u) => /^(img|assets)\//.test(u);
+  const hasReal = (u) => !remoteGeneric(u) && (!isLocal(u) || probe.get(u) !== false);
+  const needs = (car) => !imgsOf(car).some(hasReal);
+  async function probeLocal() {
+    const todo = [];
+    C.cars.forEach((c) => { if (c.special) return; const im = imgsOf(c); if (im.some((u) => !remoteGeneric(u) && !isLocal(u))) return; im.filter(isLocal).forEach((u) => { if (!probe.has(u) && !todo.includes(u)) todo.push(u); }); });
+    const note = document.getElementById("ani-count");
+    for (let i = 0; i < todo.length; i += 8) {
+      if (!document.getElementById("ani")) return;
+      if (note) note.textContent = `Vérification des photos déjà en place… ${Math.round((i / todo.length) * 100)} %`;
+      await Promise.all(todo.slice(i, i + 8).map(async (u) => {
+        try { const r = await fetch(u, { method: "HEAD", cache: "no-cache" }); probe.set(u, r.ok && /^image\//i.test(r.headers.get("content-type") || "")); }
+        catch (_) { probe.set(u, false); }
+      }));
+    }
+  }
   const list = () => C.cars.filter((c) => !c.special && needs(c)).sort((a, b) => (a.brand + " " + a.model).localeCompare(b.brand + " " + b.model, "fr"));
 
   function css() {
@@ -96,8 +113,7 @@
       }
     });
     d.addEventListener("change", (e) => { if (e.target.matches("#ani-br,#ani-hide")) { shown = 40; paint(); } });
-    paint();
-    const f = d.querySelector(".ani-row input"); if (f) f.focus();
+    probeLocal().then(() => { if (document.getElementById("ani")) { paint(); const f = d.querySelector(".ani-row input"); if (f) f.focus(); } });
   }
 
   function sync() {
