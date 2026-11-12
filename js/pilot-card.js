@@ -44,7 +44,7 @@
     if (sub) { ctx.fillStyle = "#9ca3af"; ctx.font = "500 30px system-ui"; ctx.fillText(fit(ctx, sub, W - 220), cx, 950); }
     // chiffres
     const stats = [[f.total + " / " + f.of, "CARTES"], [String(f.high), "LÉGENDAIRES +"], [String(f.wins), "VICTOIRES"]];
-    stats.forEach((s, i) => { const x = 180 + i * 360; ctx.fillStyle = "#fff"; ctx.font = "800 64px system-ui"; ctx.fillText(s[0], x, 1060); ctx.fillStyle = "#9ca3af"; ctx.font = "600 26px system-ui"; ctx.fillText(s[1], x, 1105); });
+    stats.forEach((s, i) => { const x = 235 + i * 305; let px = 64; ctx.font = "800 " + px + "px system-ui"; while (px > 34 && ctx.measureText(s[0]).width > 270) { px -= 4; ctx.font = "800 " + px + "px system-ui"; } ctx.fillStyle = "#fff"; ctx.fillText(s[0], x, 1060); ctx.fillStyle = "#9ca3af"; px = 26; ctx.font = "600 26px system-ui"; while (px > 16 && ctx.measureText(s[1]).width > 270) { px -= 2; ctx.font = "600 " + px + "px system-ui"; } ctx.fillText(s[1], x, 1105); });
     // meilleures cartes
     ctx.textAlign = "left"; ctx.fillStyle = "#9ca3af"; ctx.font = "700 26px system-ui"; ctx.fillText("MES MEILLEURES CARTES", 120, 1180);
     f.best.forEach((c, i) => { const y = 1228 + i * 56; ctx.fillStyle = RC[M().rarityOf(c)] || "#94a3b8"; ctx.beginPath(); ctx.arc(136, y - 10, 11, 0, 7); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = "600 34px system-ui"; ctx.fillText(fit(ctx, (c.brand + " " + String(c.model).replace(/\s*\(.*$/, "")), 820), 166, y); });
@@ -61,7 +61,7 @@
       const { cv, name } = await draw(), url = cv.toDataURL("image/png");
       const o = document.createElement("div"); o.className = "tcg-overlay on"; o.setAttribute("role", "dialog"); o.setAttribute("aria-modal", "true"); o.setAttribute("aria-label", T("Ma carte pilote"));
       o.innerHTML = `<div class="tcg-stage"><div class="pk3" style="text-align:center"><h2>🪪 ${T("Ma carte pilote")}</h2><img alt="${T("Ma carte pilote")}" src="${url}" style="max-width:min(86vw,380px);max-height:62vh;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.5)">
-        <div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-share>${T("Partager / enregistrer")}</button><button type="button" class="cta-btn btn-ghost" data-x>${T("Fermer")}</button></div></div></div>`;
+        <div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-share>${T("Partager / enregistrer")}</button><button type="button" class="cta-btn btn-ghost" data-x style="color:#fff;border-color:rgba(255,255,255,.45)">${T("Fermer")}</button></div></div></div>`;
       document.body.appendChild(o); document.body.classList.add("tcg-open");
       const close = () => { o.remove(); document.body.classList.remove("tcg-open"); document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };
       document.addEventListener("keydown", k);

@@ -35,12 +35,14 @@
     feedCache = { list: s.docs.map((d) => Object.assign({ id: d.id }, d.data())), at: Date.now() };
     return feedCache.list;
   }
-  function feedItemHtml(f) {
+  function feedItemHtml(f, soc) {
     const esc = C.esc, link = f.link ? String(f.link) : "";
     const safeLink = /^#\/[\w\-/%.]*$/.test(link) ? link : "";
     const inner = `${f.avatar ? `<img class="feed-avatar" src="${esc(C.safeUrl(f.avatar) || "")}" alt="" data-fallback="avatar">` : `<span class="feed-ico" aria-hidden="true">${FEED_ICON[f.type] || "🔔"}</span>`}
       <span class="feed-text"><b>${esc(f.pilot || "MOTORAUTO")}</b> ${esc(f.text)}<span class="feed-when">${FEED_ICON[f.type] || ""} ${ago(tsMs(f.createdAt))}</span></span>`;
-    return safeLink ? `<a class="feed-item" href="${safeLink}">${inner}</a>` : `<div class="feed-item">${inner}</div>`;
+    const item = safeLink ? `<a class="feed-item" href="${safeLink}">${inner}</a>` : `<div class="feed-item">${inner}</div>`;
+    // sous la publication : réactions et réponses (liste complète du fil seulement, pas l'aperçu de l'accueil)
+    return soc && f.id ? `<div class="feed-entry">${item}<div class="feed-soc" data-fid="${esc(f.id)}" data-uid="${esc(f.uid || "")}"></div></div>` : item;
   }
   async function renderFeed() {
     const box = document.getElementById("feed-list");
@@ -54,8 +56,9 @@
         const f = await loadFollowing(); list = list.filter((x) => x.uid && f.has(x.uid));
         if (!list.length) { box.innerHTML = `<div class="empty-note">${f.size ? "Les pilotes que tu suis n'ont rien publié récemment." : "Tu ne suis encore personne : abonne-toi depuis un profil de pilote."}</div>`; document.getElementById("feed-more").hidden = true; return; }
       }
-      box.innerHTML = list.length ? list.slice(0, feedShown).map(feedItemHtml).join("") : `<div class="empty-note">Rien pour l'instant : ajoute une voiture ou un chrono pour lancer l'actualité.</div>`;
+      box.innerHTML = list.length ? list.slice(0, feedShown).map((x) => feedItemHtml(x, true)).join("") : `<div class="empty-note">Rien pour l'instant : ajoute une voiture ou un chrono pour lancer l'actualité.</div>`;
       document.getElementById("feed-more").hidden = list.length <= feedShown;
+      if (window.MAFeedSocial) window.MAFeedSocial.hydrate(box);
     } catch (e) { box.innerHTML = `<div class="empty-note error">Fil indisponible.</div>`; }
   }
   async function renderHomeFeed() {
@@ -63,7 +66,7 @@
     if (!box) return;
     try {
       const list = await loadFeed();
-      box.innerHTML = list.length ? list.slice(0, 6).map(feedItemHtml).join("") : `<div class="empty-note">Rien pour l'instant. Les nouveaux pilotes, voitures et records apparaîtront ici.</div>`;
+      box.innerHTML = list.length ? list.slice(0, 6).map((x) => feedItemHtml(x, false)).join("") : `<div class="empty-note">Rien pour l'instant. Les nouveaux pilotes, voitures et records apparaîtront ici.</div>`;
     } catch (e) { box.innerHTML = `<div class="empty-note error">Actualité indisponible.</div>`; }
   }
   async function postFeed(type, text, link) {

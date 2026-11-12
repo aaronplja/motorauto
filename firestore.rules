@@ -539,7 +539,7 @@ service cloud.firestore {
       allow create: if signedIn() && notMuted()
         && likeId == request.resource.data.kind + '_' + request.resource.data.target + '_' + request.auth.uid
         && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'createdAt'])
-        && request.resource.data.kind in ['cat', 'com']
+        && request.resource.data.kind in ['cat', 'com', 'feed']
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.target is string && request.resource.data.target.size() <= 80
         && request.resource.data.createdAt == request.time;
@@ -553,7 +553,7 @@ service cloud.firestore {
       allow create, update: if signedIn() && notMuted()
         && voteId == request.resource.data.kind + '_' + request.resource.data.target + '_' + request.auth.uid
         && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'fun', 'reliability', 'cost', 'updatedAt'])
-        && request.resource.data.kind in ['cat', 'com']
+        && request.resource.data.kind in ['cat', 'com', 'feed']
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.target is string && request.resource.data.target.size() <= 80
         && request.resource.data.fun is int && request.resource.data.fun >= 0 && request.resource.data.fun <= 5
@@ -568,7 +568,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if signedIn() && notMuted()
         && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'pilot', 'avatar', 'text', 'createdAt'])
-        && request.resource.data.kind in ['cat', 'com']
+        && request.resource.data.kind in ['cat', 'com', 'feed']
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.target is string && request.resource.data.target.size() <= 80
         && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40
@@ -962,7 +962,7 @@ service cloud.firestore {
       allow create, update: if signedIn() && notMuted()
         && rid == request.resource.data.kind + '_' + request.resource.data.target + '_' + request.auth.uid
         && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'emoji', 'createdAt'])
-        && request.resource.data.kind in ['cat', 'com']
+        && request.resource.data.kind in ['cat', 'com', 'feed']
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.emoji in ['fire', 'flag', 'love', 'up', 'wow']
         && request.resource.data.target is string && request.resource.data.target.size() <= 80

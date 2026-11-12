@@ -470,3 +470,6 @@ html[data-chal-ready] .gh-chal-link::after,html[data-chal-ready] .play-subtabs a
 .bx .bt-hand .tcg-rar{font-size:6.5px;padding:.1em .4em;max-width:62%;overflow:hidden;text-overflow:clip}
 .bx .bt-hand .tcg-no,.bx .bt-hand .tcg .tcg-num{display:none}
 .bx .bt-hand .bt-hidden{width:100%}
+/* prix en cristaux : couleur normale du texte (noir, ou blanc sur fond sombre) quand on a assez, rouge sinon */
+.cg-price, .cg-price :is(s, b), .mkt-price, .mkt-price * { color: var(--color-ink); }
+.cg-price.lack, .cg-price.lack :is(s, b), .mkt-price.lack, .mkt-price.lack * { color: #ef4444 !important; }

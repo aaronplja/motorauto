@@ -104,7 +104,7 @@
       <div class="mkt-art">${mini(l.cardId)}</div>
       <div class="mkt-body"><span class="mkt-rar">${R.label}</span><b class="mkt-name">${C.esc(label(l.cardId))}</b>
         <small class="mkt-seller">${own ? T("ton annonce") : `${T("par")} <a href="#/pilote/${encodeURIComponent(l.uid)}">${C.esc(l.name || T("Pilote"))}</a>`}</small>
-        <div class="mkt-price">${dust(l.price, 20)}</div>${btn}</div></article>`;
+        <div class="mkt-price${C.user && !own && !can ? " lack" : ""}">${dust(l.price, 20)}</div>${btn}</div></article>`;
   }
   function mkRender() {
     const root = rootOf("cardmarket"); if (!root) return;

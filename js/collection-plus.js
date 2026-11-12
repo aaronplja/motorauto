@@ -30,12 +30,13 @@
   function css() {
     if (document.getElementById("cplus-css")) return;
     const s = document.createElement("style"); s.id = "cplus-css";
-    s.textContent = `#cplus{position:fixed;inset:0;z-index:9300;background:var(--bg-core);color:var(--color-ink);display:flex;flex-direction:column}
-      #cplus header{padding:14px 16px;border-bottom:1px solid var(--stroke-line);background:var(--bg-surface);display:flex;flex-direction:column;gap:10px}
-      #cplus h2{margin:0;font-size:1.1rem;display:flex;justify-content:space-between;align-items:center;gap:8px}
-      #cplus .cp-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}#cplus .cp-kpi div{background:var(--bg-elevated);border-radius:12px;padding:10px;text-align:center}#cplus .cp-kpi b{display:block;font-size:1.25rem}#cplus small,#cplus .mut{color:var(--color-secondary);font-size:.8rem}
+    s.textContent = `#cplus{position:fixed;inset:0;z-index:9300;background:var(--bg-core);color:var(--color-ink);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom)}
+      #cplus header{padding:calc(10px + env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid var(--stroke-line);background:var(--bg-surface);display:flex;flex-direction:column;gap:10px}
+      #cplus h2{margin:0;font-size:1.05rem;display:flex;justify-content:space-between;align-items:center;gap:8px}
+      #cplus .cp-kpi{display:flex;flex-direction:column;gap:6px}#cplus .cp-kpi .k3,#cplus .cp-kpi .k4{display:grid;gap:6px}#cplus .cp-kpi .k3{grid-template-columns:repeat(3,minmax(0,1fr))}#cplus .cp-kpi .k4{grid-template-columns:repeat(4,minmax(0,1fr))}#cplus .cp-kpi div div{background:var(--bg-elevated);border-radius:12px;padding:8px 4px;text-align:center;min-width:0}#cplus .cp-kpi b{display:block;font-size:1.1rem;line-height:1.2;overflow-wrap:anywhere}#cplus .cp-kpi small{display:block;line-height:1.2;overflow-wrap:anywhere}#cplus small,#cplus .mut{color:var(--color-secondary);font-size:.74rem}
+      #cplus .cp-kpi .k4 b{font-size:.98rem}
       #cplus .seg{display:flex;gap:6px;flex-wrap:wrap}#cplus .seg button{border:1px solid var(--stroke-line);background:var(--bg-elevated);color:var(--color-ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:.85rem;cursor:pointer}#cplus .seg button.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
-      #cplus .cp-body{flex:1;overflow:auto;padding:10px 16px 40px;display:flex;flex-direction:column;gap:8px}
+      #cplus .cp-body{padding:10px 16px 40px;display:flex;flex-direction:column;gap:8px;max-width:900px;margin:0 auto;box-sizing:border-box;width:100%}#cplus header>*{max-width:900px;width:100%;margin-inline:auto;box-sizing:border-box}#cplus .cp-top b{min-width:0;overflow-wrap:anywhere}#cplus .cp-top span{white-space:nowrap}#cplus .cp-miss a{max-width:100%;overflow-wrap:anywhere}
       #cplus .cp-row{background:var(--bg-surface);border:1px solid var(--stroke-line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px}
       #cplus .cp-top{display:flex;justify-content:space-between;gap:8px;align-items:center}#cplus .cp-bar{height:8px;border-radius:99px;background:var(--bg-elevated);overflow:hidden}#cplus .cp-bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
       #cplus .cp-bar i.full{background:#22c55e}#cplus select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--stroke-line);background:var(--bg-elevated);color:var(--color-ink)}
@@ -47,7 +48,7 @@
     const r = compute(), list = Array.from(r.by[tab].values());
     list.sort((a, b) => sortBy === "name" ? String(a.key).localeCompare(String(b.key), "fr") : sortBy === "left" ? (b.n - b.have) - (a.n - a.have) : (b.have / b.n) - (a.have / a.n) || b.n - a.n);
     const RL = G().RAR;
-    d.querySelector(".cp-kpi").innerHTML = `<div><b>${nf(r.value)}</b><small>Valeur estimée (cristaux)</small></div><div><b>${nf(r.score)}</b><small>Score de collection</small></div><div><b>${r.count} / ${r.total}</b><small>Cartes du catalogue</small></div>` + ["common", "rare", "epic", "legendary"].map((k) => `<div><b>${r.byRar[k] || 0}</b><small>${esc(RL[k].label)}</small></div>`).join("");
+    d.querySelector(".cp-kpi").innerHTML = `<div class="k3"><div><b>${nf(r.value)}</b><small>Valeur 💎</small></div><div><b>${nf(r.score)}</b><small>Score</small></div><div><b>${r.count} / ${r.total}</b><small>Cartes</small></div></div><div class="k4">` + ["common", "rare", "epic", "legendary"].map((k) => `<div><b>${r.byRar[k] || 0}</b><small>${esc(RL[k].label)}</small></div>`).join("") + "</div>";
     d.querySelector(".cp-body").innerHTML = list.map((e) => { const pct = Math.round(e.have * 100 / e.n), label = tab === "country" ? countryLabel(e.key) : e.key;
       return `<div class="cp-row"><div class="cp-top"><b>${esc(label)}</b><span>${e.have} / ${e.n} · ${pct} %</span></div><div class="cp-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(label)}"><i class="${pct === 100 ? "full" : ""}" style="width:${pct}%"></i></div>
         ${e.missing.length ? `<details><summary>${e.missing.length} manquante${e.missing.length > 1 ? "s" : ""}</summary><div class="cp-miss">${e.missing.slice(0, 80).map((c) => `<a href="#/voiture/${encodeURIComponent(c.id)}">${esc(c.brand + " " + c.model)}</a>`).join("")}${e.missing.length > 80 ? `<span class="mut">… et ${e.missing.length - 80} autres</span>` : ""}</div></details>` : '<span class="mut">Complet 🎉</span>'}</div>`; }).join("");

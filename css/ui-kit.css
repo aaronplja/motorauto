@@ -61,7 +61,6 @@ section[aria-label="Collection"] > header.cg-bh > .tcg-sub, section[aria-label="
 :root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-rar-chip.common { color: var(--ui-sig-grey); }
 /* l'aide « tcg-hint » est blanche pour les fenêtres sombres de pack ; sur une page claire elle devenait invisible */
 :root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-hint:not(.tcg-overlay .tcg-hint, [role="dialog"] .tcg-hint) { color: var(--color-muted); }
-:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"])  .cg-price :is(s, b) { color: var(--ui-sig-red); }
 
 /* ===== Mobile : zones tactiles ≥ 44 px (barre du haut et barre de navigation inchangées) ===== */
 @media (pointer: coarse), (max-width: 720px) {
