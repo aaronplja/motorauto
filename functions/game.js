@@ -898,6 +898,24 @@
         return Object.assign({ ok: true, settings: await gameSettings() }, st);
       }
       if (action === "cardStats") return Object.assign({ ok: true }, await computeCardStats());
+      if (action === "revokeLegend") {
+        // retire une carte Légende à un pilote ; reopen = le pilote pourra de nouveau réclamer l'album (et regagner sa Légende)
+        const cardId = str(data && data.cardId, 90), reopen = !!(data && data.reopen);
+        if (core.LEGEND_IDS.indexOf(cardId) < 0) fail("invalid-argument", "Ce n'est pas une carte Légende.");
+        if (!(await nameOf(uid))) fail("not-found", "Pilote introuvable.");
+        return db.runTransaction(async (tx) => {
+          const d = await readCol(tx, uid), ref = col("set_claims").doc(uid), cs = reopen ? await tx.get(ref) : null;
+          if (!(d.owned[cardId] > 0)) fail("failed-precondition", "Ce pilote ne possède pas cette carte Légende.");
+          delete d.owned[cardId]; if (d.lv) delete d.lv[cardId]; if (d.locked) delete d.locked[cardId];
+          let reopened = "";
+          if (reopen && cs && cs.exists) {
+            const done = Object.assign({}, cs.data().done || {}), key = Object.keys(core.LEGENDS).find((k) => core.LEGENDS[k] === cardId);
+            if (key && done[key]) { delete done[key]; reopened = key; tx.set(ref, { done, updatedAt: ts() }); }
+          }
+          writeCol(tx, uid, d);
+          return { ok: true, reopened, doc: view(d) };
+        });
+      }
       if (["bonus", "dust", "resetDaily", "resetCollection", "unlockAll"].indexOf(action) < 0) fail("invalid-argument", "Action inconnue.");
       if (!(await nameOf(uid))) fail("not-found", "Pilote introuvable.");
       const pool = await getPool();

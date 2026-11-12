@@ -239,6 +239,18 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   await G.adminGameTool(ADM, { action: "unlockAll", uid: "u1" }); ok(db.raw("collections", "u1").count > 100, "toutes les cartes débloquées");
   await G.adminGameTool(ADM, { action: "resetCollection", uid: "u1" }); ok(db.raw("collections", "u1").count === 0 && db.raw("collections", "u1").bonus === 0, "collection remise à zéro");
   await rejects(G.adminGameTool(ADM, { action: "nuke", uid: "u1" }), "invalid-argument", "action inconnue refusée");
+  {   // retrait d'une carte Légende par l'administration
+    const LG = core.LEGENDS["country:fr"];
+    db.seed("collections", "u1", Object.assign(core.blankCollection(), { owned: { [LG]: 1, "peugeot-205-gti": 1 }, lv: { [LG]: 3 } })); db.seed("set_claims", "u1", { done: { "country:fr": 1, "decade:1980": 2 } });
+    await rejects(G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: "peugeot-205-gti" }), "invalid-argument", "retrait : seules les Légendes");
+    await rejects(G.adminGameTool({ uid: "pas-admin" }, { action: "revokeLegend", uid: "u1", cardId: LG }), "permission-denied", "retrait Légende réservé à l'admin");
+    r = await G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: LG });
+    ok(!db.raw("collections", "u1").owned[LG] && db.raw("collections", "u1").owned["peugeot-205-gti"] === 1 && !db.raw("collections", "u1").lv[LG] && db.raw("set_claims", "u1").done["country:fr"] === 1 && !r.reopened, "Légende retirée, autres cartes et album intacts");
+    await rejects(G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: LG }), "failed-precondition", "retrait : carte non possédée");
+    db.seed("collections", "u1", Object.assign(core.blankCollection(), { owned: { [LG]: 1 } }));
+    r = await G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: LG, reopen: true });
+    ok(r.reopened === "country:fr" && !db.raw("set_claims", "u1").done["country:fr"] && db.raw("set_claims", "u1").done["decade:1980"] === 2, "album rouvert : il pourra regagner sa Légende");
+  }
 
   // parrainage
   ["r1", "r2", "r3"].forEach((u) => db.seed("users", u, { username: "Ref_" + u }));

@@ -85,6 +85,13 @@
       <h3 class="admin-h3">Photos en ligne (modération : tu peux en retirer)</h3>
       <div class="admin-entries">${ok.length ? ok.map(row).join("") : `<div class="empty-note small">Aucune photo pour l'instant.</div>`}</div>`;
   }
+  /** liste des cartes Légende : « Voiture — album ... » */
+  function legendOptions() {
+    const G = window.MAGameCore || {}, L = G.LEGENDS || {}, sets = {}, M = window.MACards;
+    (G.THEMED_SETS || []).forEach((t) => { sets["theme:" + t[0]] = t[1]; });
+    const albumName = (k) => { const [kind, v] = [k.split(":")[0], k.slice(k.indexOf(":") + 1)]; return kind === "country" ? "Pays " + (((G.COUNTRIES || []).find((c) => c.id === v) || {}).label || v) : kind === "decade" ? G.decadeLabel(Number(v)) : kind === "brand" ? "Marque " + v : sets[k] || v; };
+    return Object.keys(L).map((k) => { const car = M && M.cardObj ? M.cardObj(L[k]) : null, nm = car ? ((car.brand || "") + " " + String(car.model || car.name || "").replace(/\s*\(.*$/, "")).trim() : L[k]; return `<option value="${C.esc(L[k])}">${C.esc(nm)} — ${C.esc(albumName(k))}</option>`; }).join("");
+  }
   // outils de test et gestes : packs de test illimités, packs bonus, poussière, remise à zéro…
   function toolsHtml() {
     const esc = C.esc;
@@ -101,6 +108,8 @@
           <button type="button" class="cta-btn btn-ghost compact-btn" data-tool="unlockAll">Tout débloquer</button>
           <button type="button" class="secondary-destructive-btn" data-tool="resetCollection">Remettre la collection à zéro</button>
         </div>
+        <div class="input-stack wide"><label for="tl-legend">Retirer une carte Légende à un pilote (choisis le pilote plus haut)</label><div class="inline-field"><select id="tl-legend">${legendOptions()}</select><button type="button" class="secondary-destructive-btn" data-tool="revokeLegend">Retirer la Légende</button></div>
+          <label style="display:flex;gap:.5rem;align-items:center;font-weight:500;margin-top:.4rem"><input type="checkbox" id="tl-reopen" style="width:1.1rem;height:1.1rem;min-height:0;padding:0;flex:0 0 auto"> Remettre l'album à réclamer (le pilote pourra regagner sa Légende, et ses cristaux d'album)</label></div>
         <div class="input-stack wide"><label for="ci-sel">Photo d'un circuit (adresse https d'une image ; vide = retirer)</label><div class="inline-field"><select id="ci-sel">${(window.MAGameCore || {}).CIRCUIT_CARDS ? window.MAGameCore.CIRCUIT_CARDS.map((r) => `<option value="${r[0]}">${C.esc(r[1])} (${C.esc(r[2])})</option>`).join("") : ""}</select><input type="url" id="ci-url" placeholder="https://…/photo.jpg"><button type="button" class="cta-btn fill-btn compact-btn" id="ci-save">Enregistrer</button></div>
         <button type="button" class="cta-btn btn-ghost compact-btn" id="cs-run">Recalculer maintenant la rareté réelle (% de pilotes)</button></div>
         <div class="input-stack wide"><label>Réglages du jeu et statistiques</label><div class="admin-actions"><button type="button" class="cta-btn btn-ghost compact-btn" id="gs-wheel">Roue du jour : activer / pause</button><button type="button" class="cta-btn btn-ghost compact-btn" id="gs-advent">Calendrier de l'Avent : activer / pause</button><button type="button" class="cta-btn btn-ghost compact-btn" id="gs-stats">Statistiques du jeu</button></div><pre class="admin-note" id="gs-out" aria-live="polite"></pre></div>
@@ -123,6 +132,19 @@
       busy = true;
       try { const r = await window.MAGameAPI.call("adminBroadcast", { text, link: "#/jouer" }); if (window.MALog) window.MALog.log("broadcast", { detail: text }); C.toast("Annonce envoyée à " + r.sent + " pilote(s).", "ok"); document.getElementById("tl-msg").value = ""; if (window.MADraft) MADraft.clear("announce"); }
       catch (ex) { err.textContent = ex.message; }
+      busy = false; return;
+    }
+    if (kind === "revokeLegend") {
+      if (!val) { err.textContent = "Choisis d'abord le pilote concerné."; return; }
+      const sel = document.getElementById("tl-legend"), label = sel.options[sel.selectedIndex].textContent, reopen = document.getElementById("tl-reopen").checked;
+      if (!confirm("Retirer la carte Légende « " + label + " » à " + name + " ?" + (reopen ? "\n\nSon album pourra être réclamé de nouveau." : "\n\nSon album reste marqué comme réclamé : il ne pourra pas la regagner."))) return;
+      busy = true;
+      try {
+        const r = await window.MAGameAPI.call("adminGameTool", { action: "revokeLegend", uid: target, cardId: sel.value, reopen });
+        if (window.MALog) window.MALog.log("game-tool", { target, targetName: name, detail: "Légende retirée : " + label + (r.reopened ? " (album rouvert)" : "") });
+        C.toast("Légende retirée à " + name + (r.reopened ? " — album rouvert." : "."), "ok");
+        if (window.MACards && window.MACards.load) window.MACards.load(true).catch(() => {});
+      } catch (ex) { err.textContent = ex.message; }
       busy = false; return;
     }
     if (kind === "resetCollection" && !confirm("Remettre à zéro la collection de " + name + " ? Cette action est définitive.")) return;
