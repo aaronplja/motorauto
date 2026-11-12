@@ -324,6 +324,7 @@
 "Laquelle est la plus récente ?": "Which one is the most recent?",
 "Quiz": "Quiz",
 "Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.": "Brands, history, engines, motorsport: choose your category and level.",
+"{n} catégories, {l} niveaux": "{n} categories, {l} levels",
 "8 catégories, 3 niveaux": "8 categories, 3 levels",
 "Classement des quiz": "Quiz ranking",
 "Retour": "Back",
@@ -1242,5 +1243,6 @@
 "Tu peux comparer deux voitures côte à côte depuis leur fiche.": "You can compare two cars side by side from their sheet.",
 "Un pack thématique ou une carte du jour peuvent se cacher dans la boutique : reviens chaque jour.": "A themed pack or a card of the day may be waiting in the shop: come back every day.",
 "épique ou mieux": "epic or better",
+"{n} catégories, {l} niveaux, {q}+ questions": "{n} categories, {l} levels, {q}+ questions",
 "Plus": "More"
 }]);

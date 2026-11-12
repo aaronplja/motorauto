@@ -1,0 +1,19 @@
+#!/bin/sh
+# MOTORAUTO — vérifications automatiques avant chaque « git push » (pour passer outre en cas d'urgence : git push --no-verify)
+cd "$(git rev-parse --show-toplevel)" || exit 1
+echo "→ Vérifications avant push…"
+
+echo "  1/3 fichiers générés (jeu, catalogue des fonctions)"
+node scripts/sync-functions.js > /dev/null || { echo "✗ sync-functions.js a échoué"; exit 1; }
+if [ -n "$(git status --porcelain -- functions/game-core.js js/game-engine.js js/car-index.js functions/catalog-static.json functions/catalog-variants.json)" ]; then
+  echo "✗ Les fichiers copiés vers functions/ ne sont pas à jour dans git."
+  echo "  Ils viennent d'être régénérés : fais « git add -A && git commit --amend --no-edit » puis relance le push."
+  exit 1
+fi
+
+echo "  2/3 index.html à jour par rapport à index.src.html"
+node scripts/build.js --check || { echo "✗ Lance « node scripts/build.js » puis commit."; exit 1; }
+
+echo "  3/3 tests"
+npm test --silent || { echo "✗ Un test échoue : push annulé."; exit 1; }
+echo "✓ Tout est bon, push autorisé."

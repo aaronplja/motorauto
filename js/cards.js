@@ -254,15 +254,39 @@
       finally { busy = false; }
     });
   }
+  /** état du calendrier : à ouvrir maintenant, en attente de demain, ou en attente du 1er décembre */
+  function adventState() {
+    const now = Date.now(), at = G.adventToday(now), opened = doc && doc.advent && at && doc.advent.y === at.y ? doc.advent.o : [];
+    if (!at) {
+      const y = Number(G.dayKey(now).slice(0, 4));
+      let t = G.parisMidnight(y + "-12-01"); if (t <= now) t = G.parisMidnight((y + 1) + "-12-01");
+      return { mode: "wait", left: t - now, opened: [], at: null };
+    }
+    let next = 0;
+    if (at.d >= 1 && opened.indexOf(at.d) < 0) next = at.d;                                   // la case du jour
+    else for (let n = 1; n <= at.d; n++) if (opened.indexOf(n) < 0) { next = n; break; }       // case manquée, rattrapable jusqu'au 31
+    if (next) return { mode: "ready", n: next, opened, at };
+    if (at.d < 24) return { mode: "tomorrow", n: at.d + 1, left: Math.max(0, G.parisMidnight(G.dayKey(now + 86400000)) - now), opened, at };
+    return { mode: "done", opened, at };
+  }
+  function fmtLeft(ms) {
+    const m = Math.max(0, Math.floor(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+    return d ? d + " j " + h + " h" : h ? h + " h " + String(mm).padStart(2, "0") + " min" : mm + " min";
+  }
+  function adventBtnHtml() {
+    const st = adventState();
+    const lab = st.mode === "ready" ? ["Case " + st.n + " à ouvrir", "récompense du jour"] : st.mode === "tomorrow" ? ["Case " + st.n + " dans", fmtLeft(st.left)] : st.mode === "done" ? ["Calendrier terminé", "à l'an prochain"] : ["Ouvre dans", fmtLeft(st.left)];
+    return `<button type="button" class="cg-gift adv ${st.mode === "ready" ? "ready" : "off-soft"}" data-advent-go ${busy ? "disabled" : ""} aria-label="Calendrier de l'Avent : ${C.esc(lab[0] + " " + lab[1])}"><span class="cg-gi">🎄</span><b>${C.esc(lab[0])}</b><small${st.mode === "tomorrow" || st.mode === "wait" ? " data-adv-left" : ""}>${C.esc(lab[1])}</small></button>`;
+  }
   function adventHtml() {
-    const at = doc && G.adventToday(Date.now());
-    if (!at) return "";
-    const opened = doc.advent && doc.advent.y === at.y ? doc.advent.o : [];
+    if (!doc) return "";
+    const st = adventState(), at = st.at || { y: 0, d: 0 }, opened = st.opened;
     const cells = Array.from({ length: 24 }, (_, i) => {
       const n = i + 1, got = opened.indexOf(n) >= 0, can = !got && n <= at.d, r = G.adventReward(n);
       return `<button type="button" class="adv-c ${got ? "got" : can ? "can" : "lock"}${n === 24 ? " big" : ""}" ${can ? `data-advent="${n}"` : "disabled"} aria-label="Case ${n}${got ? " ouverte" : can ? " à ouvrir" : " pas encore"}"><b>${n}</b><span>${got ? "✓" : can ? (n === 24 ? "🎄" : "🎁") : "🔒"}</span>${got ? `<small>${C.esc(G.adventLabel(r).replace(/ cristaux/, "💎"))}</small>` : ""}</button>`;
     }).join("");
-    return `<section class="cg-block cg-advent" aria-label="Calendrier de l'Avent"><header class="cg-bh"><h3>🎄 Calendrier de l'Avent</h3><span class="cg-sub">${opened.length} / 24 · une case par jour jusqu'au 24 décembre</span></header><div class="adv-grid">${cells}</div></section>`;
+    const sub = st.mode === "wait" ? "ouvre le 1er décembre · dans <b data-adv-left>" + fmtLeft(st.left) + "</b>" : opened.length + " / 24 · une case par jour jusqu'au 24 décembre · packs Prestige offerts les cases 12 et 24";
+    return `<section class="cg-block cg-advent" id="cg-advent" aria-label="Calendrier de l'Avent"><header class="cg-bh"><h3>🎄 Calendrier de l'Avent</h3><span class="cg-sub">${sub}</span></header><div class="adv-grid">${cells}</div></section>`;
   }
   async function adventOpen(n) {
     if (busy || !C.requireLogin()) return;
@@ -632,11 +656,12 @@
   }
   function packTileHtml(p, o) {
     o = o || {};
-    const dust = doc.dust, cost = o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
+    const free = p.id === "prestige" && (doc.prestigeFree || 0) > 0 && o.cost == null;
+    const dust = doc.dust, cost = free ? 0 : o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
     const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
     const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>3 cartes</em>
 </span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : p.id === "prestige" ? "épique ou mieux" : "");
-    const lack = dust < cost, price = o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
+    const lack = dust < cost, price = free ? `<b>Offert ×${doc.prestigeFree}</b> 🎄` : o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
     return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}${o.cost != null ? " promo" : ""}" data-pack="shop" data-shop="${p.id}"${o.offer ? ` data-offer="1"` : ""} ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${cost} cristaux">
       ${o.cost != null ? `<span class="cg-ribbon">-${G.OFFER_PCT} %</span>` : ""}<span class="cg-art" ${st}>${art}</span>
       <span class="cg-pm"><b>${p.id === "world" ? "Pack mondial" : p.id === "circuit" ? "Pack Circuit" : C.esc(p.label)}</b><span class="cg-price${lack ? " lack" : ""}">${price}</span></span>
@@ -665,6 +690,7 @@
     const t = day();
     if (!shownDay) { shownDay = t; return; }
     document.querySelectorAll("[data-nextday]").forEach((el) => { el.textContent = leftToday(); });
+    if (doc) { const st = adventState(); document.querySelectorAll("[data-adv-left]").forEach((el) => { if (st.left != null) el.textContent = fmtLeft(st.left); }); }
     if (t === shownDay) return;
     shownDay = t;
     if (doc) load(true).then(() => { if (C.Router.is("play", { tab: "collection" }) || C.Router.is("play", { tab: "boutique" })) render(); }).catch(() => {});
@@ -697,6 +723,7 @@
         return `<div class="cg-free">
         <button type="button" class="cg-gift ${canDaily ? "ready" : "off"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="cg-gi">🎁</span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
+        ${adventBtnHtml()}
       </div>${wheelHtml()}${adventHtml()}${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
       <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">3 voitures du pays, dont 1 rare ou mieux · Pack Circuit : 3 circuits · Pack Prestige : grandes marques, 1 épique ou mieux · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
   }
@@ -1015,6 +1042,14 @@
       if (e.target.closest("#cards-root [data-recycle]")) { recycleOpen(); return; }
       if (e.target.closest("#cards-root [data-wheel]")) { wheelOpen(); return; }
       const adv = e.target.closest("#cards-root [data-advent]"); if (adv) { adventOpen(Number(adv.dataset.advent)); return; }
+      const advGo = e.target.closest("#cards-root [data-advent-go]");
+      if (advGo) {
+        const st = adventState();
+        if (st.mode === "ready") { adventOpen(st.n); return; }
+        C.toast(st.mode === "wait" ? "🎄 Le calendrier de l'Avent ouvre le 1er décembre, dans " + fmtLeft(st.left) + "." : st.mode === "tomorrow" ? "🎄 La case " + st.n + " ouvre à minuit, dans " + fmtLeft(st.left) + "." : "🎄 Toutes les cases sont ouvertes. À l'an prochain !", "ok");
+        const sec = document.getElementById("cg-advent"); if (sec && sec.scrollIntoView) sec.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+        return;
+      }
       const pk = e.target.closest("[data-pack]");
       if (pk) { openPack(pk.dataset.pack, pk.dataset.shop, pk.dataset.offer === "1"); return; }
       const ct = e.target.closest("#cards-root [data-ctab]");

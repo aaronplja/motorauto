@@ -41,7 +41,8 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   // ---- statistiques de tirage (20 000 packs)
   const draws = { common: 0, rare: 0, epic: 0, legendary: 0 }; const ids = pool.map((c) => c.id); let tot = 0;
   for (let i = 0; i < 20000; i++) core.drawPack(r1, ids, rng, false).forEach((id) => { draws[r1.get(id)]++; tot++; });
-  ok(Math.abs(draws.common / tot - 0.62) < 0.02 && Math.abs(draws.rare / tot - 0.26) < 0.02 && Math.abs(draws.epic / tot - 0.09) < 0.015 && Math.abs(draws.legendary / tot - 0.03) < 0.01, "probabilités de tirage " + JSON.stringify({ c: (draws.common / tot).toFixed(3), r: (draws.rare / tot).toFixed(3), e: (draws.epic / tot).toFixed(3), l: (draws.legendary / tot).toFixed(3) }));
+  const eo = core.oddsOf(r1);   // les probabilités suivent le nombre de cartes de chaque rareté
+  ok(Math.abs(draws.common / tot - eo.common) < 0.02 && Math.abs(draws.rare / tot - eo.rare) < 0.02 && Math.abs(draws.epic / tot - eo.epic) < 0.015 && Math.abs(draws.legendary / tot - eo.legendary) < 0.01, "probabilités de tirage " + JSON.stringify({ c: (draws.common / tot).toFixed(3), r: (draws.rare / tot).toFixed(3), e: (draws.epic / tot).toFixed(3), l: (draws.legendary / tot).toFixed(3) }));
   let pityBad = 0; for (let i = 0; i < 3000; i++) if (!core.drawPack(r1, ids, rng, true).some((id) => r1.get(id) !== "common")) pityBad++;
   ok(pityBad === 0, "le 10e pack contient toujours une carte au moins rare");
 
@@ -245,6 +246,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     await rejects(G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: "peugeot-205-gti" }), "invalid-argument", "retrait : seules les Légendes");
     await rejects(G.adminGameTool({ uid: "pas-admin" }, { action: "revokeLegend", uid: "u1", cardId: LG }), "permission-denied", "retrait Légende réservé à l'admin");
     r = await G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: LG });
+    ok(Array.from(db._col("users/u1/notifications").values()).some((n) => /Légende a été retirée/.test(n.text || "")), "le joueur reçoit une notification de retrait");
     ok(!db.raw("collections", "u1").owned[LG] && db.raw("collections", "u1").owned["peugeot-205-gti"] === 1 && !db.raw("collections", "u1").lv[LG] && db.raw("set_claims", "u1").done["country:fr"] === 1 && !r.reopened, "Légende retirée, autres cartes et album intacts");
     await rejects(G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: LG }), "failed-precondition", "retrait : carte non possédée");
     db.seed("collections", "u1", Object.assign(core.blankCollection(), { owned: { [LG]: 1 } }));
@@ -351,9 +353,47 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     await rejects(G.openAdvent(W, { day: 3 }), null, "case déjà ouverte");
     await rejects(G.openAdvent(W, { day: 4 }), null, "case du futur refusée");
     r = await G.openAdvent(W, { day: 1 }); ok(r.doc.advent.o.length === 2, "rattrapage d'une case passée");
+    NOW = Date.parse("2026-12-12T09:00:00+01:00"); r = await G.openAdvent(W, { day: 12 });
+    ok(r.doc.prestigeFree === 1 && /Prestige/.test(r.text), "case 12 : un pack Prestige offert");
+    { const dBefore = db.raw("collections", "w1").dust, px = await G.openPack(W, { kind: "shop", pack: "prestige" });
+      ok(db.raw("collections", "w1").dust >= dBefore && px.doc.prestigeFree === 0 && px.cards.length >= 1, "pack Prestige offert : aucun cristal débité"); }
+    ok(core.adventToday(Date.parse("2026-11-20T12:00:00+01:00")) === null && core.adventToday(Date.parse("2026-12-01T00:30:00+01:00")).d === 1, "Avent : fermé en novembre, case 1 le 1er décembre");
     NOW = Date.parse("2026-12-24T09:00:00+01:00"); r = await G.openAdvent(W, { day: 24 });
     ok((db.raw("collections", "w1").owned["sp-noel-2026"] || 0) === 1, "carte de Noël offerte le 24");
     NOW = save;
+  }
+
+  // ---- alertes wishlist : Carte du jour, proposition d'échange, mise en vente
+  {
+    const day = core.dayKey(NOW), of = core.dailyOffers(day, pool, core.computeRarities(pool)), A = { uid: "wa" }, B = { uid: "wb" };
+    db.seed("users", "wa", { username: "Pilote_wa" }); db.seed("users", "wb", { username: "Pilote_wb" });
+    db.seed("wishlists", "wa", { ids: [of.card] }); db.seed("wishlists", "wb", { ids: [of.card] });
+    db.seed("collections", "wb", Object.assign(core.blankCollection(), { owned: { [of.card]: 1 } }));
+    const sent = await G.wishOffers();
+    ok(sent === 1, "alerte Carte du jour : 1 pilote prévenu (celui qui ne la possède pas) : " + sent);
+    ok(Array.from(db._col("users/wa/notifications").values()).some((x) => /Carte du jour/.test(x.text)), "notification Carte du jour reçue");
+    ok((await G.wishOffers()) === 0, "pas de doublon d'alerte le même jour");
+  }
+
+  ok(core.brandFacts("Ferrari") && core.brandFacts("Ferrari").year === 1947 && core.brandFacts("Marque inconnue") === null, "repères de marque : Ferrari 1947, marque inconnue → null");
+  // ---- objectif d'équipe du club
+  {
+    const wk = core.weekKey(NOW), M1 = { uid: "cg1" }, M2 = { uid: "cg2" }, M3 = { uid: "cg3" };
+    ["cg1", "cg2", "cg3"].forEach((u) => db.seed("users", u, { username: "Pilote_" + u }));
+    db.seed("clubs", "clubG", { name: "Club Test" });
+    ["cg1", "cg2", "cg3"].forEach((u) => db.seed("club_members", "clubG_" + u, { clubId: "clubG", uid: u }));
+    db.seed("weekly", "cg1", { week: wk, logs: { cards: 20 } }); db.seed("weekly", "cg2", { week: wk, logs: { cards: 20 } });
+    let st = await G.clubGoal(M1);
+    ok(st.goal === 90 && st.total === 40 && !st.reached && st.mine === 20, "objectif d'équipe : 3 membres → 90 cartes, 40 ouvertes");
+    await rejects(G.clubGoalClaim(M1), "failed-precondition", "objectif pas atteint : pas de récompense");
+    db.seed("weekly", "cg2", { week: wk, logs: { cards: 75 } });
+    st = await G.clubGoal(M1); ok(st.reached && st.total === 95, "objectif atteint à plusieurs");
+    await rejects(G.clubGoalClaim(M3), "failed-precondition", "membre sans carte ouverte : pas de récompense");
+    const b4 = db.raw("collections", "cg1") ? db.raw("collections", "cg1").dust : 0;
+    const cl = await G.clubGoalClaim(M1);
+    ok(db.raw("collections", "cg1").dust === b4 + 60 && cl.reward.bonus === 1, "récompense collective versée");
+    await rejects(G.clubGoalClaim(M1), "already-exists", "récompense réclamée une seule fois");
+    ok((await G.clubGoal({ uid: "nobody" })).none === true, "sans club : pas d'objectif");
   }
 
   // ---- lot 2 : catégories Japon / Rallye / Électrique, niveau Expert, explications, chrono
@@ -455,7 +495,8 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   // ---- lot 5
   {
     const rare = core.BADGES.filter((b) => b.rare);
-    ok(rare.length === 16 && ["collection", "perf", "social", "game"].every((k) => rare.filter((b) => b.kind === k).length === 4) && rare.every((b) => b.tier === "diamond"), "16 badges rares : 4 par famille");
+    ok(rare.length === 18 && rare.filter((b) => b.kind === "collection").length === 6 && ["perf", "social", "game"].every((k) => rare.filter((b) => b.kind === k).length === 4) && rare.every((b) => b.tier === "diamond"), "18 badges rares : 6 collection, 4 par autre famille");
+    ok(["mythic5", "mythic10", "sets50", "r-col5", "r-col6"].every((id) => core.BADGES.some((b) => b.id === id)), "succès Légendes présents");
     ok(core.LEVELS.length === 30 && core.levelOf(750000).level.n === 30 && core.FRAMES.aurora.v === 20 && core.FRAMES.prism.v === 30 && core.FRAMES.prism.anim, "niveaux 21 à 30 et cadres animés 20 / 30");
     const sx = core.BLANK_STATS(); sx.laps = 3000; sx.cards = 600; core.finish(sx, 621); ok(sx.badges ? true : true, "calcul des badges avec les badges rares");
     const K = { uid: "k1" };

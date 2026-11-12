@@ -36,21 +36,22 @@
     { name: "news", re: /^\/nouveautes\/?$/, keys: [] },
     { name: "contact", re: /^\/contact\/?$/, keys: [] },
     { name: "engine", re: /^\/moteur\/([^/]+)\/?$/, keys: ["key"] },
+    { name: "brand", re: /^\/marque\/([^/]+)\/?$/, keys: ["key"] },
     { name: "legal", re: /^\/legal(?:\/([^/]+))?\/?$/, keys: ["doc"] }
   ];
   const PAGE_ID = {
     home: "page-home", catalog: "page-catalog", car: "vehicle-modal", commcar: "page-commcar", community: "page-community",
     leaderboard: "leaderboard-modal", circuit: "page-circuit", pilot: "public-profile-modal",
-    garage: "garage-modal", settings: "page-settings", engine: "page-engine", admin: "admin-panel-modal", contact: "page-contact", legal: "page-legal",
+    garage: "garage-modal", settings: "page-settings", engine: "page-engine", brand: "page-brand", admin: "admin-panel-modal", contact: "page-contact", legal: "page-legal",
     duel: "page-duel", compare: "page-catalog", club: "page-club", clubs: "page-clubs", market: "page-market", play: "page-play",
     fusion: "page-fusion", cardmarket: "page-cardmarket", wishfeed: "page-wishfeed", plusmoins: "page-plusmoins", quizgame: "page-quizgame", achievements: "page-achievements", pass: "page-pass", timeline: "page-timeline", news: "page-news"
   };
   // entrée de menu mise en avant pour chaque page
-  const NAV_OF = { compare: "catalog", home: "home", catalog: "catalog", car: "catalog", engine: "catalog", commcar: "community", community: "community", pilot: "community", leaderboard: "community", circuit: "community", garage: "me", settings: "me", admin: "me", contact: "me", legal: "me", duel: "play", quiz: "play", play: "play", club: "community", clubs: "community", market: "community", fusion: "play", cardmarket: "play", wishfeed: "play", plusmoins: "play", quizgame: "play", achievements: "play", pass: "play", timeline: "catalog", news: "home" };
+  const NAV_OF = { compare: "catalog", home: "home", catalog: "catalog", car: "catalog", engine: "catalog", brand: "catalog", commcar: "community", community: "community", pilot: "community", leaderboard: "community", circuit: "community", garage: "me", settings: "me", admin: "me", contact: "me", legal: "me", duel: "play", quiz: "play", play: "play", club: "community", clubs: "community", market: "community", fusion: "play", cardmarket: "play", wishfeed: "play", plusmoins: "play", quizgame: "play", achievements: "play", pass: "play", timeline: "catalog", news: "home" };
   const TITLES = {
     home: "MOTORAUTO | Archive automobile & communauté de pilotes", catalog: "Catalogue | MOTORAUTO", community: "Communauté | MOTORAUTO",
     play: "Jouer | MOTORAUTO", leaderboard: "Classements | MOTORAUTO", circuit: "Circuit | MOTORAUTO", pilot: "Pilote | MOTORAUTO", garage: "Mon garage | MOTORAUTO", settings: "Réglages | MOTORAUTO",
-    admin: "Administration | MOTORAUTO", legal: "Informations légales | MOTORAUTO", engine: "Moteur | MOTORAUTO", contact: "Contact | MOTORAUTO", commcar: "Voiture de pilote | MOTORAUTO", compare: "Comparateur | MOTORAUTO", duel: "Duel | MOTORAUTO", quiz: "Quiz | MOTORAUTO", club: "Club | MOTORAUTO", clubs: "Clubs | MOTORAUTO", market: "Annonces | MOTORAUTO", car: "Fiche véhicule | MOTORAUTO",
+    admin: "Administration | MOTORAUTO", legal: "Informations légales | MOTORAUTO", engine: "Moteur | MOTORAUTO", brand: "Marque | MOTORAUTO", contact: "Contact | MOTORAUTO", commcar: "Voiture de pilote | MOTORAUTO", compare: "Comparateur | MOTORAUTO", duel: "Duel | MOTORAUTO", quiz: "Quiz | MOTORAUTO", club: "Club | MOTORAUTO", clubs: "Clubs | MOTORAUTO", market: "Annonces | MOTORAUTO", car: "Fiche véhicule | MOTORAUTO",
     pass: "Pass de saison | MOTORAUTO", fusion: "Fusion de cartes | MOTORAUTO", cardmarket: "Marché de cartes | MOTORAUTO", wishfeed: "Souhaits et échanges | MOTORAUTO", plusmoins: "Plus ou moins | MOTORAUTO", quizgame: "Quiz | MOTORAUTO", achievements: "Succès | MOTORAUTO", timeline: "Frise chronologique | MOTORAUTO", news: "Nouveautés | MOTORAUTO"
   };
   const DEFAULT_TAB = { settings: "profil", community: "hub-pilotes", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "cartes" };
@@ -107,6 +108,7 @@
       case "admin": return "/admin" + (params.tab ? "/" + params.tab : "");
       case "contact": return "/contact";
       case "engine": return "/moteur/" + e(params.key);
+      case "brand": return "/marque/" + e(params.key);
       case "legal": return "/legal" + (params.doc ? "/" + e(params.doc) : "");
       case "duel": return "/duel" + (params.a && params.b ? "/" + e(params.a) + "/" + e(params.b) : "");
       case "club": return "/club/" + e(params.id);

@@ -284,9 +284,9 @@ html:not(.ma-garage) #home-feed-sec{display:none}
 .gh-go{position:absolute;right:1rem;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-ink,var(--accent));font-style:normal;font-weight:700}
 .gh-friends{display:flex;align-items:center;gap:.9rem;margin-top:.8rem;padding:.7rem 1rem;border-radius:999px;background:var(--bg-surface);border:1px solid var(--stroke-line)}
 .gh-friends[hidden]{display:none}
-.gh-fr{display:flex;gap:.45rem}
-.gh-av{position:relative;width:38px;height:38px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--bg-elevated);font-weight:700;color:var(--accent-ink,var(--accent));text-decoration:none;overflow:visible}
-.gh-av img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.gh-fr{display:flex;gap:.45rem;flex:1 1 auto;min-width:0;overflow-x:auto;padding:3px 4px;scrollbar-width:none}.gh-fr::-webkit-scrollbar{display:none}.gh-friends .gh-lab{flex:0 0 auto;white-space:nowrap}
+.gh-av{position:relative;flex:0 0 38px;width:38px;height:38px;aspect-ratio:1;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--bg-elevated);font-weight:700;color:var(--accent-ink,var(--accent));text-decoration:none;overflow:visible}
+.gh-av img{width:100%;height:100%;border-radius:50%;object-fit:cover;aspect-ratio:1;display:block}
 .gh-dot{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:#2fbf71;border:2px solid var(--bg-surface)}
 
 /* ===== Échelle commune : rayons, titres, survols, squelettes ===== */

@@ -141,6 +141,8 @@
 
   // ------------------------------------------------------------------ vue d'ensemble
   const SVI = (d) => `<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  /** « 11 catégories, 4 niveaux » : lu dans le moteur du jeu, donc toujours à jour */
+  const quizBlurb = () => { const G = window.MAGameCore || {}, n = Object.keys(G.QCATS || {}).length || 11, l = Object.keys(G.QLEVELS || {}).length || 4, q = Math.floor(((G.QBANK || []).length || 600) / 100) * 100; return T("{n} catégories, {l} niveaux, {q}+ questions").replace("{n}", n).replace("{l}", l).replace("{q}", q); };
   const HUBI = {shop: SVI('<path d="M5 8h14l-1.2 11H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>'),fusion: SVI('<circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M7 10v2c0 2 5 2 5 6M17 10v2c0 2-5 2-5 6"/><circle cx="12" cy="20" r="1.4"/>'),market: SVI('<path d="M3 10l2-5h14l2 5"/><path d="M4 10v10h16V10"/><path d="M9 20v-6h6v6"/>'),wish: SVI('<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/>'),pm: SVI('<path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/>'),quiz: SVI('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1 1-1.1 1.8"/><circle cx="12" cy="17" r=".6"/>'),ach: SVI('<circle cx="12" cy="9" r="5.5"/><path d="M8.5 14L7 21l5-3 5 3-1.5-7"/>'),time: SVI('<path d="M3 12h18"/><circle cx="7" cy="12" r="2"/><circle cx="14" cy="12" r="2"/><path d="M7 10V6M14 14v4"/>'),news: SVI('<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 8h3v9a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/>')};
   /** pages d'accueil des trois onglets de Jouer : de grandes tuiles, comme avant */
   async function renderHub(group) {
@@ -157,7 +159,7 @@
         ${tile("#/marche", HUBI.market, T("Marché"), T("Vends et achète des cartes"), "")}
         ${tile("#/souhaits", HUBI.wish, T("Souhaits"), T("Qui cherche quoi, qui propose quoi"), "")}
       </div>` : group === "minijeux" ? `<div class="hub-grid">
-        ${tile("#/quiz", HUBI.quiz, T("Quiz"), T("8 catégories, 3 niveaux"), "")}
+        ${tile("#/quiz", HUBI.quiz, T("Quiz"), quizBlurb(), "")}
         ${tile("#/plusmoins", HUBI.pm, T("Plus ou moins"), T("Séries sans faute = cristaux"), "")}
         ${tile("#/duel", "🏁", "Duel", "0-100 km/h et 400 m en course", "")}
         <a class="hub-tile" href="#/jouer/minijeux" data-battle-tile role="button"><i class="hub-ico hub-ico-svg" aria-hidden="true"><svg viewBox="0 0 48 48" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="9" width="21" height="30" rx="4" transform="rotate(-14 15.5 24)"/><rect x="22" y="9" width="21" height="30" rx="4" transform="rotate(14 32.5 24)" fill="var(--accent)" stroke="var(--accent)"/><path d="M26.5 14l-5 10h6l-4 10" stroke="#fff" stroke-width="2.6"/></svg></i><b>Bataille</b><small>Contre l'IA ou contre un joueur, avec tes cartes</small></a>

@@ -176,10 +176,26 @@
     });
     return map;
   }
-  function pickRarity(rng, min) {
-    const x = rng(); let acc = 0;
+  /** poids d'UNE carte de chaque rareté : plus la rareté est haute, moins chaque carte sort. Les probabilités par rareté sont calculées d'après le NOMBRE de cartes de chaque rareté (voir oddsOf), donc elles suivent le catalogue */
+  const CARD_WEIGHT = { common: 1, rare: 0.6, epic: 0.34, legendary: 0.2, shiny: 0.1 };
+  const oddsCache = new WeakMap();
+  function oddsOf(rarities) {
+    if (!rarities || typeof rarities.forEach !== "function") return null;
+    if (oddsCache.has(rarities)) return oddsCache.get(rarities);
+    const n = {}; rarities.forEach((r, id) => { if (CARD_WEIGHT[r] && !isSpecial(id) && !isExtra(id)) n[r] = (n[r] || 0) + 1; });
+    let tot = 0; Object.keys(CARD_WEIGHT).forEach((r) => { tot += (n[r] || 0) * CARD_WEIGHT[r]; });
+    const o = {}; Object.keys(CARD_WEIGHT).forEach((r) => { o[r] = tot ? (n[r] || 0) * CARD_WEIGHT[r] / tot : RAR[r].odds; });
+    oddsCache.set(rarities, o); return o;
+  }
+  /** chance qu'une carte précise sorte d'un pack, pour chaque rareté (utile pour l'affichage) */
+  function dropRates(rarities) {
+    const o = oddsOf(rarities) || {}, n = {}; rarities.forEach((r, id) => { if (CARD_WEIGHT[r] && !isSpecial(id) && !isExtra(id)) n[r] = (n[r] || 0) + 1; });
+    return Object.keys(CARD_WEIGHT).map((r) => ({ rarity: r, count: n[r] || 0, odds: o[r] || 0, perCard: n[r] ? o[r] / n[r] : 0 }));
+  }
+  function pickRarity(rng, min, odds) {
+    const x = rng(); let acc = 0; odds = odds || {};
     for (const id of ["common", "rare", "epic", "legendary", "shiny"]) {
-      acc += RAR[id].odds;
+      acc += odds[id] != null ? odds[id] : RAR[id].odds;
       if (x < acc) return min && ORDER.indexOf(id) > ORDER.indexOf(min) ? min : id;
     }
     return "common";
@@ -192,7 +208,8 @@
     ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
     const pick = (r) => { const list = by[r].length ? by[r] : (r === "shiny" && by.legendary.length ? by.legendary : ids); return list[Math.floor(rng() * list.length)]; };
     const out = [];
-    for (let i = 0; i < 3; i++) out.push(pick(pickRarity(rng, i === 2 ? (legendPity ? "legendary" : epicPity ? "epic" : pity ? "rare" : null) : null)));
+    const od = oddsOf(rarities);
+    for (let i = 0; i < 3; i++) out.push(pick(pickRarity(rng, i === 2 ? (legendPity ? "legendary" : epicPity ? "epic" : pity ? "rare" : null) : null, od)));
     if (pity && !out.some((id) => rarities.get(id) !== "common")) out[2] = pick("rare");
     return out;
   }
@@ -412,14 +429,15 @@
     ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
     const pick = (r) => { const list = by[r] && by[r].length ? by[r] : ids; return list[Math.floor(rng() * list.length)]; };
     // rareté minimale : si le pays n'a aucune carte assez rare, on prend la meilleure rareté disponible
-    let first = pick(pickRarity(rng, min || "rare"));
+    const od = oddsOf(rarities);
+    let first = pick(pickRarity(rng, min || "rare", od));
     if ((rarities.get(first) === "common") && ids.some((id) => rarities.get(id) !== "common")) {
       const better = ids.filter((id) => rarities.get(id) !== "common"); first = better[Math.floor(rng() * better.length)];
     }
     const out = [first];
     while (out.length < (n || 2)) {
-      let nx = pick(pickRarity(rng, null));
-      for (let k = 0; k < 6 && out.indexOf(nx) >= 0 && ids.length > out.length; k++) nx = pick(pickRarity(rng, null));   // évite le doublon dans le même pack quand c'est possible
+      let nx = pick(pickRarity(rng, null, od));
+      for (let k = 0; k < 6 && out.indexOf(nx) >= 0 && ids.length > out.length; k++) nx = pick(pickRarity(rng, null, od));   // évite le doublon dans le même pack quand c'est possible
       out.push(nx);
     }
     return out;
@@ -447,14 +465,17 @@
     return m === 12 ? { y, d: Math.min(d, 24), over: d > 24 } : null;
   }
   function adventReward(n) {
-    if (n === 24) return { dust: 250, bonus: 2, card: true };
+    if (n === 24) return { dust: 250, bonus: 2, card: true, prestige: 1 };
     const r = { dust: 15 + n * 3 };
+    if (n === 12) r.prestige = 1;                              // pack Prestige offert à mi-parcours et à Noël
     if (n % 6 === 0) r.bonus = 1;
     if (n === 9 || n === 15 || n === 21) r.freeze = 1;
     if (n % 6 === 3) r.pts = 20;
     return r;
   }
-  const adventLabel = (r) => [r.dust && r.dust + " cristaux", r.bonus && r.bonus + " pack" + (r.bonus > 1 ? "s" : "") + " bonus", r.freeze && "1 gel de série", r.pts && r.pts + " points de saison", r.card && "la carte de Noël"].filter(Boolean).join(" + ");
+  const adventLabel = (r) => [r.dust && r.dust + " cristaux", r.bonus && r.bonus + " pack" + (r.bonus > 1 ? "s" : "") + " bonus", r.prestige && "1 pack Prestige", r.freeze && "1 gel de série", r.pts && r.pts + " points de saison", r.card && "la carte de Noël"].filter(Boolean).join(" + ");
+  /** objectif d'équipe d'un club : 30 cartes ouvertes par membre dans la semaine, au moins 60, arrondi à la dizaine */
+  const clubGoalTarget = (members) => Math.max(60, Math.round((Number(members) || 0) * 30 / 10) * 10);
   const HIST_MAX = 6;
   const HIST_LABEL = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté", craft: "Fabriquée", offer: "Carte du jour", fuse: "Fusion", trade: "Échange", market: "Marché", pass: "Pass de saison", album: "Album", gift: "Cadeau", wheel: "Roue", advent: "Avent", affiche: "Défi à cartes" };
   /** note l'arrivée d'un exemplaire : n = total d'exemplaires passés entre tes mains, e = 6 dernières origines [date, code] */
@@ -2264,6 +2285,13 @@ Le Cheval cabré|Ferrari|2
   const rarAtLeast = (s, r) => ORDER.slice(0, ORDER.indexOf(r) + 1).reduce((t, k) => t + _n(s.rar && s.rar[k]), 0);
   const brandN = (s, f) => _n(s.byBrand && s.byBrand[f]);
   let BRANDS_TOTAL = 40;
+  /** repères d'une marque (fondateur, année, ville, pays, emblème) tirés des données du quiz ; null si on n'en a pas */
+  const brandFacts = (name) => {
+    const k = String(name || "").toLowerCase(), r = QT.brands.find((x) => String(x[0]).toLowerCase() === k);
+    if (!r) return null;
+    const f = { founder: r[1] || "", year: Number(r[2]) || 0, city: r[3] || "", country: r[4] || "", emblem: r[5] || "" };
+    return f.founder || f.year || f.city || f.country || f.emblem ? f : null;
+  };
   const BRAND_BADGES = [["Peugeot", "🦁", "Fan du Lion"], ["Renault", "◆", "Ça roule en Losange"], ["BMW", "🌀", "Hélice bavaroise"], ["Mercedes", "⭐", "Étoile à trois branches"], ["Audi", "⭕", "Quatre anneaux"], ["Alfa Romeo", "🐍", "Biscione"], ["Toyota", "🌅", "Soleil levant"], ["Nissan", "🗾", "Samouraï"], ["Ford", "🔵", "Ovale bleu"], ["Porsche", "🏁", "Cap sur Stuttgart"], ["Citroën", "⚙️", "Double chevron"]];
   const EXTRA = [
     ["epic1", "💜", "Première Épique", "Posséder une carte Épique ou mieux", (s) => rarAtLeast(s, "epic"), 1, ""],
@@ -2273,6 +2301,9 @@ Le Cheval cabré|Ferrari|2
     ["shiny1", "🌈", "Premier Shiny", "Posséder une carte Shiny", (s) => rarAtLeast(s, "shiny"), 1, "gold"],
     ["shiny5", "✨", "Chasseur de Shiny", "Posséder 5 cartes Shiny ou mieux", (s) => rarAtLeast(s, "shiny"), 5, "gold"],
     ["mythic1", "🔱", "Légende vivante", "Posséder une carte Légende (album complété)", (s) => _n(s.rar && s.rar.mythic), 1, "gold"],
+    ["mythic5", "🏵️", "Cinq Légendes", "Posséder 5 cartes Légende (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 5, "gold"],
+    ["mythic10", "🏛️", "Dix Légendes", "Posséder 10 cartes Légende (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 10, "gold"],
+    ["sets50", "📚", "Grand archiviste", "Compléter 50 albums", (s) => _n(s.sets), 50, "gold"],
     ["card100", "💯", "Centenaire", "Posséder 100 cartes différentes", (s) => s.cards, 100, "silver"],
     ["card250", "📚", "Bibliothécaire", "Posséder 250 cartes différentes", (s) => s.cards, 250, "gold"],
     ["card400", "🏛️", "Conservateur", "Posséder 400 cartes différentes", (s) => s.cards, 400, "gold"],
@@ -2323,6 +2354,8 @@ Le Cheval cabré|Ferrari|2
   [
     ["r-col1", "💎", "Collection quasi complète", "Posséder 580 cartes différentes", (s) => s.cards, 580, "collection"],
     ["r-col2", "🔱", "Triple Légende", "Posséder 3 cartes Légende (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 3, "collection"],
+    ["r-col5", "🌟", "Panthéon des Légendes", "Posséder 25 cartes Légende (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 25, "collection"],
+    ["r-col6", "👑", "Toutes les Légendes", "Posséder toutes les cartes Légende", (s) => _n(s.rar && s.rar.mythic), () => LEGEND_IDS.length, "collection"],
     ["r-col3", "✦", "Gardien des éditions limitées", "Posséder 5 cartes d'édition limitée", (s) => _n(s.specials), 5, "collection"],
     ["r-col4", "📦", "Pack infini", "Ouvrir 5000 packs", (s) => _n(s.opened), 5000, "collection"],
     ["r-perf1", "🏆", "Maître des records", "Détenir 10 records de circuits", (s) => s.records, 10, "perf"],
@@ -2346,10 +2379,10 @@ Le Cheval cabré|Ferrari|2
 
   return {
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
-    setsOf, THEMED_SETS, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
+    brandFacts, clubGoalTarget, setsOf, THEMED_SETS, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, SURVIVAL, survivalSecs, survivalQuestions, survivalPlay, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, hashStr, PACKS, THEME_PACKS, themeMatch, themePackActive, themePacksNow, themePackNext, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, ROMAN, TIER_MAX, romanOf, variantId, nextVariant, grantVariant, shownVariant, seasonRank, questList, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
-    SHINY, PIN_EPIC, PIN_LEGENDARY, PRESTIGE_PACK_RX, isPrestige, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
+    SHINY, CARD_WEIGHT, oddsOf, dropRates, PIN_EPIC, PIN_LEGENDARY, PRESTIGE_PACK_RX, isPrestige, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

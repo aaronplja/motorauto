@@ -324,6 +324,7 @@
 "Laquelle est la plus récente ?": "Quale è la più recente?",
 "Quiz": "Quiz",
 "Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.": "Marchi, storia, motori, sport auto: scegli categoria e livello.",
+"{n} catégories, {l} niveaux": "{n} categorie, {l} livelli",
 "8 catégories, 3 niveaux": "8 categorie, 3 livelli",
 "Classement des quiz": "Classifica dei quiz",
 "Retour": "Indietro",
@@ -1242,5 +1243,6 @@
 "Tu peux comparer deux voitures côte à côte depuis leur fiche.": "Puoi confrontare due auto fianco a fianco dalla loro scheda.",
 "Un pack thématique ou une carte du jour peuvent se cacher dans la boutique : reviens chaque jour.": "Un pacchetto a tema o una carta del giorno possono nascondersi nel negozio: torna ogni giorno.",
 "épique ou mieux": "epica o migliore",
+"{n} catégories, {l} niveaux, {q}+ questions": "{n} categorie, {l} livelli, oltre {q} domande",
 "Plus": "Altro"
 }]);

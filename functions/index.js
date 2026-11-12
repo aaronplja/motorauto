@@ -59,7 +59,7 @@ function callable(name) {
     }
   });
 }
-["battleReport", "battleDailyStart", "syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "buyFreeze", "seasonClaim", "claimWelcome", "claimDayCard", "clubClash", "logAction", "weeklyStatus", "claimChallenge", "cardChallenges", "claimCardChallenge", "battleInvite", "battleRespond", "battleCancel", "battlePlay", "battleClaim", "battleEmote",
+["battleReport", "battleDailyStart", "syncCollection", "openPack", "craftCard", "upgradeCard", "touchStreak", "buyFreeze", "seasonClaim", "claimWelcome", "claimDayCard", "clubClash", "clubGoal", "clubGoalClaim", "logAction", "weeklyStatus", "claimChallenge", "cardChallenges", "claimCardChallenge", "battleInvite", "battleRespond", "battleCancel", "battlePlay", "battleClaim", "battleEmote",
   "proposeTrade", "respondTrade", "cancelTrade", "claimSpecial", "claimReferral", "claimSets", "adminGameTool", "adminBroadcast", "adminGrantCard", "adminContest",
   "fuseCards", "pmPlay", "quizSubmit", "lockCard", "recycleCards", "spinWheel", "openAdvent", "chronoStart", "chronoSubmit", "survivalStart", "survivalSubmit", "marketList", "marketBuy", "marketCancel"].forEach((n) => { exports[n] = callable(n); });
 
@@ -132,6 +132,7 @@ exports.pushOnNotification = require("./push").createPush({ db, messaging: admin
 
 // le 1er de chaque mois : clôture du concours photo précédent (gagnant, carte spéciale) et ouverture du suivant
 exports.closeDueContests = onSchedule({ schedule: "20 0 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.closeDueContests(); });
+exports.wishOffers = onSchedule({ schedule: "5 8 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.wishOffers(); });
 exports.wishDigest = onSchedule({ schedule: "40 9 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.wishDigest(); });
 exports.cardStatsNightly = onSchedule({ schedule: "50 3 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.computeCardStats(); });
 exports.dailyReminder = onSchedule({ schedule: "0 18 * * *", timeZone: "Europe/Paris", region: REGION }, async () => { await game.dailyReminder(); });

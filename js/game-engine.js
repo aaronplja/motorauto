@@ -51,7 +51,7 @@
     async function isKnownCard(pool, id) { return pool.byId.has(id) || (core.isSpecial(id) && !!(await specialCard(id))); }
 
     // ---------------------------------------------------------------- petits utilitaires
-    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, circuits: d.circuits || 0, liveries: d.liveries || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, bt: d.bt || null, bdDay: d.bdDay || "", dcDay: d.dcDay || "", season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
+    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, circuits: d.circuits || 0, liveries: d.liveries || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, bt: d.bt || null, bdDay: d.bdDay || "", dcDay: d.dcDay || "", season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, prestigeFree: d.prestigeFree || 0, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
     /** historique des cristaux (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
     function dustMove(d, n, why) {
       if (!n) return;
@@ -177,8 +177,12 @@
             src = pool.ids.filter((id) => core.countryOf((pool.byId.get(id) || {}).brand) === def.country);
             if (src.length < 2) fail("failed-precondition", "Ce pack n'est pas disponible pour l'instant.");
           }
-          if (d.dust < def.cost) fail("failed-precondition", "Il te faut " + def.cost + " cristaux pour ce pack (tu en as " + d.dust + ").");
-          dustMove(d, -def.cost, def.country || def.circuit || def.theme || def.prestige ? def.label + " acheté" : "Pack acheté");
+          if (def.prestige && data.offer !== true && (d.prestigeFree || 0) > 0) {
+            d.prestigeFree -= 1;                                  // pack Prestige offert par le calendrier de l'Avent : gratuit
+          } else {
+            if (d.dust < def.cost) fail("failed-precondition", "Il te faut " + def.cost + " cristaux pour ce pack (tu en as " + d.dust + ").");
+            dustMove(d, -def.cost, def.country || def.circuit || def.theme || def.prestige ? def.label + " acheté" : "Pack acheté");
+          }
         }
         const ids = kind === "shop" ? core.drawShopPack(pool.rar, src, rng, def.min, def.cards) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % core.PITY.rare === 0, (d.opened + 1) % core.PITY.epic === 0, (d.pity || 0) + 1 >= core.PITY.legend);
         let dust = 0, bonus = 0;
@@ -214,6 +218,7 @@
         if (kind !== "test") {
           w.logs = w.logs || {};
           const hi = cards.filter((c) => c.rarity === "epic" || c.rarity === "legendary" || c.rarity === "shiny").length;
+          w.logs.cards = (w.logs.cards || 0) + cards.length; weeklyTouched = true;      // objectif d'équipe des clubs : cartes ouvertes dans la semaine
           if (hi) { w.logs.epic = (w.logs.epic || 0) + hi; weeklyTouched = true; }
           if (kind === "shop" && (def.theme || def.prestige)) { w.logs.theme = (w.logs.theme || 0) + 1; weeklyTouched = true; const m4 = bump(d, "prestige"); if (m4.gain) { missions.gain += m4.gain; missions.names = missions.names.concat(m4.names); } }
         }
@@ -433,6 +438,7 @@
         av.o = av.o.concat([n]); d.advent = av;
         if (reward.dust) dustMove(d, reward.dust, "Avent, case " + n);
         if (reward.bonus) d.bonus = (d.bonus || 0) + reward.bonus;
+        if (reward.prestige) d.prestigeFree = (d.prestigeFree || 0) + reward.prestige;
         let fz = reward.freeze ? await giveFreezeTx(tx, uid, ss) : true;
         if (reward.freeze && !fz) dustMove(d, 75, "Avent, case " + n);
         if (reward.pts) core.seasonAdd(d, reward.pts, null, now(), true);
@@ -573,6 +579,40 @@
       }
       const cur = (await ref.get()).data() || {}, last = (await pref.get()).data() || {};
       return { week: wk, pairs: cur.pairs || [], prev: { week: prev, results: last.results || [] }, prize: CLASH_PRIZE };
+    }
+
+    // ---------------------------------------------------------------- objectif d'équipe du club (cartes ouvertes ensemble dans la semaine)
+    const CLUB_GOAL_REWARD = { dust: 60, bonus: 1 }, CLUB_GOAL_MIN_SELF = 3;
+    async function clubGoalState(uid) {
+      const wk = core.weekKey(now()), mem = await col("club_members").where("uid", "==", uid).limit(5).get();
+      if (mem.empty) return null;
+      const clubId = mem.docs[0].data().clubId, cl = await col("clubs").doc(clubId).get();
+      if (!cl.exists) return null;
+      const ids = (await col("club_members").where("clubId", "==", clubId).limit(80).get()).docs.map((x) => x.data().uid).filter(Boolean).slice(0, 60);
+      let total = 0, mine = 0, claimed = false;
+      for (const m of ids) {
+        const w = normWeekly(await col("weekly").doc(m).get(), wk), n = Number((w.logs || {}).cards) || 0;
+        total += n; if (m === uid) { mine = n; claimed = !!(w.logs || {}).clubGoal; }
+      }
+      const goal = core.clubGoalTarget(ids.length);
+      return { week: wk, clubId, name: str(cl.data().name || clubId, 40), members: ids.length, goal, total, mine, reached: total >= goal, claimed, minSelf: CLUB_GOAL_MIN_SELF, reward: CLUB_GOAL_REWARD };
+    }
+    async function clubGoal(caller) { return (await clubGoalState(caller.uid)) || { none: true }; }
+    async function clubGoalClaim(caller) {
+      const uid = caller.uid, st = await clubGoalState(uid);
+      if (!st) fail("failed-precondition", "Tu n'as pas de club.");
+      if (!st.reached) fail("failed-precondition", "L'objectif d'équipe n'est pas encore atteint.");
+      if (st.mine < CLUB_GOAL_MIN_SELF) fail("failed-precondition", "Ouvre au moins " + CLUB_GOAL_MIN_SELF + " cartes toi-même pour toucher la récompense.");
+      const wk = st.week;
+      const out = await db.runTransaction(async (tx) => {
+        const w = await readWeekly(tx, uid, wk); w.logs = w.logs || {};
+        if (w.logs.clubGoal) fail("already-exists", "Récompense déjà réclamée cette semaine.");
+        const d = await readCol(tx, uid);
+        w.logs.clubGoal = 1; writeWeekly(tx, uid, w);
+        dustMove(d, CLUB_GOAL_REWARD.dust, "Objectif d'équipe du club"); d.bonus = (d.bonus || 0) + CLUB_GOAL_REWARD.bonus; writeCol(tx, uid, d);
+        return { doc: view(d) };
+      });
+      return Object.assign(out, { reward: CLUB_GOAL_REWARD });
     }
 
     // ---------------------------------------------------------------- défis de la semaine
@@ -759,7 +799,9 @@
       if (open.some((t) => t.toUid === to && t.give === give && t.want === want)) fail("already-exists", "Cette proposition existe déjà.");
       const ref = col("trades").doc();
       await ref.set({ fromUid: uid, fromName, toUid: to, toName, give, want, message, status: "open", createdAt: ts(), updatedAt: ts() });
-      await notify(to, { uid, name: fromName }, fromName + " te propose un échange de cartes", "#/jouer/echanges", "trade");
+      let wished = false;
+      try { const ww = await col("wishlists").doc(to).get(); wished = ww.exists && Array.isArray(ww.data().ids) && ww.data().ids.indexOf(give) >= 0; } catch (_) { /* alerte facultative */ }
+      await notify(to, { uid, name: fromName }, wished ? "🎴 " + fromName + " te propose une carte de ta liste de souhaits" : fromName + " te propose un échange de cartes", "#/jouer/echanges", "trade");
       const gn = await cardLabel(pool, give), wn = await cardLabel(pool, want);
       const dmId = await sendDm(uid, fromName, to, "🃏 Proposition d'échange : " + gn + " contre " + wn, { tradeId: ref.id, tradeGive: give, tradeWant: want, tradeGiveName: gn, tradeWantName: wn, tradeNote: message, tradeStatus: "open", tradeTo: to });
       if (dmId) { try { await ref.update({ dmId }); } catch (_) { /* facultatif */ } }
@@ -914,6 +956,10 @@
           }
           writeCol(tx, uid, d);
           return { ok: true, reopened, doc: view(d) };
+        }).then(async (res) => {
+          // le joueur est prévenu : sans cela il croirait à un bug
+          await notify(uid, { uid: "motorauto", name: "MOTORAUTO" }, "Une carte Légende a été retirée de ta collection par l'administration." + (res.reopened ? " Ton album peut être réclamé de nouveau." : ""), "#/jouer/collection", "game");
+          return res;
         });
       }
       if (["bonus", "dust", "resetDaily", "resetCollection", "unlockAll"].indexOf(action) < 0) fail("invalid-argument", "Action inconnue.");
@@ -1339,6 +1385,23 @@
       await col("config").doc("cardStats").set({ total, map, at: ts() });
       return { total, cards: Object.keys(map).length };
     }
+    /** chaque matin : prévient les pilotes dont la liste de souhaits contient la « Carte du jour » en promotion */
+    async function wishOffers() {
+      const day = core.dayKey(now()), mark = col("config").doc("wishOffer"), m = await mark.get();
+      if (m.exists && m.data().day === day) return 0;
+      const pool = await getPool(), of = core.dailyOffers(day, pool.list, pool.rar);
+      await mark.set({ day, card: of.card || "", at: ts() });
+      if (!of.card) return 0;
+      const label = await cardLabel(pool, of.card), ws = await col("wishlists").where("ids", "array-contains", of.card).limit(300).get();
+      let sent = 0;
+      for (const w of ws.docs) {
+        const c = await col("collections").doc(w.id).get();
+        if (c.exists && ((c.data().owned || {})[of.card] || 0) > 0) continue;       // déjà possédée : inutile de prévenir
+        await notify(w.id, { name: "MOTORAUTO" }, "⭐ " + label + " (ta liste de souhaits) est la Carte du jour : " + of.cardCost + " cristaux", "#/jouer/boutique");
+        sent++;
+      }
+      return sent;
+    }
     async function wishDigest() {
       const ws = (await col("wishlists").limit(300).get()).docs, cs = (await col("collections").limit(500).get()).docs;
       const owned = new Map(), dups = new Map();
@@ -1509,7 +1572,7 @@
       return { status: "done" };
     }
 
-    return { battleReport, battleDailyStart, closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, claimDayCard, clubClash, logAction, weeklyStatus, claimChallenge, cardChallenges, claimCardChallenge, battleInvite, battleRespond, battleCancel, battlePlay, battleClaim, battleEmote, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, survivalStart, survivalSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
+    return { clubGoal, clubGoalClaim, wishOffers, battleReport, battleDailyStart, closeDueContests, syncCollection, openPack, craftCard, upgradeCard, claimSets, touchStreak, buyFreeze, seasonClaim, claimWelcome, claimDayCard, clubClash, logAction, weeklyStatus, claimChallenge, cardChallenges, claimCardChallenge, battleInvite, battleRespond, battleCancel, battlePlay, battleClaim, battleEmote, proposeTrade, respondTrade, cancelTrade, claimSpecial, claimReferral, adminGameTool, adminBroadcast, adminGrantCard, adminContest, monthlyContest, fuseCards, pmPlay, quizSubmit, lockCard, recycleCards, spinWheel, openAdvent, chronoStart, chronoSubmit, survivalStart, survivalSubmit, marketList, marketBuy, marketCancel, notifyFollowers, wishDigest, computeCardStats, dailyReminder, _getPool: getPool };
   }
   return { createGame, GameError };
 });

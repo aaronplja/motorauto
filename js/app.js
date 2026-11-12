@@ -523,7 +523,7 @@
       </div>
       ${car.imageCredit ? `<p class="img-credit">${esc(car.imageCredit)}</p>` : ""}
       <div class="sheet-heading-box${(car.images && car.images.length > 1) ? " after-gallery" : ""}">
-        <div class="sheet-brandline">${esc(car.brand)} <span>${esc(car.years)}</span></div>
+        <div class="sheet-brandline"><a class="brand-page-link" href="#/marque/${encodeURIComponent(String(car.group || car.brand || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, ""))}" title="Toutes les ${esc(car.brand)} du catalogue">${esc(car.brand)}</a> <span>${esc(car.years)}</span></div>
         <h2 class="sheet-big-title">${esc(car.model)}</h2>
         <p class="sheet-blurb">${esc(car.description)}</p>
         ${window.MATrack && car.drives.length ? `<div class="drive-chips" aria-label="Transmission">${window.MATrack.driveChips(car)}</div>` : ""}

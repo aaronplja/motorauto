@@ -72,6 +72,11 @@
     const btn = lastBtn && lastBtn.isConnected && Date.now() - lastAt < 800 && !lastBtn.classList.contains("ma-busy") ? lastBtn : null;
     if (btn) { btn.classList.add("ma-busy"); btn.setAttribute("aria-busy", "true"); }
     try { return await callInner(name, data); }
+    catch (e) {
+      // erreur technique (pas un refus normal du jeu) : elle remonte toute seule dans Administration › Erreurs
+      try { if (e && !e.isGame && (/Cannot (read|set)|is not a function|is not defined|undefined|null|TypeError/i.test(String(e.message || "")) || clean(e) === "internal") && window.MAErrors) window.MAErrors.report("jeu", new Error(name + " : " + (e.message || e.code))); } catch (_) { /* suivi facultatif */ }
+      throw e;
+    }
     finally { if (btn) { btn.classList.remove("ma-busy"); btn.removeAttribute("aria-busy"); } }
   }
   async function callInner(name, data) {

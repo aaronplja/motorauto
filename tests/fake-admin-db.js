@@ -34,10 +34,10 @@ class Col {
   constructor(db, path, filters, lim) { this.db = db; this.path = path; this.filters = filters; this.lim = lim || 1e9; }
   doc(id) { return new Doc(this.db, this.path, id || "auto" + ++this.db.autoId); }
   async add(data) { const d = this.doc(); await d.set(data); return d; }
-  where(f, op, v) { if (op !== "==") throw new Error("seul == est géré"); return new Col(this.db, this.path, this.filters.concat([[f, v]]), this.lim); }
+  where(f, op, v) { if (op !== "==" && op !== "array-contains") throw new Error("seuls == et array-contains sont gérés"); return new Col(this.db, this.path, this.filters.concat([[f, v, op]]), this.lim); }
   limit(n) { return new Col(this.db, this.path, this.filters, n); }
   async get() {
-    let docs = Array.from(this.db._col(this.path).entries()).filter(([, d]) => this.filters.every(([f, v]) => d[f] === v)).slice(0, this.lim);
+    let docs = Array.from(this.db._col(this.path).entries()).filter(([, d]) => this.filters.every(([f, v, op]) => (op === "array-contains" ? Array.isArray(d[f]) && d[f].indexOf(v) >= 0 : d[f] === v))).slice(0, this.lim);
     const arr = docs.map(([id, d]) => ({ id, exists: true, data: () => clone(d), ref: new Doc(this.db, this.path, id) }));
     return { docs: arr, size: arr.length, empty: !arr.length, forEach: (f) => arr.forEach(f) };
   }
