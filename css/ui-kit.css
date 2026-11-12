@@ -61,7 +61,7 @@ section[aria-label="Collection"] > header.cg-bh > .tcg-sub, section[aria-label="
 :root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-rar-chip.common { color: var(--ui-sig-grey); }
 /* l'aide « tcg-hint » est blanche pour les fenêtres sombres de pack ; sur une page claire elle devenait invisible */
 :root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) .tcg-hint:not(.tcg-overlay .tcg-hint, [role="dialog"] .tcg-hint) { color: var(--color-muted); }
-:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"]) :is(.cg-pack, .cg-price) :is(s, b) { color: var(--ui-sig-red); }
+:root:is([data-theme="studio-creme"], [data-theme="carrara-white"], [data-theme="silver-arrow"], [data-theme="ivory-dune"], [data-theme="nordic-frost"], [data-theme="solar-flare"], [data-theme="mint-speedway"], [data-theme="rose-gold-gt"], [data-theme="alpine-horizon"])  .cg-price :is(s, b) { color: var(--ui-sig-red); }
 
 /* ===== Mobile : zones tactiles ≥ 44 px (barre du haut et barre de navigation inchangées) ===== */
 @media (pointer: coarse), (max-width: 720px) {
@@ -77,4 +77,15 @@ section[aria-label="Collection"] > header.cg-bh > .tcg-sub, section[aria-label="
   .modal-layer { align-items: flex-end; padding: 0; }
   .modal-layer .modal-dialog:where(:not(#page-circuit *, .tcg *)) { width: 100%; max-width: none; border-radius: 22px 22px 0 0; max-height: 92dvh; padding-bottom: calc(var(--safe-bottom, 0px) + .6rem); transform: translate3d(0, 36px, 0); }
   .modal-layer.active .modal-dialog:where(:not(#page-circuit *, .tcg *)) { transform: none; }
+}
+
+/* ===== Logos de marques ajoutés par lien (admin) : pastille claire + image en couleurs ===== */
+.brand-dot.has-logo-img, .bs-ini.has-logo-img { background: #fff var(--logo-img) center / 68% no-repeat !important; color: transparent; }
+.brand-dot.has-logo-img { width: 26px; height: 26px; }
+
+/* ===== Mobile : cartes de jeu 2 par ligne (au lieu de 3) ===== */
+@media (max-width: 639px) {
+  .cg .tcg-grid, .cg-album-grid, .cg-pshow, .cg-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem .7rem; }
+  .cg .tcg-grid.compact { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+  .tcg-flips { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 1.6rem .8rem !important; }
 }

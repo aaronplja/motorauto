@@ -119,17 +119,36 @@
   const rankPower = (c) => (String(c.id).indexOf("lm-") === 0 ? c.power * 0.6 : c.power);
   /** cartes « Shiny » (arc-en-ciel, ≈ 0,5 % par carte tirée) : voitures mythiques choisies à la main */
   const SHINY = ["peugeot-205-t16", "peugeot-206-wrc", "nissan-skyline-gtr-r34", "nissan-gt-r-r35", "toyota-supra-a80-mk4", "ford-rs200", "ford-escort-rs-cosworth-t35", "audi-r8-v10", "honda-civic-ek9-type-r",
-    "lm-ford-gt40", "lm-porsche-917k", "lm-porsche-956", "lm-porsche-962c", "lm-mazda-787b", "lm-mclaren-f1-gtr", "lm-porsche-919"];
+    "lm-ford-gt40", "lm-porsche-917k", "lm-porsche-956", "lm-porsche-962c", "lm-mazda-787b", "lm-mclaren-f1-gtr", "lm-porsche-919",
+    // saison 2 : icônes japonaises, anglaises, italiennes et américaines + prototypes d'endurance mythiques
+    "toyota-2000gt", "honda-nsx-na1", "mazda-rx-7-type-r-fd3s", "mazda-cosmo-sport-110s", "nissan-skyline-gtr-r32", "lexus-lfa", "jaguar-xj220", "dodge-viper-gts-r", "dodge-challenger-srt-demon",
+    "alfa-romeo-33-stradale", "ferrari-dino-246-gt", "lm-ferrari-330-p4", "lm-jaguar-d-type", "lm-ferrari-250lm", "lm-peugeot-905", "lm-porsche-911-gt1-98", "lm-ferrari-499p"];
   /** cartes « Légende » : une par album pays / décennie, gagnée en complétant l'album (jamais tirée en pack, jamais fabriquée) */
   const LEGENDS = {
     "country:fr": "alpine-a110-classic", "country:de": "mb-300-slr", "country:it": "rally-lancia-037", "country:gb": "lm-mirage-gr8",
     "country:jp": "rally-subaru-impreza-gc8", "country:us": "lm-chevrolet-corvette-c5r", "country:se": "rally-saab-96", "country:xx": "rally-i20-n-rally1",
     "decade:1940": "mb-w125", "decade:1950": "mb-300-sl-gullwing", "decade:1960": "rally-citroen-ds-monte", "decade:1970": "rally-lancia-stratos", "decade:1980": "rally-lancia-delta-s4",
-    "decade:1990": "mb-clk-gtr", "decade:2000": "lm-audi-r8-lmp", "decade:2010": "mb-f1-hybrid", "decade:2020": "fiat-1000tipla"
+    "decade:1990": "mb-clk-gtr", "decade:2000": "lm-audi-r8-lmp", "decade:2010": "mb-f1-hybrid", "decade:2020": "fiat-1000tipla",
+    // albums de marque (marques de 3 à 30 modèles)
+    "brand:Bugatti": "bugatti-type-57sc-atlantic", "brand:Pagani": "pagani-huayra-codalunga", "brand:Koenigsegg": "koenigsegg-ccxr-trevita", "brand:Mazda": "lm-mazda-767b",
+    "brand:Lexus": "lexus-lfa-nurburgring-package", "brand:Datsun": "datsun-240z", "brand:Hennessey": "hennessey-venom-f5-roadster", "brand:Citroën": "rally-citroen-sm",
+    // collections thématiques
+    "theme:groupe-b": "audi-sport-quattro-s1-e2", "theme:gtr": "nissan-skyline-gt-r-nismo-r32", "theme:type-r": "honda-nsx-r-na1", "theme:evo": "mitsubishi-lancer-evolution-vi-tommi-makinen-edition",
+    "theme:subaru-wrx": "subaru-impreza-s204", "theme:toyota-gr": "toyota-sprinter-trueno-ae86", "theme:porsche-911": "porsche-911-gt3-rs-991", "theme:ferrari-v12": "ferrari-365-gtb-4-daytona",
+    "theme:bmw-m": "bmw-m1", "theme:amg": "mb-amg-one", "theme:audi-sport": "audi-quattro", "theme:mustang": "ford-mustang-boss-429", "theme:muscle-us": "dodge-charger-daytona",
+    "theme:hypercars": "koenigsegg-jesko-absolut", "theme:mclaren": "mclaren-f1", "theme:jaguar": "jaguar-e-type-lightweight", "theme:lotus": "lotus-evija",
+    "theme:citroen-rallye": "rally-citroen-bx-4tc", "theme:peugeot-sport": "rally-peugeot-205-t16-e2", "theme:renault-sport": "renault-rs01", "theme:alpine": "alpine-a220",
+    "theme:aston-martin": "aston-martin-db5", "theme:lamborghini": "lamborghini-miura-p400", "theme:ferrari-v8": "ferrari-f40", "theme:maserati": "maserati-mc12", "theme:viper": "dodge-viper-acr-vx",
+    "theme:lemans-classic": "lm-ferrari-250p", "theme:lemans-modern": "lm-audi-r18-e-tron", "theme:rallye-monde": "rally-mini-cooper-s"
   };
   /** icônes « Légendaires » fixées à la main (leur rareté ne dépend pas du rang calculé) */
   const PIN_LEGENDARY = ["ferrari-250-gto", "ferrari-f40", "ferrari-f50", "ferrari-enzo", "ferrari-laferrari", "ferrari-288-gto", "mclaren-f1", "bugatti-type-57sc-atlantic", "bugatti-type-41-royale", "bugatti-eb110-super-sport",
     "bugatti-veyron-16-4", "porsche-959", "porsche-carrera-gt", "porsche-911-carrera-rs-2-7", "lamborghini-miura-p400", "lamborghini-countach-lp400", "pagani-zonda-f", "pagani-huayra-bc", "maserati-mc12", "mclaren-p1"];
+  /** icônes « Épiques » au minimum : modèles cultes que leur puissance seule laissait « communs » (jamais en dessous, mais jamais au-dessus du rang calculé) */
+  const PIN_EPIC = ["mitsubishi-lancer-evolution-vi", "mitsubishi-lancer-evolution-ix", "mitsubishi-lancer-evolution-x-final-edition", "mitsubishi-3000gt-vr-4", "subaru-impreza-wrx-sti-type-ra", "subaru-impreza-s204",
+    "renault-clio-williams-16s", "renault-clio-v6", "renault-r5-turbo", "peugeot-205-gti", "peugeot-205-rallye", "peugeot-106-rallye", "peugeot-306-maxi", "alpine-a110-2017", "alpine-a610", "alpine-gta",
+    "honda-nsx-r-na1", "honda-nsx-type-s-nc1", "toyota-sprinter-trueno-ae86", "toyota-corolla-levin-ae86-gt-apex", "toyota-gr-supra-a90", "toyota-celica-gt-four-st205", "mazda-rx-7-spirit-r", "datsun-240z",
+    "lm-ferrari-250-tr", "lm-aston-dbr1", "lm-bentley-speed-six", "lm-alpine-a442b", "lm-peugeot-908", "lm-audi-r18-tdi", "ford-mustang-boss-302", "ford-mustang-shelby-gt500-1967", "dodge-charger-r-t-1968", "dodge-viper-rt-10"];
   const LEGEND_IDS = Object.keys(LEGENDS).map((k) => LEGENDS[k]);
   const PRESTIGE = /ferrari|lamborghini|porsche|mclaren|bugatti|aston martin|maserati|pagani|koenigsegg|lotus|bentley|rolls|de tomaso|shelby|jaguar|alpine|lancia|abarth/i;
   const SPORTY = /\b(gt|gti|gtr|gt-r|gto|gts|gt3|gt2|gt4|rs ?\d{0,2}|type[ -]?r|m[1-8]\d{0,2}i?|amg|cosworth|turbo|quadrifoglio|integrale|nismo|sti|evo|evolution|cup|trophy|stratos|csl|black series|competition|lightweight|clubsport|speedster|roadster|v12|v10|wrc|r5|group b|groupe b|supra|nsx|rx-7|skyline|mustang|corvette|viper|cayman|boxster|elise|exige|evora|z4|mx-5|gr ?\w*|r32|vr6|16s|s[2-8])\b/i;
@@ -153,7 +172,7 @@
     const map = new Map();
     sorted.forEach((c, i) => {
       const p = i / Math.max(1, sorted.length - 1);
-      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : SHINY.indexOf(c.id) >= 0 ? "shiny" : PIN_LEGENDARY.indexOf(c.id) >= 0 ? "legendary" : p < 0.06 ? "legendary" : p < 0.23 ? "epic" : p < 0.55 ? "rare" : "common");
+      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : SHINY.indexOf(c.id) >= 0 ? "shiny" : PIN_LEGENDARY.indexOf(c.id) >= 0 ? "legendary" : p < 0.06 ? "legendary" : (p < 0.23 || PIN_EPIC.indexOf(c.id) >= 0) ? "epic" : p < 0.55 ? "rare" : "common");
     });
     return map;
   }
@@ -195,8 +214,8 @@
     [/^(mercedes|sauber|bmw|audi|auto union|volkswagen|vw\b|opel|porsche|dauer|ruf|smart|maybach)/i, "de"],
     [/^(alfa|ferrari|lancia|fiat|abarth|lamborghini|maserati|pagani)/i, "it"],
     [/^(bentley|jaguar|aston|mini\b|lagonda|mclaren|mg\b|prodrive|mirage|lotus|rover|land rover|tvr|caterham|morgan)/i, "gb"],
-    [/^(toyota|nissan|datsun|honda|mazda|mitsubishi|subaru|suzuki|lexus|acura|infiniti|daihatsu)/i, "jp"],
-    [/^(ford|chevrolet|cadillac|dodge|chrysler|tesla|jeep|buick|pontiac|shelby|gmc)/i, "us"],
+    [/^(toyota|nissan|datsun|honda|mazda|mitsubishi|subaru|suzuki|lexus|acura|infiniti|daihatsu|isuzu)/i, "jp"],
+    [/^(ford|chevrolet|cadillac|dodge|chrysler|tesla|jeep|buick|pontiac|shelby|gmc|hennessey|ssc\b|saleen|vector|panoz|fisker|delorean|plymouth|oldsmobile|lincoln|mercury|hummer|rivian|lucid)/i, "us"],
     [/^(volvo|saab|koenigsegg|polestar)/i, "se"]
   ];
   function countryOf(brand) {
@@ -330,6 +349,10 @@
   const PACKS = { world: { id: "world", label: "Pack mondial", cost: 200, cards: 3, min: "rare", country: "" } };
   COUNTRIES.forEach((k) => { PACKS[k.id] = { id: k.id, label: "Pack " + k.label, cost: k.cost, cards: 3, min: "rare", country: k.id }; });
   PACKS.circuit = { id: "circuit", label: "Pack Circuit", cost: 400, cards: 3, min: "rare", country: "", circuit: true };
+  /** Pack Prestige (permanent) : seulement les grandes marques de rêve, première carte au moins « épique » */
+  const PRESTIGE_PACK_RX = /^(ferrari|lamborghini|porsche|mclaren|bugatti|aston|maserati|pagani|koenigsegg|bentley|rolls|rimac|hennessey|lotus|ssc)/i;
+  const isPrestige = (c) => !!c && PRESTIGE_PACK_RX.test(String(c.brand || ""));
+  PACKS.prestige = { id: "prestige", label: "Pack Prestige", cost: 450, cards: 3, min: "epic", country: "", prestige: true };
   // ------------------------------------------------------------------ packs thématiques temporaires (calendrier, heure de Paris)
   /** from / to : [mois, jour] inclus, chaque année. Le pack n'est achetable que pendant sa fenêtre. */
   const THEME_PACKS = {
@@ -338,9 +361,13 @@
     th_muscle: { id: "th_muscle", name: "Muscle cars", icon: "🇺🇸", cost: 250, from: [7, 1], to: [7, 14], about: "V8 américains : Mustang, Camaro, Charger, Corvette…", style: "--p1:#7f1d1d;--p2:#f8fafc;--p3:#1d4ed8" },
     th_supercar: { id: "th_supercar", name: "Supercars", icon: "💎", cost: 320, from: [8, 15], to: [8, 29], about: "Les voitures de rêve : semaine de Monterey", style: "--p1:#111827;--p2:#e5e7eb;--p3:#a78bfa" },
     th_youngtimer: { id: "th_youngtimer", name: "Youngtimers", icon: "📼", cost: 220, from: [9, 1], to: [9, 14], about: "Les années 80 et 90 : les futures collectors", style: "--p1:#4c1d95;--p2:#22d3ee;--p3:#f472b6" },
-    th_jdm: { id: "th_jdm", name: "JDM", icon: "🗾", cost: 250, from: [10, 25], to: [11, 15], about: "Le Japon sur route et sur circuit", style: "--p1:#ffffff;--p2:#bc002d;--p3:#1f2937" }
+    th_jdm: { id: "th_jdm", name: "JDM", icon: "🗾", cost: 250, from: [10, 25], to: [11, 15], about: "Le Japon sur route et sur circuit", style: "--p1:#ffffff;--p2:#bc002d;--p3:#1f2937" },
+    th_hypercar: { id: "th_hypercar", name: "Hypercars", icon: "🚀", cost: 380, from: [3, 5], to: [3, 19], about: "Bugatti, Koenigsegg, Pagani, Rimac : le salon de Genève", min: "epic", style: "--p1:#0f172a;--p2:#38bdf8;--p3:#f1f5f9" },
+    th_classic: { id: "th_classic", name: "Classiques", icon: "🎩", cost: 260, from: [4, 10], to: [4, 24], about: "Avant 1976 : les anciennes qui ont fait la légende", style: "--p1:#3f2d1d;--p2:#d4a373;--p3:#fefae0" },
+    th_sport_de: { id: "th_sport_de", name: "Sportives allemandes", icon: "🍺", cost: 260, from: [10, 1], to: [10, 14], about: "AMG, M, RS, GT3 : la précision allemande", style: "--p1:#111111;--p2:#dd0000;--p3:#ffce00" },
+    th_prestige: { id: "th_prestige", name: "Prestige de fin d'année", icon: "🎄", cost: 350, from: [12, 15], to: [12, 31], about: "Ferrari, Lamborghini, Porsche, Aston Martin… une carte épique ou mieux garantie", min: "epic", style: "--p1:#14532d;--p2:#fbbf24;--p3:#fef3c7" }
   };
-  Object.keys(THEME_PACKS).forEach((id) => { const t = THEME_PACKS[id]; PACKS[id] = { id, label: "Pack " + t.name, cost: t.cost, cards: 3, min: "rare", country: "", theme: id }; });
+  Object.keys(THEME_PACKS).forEach((id) => { const t = THEME_PACKS[id]; PACKS[id] = { id, label: "Pack " + t.name, cost: t.cost, cards: 3, min: t.min || "rare", country: "", theme: id }; });
   const RALLY_RX = /rall(y|ye)\b|wrc|groupe? b\b|group b\b|integrale|stratos|037|205 t16|escort.*cosworth|sierra.*cosworth|impreza|lancer.*evo|celica.*gt-?four|quattro s1|delta s4|metro 6r4|corolla.*wrc|yaris.*wrc|i20.*wrc|puma.*rally|c3.*wrc|focus.*wrc|clio.*(williams|maxi)|a110.*(1600|1800)|r5 turbo|stratos/i;
   const _md = (ms) => { const k = dayKey(ms === undefined ? Date.now() : ms); return Number(k.slice(5, 7)) * 100 + Number(k.slice(8, 10)); };
   /** la voiture appartient-elle au thème ? (c : { brand, model|name, category, year|years }) */
@@ -354,6 +381,10 @@
       case "th_supercar": return c.category === "Supercar";
       case "th_youngtimer": return y >= 1980 && y <= 1999;
       case "th_jdm": return countryOf(c.brand) === "jp";
+      case "th_hypercar": return /^(bugatti|koenigsegg|pagani|rimac|hennessey|ssc|lotus evija|mclaren)/i.test(String(c.brand || "")) && (y >= 2000 || /one|p1|f1|speedtail|senna|w1/i.test(name));
+      case "th_classic": return y > 0 && y <= 1975 && !isCircuit(c.id);
+      case "th_sport_de": return countryOf(c.brand) === "de" && /amg|\bm[1-8]\b|\bm\d{3}|\brs ?\d|gt3|gt2|gts|turbo|black series|r8|sls|csl|\bgt\b|cosworth|clk gtr|911|carrera|ruf|quattro|gti|\bs\d{1,2}\b|sport/i.test(name);
+      case "th_prestige": return isPrestige(c);
       default: return false;
     }
   }
@@ -486,7 +517,11 @@
     { id: "vote1", icon: "📸", label: "Vote au concours photo", goal: 1, src: "q:votes", reward: { dust: 30 } },
     { id: "chat5", icon: "💭", label: "Écris 5 messages dans le salon", goal: 5, src: "q:chat", reward: { dust: 30 } },
     { id: "trade1", icon: "🔄", label: "Réalise un échange de cartes", goal: 1, src: "counter:trades", reward: { bonus: 1 } },
-    { id: "wish3", icon: "⭐", label: "Mets 3 cartes dans ta wishlist", goal: 3, src: "state:wish", reward: { dust: 20 } }
+    { id: "wish3", icon: "⭐", label: "Mets 3 cartes dans ta wishlist", goal: 3, src: "state:wish", reward: { dust: 20 } },
+    // saison 2 : défis liés aux nouveaux packs, aux raretés et aux albums (comptés par le serveur)
+    { id: "theme1", icon: "🎯", label: "Ouvre un pack thématique ou Prestige", goal: 1, src: "log:theme", reward: { dust: 60 } },
+    { id: "epic2", icon: "💜", label: "Pioche 2 cartes épiques ou mieux dans des packs", goal: 2, src: "log:epic", reward: { dust: 50 } },
+    { id: "album1", icon: "📚", label: "Termine un album de collection (et gagne sa Légende)", goal: 1, src: "log:album", reward: { dust: 80 } }
   ];
   /** défi du jour (1 par jour, identique pour tous) : actions simples comptées depuis minuit (heure de Paris) */
   const DAILY = [
@@ -516,8 +551,9 @@
   const featuredItems = (name) => FEATURED.map((f) => Object.assign({}, f, { label: f.label(name) }));
   /** voiture mise en avant par défaut : tirage déterministe sur la liste triée du catalogue */
   const autoFeatured = (wk, ids) => { const l = ids.slice().sort(); return l.length ? l[hashStr("motorauto-feat-" + wk) % l.length] : ""; };
-  /** défis à cartes : une « affiche » de voiture = plusieurs défis ; tous validés = la carte de la voiture est gagnée (4 affiches par mois) */
+  /** défis à cartes : une « affiche » de voiture = plusieurs défis ; tous validés = la carte de la voiture est gagnée (5 affiches par mois) */
   const CARD_CHALS = [
+    { id: "c-album", icon: "📚", label: (n, b, g) => "Termine " + g + " album" + (g > 1 ? "s" : "") + " de collection ce mois-ci" },
     { id: "c-react", icon: "🔥", label: (n) => "Réagis à la fiche de « " + n + " »" },
     { id: "c-comment", icon: "✍️", label: (n) => "Donne ton avis sur « " + n + " » (commentaire)" },
     { id: "c-brand", icon: "🏁", label: (n, b, g) => "Possède " + g + " cartes " + b },
@@ -526,11 +562,11 @@
     { id: "c-trade", icon: "🔁", label: (n, b, g) => "Réalise " + g + " échange" + (g > 1 ? "s" : "") + " de cartes ce mois-ci" }
   ];
   /** objectifs chiffrés selon la rareté de la carte à gagner */
-  const CARD_GOALS = { rare: { brand: 5, quiz: 2, packs: 8, trade: 0 }, epic: { brand: 7, quiz: 4, packs: 14, trade: 1 }, legendary: { brand: 9, quiz: 6, packs: 20, trade: 2 } };
-  /** les affiches du mois : 1 légendaire, 1 épique, 2 rares tirées au sort (mêmes pour tous) */
+  const CARD_GOALS = { rare: { brand: 5, quiz: 2, packs: 8, trade: 0, album: 0 }, epic: { brand: 7, quiz: 4, packs: 14, trade: 1, album: 0 }, legendary: { brand: 9, quiz: 6, packs: 20, trade: 2, album: 1 }, shiny: { brand: 10, quiz: 8, packs: 25, trade: 3, album: 2 } };
+  /** les affiches du mois : 1 shiny, 1 légendaire, 1 épique, 2 rares tirées au sort (mêmes pour tous) */
   function cardChalCars(month, ids, rar) {
     const rnd = mulberry(hashStr("motorauto-cc-" + month)), out = [];
-    [["legendary", 1], ["epic", 1], ["rare", 2]].forEach((b) => {
+    [["shiny", 1], ["legendary", 1], ["epic", 1], ["rare", 2]].forEach((b) => {
       const pool = ids.filter((id) => rar.get(id) === b[0] && out.indexOf(id) < 0).sort();
       for (let k = 0; k < b[1] && pool.length; k++) out.push(pool.splice(Math.floor(rnd() * pool.length), 1)[0]);
     });
@@ -569,14 +605,23 @@
     ["jaguar", "Jaguar, félin de légende", /^jaguar/i, null, 70],
     ["mclaren", "McLaren", /^mclaren/i, null, 80],
     ["lotus", "Lotus", /^lotus/i, null, 70],
-    ["groupe-b", "Les monstres du groupe B", null, /group(e)? b\b|delta s4|\b037\b|205 t16|405 t16|quattro s1|metro 6r4|rs200|ascona 400|manta 400|bx 4tc|5 maxi turbo|rx-?7 gpb/i, 150]
+    ["groupe-b", "Les monstres du groupe B", null, /group(e)? b\b|delta s4|\b037\b|205 t16|405 t16|quattro s1|metro 6r4|rs200|ascona 400|manta 400|bx 4tc|5 maxi turbo|rx-?7 gpb/i, 150],
+    ["aston-martin", "Aston Martin, de Bond au Mans", /^aston/i, null, 100],
+    ["lamborghini", "Lamborghini, les taureaux", /^lamborghini/i, null, 100],
+    ["ferrari-v8", "Ferrari V8 et Dino", /^ferrari/i, /308|328|348|355|360|430|458|488|f8|296|dino|mondial|f40|288|gtb\b|speciale|pista|challenge|tributo/i, 100],
+    ["maserati", "Maserati, le trident", /^maserati/i, null, 80],
+    ["viper", "Dodge Viper, le serpent", /^dodge/i, /viper/i, 60],
+    // albums « catégorie » : les familles trop grandes (Le Mans, rallye) sont découpées en collections atteignables
+    ["lemans-classic", "Le Mans : l'âge d'or (avant 1980)", null, null, 100, (c) => c.category === "Le Mans" && yearOf(c) > 0 && yearOf(c) < 1980],
+    ["lemans-modern", "Le Mans : l'ère moderne (1980 et après)", null, null, 100, (c) => c.category === "Le Mans" && yearOf(c) >= 1980],
+    ["rallye-monde", "Rallye : les reines des spéciales", null, null, 120, (c) => String(c.id).indexOf("rally-") === 0]
   ];
-  const themedOf = (list, t) => (list || []).filter((c) => { const b = String(c.brand || ""); if (t[2] && !t[2].test(b)) return false; return !t[3] || t[3].test(b + " " + String(c.model || c.name || "")); }).map((c) => c.id);
+  const themedOf = (list, t) => (list || []).filter((c) => { const b = String(c.brand || ""); if (t[2] && !t[2].test(b)) return false; if (t[5] && !t[5](c)) return false; return !t[3] || t[3].test(b + " " + String(c.model || c.name || "")); }).map((c) => c.id);
   function setsOf(list) {
     const out = [], skip = new Set(LEGEND_IDS);
     const add = (id, name, kind, ids, legend) => {
       ids = ids.filter((x) => !skip.has(x));
-      if (ids.length >= (kind === "category" ? 3 : kind === "brand" ? 3 : 2)) out.push({ id, name: kind === "category" ? "Famille " + name : name, kind, ids, reward: setReward(ids.length) + (legend ? 100 : 0), legend: legend || "" });
+      if (ids.length >= (kind === "category" ? 3 : kind === "brand" ? 3 : 2)) out.push({ id, name: kind === "category" ? "Famille " + name : name, kind, ids, reward: Math.min(700, setReward(ids.length) + (legend ? 100 : 0)), legend: legend || "" });
     };
     const group = (keyFn, prefix, kind, min, max, nameFn) => {
       const m = new Map();
@@ -587,7 +632,7 @@
     group((c) => decadeOf(c) || "", "decade", "decade", 2, 400, (v) => decadeLabel(Number(v)));
     group((c) => String(c.brand || "").trim(), "brand", "brand", 3, 30);
     group((c) => String(c.category || "").trim(), "cat", "category", 3, 80);
-    THEMED_SETS.forEach((t) => { const ids = themedOf(list, t); if (ids.length >= 3 && ids.length <= 120) { const before = out.length; add("theme:" + t[0], t[1], "theme", ids, ""); if (out.length > before) { if (out[out.length - 1].ids.length < 3) out.pop(); else out[out.length - 1].reward += t[4]; } } });
+    THEMED_SETS.forEach((t) => { const ids = themedOf(list, t); if (ids.length >= 3 && ids.length <= 120) { const before = out.length; add("theme:" + t[0], t[1], "theme", ids, LEGENDS["theme:" + t[0]]); if (out.length > before) { if (out[out.length - 1].ids.length < 3) out.pop(); else out[out.length - 1].reward = Math.min(700, out[out.length - 1].reward + t[4]); } } });
     const rank = { country: 0, decade: 1, brand: 2, category: 3, theme: 4 };
     return out.sort((a, b) => rank[a.kind] - rank[b.kind] || a.ids.length - b.ids.length || (a.name < b.name ? -1 : 1));
   }
@@ -616,7 +661,8 @@
       { id: "m-open", type: "open", goal: 2, label: "Ouvre 2 packs (jour, bonus ou boutique)", reward: 30 },
       { id: "m-upgrade", type: "upgrade", goal: 1, label: "Améliore une carte", reward: 30 },
       { id: "m-offer", type: "offer", goal: 1, label: "Profite d'une offre du jour", reward: 25 },
-      { id: "m-trade", type: "trade", goal: 1, label: "Réalise un échange de cartes", reward: 40 }
+      { id: "m-trade", type: "trade", goal: 1, label: "Réalise un échange de cartes", reward: 40 },
+      { id: "m-prestige", type: "prestige", goal: 1, label: "Ouvre un Pack Prestige ou thématique", reward: 50 }
     ];
     const a = others.splice(Math.floor(h / 8) % others.length, 1)[0], b = others[Math.floor(h / 64) % others.length];
     return [{ id: "m-shop-" + k.id, type: "shop", country: k.id, goal: 1, label: "Ouvre un pack " + k.label, reward: 40 }, a, b];
@@ -2304,6 +2350,6 @@ Le Cheval cabré|Ferrari|2
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, SURVIVAL, survivalSecs, survivalQuestions, survivalPlay, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, hashStr, PACKS, THEME_PACKS, themeMatch, themePackActive, themePacksNow, themePackNext, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, ROMAN, TIER_MAX, romanOf, variantId, nextVariant, grantVariant, shownVariant, seasonRank, questList, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
-    SHINY, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
+    SHINY, PIN_EPIC, PIN_LEGENDARY, PRESTIGE_PACK_RX, isPrestige, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

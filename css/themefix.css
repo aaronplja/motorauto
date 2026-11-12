@@ -305,7 +305,7 @@ html[data-chal-ready] .gh-chal-link::after,html[data-chal-ready] .play-subtabs a
 .cc-sec{margin-top:26px}
 .cc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:12px}
 .cc-poster{--cc:var(--accent);display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--bg-surface);border:1px solid var(--stroke-line);box-shadow:0 0 0 1px color-mix(in srgb,var(--cc) 35%,transparent)}
-.cc-poster.r-epic{--cc:#a855f7}.cc-poster.r-legendary{--cc:#f59e0b}.cc-poster.r-rare{--cc:#38bdf8}
+.cc-poster.r-epic{--cc:#a855f7}.cc-poster.r-legendary{--cc:#f59e0b}.cc-poster.r-rare{--cc:#38bdf8}.cc-poster.r-shiny{--cc:#f472b6}
 .cc-poster.ready{box-shadow:0 0 0 2px var(--cc),0 8px 26px color-mix(in srgb,var(--cc) 35%,transparent)}
 .cc-poster.won{opacity:.78}
 .cc-art{position:relative;aspect-ratio:16/9;background:var(--bg-elevated)}

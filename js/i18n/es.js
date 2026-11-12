@@ -1241,5 +1241,6 @@
 "Sur la route, la vitesse limitée n'est pas un défi : garde les chronos pour le circuit.": "En carretera el límite de velocidad no es un reto: deja los cronos para el circuito.",
 "Tu peux comparer deux voitures côte à côte depuis leur fiche.": "Puedes comparar dos coches lado a lado desde su ficha.",
 "Un pack thématique ou une carte du jour peuvent se cacher dans la boutique : reviens chaque jour.": "Un sobre temático o una carta del día pueden esconderse en la tienda: vuelve cada día.",
+"épique ou mieux": "épica o mejor",
 "Plus": "Más"
 }]);

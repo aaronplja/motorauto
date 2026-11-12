@@ -170,6 +170,7 @@
   /** décor d'un pack : drapeau du pays (bandes de couleur), plaque centrale lisible quel que soit le fond */
   function packTheme(id) {
     if (id === "circuit") return { label: "Circuit", f: "world", style: "--p1:#111827;--p2:#ef4444;--p3:#f9fafb" };
+    if (id === "prestige") return { label: "Prestige", f: "world", style: "--p1:#1c1917;--p2:#d4af37;--p3:#fef3c7" };
     const tp = G.THEME_PACKS && G.THEME_PACKS[id]; if (tp) return { label: tp.name, f: "world", style: tp.style };
     const k = (G.COUNTRIES || []).find((x) => x.id === id);
     return k ? { label: k.label, f: k.f, style: `--p1:${k.c[0]};--p2:${k.c[1]};--p3:${k.c[2]}` } : { label: "Monde", f: "world", style: "--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24" };
@@ -634,7 +635,7 @@
     const dust = doc.dust, cost = o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
     const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
     const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>3 cartes</em>
-</span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : "");
+</span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : p.id === "prestige" ? "épique ou mieux" : "");
     const lack = dust < cost, price = o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
     return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}${o.cost != null ? " promo" : ""}" data-pack="shop" data-shop="${p.id}"${o.offer ? ` data-offer="1"` : ""} ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${cost} cristaux">
       ${o.cost != null ? `<span class="cg-ribbon">-${G.OFFER_PCT} %</span>` : ""}<span class="cg-art" ${st}>${art}</span>
@@ -646,7 +647,9 @@
     indexCars();
     const cars = C.cars;
     const circ = { id: "circuit", label: "Circuit", cost: G.PACKS.circuit.cost, total: G.CIRCUIT_CARDS.length, have: G.CIRCUIT_CARDS.filter((r) => countOf(r[0]) > 0).length };
-    return [{ id: "world", label: "Monde", cost: G.PACKS.world.cost, total: cars.length, have: cars.filter((c) => countOf(c.id) > 0).length }, circ].concat((G.COUNTRIES || []).map((k) => {
+    const pres = cars.filter((c) => G.isPrestige && G.isPrestige(c) && rarityOf(c) !== "mythic");
+    const prestige = { id: "prestige", label: "Prestige", cost: G.PACKS.prestige.cost, total: pres.length, have: pres.filter((c) => countOf(c.id) > 0).length };
+    return [{ id: "world", label: "Monde", cost: G.PACKS.world.cost, total: cars.length, have: cars.filter((c) => countOf(c.id) > 0).length }, circ, prestige].concat((G.COUNTRIES || []).map((k) => {
       const list = cars.filter((c) => G.countryOf(c.brand) === k.id && rarityOf(c) !== "mythic");
       return { id: k.id, label: k.label, cost: k.cost, total: list.length, have: list.filter((c) => countOf(c.id) > 0).length };
     }));
@@ -695,7 +698,7 @@
         <button type="button" class="cg-gift ${canDaily ? "ready" : "off"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="cg-gi">🎁</span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
       </div>${wheelHtml()}${adventHtml()}${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
-      <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">3 voitures du pays, dont 1 rare ou mieux · Pack Circuit : 3 circuits · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
+      <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">3 voitures du pays, dont 1 rare ou mieux · Pack Circuit : 3 circuits · Pack Prestige : grandes marques, 1 épique ou mieux · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
   }
 
   // ----- Mes cartes

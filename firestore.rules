@@ -216,6 +216,15 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // --- Logos de marques ajoutés par lien : { map: { cléDeMarque: urlHttps } } — lecture publique, écriture réservée aux administrateurs
+    match /config/brand_logos {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['map'])
+        && request.resource.data.map is map;
+      allow delete: if false;
+    }
+
     // --- Raretés modifiées à la main par l'admin : { map: { idCarte: rareté } }
     match /config/rarities {
       allow read: if true;

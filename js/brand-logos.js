@@ -2,6 +2,8 @@
  * MOTORAUTO — logos de marques : remplace les initiales (pastilles des cartes et du bandeau des marques) par le logo
  * quand assets/brands/<marque>.svg existe (voir scripts/brand-logos.js). Le logo est un masque : il prend la couleur du thème.
  * Chaque fichier est testé directement (sans liste) ; sans logo, les initiales restent.
+ * Les logos ajoutés par lien depuis l'admin (« Logos de marques », Firestore config/brand_logos) s'affichent en pastille claire avec l'image en couleurs ;
+ * ils passent avant le fichier du site.
  */
 (function () {
   "use strict";
@@ -13,22 +15,47 @@
     return known.get(k);
   }
   /** « Peugeot Sport » -> peugeotsport puis peugeot ; « Nissan / Datsun » -> nissan ; « Mercedes-Benz » -> mercedesbenz */
+  let remote = {}, remoteReady = null;
+  const keyOf = (brand) => norm(String(brand || "").split(/\s*[\/&]\s*/)[0]);
+  function load(force) {
+    if (!force && remoteReady) return remoteReady;
+    remoteReady = (async () => {
+      for (let i = 0; i < 40 && !(window.MAApp && window.MAApp.ctx && window.MAApp.ctx().db); i++) await new Promise((r) => setTimeout(r, 250));
+      try { const s = await window.MAApp.ctx().db.collection("config").doc("brand_logos").get(); remote = s.exists && s.data().map ? Object.assign({}, s.data().map) : {}; } catch (_) { /* règle absente ou hors ligne : on garde les logos du site */ }
+      return remote;
+    })();
+    return remoteReady;
+  }
+  function setRemote(m) { remote = Object.assign({}, m || {}); remoteReady = Promise.resolve(remote); reset(); }
+  /** « Peugeot Sport » -> peugeotsport puis peugeot ; « Nissan / Datsun » -> nissan ; « Mercedes-Benz » -> mercedesbenz */
   async function nameFor(brand) {
+    await load();
     const words = String(brand || "").split(/\s*[\/&]\s*/)[0].trim().split(/\s+/).filter(Boolean);
-    for (let n = words.length; n >= 1; n--) { const k = norm(words.slice(0, n).join(" ")); if (k && await exists(k)) return k; }
-    return "";
+    for (let n = words.length; n >= 1; n--) { const k = norm(words.slice(0, n).join(" ")); if (k && remote[k]) return { k, remote: remote[k] }; }
+    for (let n = words.length; n >= 1; n--) { const k = norm(words.slice(0, n).join(" ")); if (k && await exists(k)) return { k }; }
+    return null;
   }
   async function one(el) {
     const host = el.closest(".car-brand-name, .bs-chip, .bs-item, button, a") || el.parentElement; if (!host) return;
     const own = el.textContent;
     const brand = host.dataset.brand || host.dataset.b || host.textContent.replace(own, "");
-    const k = await nameFor(brand);
-    if (!k) return;
-    el.classList.add("has-logo"); el.style.setProperty("--logo", 'url("' + url(k) + '")'); el.textContent = "";
+    const f = await nameFor(brand);
+    if (!f) return;
+    if (f.remote && /^https:\/\//i.test(f.remote)) { el.classList.add("has-logo-img"); el.style.setProperty("--logo-img", 'url("' + f.remote.replace(/["\\]/g, "") + '")'); el.textContent = ""; return; }
+    el.classList.add("has-logo"); el.style.setProperty("--logo", 'url("' + url(f.k) + '")'); el.textContent = "";
+  }
+  /** après un changement de logos : on remet à zéro les pastilles pour les recalculer (les initiales d'origine sont dans data-ini) */
+  function reset() {
+    document.querySelectorAll(".brand-dot[data-bl], .bs-ini[data-bl]").forEach((el) => {
+      if (el.dataset.ini != null) { el.classList.remove("has-logo", "has-logo-img"); el.style.removeProperty("--logo"); el.style.removeProperty("--logo-img"); el.textContent = el.dataset.ini; }
+      delete el.dataset.bl;
+    });
+    apply();
   }
   function apply() {
-    document.querySelectorAll(".brand-dot:not([data-bl]), .bs-ini:not([data-bl])").forEach((el) => { el.dataset.bl = "1"; one(el); });
+    document.querySelectorAll(".brand-dot:not([data-bl]), .bs-ini:not([data-bl])").forEach((el) => { el.dataset.bl = "1"; if (el.dataset.ini == null) el.dataset.ini = el.textContent; one(el); });
   }
+  window.MABrandLogos = { key: keyOf, load, setRemote };
   function start() {
     apply();
     let t = 0; new MutationObserver(() => { if (t) return; t = setTimeout(() => { t = 0; apply(); }, 120); }).observe(document.body, { childList: true, subtree: true });

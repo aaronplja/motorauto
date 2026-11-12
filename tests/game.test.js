@@ -470,7 +470,9 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     pool.filter((c) => c.brand === P.brand && c.id !== P.id).slice(0, goalB).forEach((c) => { own[c.id] = 1; });
     await db.collection("collections").doc("u9").set(Object.assign({}, core.blankCollection(), { owned: own, opened: 60, trades: 9 }));
     await db.collection("gstats").doc("u9").set({ quizPerfect: 30 });
+    await db.collection("set_claims").doc("u9").set({ done: { "country:fr": 1, "decade:1980": 2, "brand:Mazda": 3 } });   // albums terminés depuis le début du mois (objectif des affiches Shiny / Légendaire)
     cc = await G.cardChallenges(U9);
+    ok(cc.posters[0].rar === "shiny" && cc.posters[0].tasks.some((x) => x.id === "c-album"), "affiche Shiny du mois avec objectif d'albums");
     ok(cc.posters[0].ready, "affiche : tous les défis accomplis → prête");
     r = await G.claimCardChallenge(U9, { carId: P.id }); ok(r.doc.owned[P.id] === 1, "affiche terminée : la carte est gagnée");
     await rejects(G.claimCardChallenge(U9, { carId: P.id }), "failed-precondition", "carte d'affiche une seule fois");

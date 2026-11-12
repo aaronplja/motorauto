@@ -21,7 +21,7 @@
     const tile = (t) => {
       const list = themeCars(t.id), have = list.filter((c) => M().countOf(c.id) > 0).length, ok = doc.dust >= t.cost && list.length >= 6 && !busy, miss = Math.max(0, t.cost - doc.dust);
       return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}" data-pack="shop" data-shop="${t.id}" ${ok ? "" : "disabled"} aria-label="${esc(T("Pack") + " " + T(t.name))} : ${t.cost} ${T("cristaux")}">
-        <span class="cg-art" style="${t.style}"><span class="pkart-plate"><small>MOTORAUTO</small><b>${t.icon} ${esc(T(t.name))}</b><em>${T("3 cartes")}</em></span></span>
+        <span class="cg-art" style="${t.style}"><span class="pkart-plate"><small>MOTORAUTO</small><b>${t.icon} ${esc(T(t.name))}</b><em>${t.min === "epic" ? T("épique ou mieux") : T("3 cartes")}</em></span></span>
         <span class="cg-pm"><b>${esc(T("Pack") + " " + T(t.name))}</b><span class="cg-price${doc.dust < t.cost ? " lack" : ""}"><b>${t.cost}</b> ${window.MA.dustIcon(14)}</span></span>
         <span class="cg-have"><small>${have} / ${list.length} ${T("cartes du thème")}</small></span>${!ok && miss ? `<small class="cg-note">${T("il manque")} ${miss}</small>` : ""}</button>`;
     };
@@ -37,7 +37,7 @@
       const cur = free.querySelector("[data-daycard]"), html = giftHtml(doc);
       if (!cur) free.insertAdjacentHTML("beforeend", html);
       else if (cur.disabled !== (doc.dcDay === G.dayKey() || busy)) cur.outerHTML = html;
-      const anchor = root.querySelector('section[aria-label="Packs par pays"]');
+      const grid = root.querySelector(".cg-block .cg-packgrid"), anchor = root.querySelector('section[aria-label="Packs par pays"]') || (grid && grid.closest("section"));   // le libellé est traduit : on retrouve la section par sa grille
       if (anchor && !root.querySelector("#shop-themed")) anchor.insertAdjacentHTML("beforebegin", packsHtml(doc));
     }
   }

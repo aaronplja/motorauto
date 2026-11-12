@@ -18,7 +18,8 @@ const col = async () => (await db.collection("collections").doc("u1").get()).dat
 (async () => {
   const rar = core.computeRarities(pool), today = core.dayKey(NOW);
   // ---- cartes Légende
-  ok(core.LEGEND_IDS.length === 17 && new Set(core.LEGEND_IDS).size === 17, "17 légendes distinctes");
+  const NLEG = Object.keys(core.LEGENDS).length;
+  ok(core.LEGEND_IDS.length === NLEG && NLEG >= 50 && new Set(core.LEGEND_IDS).size === NLEG, NLEG + " légendes distinctes (pays, décennies, marques, collections)");
   ok(core.LEGEND_IDS.every((id) => pool.some((c) => c.id === id)), "chaque légende existe dans le catalogue");
   ok(core.LEGEND_IDS.every((id) => rar.get(id) === "mythic"), "les légendes ont la rareté « mythic »");
   ok(core.LEGEND_IDS.every((id) => !core.SHINY.includes(id)), "aucune légende n'est déjà Shiny");
@@ -27,7 +28,7 @@ const col = async () => (await db.collection("collections").doc("u1").get()).dat
   // ---- albums
   const sets = core.setsOf(pool);
   const leg = sets.filter((s) => s.legend);
-  ok(leg.length === 17 && sets.some((s) => s.kind === "country") && sets.some((s) => s.kind === "decade") && sets.some((s) => s.kind === "brand"), "albums pays / décennies / marques : " + sets.length + " dont " + leg.length + " avec Légende");
+  ok(leg.length === NLEG && sets.some((s) => s.kind === "country") && sets.some((s) => s.kind === "decade") && sets.some((s) => s.kind === "brand"), "albums pays / décennies / marques : " + sets.length + " dont " + leg.length + " avec Légende");
   ok(leg.every((s) => s.ids.indexOf(s.legend) < 0 && s.ids.length >= 2), "la Légende n'est pas exigée dans son propre album");
   ok(sets.every((s) => new Set(s.ids).size === s.ids.length), "pas de doublon dans un album");
   ok(core.decadeOf({ years: "1984 - 1994" }) === 1980 && core.decadeOf({ year: 1937 }) === 1940 && core.decadeOf({ years: "" }) === 0, "décennies");
@@ -82,6 +83,19 @@ const col = async () => (await db.collection("collections").doc("u1").get()).dat
   db.seed("collections", "u1", Object.assign(core.blankCollection(), { dust: 1000 }));
   r = await G.openPack(U, { kind: "shop", pack: mm.country });
   ok(r.missions.names.indexOf(mm.label) >= 0 && r.doc.mis.done.indexOf(mm.id) >= 0, "mission « " + mm.label + " » terminée (+" + mm.reward + ")");
+  // ---- saison 2 : Pack Prestige permanent et nouveaux packs thématiques
+  db.seed("collections", "u1", Object.assign(core.blankCollection(), { dust: 2000 }));
+  r = await G.openPack(U, { kind: "shop", pack: "prestige" });
+  ok(r.cards.length === 3 && r.cards.every((c) => core.isPrestige(pool.find((p) => p.id === c.id))) && ["epic", "legendary", "shiny"].indexOf(r.cards[0].rarity) >= 0 && r.doc.dust === 2000 - core.PACKS.prestige.cost, "Pack Prestige : grandes marques, 1re carte épique ou mieux, " + core.PACKS.prestige.cost + " cristaux");
+  const wk1 = (await db.collection("weekly").doc("u1").get()).data();
+  ok(wk1 && wk1.logs.theme === 1 && wk1.logs.epic >= 1 && !wk1.packs, "défis de la semaine : Prestige compté (log:theme), épiques piochées, sans compter comme pack du jour");
+  ok(["theme1", "epic2", "album1"].every((id) => core.CHALLENGES.some((c) => c.id === id && /^log:/.test(c.src))), "nouveaux défis hebdomadaires liés aux packs, raretés et albums");
+  ok(core.cardChalCars("2026-11", pool.map((c) => c.id), rar).some((id) => rar.get(id) === "shiny") && core.CARD_GOALS.shiny.album >= 1, "affiche Shiny dans les défis à cartes du mois");
+  ["th_hypercar", "th_classic", "th_sport_de", "th_prestige"].forEach((id) => ok(core.THEME_PACKS[id] && core.PACKS[id] && pool.filter((c) => core.themeMatch(id, c)).length >= 6, "pack thématique " + id + " jouable"));
+  ok(core.PACKS.th_prestige.min === "epic" && core.PACKS.th_hypercar.min === "epic" && core.PACKS.th_jdm.min === "rare", "rareté minimale des packs thématiques");
+  ok(core.countryOf("Hennessey") === "us" && core.countryOf("Isuzu") === "jp" && core.countryOf("SSC North America") === "us", "pays des constructeurs corrigés");
+  ok(core.SHINY.length >= 30 && core.SHINY.every((i) => pool.some((c) => c.id === i)), core.SHINY.length + " cartes Shiny, toutes dans le catalogue");
+  ok(core.PIN_EPIC.every((i) => pool.some((c) => c.id === i)) && core.PIN_EPIC.every((i) => ["epic", "legendary", "shiny", "mythic"].indexOf(rar.get(i)) >= 0), "icônes épiques au minimum");
   console.log(n + " vérifications cards4" + (fails ? " — " + fails + " ÉCHEC(S)" : " OK"));
   process.exit(fails ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

@@ -170,12 +170,15 @@
             src = pool.ids.filter((id) => !core.isCircuit(id) && !core.isExtra(id) && core.themeMatch(def.theme, pool.byId.get(id)));
             if (src.length < 6) fail("failed-precondition", "Ce pack n'est pas disponible pour l'instant.");
           } else if (def.circuit) src = pool.ids.filter((id) => core.isCircuit(id));
-          else if (def.country) {
+          else if (def.prestige) {
+            src = pool.ids.filter((id) => !core.isCircuit(id) && !core.isExtra(id) && core.isPrestige(pool.byId.get(id)));
+            if (src.length < 6) fail("failed-precondition", "Ce pack n'est pas disponible pour l'instant.");
+          } else if (def.country) {
             src = pool.ids.filter((id) => core.countryOf((pool.byId.get(id) || {}).brand) === def.country);
             if (src.length < 2) fail("failed-precondition", "Ce pack n'est pas disponible pour l'instant.");
           }
           if (d.dust < def.cost) fail("failed-precondition", "Il te faut " + def.cost + " cristaux pour ce pack (tu en as " + d.dust + ").");
-          dustMove(d, -def.cost, def.country || def.circuit || def.theme ? def.label + " acheté" : "Pack acheté");
+          dustMove(d, -def.cost, def.country || def.circuit || def.theme || def.prestige ? def.label + " acheté" : "Pack acheté");
         }
         const ids = kind === "shop" ? core.drawShopPack(pool.rar, src, rng, def.min, def.cards) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % core.PITY.rare === 0, (d.opened + 1) % core.PITY.epic === 0, (d.pity || 0) + 1 >= core.PITY.legend);
         let dust = 0, bonus = 0;
@@ -206,8 +209,16 @@
         }
         if (kind === "daily" || kind === "bonus") d.pity = cards.some((c) => c.rarity === "legendary" || c.rarity === "shiny" || c.rarity === "mythic") ? 0 : (d.pity || 0) + 1;
         if (kind !== "test") packLog(d, kind, cards, today);
+        // défis de la semaine : cartes épiques ou mieux piochées, packs thématiques / Prestige ouverts
+        let weeklyTouched = false;
+        if (kind !== "test") {
+          w.logs = w.logs || {};
+          const hi = cards.filter((c) => c.rarity === "epic" || c.rarity === "legendary" || c.rarity === "shiny").length;
+          if (hi) { w.logs.epic = (w.logs.epic || 0) + hi; weeklyTouched = true; }
+          if (kind === "shop" && (def.theme || def.prestige)) { w.logs.theme = (w.logs.theme || 0) + 1; weeklyTouched = true; const m4 = bump(d, "prestige"); if (m4.gain) { missions.gain += m4.gain; missions.names = missions.names.concat(m4.names); } }
+        }
         if (kind !== "test") { core.seasonAdd(d, core.SEASON_PTS.pack, { packs: 1 }, now()); }
-        if (kind === "shop") { writeCol(tx, uid, d); return { cards, dust, bonus, missions, doc: view(d) }; }   // n'entre ni dans les packs ouverts, ni dans les défis
+        if (kind === "shop") { writeCol(tx, uid, d); if (weeklyTouched) writeWeekly(tx, uid, w); return { cards, dust, bonus, missions, doc: view(d) }; }   // n'entre ni dans les packs ouverts, ni dans les défis
         if (kind === "test") { core.recount(d); writeCol(tx, uid, d); return { cards, dust, bonus, doc: view(d), test: true }; }
         if (kind === "daily") { d.lastPack = today; if (w.dailyDays.indexOf(today) < 0) w.dailyDays.push(today); } else d.bonus--;
         d.opened++; w.packs++;
@@ -266,6 +277,7 @@
       const uid = caller.uid, pool = await getPool(), sets = core.setsOf(pool.list);
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid), ref = col("set_claims").doc(uid), cs = await tx.get(ref), done = cs.exists ? Object.assign({}, cs.data().done || {}) : {};
+        const w = await readWeekly(tx, uid, core.weekKey(now()));
         const won = [], legends = [];
         sets.forEach((st) => {
           if (done[st.id] || !st.ids.every((id) => (d.owned[id] || 0) > 0)) return;
@@ -278,6 +290,7 @@
         if (!won.length) return { claimed: [], legends: [], doc: view(d), done };
         const total = won.reduce((t, w) => t + w.reward, 0);
         dustMove(d, total, "Album complété"); core.seasonAdd(d, core.SEASON_PTS.album * won.length, null, now(), true); writeCol(tx, uid, d);
+        w.logs = w.logs || {}; w.logs.album = (w.logs.album || 0) + won.length; writeWeekly(tx, uid, w);
         tx.set(ref, { done, updatedAt: ts() });
         return { claimed: won, legends, total, doc: view(d), done };
       });
@@ -674,10 +687,10 @@
     async function cardChalPosters(uid) {
       const pool = await getPool(), month = core.monthKey(now());
       const ids = core.cardChalCars(month, pool.ids.filter((x) => !core.isExtra(x) && pool.byId.has(x)), pool.rar);
-      const [cs, cl, gs] = await Promise.all([col("collections").doc(uid).get(), col("card_chals").doc(uid).get(), col("gstats").doc(uid).get()]);
+      const [cs, cl, gs, sc] = await Promise.all([col("collections").doc(uid).get(), col("card_chals").doc(uid).get(), col("gstats").doc(uid).get(), col("set_claims").doc(uid).get()]);
       const dd = cs.exists ? cs.data() : {}, owned = dd.owned || {}, ex = cl.exists ? cl.data() : {}, claimed = ex.claimed || {}, g = gs.exists ? gs.data() : {};
-      const now_ = { quiz: g.quizPerfect || 0, packs: dd.opened || 0, trade: dd.trades || 0 };
-      const hasBase = !!(ex.base && ex.base[month]), base = hasBase ? ex.base[month] : now_;
+      const now_ = { quiz: g.quizPerfect || 0, packs: dd.opened || 0, trade: dd.trades || 0, album: sc.exists ? Object.keys(sc.data().done || {}).length : 0 };
+      const hasBase = !!(ex.base && ex.base[month]), base = hasBase ? Object.assign({ album: now_.album }, ex.base[month]) : now_;
       const ownedIds = Object.keys(owned).filter((k) => owned[k] > 0);
       let comments = null;
       const posters = [];
@@ -694,11 +707,12 @@
         if (brand) defs.push(["c-brand", nb >= bg, Math.min(bg, nb), bg]);
         defs.push(["c-quiz", now_.quiz - (base.quiz || 0) >= goals.quiz, Math.min(goals.quiz, now_.quiz - (base.quiz || 0)), goals.quiz]);
         defs.push(["c-packs", now_.packs - (base.packs || 0) >= goals.packs, Math.min(goals.packs, now_.packs - (base.packs || 0)), goals.packs]);
+        if (goals.album) defs.push(["c-album", now_.album - (base.album || 0) >= goals.album, Math.min(goals.album, now_.album - (base.album || 0)), goals.album]);
         if (goals.trade) defs.push(["c-trade", now_.trade - (base.trade || 0) >= goals.trade, Math.min(goals.trade, now_.trade - (base.trade || 0)), goals.trade]);
         const tasks = defs.map((x) => { const t = core.CARD_CHALS.find((y) => y.id === x[0]); return { id: x[0], icon: t.icon, label: t.label(name, brand, x[3]), done: !!x[1], value: x[2], goal: x[3] }; });
         posters.push({ id, name, brand, image: str(c.image || c.img || "", 400), rar, owned: owned[id] || 0, claimed: !!claimed[id], tasks, ready: !claimed[id] && tasks.every((t) => t.done) });
       }
-      return { month, posters, claimed, base: hasBase ? null : { [month]: now_ } };
+      return { month, posters, claimed, base: hasBase && ex.base[month].album !== undefined ? null : { [month]: hasBase ? Object.assign({}, ex.base[month], { album: now_.album }) : now_ } };
     }
     async function cardChallenges(caller) {
       const r = await cardChalPosters(caller.uid);
