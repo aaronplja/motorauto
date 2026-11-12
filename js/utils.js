@@ -88,10 +88,12 @@
     return Number.isFinite(n) ? n : fallback;
   }
 
+  /** une seule graphie par famille (« Seat » et « SEAT » ne font plus deux marques) */
+  const GROUP_CASE = { seat: "SEAT" };
   /** Famille de marque : "Renault Sport" -> "Renault", "Nissan / Datsun" -> "Nissan". */
   function brandGroup(brand) {
     const first = String(brand || "").split(/[\s/&]+/).filter(Boolean)[0];
-    return first || "Autre";
+    return first ? (GROUP_CASE[first.toLowerCase()] || first) : "Autre";
   }
 
   /** "1996 - 2003" -> [1996, 2003] ; "depuis 2015" / "2015 - présent" -> [2015, année courante] ; sinon null. */

@@ -346,7 +346,7 @@
           if (t < 1 || t > core.PASS_TIERS) fail("invalid-argument", "Palier inconnu.");
           if (core.passTier(sn) < t) fail("failed-precondition", "Palier pas encore atteint.");
           if (sn.claimed.indexOf(t) >= 0) fail("failed-precondition", "Palier déjà récupéré.");
-          const r = core.passReward(t), pool = (r.epic || r.choice) ? await poolForClaim() : null, extra = [];
+          const r = core.passReward(t), pool = (r.epic || r.choice || r.circuit) ? await poolForClaim() : null, extra = [];
           if (r.choice) {
             const offer = core.legendOffer(pool.ids.filter((x) => !core.isExtra(x)), pool.rar, d.owned, uid, sn.n), pick = String((data && data.pick) || "");
             if (!pick) return { need: "pick", offer, doc: view(d) };

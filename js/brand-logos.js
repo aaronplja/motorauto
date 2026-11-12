@@ -28,11 +28,24 @@
   }
   function setRemote(m) { remote = Object.assign({}, m || {}); remoteReady = Promise.resolve(remote); reset(); }
   /** « Peugeot Sport » -> peugeotsport puis peugeot ; « Nissan / Datsun » -> nissan ; « Mercedes-Benz » -> mercedesbenz */
+  /** noms de fichiers présents dans assets/brands (index.json), pour retrouver « astonmartin » à partir de la famille « Aston » */
+  let fileKeys = null;
+  function loadFileKeys() {
+    if (!fileKeys) fileKeys = fetch(new URL("assets/brands/index.json", document.baseURI).href).then((r) => (r.ok ? r.json() : [])).then((l) => (Array.isArray(l) ? l : [])).catch(() => []);
+    return fileKeys;
+  }
+  /** le catalogue regroupe les marques par premier mot (« Alfa », « Aston », « Auto ») : si rien ne correspond exactement, on prend l'unique logo dont le nom commence par ce mot */
+  const onlyStart = (list, k) => { const m = list.filter((x) => x.indexOf(k) === 0); return m.length === 1 ? m[0] : ""; };
   async function nameFor(brand) {
     await load();
     const words = String(brand || "").split(/\s*[\/&]\s*/)[0].trim().split(/\s+/).filter(Boolean);
     for (let n = words.length; n >= 1; n--) { const k = norm(words.slice(0, n).join(" ")); if (k && remote[k]) return { k, remote: remote[k] }; }
     for (let n = words.length; n >= 1; n--) { const k = norm(words.slice(0, n).join(" ")); if (k && await exists(k)) return { k }; }
+    const w = norm(words[0]);
+    if (w.length >= 3) {
+      const r = onlyStart(Object.keys(remote), w); if (r && remote[r]) return { k: r, remote: remote[r] };
+      const f = onlyStart(await loadFileKeys(), w); if (f && await exists(f)) return { k: f };
+    }
     return null;
   }
   async function one(el) {

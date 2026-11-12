@@ -279,6 +279,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   db.raw("collections", "s1").season.pts = core.PASS_STEP * 30; r = await G.seasonClaim(S1, { what: "tier", tier: 10 }); ok(r.doc.cosm.includes("t:t10"), "palier 10 : titre débloqué");
   { const own0 = Object.keys(db.raw("collections", "s1").owned).filter((k) => db.raw("collections", "s1").owned[k] > 0).length; r = await G.seasonClaim(S1, { what: "tier", tier: 12 }); ok(r.cards.length === 1 && PRAR.get(r.cards[0]) === "epic", "palier 12 : carte Épique " + r.cards[0]); }
   { const fz0 = (db.raw("streaks", "s1") || {}).freezes || 0; r = await G.seasonClaim(S1, { what: "tier", tier: 7 }); ok(((db.raw("streaks", "s1") || {}).freezes || 0) === fz0 + 1 || db.raw("collections", "s1").dust > 0, "palier 7 : gel de série (ou cristaux si stock plein)"); }
+  for (const ct of [17, 27]) { r = await G.seasonClaim(S1, { what: "tier", tier: ct }); ok(r.cards.length === 1 && core.isCircuit(r.cards[0]), "palier " + ct + " : une carte Circuit (plantait : pool nul)"); }
   r = await G.seasonClaim(S1, { what: "tier", tier: 30 }); ok(r.need === "pick" && r.offer.length === 3 && r.offer.every((id) => PRAR.get(id) === "legendary"), "palier 30 : 3 Légendaires proposées");
   await rejects(G.seasonClaim(S1, { what: "tier", tier: 30, pick: "pas-une-carte" }), "invalid-argument", "choix hors proposition refusé");
   ok(!db.raw("collections", "s1").season.claimed.includes(30), "palier 30 non consommé sans choix");
