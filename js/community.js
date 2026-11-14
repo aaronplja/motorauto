@@ -44,6 +44,21 @@
     // sous la publication : réactions et réponses (liste complète du fil seulement, pas l'aperçu de l'accueil)
     return soc && f.id ? `<div class="feed-entry">${item}<div class="feed-soc" data-fid="${esc(f.id)}" data-uid="${esc(f.uid || "")}"></div></div>` : item;
   }
+  /** « Pour toi » : mes alertes de liste de souhaits (Carte du jour, cartes dispos chez d'autres pilotes, échanges proposés) */
+  let wishUnsub = null;
+  const wishAlerts = () => (C.user && C.MA && C.MA.notif && C.MA.notif.items ? C.MA.notif.items() : []).filter((n) => /souhait/i.test(String(n.text || ""))).slice(0, 5);
+  function paintWish() {
+    const box = document.getElementById("feed-list"); if (!box) return;
+    let w = document.getElementById("feed-wish");
+    const list = wishAlerts();
+    if (!list.length) { if (w) w.remove(); return; }
+    if (!w) { w = document.createElement("div"); w.id = "feed-wish"; w.className = "feed-wish"; box.parentNode.insertBefore(w, box); }
+    const esc = C.esc;
+    w.innerHTML = `<h3 class="feed-wish-h">⭐ Pour toi · tes souhaits</h3>` + list.map((n) => {
+      const link = /^#\/[\w\-/%.]*$/.test(String(n.link || "")) ? n.link : "#/souhaits";
+      return `<a class="feed-item feed-wish-item${n.read ? "" : " unread"}" href="${esc(link)}"><span class="feed-ico" aria-hidden="true">${/^🎴/.test(n.text) ? "🎴" : "⭐"}</span><span class="feed-text">${esc(String(n.text).replace(/^[⭐🎴]\s*/u, ""))}<span class="feed-when">${ago(tsMs(n.createdAt))}</span></span></a>`;
+    }).join("");
+  }
   async function renderFeed() {
     const box = document.getElementById("feed-list");
     if (!box) return;
@@ -59,6 +74,8 @@
       box.innerHTML = list.length ? list.slice(0, feedShown).map((x) => feedItemHtml(x, true)).join("") : `<div class="empty-note">Rien pour l'instant : ajoute une voiture ou un chrono pour lancer l'actualité.</div>`;
       document.getElementById("feed-more").hidden = list.length <= feedShown;
       if (window.MAFeedSocial) window.MAFeedSocial.hydrate(box);
+      paintWish();
+      if (!wishUnsub && C.MA && C.MA.notif && C.MA.notif.onChange) wishUnsub = C.MA.notif.onChange(paintWish);
     } catch (e) { box.innerHTML = `<div class="empty-note error">Fil indisponible.</div>`; }
   }
   async function renderHomeFeed() {

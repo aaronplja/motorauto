@@ -2272,7 +2272,7 @@
       if (snap.empty) { box.innerHTML = `<div class="empty-note">Aucun message signalé. 👌</div>`; return; }
       const rows = snap.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => ((a.createdAt && a.createdAt.seconds) || 0) - ((b.createdAt && b.createdAt.seconds) || 0));
       box.innerHTML = rows.map((r) => {
-        const where = r.msgPath.startsWith("global_chat") ? "Salon général" : r.msgPath.startsWith("custom_channels") ? "Canal #" + (r.msgPath.split("/")[1] || "") : "Message privé";
+        const where = r.msgPath.startsWith("feed/") ? "Fil d'actualité" : r.msgPath.startsWith("comments/") ? "Réponse du fil" : r.msgPath.startsWith("global_chat") ? "Salon général" : r.msgPath.startsWith("custom_channels") ? "Canal #" + (r.msgPath.split("/")[1] || "") : "Message privé";
         return `
           <div class="admin-msg">
             <div class="admin-msg-head"><span class="msg-type">${esc(REPORT_REASONS[r.reason] || r.reason)}</span><b>${esc(r.msgPilot)}</b><span class="lap-meta">${esc(where)} · signalé par ${esc(r.reporter)}</span></div>

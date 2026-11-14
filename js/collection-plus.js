@@ -60,7 +60,7 @@
     const d = document.createElement("div"); d.id = "cplus"; d.setAttribute("role", "dialog"); d.setAttribute("aria-label", "Progression de la collection");
     d.innerHTML = `<header><h2>📊 Progression de ta collection <button type="button" class="cta-btn btn-ghost compact-btn" data-cp-x>Fermer</button></h2><div class="cp-kpi"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between"><div class="seg" role="tablist">${[["brand", "Marques"], ["country", "Pays"], ["category", "Catégories"]].map(([k, l]) => `<button type="button" role="tab" data-cp-tab="${k}">${l}</button>`).join("")}</div>
-      <select id="cp-sort" aria-label="Trier"><option value="pct">Les plus avancées</option><option value="left">Les plus de manquantes</option><option value="name">Ordre alphabétique</option></select></div>
+      <select id="cp-sort" aria-label="Trier"><option value="pct">Les plus avancées</option><option value="left">Les plus manquantes</option><option value="name">Ordre alphabétique</option></select></div>
       <small>La valeur estimée additionne le coût de fabrication de chaque carte que tu possèdes (un exemplaire par modèle).</small></header><div class="cp-body"></div>`;
     document.body.appendChild(d); document.body.classList.add("tcg-open");
     const close = () => { d.remove(); document.body.classList.remove("tcg-open"); document.removeEventListener("keydown", k); };
