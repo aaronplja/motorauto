@@ -33,3 +33,6 @@
 #hero-gauge:hover .gauge-help, #hero-gauge:focus-visible .gauge-help { animation: none; transform: scale(1.1); }
 @keyframes gaugeHelp { 0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); } 50% { box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 0 0 8px transparent; } }
 @media (prefers-reduced-motion: reduce) { #hero-gauge .gauge-help { animation: none; } }
+
+/* le bouton « ? » est posé en haut à droite de l'en-tête de page : on lui réserve sa place pour qu'il ne recouvre jamais le texte (petits écrans) */
+@media (max-width: 640px) { .page-head:has(> .guide-help) > :not(.page-head-actions):not(.guide-help) { padding-right: 50px; } }

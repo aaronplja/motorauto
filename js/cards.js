@@ -84,7 +84,8 @@
     const img = cardImage && C.safeUrl(cardImage) ? `<img class="${owned ? "" : "tcg-ghost"}" src="${esc(C.safeUrl(cardImage))}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">${owned ? "" : `<span class="tcg-q tcg-q-over" aria-hidden="true">?</span>`}` : `<span class="tcg-q" aria-hidden="true">${owned && sp ? "✦" : "?"}</span>`;
     const circ = !!car.circuit;
     const mosaic = owned && sp && Array.isArray(car.images) && car.images.length > 1 ? car.images.map((u) => C.safeUrl(u)).filter(Boolean).slice(0, 4) : null;
-    const model = String(car.model || "").replace(/\s*\(.*$/, "");
+    let model = String(car.model || "").replace(/\s*\(.*$/, "");
+    { const bl = String(car.brand || "").toLowerCase(); if (bl && model.toLowerCase().startsWith(bl + " ")) model = model.slice(bl.length + 1); }   // « Nissan » + « Nissan Silvia » : on n'écrit la marque qu'une fois
     const hasStats = !sp || car.stats.power > 0;
     const bar = (v) => `<i style="--v:${Math.max(0, Math.min(1, v)).toFixed(2)}"></i>`;
     const st = car.stats || {}, z = Number(st.zero) || 0;

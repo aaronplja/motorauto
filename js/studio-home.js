@@ -9,7 +9,7 @@
   let C = null, pilots = null;
   const T = (s) => (window.MAI18n ? window.MAI18n.t(s) : s);
   const nf = (n) => Number(n || 0).toLocaleString("fr-FR");
-  const nameOf = (c) => [c.brand, c.model].filter(Boolean).join(" ").replace(/\s*\(.*$/, "");
+  const nameOf = (c) => { const b = String(c.brand || ""), m = String(c.model || ""); return [b && m.toLowerCase().startsWith(b.toLowerCase() + " ") ? "" : b, m].filter(Boolean).join(" ").replace(/\s*\(.*$/, ""); };
   const yEnd = (c) => { const m = String(c.years || "").match(/\d{4}/g); return m ? Number(m[m.length - 1]) : 0; };
   const photo = (c) => C.safeUrl(c.image || (c.images && c.images[0])) || "";
 

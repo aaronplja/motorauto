@@ -115,7 +115,8 @@
 .ac-sum { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; align-items: baseline; margin: .8rem 0; }
 .ac-sum > span:first-child { font-size: 1.1rem; }
 .ac-t { color: var(--color-muted); font-size: .9rem; }
-.ac-t.silver b { color: #cbd5e1; } .ac-t.gold b { color: #fbbf24; }
+.ac-t.silver b { color: #55657a; } .ac-t.gold b { color: #8f5a00; }
+html[data-tone="dark"] .ac-t.silver b { color: #cbd5e1; } html[data-tone="dark"] .ac-t.gold b { color: #fbbf24; }   /* lisibles sur fond clair comme sur fond sombre */
 .ac-desc { display: block; font-style: normal; font-size: .7rem; color: var(--color-muted); line-height: 1.25; margin-top: .2rem; }
 /* ---------- frise ---------- */
 .fr-tools { margin-bottom: .6rem; }

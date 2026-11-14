@@ -58,7 +58,7 @@
   async function loadWeekly(force) {
     if (!C.user) { weekly = null; return null; }
     if (!force && weekly && Date.now() - weeklyAt < 20000) return weekly;
-    try { weekly = await window.MAGameAPI.call("weeklyStatus"); weeklyErr = ""; weeklyAt = Date.now(); }
+    try { weekly = await window.MAGameAPI.call("weeklyStatus"); if (!weekly || !Array.isArray(weekly.items)) throw new Error("Défis momentanément indisponibles, réessaie dans un instant."); weeklyErr = ""; weeklyAt = Date.now(); }
     catch (e) { weeklyErr = e.message; weekly = null; }
     paintChalDot();
     return weekly;

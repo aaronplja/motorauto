@@ -48,6 +48,7 @@
 
   // ------------------------------------------------------------- utilitaires DOM
   const $ = (id) => document.getElementById(id);
+  const carFull = (c) => [String(c.model || "").toLowerCase().startsWith(String(c.brand || "").toLowerCase() + " ") ? "" : c.brand, c.model].filter(Boolean).join(" ");
   const storageGet = MA.store.get, storageSet = MA.store.set;
 
   const isPage = (el) => !!el && el.classList.contains("page");
@@ -503,8 +504,8 @@
   const seoDefault = { title: document.title, desc: (document.querySelector('meta[name="description"]') || {}).content || "" };
   function setSeo(car) {
     const setMeta = (sel, v) => { const m = document.querySelector(sel); if (m) m.setAttribute("content", v); };
-    const title = car ? `${car.brand} ${car.model} — fiche technique | MOTORAUTO` : seoDefault.title;
-    const desc = car ? `${car.brand} ${car.model} (${car.years}) : ${car.stats.power} ch, ${car.stats.speed} km/h. ${car.description || ""}`.slice(0, 300) : seoDefault.desc;
+    const title = car ? `${carFull(car)} — fiche technique | MOTORAUTO` : seoDefault.title;
+    const desc = car ? `${carFull(car)} (${car.years}) : ${car.stats.power} ch, ${car.stats.speed} km/h. ${car.description || ""}`.slice(0, 300) : seoDefault.desc;
     document.title = title;
     setMeta('meta[name="description"]', desc);
     setMeta('meta[property="og:title"]', title);
@@ -580,7 +581,7 @@
   function openArchives(carId) {
     const car = carsById.get(carId); if (!car) return;
     const isImg = (u) => /\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(u) || /firebasestorage\.googleapis\.com/.test(u);
-    $("archives-title").textContent = "Archives — " + car.brand + " " + car.model;
+    $("archives-title").textContent = "Archives — " + carFull(car);
     $("archives-body").innerHTML = car.archives.length ? `<div class="archives-grid">${car.archives.map((a) => `
       <a class="archive-card" href="${esc(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer">
         <span class="archive-thumb">${isImg(a.url) ? `<img src="${esc(safeUrl(a.url))}" alt="" loading="lazy" data-fallback="car">` : `<i class="archive-doc" aria-hidden="true">PDF</i>`}</span>
@@ -2115,7 +2116,7 @@
     const car = carsById.get(carId);
     if (!car) return;
     sgCarId = carId; sgPhotoBlob = null;
-    $("sg-car").textContent = `${car.brand} ${car.model} (${car.years})`;
+    $("sg-car").textContent = `${carFull(car)} (${car.years})`;
     ["sg-text", "sg-source", "sg-photo-url", "sg-caption"].forEach((id) => { $(id).value = ""; });
     $("sg-rights").checked = false;
     $("sg-photo-preview").src = FALLBACK_CAR;
@@ -2589,9 +2590,9 @@
     "share-car": async (d) => {
       const car = carsById.get(d.id);
       const url = shareUrlFor(d.id);
-      const title = car ? `${car.brand} ${car.model} — MOTORAUTO` : "MOTORAUTO";
+      const title = car ? `${carFull(car)} — MOTORAUTO` : "MOTORAUTO";
       try {
-        if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) { await navigator.share({ title, text: car ? `${car.brand} ${car.model} (${car.years}) sur MOTORAUTO` : "", url }); return; }
+        if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) { await navigator.share({ title, text: car ? `${carFull(car)} (${car.years}) sur MOTORAUTO` : "", url }); return; }
       } catch (e) { if (e && e.name === "AbortError") return; }
       try { await navigator.clipboard.writeText(url); MA.toast("Lien copié dans le presse-papiers.", "ok"); }
       catch (_) { MA.toast(url); }

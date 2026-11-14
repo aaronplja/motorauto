@@ -34,7 +34,7 @@
   async function loadForced() {
     try { const s = await C.db.collection("site_settings").doc("carOfDay").get(); forced = s.exists && s.data().days ? s.data().days : {}; } catch (_) { forced = {}; }
   }
-  const nameOf = (c) => [c.brand, c.model].filter(Boolean).join(" ").replace(/\s*\(.*$/, "");
+  const nameOf = (c) => { const b = String(c.brand || ""), m = String(c.model || ""); return [b && m.toLowerCase().startsWith(b.toLowerCase() + " ") ? "" : b, m].filter(Boolean).join(" ").replace(/\s*\(.*$/, ""); };
   async function paint() {
     if (!C || !C.cars || !C.cars.length) return;
     const host = document.querySelector("#page-home .hero-stage"); if (!host) return;
@@ -63,7 +63,7 @@
     if (forced === null) await loadForced();
     let box = document.getElementById("cod-admin");
     if (!box) { box = document.createElement("div"); box.id = "cod-admin"; anchor.insertAdjacentElement("afterend", box); }
-    const esc = C.esc, label = (c) => [c.brand, c.model].filter(Boolean).join(" ");
+    const esc = C.esc, label = (c) => [String(c.model || "").toLowerCase().startsWith(String(c.brand || "").toLowerCase() + " ") ? "" : c.brand, c.model].filter(Boolean).join(" ");
     const rows = Array.from({ length: 7 }, (_, i) => { const k = keyOfNum(dayNum(G.dayKey()) + i), f = forced[k] && C.carsById.get(forced[k]), auto = pickFor(k);
       return `<div class="feat-row"><div class="feat-wk"><b>${i === 0 ? "Aujourd'hui" : i === 1 ? "Demain" : k}</b><small>${esc(k)} · auto : ${esc(auto ? nameOf(auto) : "—")}</small></div>
         <input type="text" list="cod-cars" data-cod-day="${esc(k)}" placeholder="Automatique" value="${f ? esc(label(f)) : ""}" autocomplete="off" aria-label="Voiture du jour ${esc(k)}"><button type="button" class="cta-btn btn-ghost compact-btn" data-cod-save="${esc(k)}">Enregistrer</button></div>`; }).join("");

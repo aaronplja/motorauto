@@ -228,3 +228,6 @@ a.rank-row:hover { border-color: var(--glow); }
 .fs-flag.on { opacity: 1; color: var(--accent); border-color: var(--accent); }
 .fs-report { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: .4rem 0; padding: .5rem .7rem; border-radius: 12px; border: 1px solid var(--stroke-line); background: var(--bg-elevated, var(--bg-surface)); font-size: .85rem; }
 .fs-report select { padding: .3rem .5rem; border-radius: 10px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-ink); font: inherit; }
+
+/* petits écrans (320 px) : les boutons compacts à icône + libellé long (ES, DE, EN) ne doivent plus être rognés */
+@media (max-width: 400px) { .cta-btn.compact-btn { padding-inline: min(16px, 2.6vw) !important; gap: .3rem; overflow-wrap: anywhere; } }

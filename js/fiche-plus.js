@@ -55,7 +55,7 @@
     }
     return { list: out.slice(0, 6), manual };
   }
-  const nameOf = (c) => [c.brand, c.model].filter(Boolean).join(" ").replace(/\s*\(.*$/, "");
+  const nameOf = (c) => { const b = String(c.brand || ""), m = String(c.model || ""); return [b && m.toLowerCase().startsWith(b.toLowerCase() + " ") ? "" : b, m].filter(Boolean).join(" ").replace(/\s*\(.*$/, ""); };
 
   // ------------------------------------------------------------------ comparaison de deux versions
   function versions(car) {
