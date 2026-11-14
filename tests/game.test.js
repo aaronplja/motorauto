@@ -68,10 +68,10 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   for (let i = 0; i < 50; i++) { db.seed("collections", "u3", Object.assign(core.blankCollection(), { opened: 9, bonus: 1 })); const x = await G.openPack(U3, { kind: "bonus" }); if (!x.cards.some((c) => c.rarity !== "common")) { ok(false, "10e pack sans rare"); break; } if (i === 49) ok(true, "10e pack : 50 essais avec au moins une carte rare"); }
 
   // ---- pack acheté avec de la poussière (2 voitures, 1 rare ou mieux)
-  db.seed("collections", "u4", Object.assign(core.blankCollection(), { dust: 450, opened: 3, bonus: 0 }));
+  db.seed("collections", "u4", Object.assign(core.blankCollection(), { dust: 2 * core.PACKS.world.cost + 50, opened: 3, bonus: 0 }));
   const U4 = { uid: "u4", name: "P4" };
   await rejects(G.openPack({ uid: "u5", name: "P5" }, { kind: "shop" }), "failed-precondition", "pack acheté : poussière insuffisante refusée");
-  let shopBad = 0, shopDust = 450;
+  let shopBad = 0, shopDust = 2 * core.PACKS.world.cost + 50;
   for (let i = 0; i < 2; i++) {
     const x = await G.openPack(U4, { kind: "shop" });
     if (x.cards.length !== 3) shopBad++;
@@ -80,8 +80,8 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   }
   await rejects(G.openPack(U4, { kind: "shop" }), "failed-precondition", "pack acheté : 3e achat refusé (poussière épuisée)");
   ok(shopBad === 0, "pack acheté : toujours 3 cartes dont 1 rare ou mieux");
-  ok(db.raw("collections", "u4").opened === 3 && db.raw("collections", "u4").dust < 450, "pack acheté : ni pack ouvert ni défi comptés, poussière dépensée");
-  ok((db.raw("collections", "u4").dustLog || []).some((l) => l.n === -200), "historique : l'achat est tracé");
+  ok(db.raw("collections", "u4").opened === 3 && db.raw("collections", "u4").dust < 2 * core.PACKS.world.cost + 50, "pack acheté : ni pack ouvert ni défi comptés, poussière dépensée");
+  ok((db.raw("collections", "u4").dustLog || []).some((l) => l.n === -core.PACKS.world.cost), "historique : l'achat est tracé");
   // ---- fabrication
   db.seed("collections", "u3", Object.assign(core.blankCollection(), { dust: 100, owned: {}, bonus: 0 }));
   const common = ids.find((id) => r1.get(id) === "common"), legend = ids.find((id) => r1.get(id) === "legendary");
@@ -450,7 +450,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     const rc = {}; core.CIRCUIT_CARDS.forEach((r) => { rc[r[5]] = (rc[r[5]] || 0) + 1; }); ok(rc.legendary === 6 && rc.epic === 17 && rc.rare + rc.common > 60, "répartition des raretés Circuit " + JSON.stringify(rc));
     db.seed("collections", "k1", Object.assign(core.blankCollection(), { dust: 1000 }));
     r = await G.openPack(K, { kind: "shop", pack: "circuit" });
-    ok(r.cards.length === 3 && r.cards.every((c) => core.isCircuit(c.id)) && r.doc.dust === 600 && r.doc.circuits >= 1 && r.doc.count === r.doc.circuits, "pack Circuit : 3 cartes Circuit, 400 cristaux, comptées dans la collection");
+    ok(r.cards.length === 3 && r.cards.every((c) => core.isCircuit(c.id)) && r.doc.dust === 1000 - core.PACKS.circuit.cost && r.doc.circuits >= 1 && r.doc.count === r.doc.circuits, "pack Circuit : 3 cartes Circuit, prix du pack débité, comptées dans la collection");
     ok(r.cards.some((c) => c.rarity !== "common"), "pack Circuit : au moins une carte rare ou mieux");
     const ci = r.cards[0].id; r = await G.lockCard(K, { id: ci, on: true }); ok(r.doc.locked[ci], "une carte Circuit se verrouille");
     db.seed("collections", "k2", Object.assign(core.blankCollection(), { dust: 0 })); db.seed("users", "k2", { username: "Pilote_k2" });
@@ -472,7 +472,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     NOW = Date.UTC(2027, 5, 10, 10); ok(core.themePackActive("th_lemans", NOW) && !core.themePackActive("th_rallye", NOW) && core.themePacksNow(NOW).map((x) => x.id).join() === "th_lemans", "fenêtre Le Mans active le 10 juin");
     db.seed("collections", "dc1", Object.assign(core.blankCollection(), { dust: 1000 }));
     r2 = await G.openPack(D, { kind: "shop", pack: "th_lemans" });
-    ok(r2.cards.length === 3 && r2.cards.every((c) => P.byId.get(c.id).category === "Le Mans") && r2.doc.dust === 720, "pack Le Mans : 3 cartes Le Mans, 280 cristaux");
+    ok(r2.cards.length === 3 && r2.cards.every((c) => P.byId.get(c.id).category === "Le Mans") && r2.doc.dust === 1000 - core.PACKS.th_lemans.cost, "pack Le Mans : 3 cartes Le Mans, prix du pack débité");
     await rejects(G.openPack(D, { kind: "shop", pack: "th_rallye" }), "failed-precondition", "pack hors fenêtre refusé");
     ok(core.themePackNext("th_rallye", NOW) > 100 && core.themePackNext("th_lemans", NOW) === 0, "annonce « dans N jours »");
     NOW = Date.UTC(2027, 7, 20, 10); db.seed("collections", "dc1", Object.assign(core.blankCollection(), { dust: 1000 }));

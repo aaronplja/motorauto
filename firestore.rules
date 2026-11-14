@@ -848,6 +848,58 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // --- MOTORAUTO PRO : modifications techniques saisies par l'équipe, lisibles seulement par les abonnés actifs et les administrateurs.
+    //     L'abonnement (pro_subs) n'est écrit que par les Cloud Functions (webhook de paiement) : jamais par le navigateur.
+    function proActive() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/pro_subs/$(request.auth.uid))
+        && get(/databases/$(database)/documents/pro_subs/$(request.auth.uid)).data.status in ['trialing', 'active', 'past_due']
+        && get(/databases/$(database)/documents/pro_subs/$(request.auth.uid)).data.accessUntil > request.time;
+    }
+    function validProMod() {
+      let d = request.resource.data;
+      return isAdmin()
+        && d.keys().hasOnly(['carId', 'cat', 'sub', 'title', 'description', 'gain', 'difficulty', 'cost', 'compat', 'risks', 'homolog', 'engineKey', 'status', 'order', 'author', 'authorName', 'reviewedBy', 'reviewedByName', 'createdAt', 'updatedAt'])
+        && d.carId is string && d.carId.size() > 0 && d.carId.size() <= 120
+        && d.cat is string && d.cat.size() > 0 && d.cat.size() <= 60
+        && d.get('sub', '') is string && d.get('sub', '').size() <= 60
+        && d.title is string && d.title.size() >= 1 && d.title.size() <= 120
+        && d.get('description', '') is string && d.get('description', '').size() <= 4000
+        && d.get('gain', '') is string && d.get('gain', '').size() <= 1000
+        && d.get('difficulty', '') in ['', 'facile', 'moyenne', 'difficile', 'expert']
+        && d.get('cost', '') is string && d.get('cost', '').size() <= 200
+        && d.get('compat', '') is string && d.get('compat', '').size() <= 1000
+        && d.get('risks', '') is string && d.get('risks', '').size() <= 1500
+        && d.get('homolog', '') is string && d.get('homolog', '').size() <= 1500
+        && d.get('engineKey', '') is string && d.get('engineKey', '').size() <= 200
+        && d.status in ['draft', 'reviewed', 'published']
+        && d.get('order', 0) is number
+        && d.get('author', '') is string && d.get('authorName', '') is string && d.get('authorName', '').size() <= 60
+        && d.get('reviewedBy', '') is string && d.get('reviewedByName', '') is string && d.get('reviewedByName', '').size() <= 60;
+    }
+    match /pro_mods/{mid} {
+      // un abonné actif ne lit que les modifications publiées (la requête doit filtrer sur status == 'published') ; un administrateur lit tout
+      allow read: if isAdmin() || (resource.data.status == 'published' && proActive());
+      allow create, update: if validProMod();
+      allow delete: if isAdmin();
+    }
+    match /pro_subs/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+    // structure (catégories) et interrupteurs de l'offre : aucun contenu technique, lisibles par tous ; écriture administrateurs seulement
+    match /pro_config/{cid} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && ((cid == 'cats' && request.resource.data.keys().hasOnly(['cats', 'updatedAt', 'updatedBy'])
+              && request.resource.data.cats is list && request.resource.data.cats.size() >= 1 && request.resource.data.cats.size() <= 40)
+          || (cid == 'settings' && request.resource.data.keys().hasOnly(['signups', 'live', 'priceEur', 'trialDays', 'updatedAt', 'updatedBy'])
+              && request.resource.data.get('signups', false) is bool && request.resource.data.get('live', false) is bool
+              && request.resource.data.get('priceEur', 5) is number && request.resource.data.get('priceEur', 5) >= 1 && request.resource.data.get('priceEur', 5) <= 99
+              && request.resource.data.get('trialDays', 90) is number && request.resource.data.get('trialDays', 90) >= 0 && request.resource.data.get('trialDays', 90) <= 365));
+      allow delete: if isAdmin();
+    }
+
     // --- Vitrine de profil : 6 cartes préférées + jusqu'à 3 de mes voitures affichées en carte (privées par défaut)
     match /showcases/{sid} {
       allow read: if true;

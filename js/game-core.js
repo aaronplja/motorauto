@@ -105,11 +105,11 @@
 
   // ------------------------------------------------------------------ cartes
   const RAR = {
-    common: { id: "common", label: "Commune", dust: 5, craft: 30, odds: 0.615 },
-    rare: { id: "rare", label: "Rare", dust: 15, craft: 90, odds: 0.26 },
-    epic: { id: "epic", label: "Épique", dust: 40, craft: 240, odds: 0.09 },
-    legendary: { id: "legendary", label: "Légendaire", dust: 100, craft: 600, odds: 0.03 },
-    shiny: { id: "shiny", label: "Shiny", dust: 400, craft: 2400, odds: 0.005 },
+    common: { id: "common", label: "Commune", dust: 10, craft: 30, odds: 0.615 },
+    rare: { id: "rare", label: "Rare", dust: 30, craft: 90, odds: 0.26 },
+    epic: { id: "epic", label: "Épique", dust: 80, craft: 240, odds: 0.09 },
+    legendary: { id: "legendary", label: "Légendaire", dust: 200, craft: 600, odds: 0.03 },
+    shiny: { id: "shiny", label: "Shiny", dust: 800, craft: 2400, odds: 0.005 },
     mythic: { id: "mythic", label: "Légende", dust: 600, craft: 0, odds: 0 },
     special: { id: "special", label: "Édition limitée", dust: 150, craft: 0, odds: 0 }
   };
@@ -386,6 +386,9 @@
     th_prestige: { id: "th_prestige", name: "Prestige de fin d'année", icon: "🎄", cost: 350, from: [12, 15], to: [12, 31], about: "Ferrari, Lamborghini, Porsche, Aston Martin… une carte épique ou mieux garantie", min: "epic", style: "--p1:#14532d;--p2:#fbbf24;--p3:#fef3c7" }
   };
   Object.keys(THEME_PACKS).forEach((id) => { const t = THEME_PACKS[id]; PACKS[id] = { id, label: "Pack " + t.name, cost: t.cost, cards: 3, min: t.min || "rare", country: "", theme: id }; });
+  /** économie : tous les packs coûtent 40 % de moins (arrondi à la dizaine) — la collection dépasse 1500 cartes, il fallait rendre les cristaux plus utiles */
+  const PACK_PRICE_MUL = 0.6;
+  Object.keys(PACKS).forEach((k) => { PACKS[k].cost = Math.max(10, Math.round((PACKS[k].cost * PACK_PRICE_MUL) / 10) * 10); });
   const RALLY_RX = /rall(y|ye)\b|wrc|groupe? b\b|group b\b|integrale|stratos|037|205 t16|escort.*cosworth|sierra.*cosworth|impreza|lancer.*evo|celica.*gt-?four|quattro s1|delta s4|metro 6r4|corolla.*wrc|yaris.*wrc|i20.*wrc|puma.*rally|c3.*wrc|focus.*wrc|clio.*(williams|maxi)|a110.*(1600|1800)|r5 turbo|stratos/i;
   const _md = (ms) => { const k = dayKey(ms === undefined ? Date.now() : ms); return Number(k.slice(5, 7)) * 100 + Number(k.slice(8, 10)); };
   /** la voiture appartient-elle au thème ? (c : { brand, model|name, category, year|years }) */

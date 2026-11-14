@@ -2691,17 +2691,27 @@
 
     // en-tête + barre de progression au défilement
     const header = $("app-header"), bar = $("scroll-progress");
-    let ticking = false;
+    let ticking = false, maxScroll = 0, lastP = -1, lastScrolled = null;
+    // la hauteur du document est mise en cache (la lire à chaque image forçait un recalcul de mise en page,
+    // très coûteux sur les pages longues) : on ne la relit que si la page change de taille.
+    const measure = () => { maxScroll = document.documentElement.scrollHeight - window.innerHeight; };
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        const max = document.documentElement.scrollHeight - window.innerHeight;
-        bar.style.setProperty("--p", max > 0 ? (window.scrollY / max).toFixed(4) : 0);
-        header.classList.toggle("scrolled", window.scrollY > 8);
+        const y = window.scrollY, p = maxScroll > 0 ? Math.min(1, y / maxScroll).toFixed(3) : 0;
+        if (p !== lastP) { bar.style.setProperty("--p", p); lastP = p; }
+        const sc = y > 8;
+        if (sc !== lastScrolled) { header.classList.toggle("scrolled", sc); lastScrolled = sc; }
         ticking = false;
       });
     };
+    let measureT = 0;
+    const remeasure = () => { clearTimeout(measureT); measureT = setTimeout(() => { measure(); onScroll(); }, 120); };
+    measure();
+    window.addEventListener("resize", remeasure, { passive: true });
+    window.addEventListener("hashchange", remeasure);
+    if (window.ResizeObserver) { try { new ResizeObserver(remeasure).observe(document.body); } catch (e) { /* ignoré */ } }
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 

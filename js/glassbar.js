@@ -93,10 +93,16 @@
   }
 
   // ---- un seul écouteur de défilement, avec hystérésis (distance cumulée dans un sens) pour que rien ne tremble
-  let lastY = Math.max(0, window.scrollY), acc = 0, dir = 0, raf = 0, scTimer = 0;
+  let lastY = Math.max(0, window.scrollY), acc = 0, dir = 0, raf = 0, scTimer = 0, isScrolling = false;
+  // la classe « is-scrolling » est posée sur les 4 barres concernées et non sur <html> : poser une classe sur la racine
+  // faisait recalculer les styles de toute la page à chaque début/fin de défilement (mesuré : ~2× plus de saccades sur les longues listes).
+  const setScrolling = (on) => {
+    isScrolling = on;
+    document.querySelectorAll(".app-header, #mobile-touch-bar .dock, .page-tabs, .toolbar-cluster").forEach((el) => el.classList.toggle("is-scrolling", on));
+  };
   window.addEventListener("scroll", () => {
-    if (!de.classList.contains("scrolling")) de.classList.add("scrolling");
-    clearTimeout(scTimer); scTimer = setTimeout(() => de.classList.remove("scrolling"), 160);
+    if (!isScrolling) setScrolling(true);
+    clearTimeout(scTimer); scTimer = setTimeout(() => setScrolling(false), 160);
     if (raf) return;
     raf = requestAnimationFrame(() => {
       raf = 0;

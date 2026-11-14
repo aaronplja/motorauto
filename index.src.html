@@ -79,6 +79,7 @@
   <link rel="stylesheet" href="css/perf.css">
   <link rel="stylesheet" href="css/ui-contrast.css">
   <link rel="stylesheet" href="css/ui-kit.css">
+  <link rel="stylesheet" href="css/pro.css">
 <style id="splash-css">#splash{display:none}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.1rem;background:var(--bg-core,#09090b);touch-action:manipulation;contain:strict;animation:spLife 1.5s linear forwards}
 #splash .sp-mark{width:min(30vw,120px);height:auto;overflow:visible;animation:spMark 1.5s cubic-bezier(.3,.7,.2,1) forwards}
@@ -122,6 +123,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       </nav>
 
       <div class="header-actions">
+        <a class="mp-chip" id="pro-btn" href="#/pro" aria-label="MOTORAUTO PRO" title="MOTORAUTO PRO">PRO</a>
         <div id="admin-gear-container"></div>
         <a class="icon-btn news-btn" id="news-btn" href="#/nouveautes" aria-label="Nouveautés" title="Nouveautés">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h7M9 8.5h3"/></svg>
@@ -654,6 +656,9 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <section class="tab-panel" data-tab="jeu" hidden>
       <div id="admin-game"><div class="empty-note">Chargement…</div></div>
     </section>
+    <section class="tab-panel" data-tab="pro" hidden>
+      <div id="admin-pro"><div class="empty-note">Chargement…</div></div>
+    </section>
     <section class="tab-panel" data-tab="erreurs" hidden>
       <div class="adm-block-head"><h2>Erreurs du navigateur</h2><span>Ce qui plante chez les pilotes, regroupé par erreur</span></div>
       <div id="errors-root"><div class="empty-note">Chargement…</div></div>
@@ -908,6 +913,16 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Frise chronologique</h1><p class="page-sub">Toute l'histoire de l'automobile sur une ligne.</p></div></header>
     <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
     <div id="timeline-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-pro" data-page="pro">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><h1 class="page-title">MOTORAUTO PRO</h1><p class="page-sub">Les modifications de ta voiture, rédigées et relues par l'équipe.</p></div></header>
+    <nav data-section="pro"></nav>
+    <section class="tab-panel" data-tab="offre" hidden><div id="pro-offer"></div></section>
+    <section class="tab-panel" data-tab="explorer" hidden><div id="pro-explorer"></div></section>
+    <section class="tab-panel" data-tab="abonnement" hidden><div id="pro-account"></div></section>
   </div>
   </div>
 
@@ -1533,6 +1548,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/account.js"></script>
   <script defer src="js/admin-game.js"></script>
   <script defer src="js/admin-rarity.js"></script>
+  <script defer src="js/pro-admin.js"></script>
   <script defer src="js/guides.js"></script>
   <script defer src="js/presence.js"></script>
   <script defer src="js/i18n.js"></script>
@@ -1546,6 +1562,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/minigames.js"></script>
   <script defer src="js/frise.js"></script>
   <script defer src="js/follow.js"></script>
+  <script defer src="js/pro-cats.js"></script>
+  <script defer src="js/pro.js"></script>
   <script defer src="js/news.js"></script>
   <script defer src="js/blocks.js"></script>
   <script defer src="js/native.js"></script>

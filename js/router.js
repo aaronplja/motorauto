@@ -19,7 +19,8 @@
     { name: "pilot", re: /^\/pilote\/([^/]+)\/?$/, keys: ["uid"] },
     { name: "garage", re: /^\/garage(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["apercu", "voitures", "suivi"] },
     { name: "settings", re: /^\/reglages(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["profil", "ambiance", "notifications", "carte"] },
-    { name: "admin", re: /^\/admin(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["tableau", "moderation", "catalogue", "jeu", "journal", "erreurs"] },
+    { name: "admin", re: /^\/admin(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["tableau", "moderation", "catalogue", "jeu", "pro", "journal", "erreurs"] },
+    { name: "pro", re: /^\/pro(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["offre", "explorer", "abonnement"] },
     { name: "compare", re: /^\/comparer\/([^/]+)\/?$/, keys: ["ids"] },
     { name: "duel", re: /^\/duel(?:\/([^/]+)\/([^/]+))?\/?$/, keys: ["a", "b"] },
     { name: "club", re: /^\/club\/([^/]+)\/?$/, keys: ["id"] },
@@ -42,7 +43,7 @@
   const PAGE_ID = {
     home: "page-home", catalog: "page-catalog", car: "vehicle-modal", commcar: "page-commcar", community: "page-community",
     leaderboard: "leaderboard-modal", circuit: "page-circuit", pilot: "public-profile-modal",
-    garage: "garage-modal", settings: "page-settings", engine: "page-engine", brand: "page-brand", admin: "admin-panel-modal", contact: "page-contact", legal: "page-legal",
+    garage: "garage-modal", settings: "page-settings", pro: "page-pro", engine: "page-engine", brand: "page-brand", admin: "admin-panel-modal", contact: "page-contact", legal: "page-legal",
     duel: "page-duel", compare: "page-catalog", club: "page-club", clubs: "page-clubs", market: "page-market", play: "page-play",
     fusion: "page-fusion", cardmarket: "page-cardmarket", wishfeed: "page-wishfeed", plusmoins: "page-plusmoins", quizgame: "page-quizgame", achievements: "page-achievements", pass: "page-pass", timeline: "page-timeline", news: "page-news"
   };
@@ -51,10 +52,10 @@
   const TITLES = {
     home: "MOTORAUTO | Archive automobile & communauté de pilotes", catalog: "Catalogue | MOTORAUTO", community: "Communauté | MOTORAUTO",
     play: "Jouer | MOTORAUTO", leaderboard: "Classements | MOTORAUTO", circuit: "Circuit | MOTORAUTO", pilot: "Pilote | MOTORAUTO", garage: "Mon garage | MOTORAUTO", settings: "Réglages | MOTORAUTO",
-    admin: "Administration | MOTORAUTO", legal: "Informations légales | MOTORAUTO", engine: "Moteur | MOTORAUTO", brand: "Marque | MOTORAUTO", contact: "Contact | MOTORAUTO", commcar: "Voiture de pilote | MOTORAUTO", compare: "Comparateur | MOTORAUTO", duel: "Duel | MOTORAUTO", quiz: "Quiz | MOTORAUTO", club: "Club | MOTORAUTO", clubs: "Clubs | MOTORAUTO", market: "Annonces | MOTORAUTO", car: "Fiche véhicule | MOTORAUTO",
+    admin: "Administration | MOTORAUTO", pro: "MOTORAUTO PRO | Modifications voiture par voiture", legal: "Informations légales | MOTORAUTO", engine: "Moteur | MOTORAUTO", brand: "Marque | MOTORAUTO", contact: "Contact | MOTORAUTO", commcar: "Voiture de pilote | MOTORAUTO", compare: "Comparateur | MOTORAUTO", duel: "Duel | MOTORAUTO", quiz: "Quiz | MOTORAUTO", club: "Club | MOTORAUTO", clubs: "Clubs | MOTORAUTO", market: "Annonces | MOTORAUTO", car: "Fiche véhicule | MOTORAUTO",
     pass: "Pass de saison | MOTORAUTO", fusion: "Fusion de cartes | MOTORAUTO", cardmarket: "Marché de cartes | MOTORAUTO", wishfeed: "Souhaits et échanges | MOTORAUTO", plusmoins: "Plus ou moins | MOTORAUTO", quizgame: "Quiz | MOTORAUTO", achievements: "Succès | MOTORAUTO", timeline: "Frise chronologique | MOTORAUTO", news: "Nouveautés | MOTORAUTO"
   };
-  const DEFAULT_TAB = { settings: "profil", community: "hub-pilotes", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "cartes" };
+  const DEFAULT_TAB = { pro: "offre", settings: "profil", community: "hub-pilotes", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "cartes" };
   // anciennes adresses (liens partagés, favoris) → adresse actuelle
   const REDIRECTS = { "/annonces": "/communaute", "/jouer/apercu": "/jouer/cartes", "/garage/parametres": "/reglages/profil", "/garage/cartes": "/jouer/collection", "/garage/entretien": "/garage/suivi", "/garage/budget": "/garage/suivi", "/garage/projets": "/garage/suivi", "/admin/traiter": "/admin/tableau" };
   // barres d'onglets : une seule définition, dessinée dans chaque page de la section (nav[data-section])
@@ -64,11 +65,12 @@
     leaderboard: { page: "leaderboard", items: [["chronos", "Chronos"], ["circuits", "Circuits"], ["voitures", "Voitures"], ["pilotes", "Pilotes"], ["collection", "Cartes"]] },
     garage: { page: "garage", items: [["apercu", "Aperçu"], ["voitures", "Mes voitures"], ["suivi", "Suivi"]] },
     settings: { page: "settings", items: [["profil", "Profil"], ["ambiance", "Ambiance"], ["notifications", "Notifications"], ["carte", "Carte & vie privée"]] },
-    admin: { page: "admin", items: [["tableau", "Vue d'ensemble"], ["moderation", "Modération"], ["catalogue", "Catalogue"], ["jeu", "Jeu"], ["journal", "Journal"], ["erreurs", "Erreurs"]] }
+    admin: { page: "admin", items: [["tableau", "Vue d'ensemble"], ["moderation", "Modération"], ["catalogue", "Catalogue"], ["jeu", "Jeu"], ["pro", "PRO"], ["journal", "Journal"], ["erreurs", "Erreurs"]] },
+    pro: { page: "pro", items: [["offre", "Offre"], ["explorer", "Explorer"], ["abonnement", "Abonnement"]] }
   };
   // pictogrammes et libellés courts : toutes les barres tiennent sur l'écran d'un téléphone, sans défilement
-  const TAB_SHORT = { classement: "Rang", evenements: "Sorties", "Mes voitures": "Voitures", "Tableau de bord": "Bord", "Carte & vie privée": "Privé", notifications: "Notifs", moderation: "Modér." };
-  const PREFIX = { settings: "/reglages", play: "/jouer", community: "/communaute", leaderboard: "/classement", garage: "/garage", admin: "/admin" };
+  const TAB_SHORT = { classement: "Rang", evenements: "Sorties", "Mes voitures": "Voitures", "Tableau de bord": "Bord", "Carte & vie privée": "Privé", notifications: "Notifs", moderation: "Modér.", tableau: "Vue" };
+  const PREFIX = { settings: "/reglages", play: "/jouer", community: "/communaute", leaderboard: "/classement", garage: "/garage", admin: "/admin", pro: "/pro" };
 
   const handlers = {};
   let current = null, previous = null, internalMoves = 0, started = false;
@@ -106,6 +108,7 @@
       case "garage": return "/garage" + (params.tab ? "/" + params.tab : "");
       case "settings": return "/reglages" + (params.tab ? "/" + params.tab : "");
       case "admin": return "/admin" + (params.tab ? "/" + params.tab : "");
+      case "pro": return "/pro" + (params.tab ? "/" + params.tab : "");
       case "contact": return "/contact";
       case "engine": return "/moteur/" + e(params.key);
       case "brand": return "/marque/" + e(params.key);

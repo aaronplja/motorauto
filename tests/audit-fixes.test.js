@@ -35,4 +35,39 @@ const en = dict("en");
 
 // 6. anti-spam du fil : règle Firestore présente
 ok("règles : réponses du fil limitées par feed_rate", () => { const r = read("firestore.rules"); assert(/function feedRateOk\(\)/.test(r) && /kind != 'feed' \|\| feedRateOk\(\)/.test(r) && /match \/feed_rate\/\{uid\}/.test(r)); });
+
+// 7. économie : packs -40 %, doublons x2 (option C)
+const gc = require("../js/game-core.js");
+ok("économie : packs -40 %, doublons x2, équilibre des raretés conservé", () => {
+  assert.strictEqual(gc.PACKS.world.cost, 120);
+  assert(Object.keys(gc.PACKS).every((k) => gc.PACKS[k].cost >= 10 && gc.PACKS[k].cost <= 300));
+  assert.deepStrictEqual(["common", "rare", "epic", "legendary", "shiny"].map((r) => gc.RAR[r].dust), [10, 30, 80, 200, 800]);
+  assert(gc.RAR.common.dust < gc.RAR.rare.dust && gc.RAR.rare.dust < gc.RAR.epic.dust && gc.RAR.epic.dust < gc.RAR.legendary.dust);
+});
+
+// 8. MOTORAUTO PRO : structure de départ, règles d'accès, aucun secret ni contenu technique dans le code
+ok("PRO : catégories de départ complètes, ids uniques, aucun contenu technique", () => {
+  const w = {}; new Function("window", read("js/pro-cats.js"))(w);
+  const c = w.MA_PRO_DEFAULT_CATS, ids = c.map((x) => x.id);
+  ["freinages", "chassis", "suspensions", "liaison-au-sol", "aerodynamisme", "refroidissement", "moteur", "echappement", "boite-de-vitesses", "allegement"].forEach((k) => assert(ids.includes(k), "catégorie absente : " + k));
+  assert.strictEqual(new Set(ids).size, ids.length);
+  c.forEach((x) => { const s = x.subs.map((y) => y.id); assert.strictEqual(new Set(s).size, s.length, "sous-catégories en double : " + x.id); assert(x.subs.length >= 3); });
+  assert(c.find((x) => x.id === "moteur").subs.some((y) => y.id === "swap-moteur"));
+  assert(/professionnel/.test(w.MA_PRO_WARNING) && /homologation/.test(w.MA_PRO_WARNING));
+});
+ok("PRO : règles Firestore — abonnement écrit par le serveur seul, fiches publiées pour les abonnés actifs, écriture admin", () => {
+  const r = read("firestore.rules");
+  assert(/match \/pro_subs\/\{uid\}[\s\S]*?allow write: if false;/.test(r));
+  assert(/match \/pro_mods\/\{mid\}[\s\S]*?resource\.data\.status == 'published' && proActive\(\)/.test(r));
+  assert(/allow create, update: if validProMod\(\);/.test(r) && /function validProMod\(\) \{[\s\S]*?isAdmin\(\)/.test(r));
+  assert(/accessUntil > request\.time/.test(r));
+});
+ok("PRO : aucune clé secrète dans le code du site", () => {
+  ["js/pro.js", "js/pro-admin.js", "js/pro-cats.js", "index.src.html"].forEach((f) => assert(!/sk_(live|test)_|whsec_|rk_(live|test)_/.test(read(f)), f));
+});
+ok("PRO : entrée unique dans la barre du haut + route + onglet admin", () => {
+  const h = read("index.src.html"), rt = read("js/router.js");
+  assert.strictEqual((h.match(/id="pro-btn"/g) || []).length, 1);
+  assert(/name: "pro", re:/.test(rt) && /"jeu", "pro", "journal"/.test(rt) && /data-tab="pro"/.test(h));
+});
 console.log(n + " vérifications audit OK");

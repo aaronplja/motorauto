@@ -69,7 +69,7 @@
 .me-backdrop { background: rgba(8,10,16,.45); }
 
 /* pendant le défilement le flou est remplacé par un fond plus plein : même rendu, nettement moins de calcul */
-html.scrolling[data-anim="smooth"] .app-header, html.scrolling[data-anim="smooth"] #mobile-touch-bar .dock, html.scrolling[data-anim="smooth"] .page-tabs, html.scrolling[data-anim="smooth"] .toolbar-cluster
+html[data-anim="smooth"] .app-header.is-scrolling, html[data-anim="smooth"] #mobile-touch-bar .dock.is-scrolling, html[data-anim="smooth"] .page-tabs.is-scrolling, html[data-anim="smooth"] .toolbar-cluster.is-scrolling
 { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: color-mix(in srgb, var(--bg-surface) 88%, transparent) !important; }
 html[data-anim="smooth"] { --blur: 10px; }
 html[data-anim="reduced"] *, html[data-anim="reduced"] *::before, html[data-anim="reduced"] *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

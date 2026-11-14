@@ -8,7 +8,7 @@
 const fs = require("fs");
 const path = require("path");
 const { initializeTestEnvironment, assertFails, assertSucceeds } = require(path.join(__dirname, "../functions/node_modules/@firebase/rules-unit-testing"));
-const { doc, setDoc, getDoc, updateDoc, deleteDoc, serverTimestamp } = require(path.join(__dirname, "../functions/node_modules/firebase/firestore"));
+const { doc, setDoc, getDoc, getDocs, collection, query, where, updateDoc, deleteDoc, serverTimestamp, Timestamp } = require(path.join(__dirname, "../functions/node_modules/firebase/firestore"));
 let fails = 0, n = 0;
 const check = async (label, p, expectOk) => { n++; try { await (expectOk ? assertSucceeds(p) : assertFails(p)); console.log("  ok - " + label); } catch (e) { fails++; console.log("  ÉCHEC - " + label + " : " + String(e.message).slice(0, 120)); } };
 (async () => {
@@ -19,6 +19,12 @@ const check = async (label, p, expectOk) => { n++; try { await (expectOk ? asser
     await setDoc(doc(d, "users/alice/notifications/n1"), { read: false, text: "x" });
     await setDoc(doc(d, "collections/alice"), { owned: {}, opened: 0, count: 0, dust: 0, bonus: 0 });
     await setDoc(doc(d, "special_cards/sp-x"), { name: "Spéciale", granted: 0, supply: 0 });
+    // MOTORAUTO PRO : un abonné actif, un abonnement expiré, une fiche publiée et un brouillon
+    await setDoc(doc(d, "pro_subs/carol"), { status: "active", accessUntil: Timestamp.fromMillis(Date.now() + 30 * 864e5) });
+    await setDoc(doc(d, "pro_subs/dave"), { status: "active", accessUntil: Timestamp.fromMillis(Date.now() - 864e5) });
+    await setDoc(doc(d, "pro_subs/erin"), { status: "canceled", accessUntil: Timestamp.fromMillis(Date.now() + 30 * 864e5) });
+    await setDoc(doc(d, "pro_mods/m1"), { carId: "x", cat: "freinages", title: "Fiche publiée", status: "published" });
+    await setDoc(doc(d, "pro_mods/m2"), { carId: "x", cat: "freinages", title: "Brouillon", status: "draft" });
   });
   const alice = env.authenticatedContext("alice").firestore(), bob = env.authenticatedContext("bob").firestore(), anon = env.unauthenticatedContext().firestore();
   await check("profil : lecture publique", getDoc(doc(anon, "users/alice")), true);
@@ -48,6 +54,35 @@ const check = async (label, p, expectOk) => { n++; try { await (expectOk ? asser
   await check("proposition : alice ne l'approuve pas elle-même", updateDoc(doc(alice, "quiz_proposals/p1"), { status: "approved" }), false);
   await check("proposition : l'admin l'approuve avec traductions", updateDoc(doc(adm, "quiz_proposals/p1"), { status: "approved", tr: { en: { q: "Which brand makes the 911?", o: ["Porsche", "Ferrari", "BMW", "Audi"] } }, by: "admin1", reviewedAt: serverTimestamp() }), true);
   await check("proposition : une question approuvée est lisible par tous", getDoc(doc(anon, "quiz_proposals/p1")), true);
+  // ---- MOTORAUTO PRO : lecture réservée aux abonnés actifs (fiches publiées) et aux administrateurs ; écriture réservée aux administrateurs
+  const carol = env.authenticatedContext("carol").firestore(), dave = env.authenticatedContext("dave").firestore(), erin = env.authenticatedContext("erin").firestore();
+  const pubQ = (db) => getDocs(query(collection(db, "pro_mods"), where("carId", "==", "x"), where("status", "==", "published")));
+  const mod = (over) => Object.assign({ carId: "x", cat: "freinages", sub: "", title: "Disques", description: "", status: "draft", order: 0, author: "admin1", authorName: "Admin" }, over || {});
+  await check("PRO : un abonné actif lit les fiches publiées", pubQ(carol), true);
+  await check("PRO : un abonné actif ne lit pas un brouillon", getDoc(doc(carol, "pro_mods/m2")), false);
+  await check("PRO : un abonné actif lit une fiche publiée", getDoc(doc(carol, "pro_mods/m1")), true);
+  await check("PRO : un abonnement expiré ne lit rien", pubQ(dave), false);
+  await check("PRO : un abonnement résilié ne lit rien", pubQ(erin), false);
+  await check("PRO : un pilote sans abonnement ne lit rien", pubQ(alice), false);
+  await check("PRO : un visiteur déconnecté ne lit rien", pubQ(anon), false);
+  await check("PRO : un abonné ne demande pas les brouillons", getDocs(query(collection(carol, "pro_mods"), where("carId", "==", "x"))), false);
+  await check("PRO : l'admin lit tout, brouillons compris", getDoc(doc(adm, "pro_mods/m2")), true);
+  await check("PRO : un abonné n'écrit pas de fiche", setDoc(doc(carol, "pro_mods/hack"), mod({ status: "published" })), false);
+  await check("PRO : un abonné ne modifie pas une fiche", updateDoc(doc(carol, "pro_mods/m1"), { title: "Hack" }), false);
+  await check("PRO : l'admin crée une fiche valide", setDoc(doc(adm, "pro_mods/new1"), mod()), true);
+  await check("PRO : l'admin ne met pas un statut inconnu", setDoc(doc(adm, "pro_mods/new2"), mod({ status: "secret" })), false);
+  await check("PRO : l'admin ne met pas de champ inconnu", setDoc(doc(adm, "pro_mods/new3"), mod({ free: true })), false);
+  await check("PRO : titre obligatoire", setDoc(doc(adm, "pro_mods/new4"), mod({ title: "" })), false);
+  await check("PRO : l'admin publie une fiche", updateDoc(doc(adm, "pro_mods/new1"), { status: "published" }), true);
+  await check("PRO : personne n'écrit son abonnement (pas même l'admin)", setDoc(doc(adm, "pro_subs/alice"), { status: "active", accessUntil: Timestamp.fromMillis(Date.now() + 864e5) }), false);
+  await check("PRO : un pilote ne s'octroie pas un abonnement", setDoc(doc(alice, "pro_subs/alice"), { status: "active", accessUntil: Timestamp.fromMillis(Date.now() + 864e5) }), false);
+  await check("PRO : un pilote lit son abonnement", getDoc(doc(carol, "pro_subs/carol")), true);
+  await check("PRO : un pilote ne lit pas l'abonnement d'un autre", getDoc(doc(alice, "pro_subs/carol")), false);
+  await check("PRO : la structure est lisible par tous", getDoc(doc(anon, "pro_config/cats")), true);
+  await check("PRO : un pilote ne modifie pas la structure", setDoc(doc(alice, "pro_config/cats"), { cats: [{ id: "a", label: "A", subs: [] }] }), false);
+  await check("PRO : l'admin modifie la structure", setDoc(doc(adm, "pro_config/cats"), { cats: [{ id: "a", label: "A", subs: [] }], updatedAt: serverTimestamp() }), true);
+  await check("PRO : un pilote ne touche pas aux interrupteurs", setDoc(doc(alice, "pro_config/settings"), { signups: true }), false);
+  await check("PRO : l'admin règle les interrupteurs", setDoc(doc(adm, "pro_config/settings"), { signups: false, live: false, priceEur: 5, trialDays: 90 }), true);
   await env.cleanup();
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");
   process.exit(fails ? 1 : 0);

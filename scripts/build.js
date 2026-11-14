@@ -32,7 +32,7 @@ if (!cssFiles.length || !jsFiles.length) { console.error("Aucune feuille de styl
 // --- modules « à la demande » : chargés après le premier affichage (administration pour les administrateurs, quiz+ sur la page quiz)
 //     le fichier reste listé dans index.src.html (mode développement sans build) ; le build le sort des bundles principaux
 const LAZY = {
-  admin: ["js/admin-dot.js", "js/admin-extra.js", "js/admin-game.js", "js/admin-logos.js", "js/admin-noimg.js", "js/admin-rarity.js", "js/admin-steps.js"],
+  admin: ["js/admin-dot.js", "js/admin-extra.js", "js/admin-game.js", "js/admin-logos.js", "js/admin-noimg.js", "js/admin-rarity.js", "js/admin-steps.js", "js/pro-admin.js"],
   quiz: ["js/quiz-plus.js"]
 };
 const lazyOf = new Map(); Object.keys(LAZY).forEach((k) => LAZY[k].forEach((f) => lazyOf.set(f, k)));

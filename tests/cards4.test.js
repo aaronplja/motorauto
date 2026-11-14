@@ -37,7 +37,7 @@ const col = async () => (await db.collection("collections").doc("u1").get()).dat
   // ---- offres et missions : même résultat partout, valeurs valides
   const o1 = core.dailyOffers(today, pool, rar), o2 = core.dailyOffers(today, pool.slice().reverse(), rar);
   ok(JSON.stringify(o1) === JSON.stringify(o2) && o1.card && o1.cardCost > 0 && o1.cardCost < o1.cardFull && core.PACKS[o1.pack], "offres identiques quel que soit l'ordre : " + JSON.stringify(o1));
-  ok(core.offerPackCost("fr") === 175 && core.offerPackCost("de") === 140, "prix des packs à -30 % : " + core.offerPackCost("fr"));
+  ok(core.offerPackCost("fr") === Math.round(core.PACKS.fr.cost * 0.7 / 5) * 5 && core.offerPackCost("de") === Math.round(core.PACKS.de.cost * 0.7 / 5) * 5, "prix des packs à -30 % : " + core.offerPackCost("fr"));
   const ms = core.dailyMissions(today);
   ok(ms.length === 3 && new Set(ms.map((m) => m.id)).size === 3 && JSON.stringify(ms) === JSON.stringify(core.dailyMissions(today)), "3 missions distinctes et stables");
   const seen = new Set(); for (let d = 0; d < 40; d++) core.dailyMissions("2026-12-" + String(d + 1).padStart(2, "0")).forEach((m) => seen.add(m.type)); ok(seen.size >= 4, "variété des missions : " + Array.from(seen));
