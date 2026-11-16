@@ -1052,13 +1052,29 @@
       const fit = () => { if (!raf) raf = requestAnimationFrame(onSize); };
       // le site remonte la saisie au-dessus du clavier (--kb) : on reste collé en bas de la conversation
       let lastKb = "";
-      new MutationObserver(() => { const v = document.documentElement.style.getPropertyValue("--kb"); if (v === lastKb) return; lastKb = v; if (stickBottom && state.conv) toBottom(false); }).observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
+      new MutationObserver(() => { const v = document.documentElement.style.getPropertyValue("--kb"); if (v === lastKb) return; lastKb = v; if (parseFloat(v) > 0 && window.__maDropKbp) window.__maDropKbp(); if (stickBottom && state.conv) toBottom(false); }).observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
       window.addEventListener("resize", fit);
       window.addEventListener("orientationchange", () => setTimeout(fit, 300));
       input.addEventListener("focus", () => { setTimeout(() => { if (stickBottom && state.conv) toBottom(false); }, 320); });
-      // le doigt touche la saisie : le site remonte la barre avant même l'arrivée du clavier (iOS ne décale alors plus la page)
-      input.addEventListener("touchstart", () => tell({ ma: "chat-pre" }), { passive: true });
-      input.addEventListener("pointerdown", () => tell({ ma: "chat-pre" }), { passive: true });
+      // première touche sur la saisie (clavier fermé) : la barre est remontée AVANT que iOS n'ouvre le clavier, pour qu'il ne décale pas la page.
+      // On ne bouge rien pendant le toucher (sinon le doigt ne tombe plus sur le champ et le clavier ne s'ouvre pas) : au relâchement, on remonte la
+      // barre puis on donne le focus nous-mêmes. Si le focus échoue une fois, on reprend le comportement natif.
+      {
+        const wrap = document.querySelector(".chat-main"); let tx = 0, ty = 0, moved = false, native = false;
+        const kbGuess = () => { let v = 0; try { v = parseInt(localStorage.getItem("ma_kbh"), 10) || 0; } catch (_) {} if (!(v > 150 && v < 600)) v = Math.round(window.innerHeight * 0.38); return v + 40; };
+        input.addEventListener("touchstart", (e) => { const t = e.touches[0]; if (t) { tx = t.clientX; ty = t.clientY; } moved = false; }, { passive: true });
+        input.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (t && (Math.abs(t.clientX - tx) > 10 || Math.abs(t.clientY - ty) > 10)) moved = true; }, { passive: true });
+        input.addEventListener("touchend", (e) => {
+          if (native || moved || !wrap || e.touches.length || !e.cancelable || document.activeElement === input) return;
+          e.preventDefault();
+          wrap.style.setProperty("--kbp", kbGuess() + "px");
+          tell({ ma: "chat-pre" });
+          try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
+          setTimeout(() => { if (document.activeElement !== input) { native = true; wrap.style.removeProperty("--kbp"); tell({ ma: "chat-blur" }); } }, 400);
+        });
+        input.addEventListener("blur", () => { if (wrap) wrap.style.removeProperty("--kbp"); });
+        window.__maDropKbp = () => { if (wrap) wrap.style.removeProperty("--kbp"); };
+      }
       // iOS fait défiler les conteneurs (même « overflow:hidden ») pour montrer le champ actif : on les remet aussitôt à zéro
       const still = () => { [document.scrollingElement, document.body, document.querySelector(".chat-app"), document.querySelector(".chat-main"), document.querySelector(".conv-stage")].forEach((el) => { if (el && (el.scrollTop || el.scrollLeft)) { el.scrollTop = 0; el.scrollLeft = 0; } }); };
       document.addEventListener("scroll", still, true); window.addEventListener("scroll", still, { passive: true });

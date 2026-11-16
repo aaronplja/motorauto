@@ -104,7 +104,7 @@ html, body.chat-page { background: var(--bg-core); }
 .cp-pins { padding: 8px 14px; }
 
 /* ───────────────────────── fil des messages ───────────────────────── */
-#chat-messages-container, .msg-scroll { padding: calc(var(--head-h, 60px) + 12px) max(.85rem, calc((100% - var(--chat-col)) / 2)) calc(var(--comp-h, 76px) + 14px + var(--kb, 0px)) !important; scroll-padding-top: calc(var(--head-h, 60px) + 8px); scroll-padding-bottom: calc(var(--comp-h, 76px) + 8px); background:
+#chat-messages-container, .msg-scroll { padding: calc(var(--head-h, 60px) + 12px) max(.85rem, calc((100% - var(--chat-col)) / 2)) calc(var(--comp-h, 76px) + 14px + max(var(--kb, 0px), var(--kbp, 0px))) !important; scroll-padding-top: calc(var(--head-h, 60px) + 8px); scroll-padding-bottom: calc(var(--comp-h, 76px) + 8px); background:
   radial-gradient(color-mix(in srgb, var(--color-ink) 7%, transparent) 1px, transparent 1.4px) 0 0 / 22px 22px, var(--bg-core); scrollbar-width: none; }
 .msg-scroll::-webkit-scrollbar { display: none; }
 .day-sep { position: static; justify-content: center; margin: 1.2rem 0 .4rem; pointer-events: none; }
@@ -153,7 +153,7 @@ html, body.chat-page { background: var(--bg-core); }
 .msg-actions { top: -28px; padding: 3px; background: var(--bg-surface) !important; border-color: var(--stroke-line) !important; backdrop-filter: none !important; box-shadow: 0 14px 30px -14px rgba(0,0,0,.6); }
 .msg-actions button { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; }
 .msg-actions .danger:hover { background: #ef4444; color: #fff; }
-.jump-latest { right: max(1rem, calc((100% - var(--chat-col)) / 2 + .5rem)); bottom: calc(var(--comp-h, 76px) + 14px + var(--kb, 0px)); width: 44px; min-width: 44px; height: 44px; padding: 0; }
+.jump-latest { right: max(1rem, calc((100% - var(--chat-col)) / 2 + .5rem)); bottom: calc(var(--comp-h, 76px) + 14px + max(var(--kb, 0px), var(--kbp, 0px))); width: 44px; min-width: 44px; height: 44px; padding: 0; }
 .jump-latest span:not(:empty) { position: absolute; top: -6px; right: -4px; }
 .msg-empty b { font-size: 1.4rem; }
 .empty-ico { width: 64px; height: 64px; }
@@ -164,7 +164,7 @@ html, body.chat-page { background: var(--bg-core); }
 .chat-app .bubble:has(> .trade-card:only-child), .chat-app .bubble:has(> .car-share:only-child) { padding: 0; background: none; box-shadow: none; }
 
 /* ───────────────────────── saisie flottante ───────────────────────── */
-.compose-wrap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 0 max(.7rem, calc((100% - var(--chat-col)) / 2)) max(6px, calc(var(--safe-bottom, 0px) - 12px)); transform: translate3d(0, calc(-1 * var(--kb, 0px)), 0); transition: transform .2s cubic-bezier(.22, .9, .3, 1); background: none !important; border: 0; pointer-events: none; display: flex; flex-direction: column; gap: .4rem; }
+.compose-wrap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 0 max(.7rem, calc((100% - var(--chat-col)) / 2)) max(6px, calc(var(--safe-bottom, 0px) - 12px)); transform: translate3d(0, calc(-1 * max(var(--kb, 0px), var(--kbp, 0px))), 0); transition: transform .2s cubic-bezier(.22, .9, .3, 1); background: none !important; border: 0; pointer-events: none; display: flex; flex-direction: column; gap: .4rem; }
 .compose-wrap > * { pointer-events: auto; }
 body.kb-open .compose-wrap, .chat-page:focus-within .compose-wrap { padding-bottom: .5rem; }
 .compose-bar { margin: 0; padding: .45rem .7rem; border-radius: 22px; gap: .7rem; }

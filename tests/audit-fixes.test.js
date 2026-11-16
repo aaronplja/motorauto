@@ -248,7 +248,7 @@ ok("chat iPhone : seule la saisie suit le clavier (--kb), cadre et liste immobil
   const e = read("js/chat-embed.js"), r = read("css/refonte.css"), c = read("css/chat.css"), c3 = read("css/chat3.css");
   assert.ok(/function layout\(now\)/.test(e) && /window\.innerHeight - vv\.height/.test(e) && /"--kb"/.test(e), "hauteur du clavier transmise au chat");
   assert.ok(!/host\.style\.bottom = bottom/.test(e) && /host\.style\.top = topBase; host\.style\.bottom = "";/.test(e), "le cadre ne bouge pas");
-  assert.ok(/translate3d\(0, calc\(-1 \* var\(--kb, 0px\)\), 0\)/.test(c3), "la saisie monte avec le clavier");
+  assert.ok(/translate3d\(0, calc\(-1 \* max\(var\(--kb, 0px\), var\(--kbp, 0px\)\)\), 0\)/.test(c3), "la saisie monte avec le clavier");
   assert.ok(/classList\.toggle\("chat-kb", open\)/.test(e) && /kbOpen \? 0 : px\(cs\.paddingBottom\)/.test(e), "marge basse nulle clavier ouvert, dock masqué");
   assert.ok(/html\.on-chat \{ overflow-x: hidden; overflow-y: auto;/.test(r) && /min-height: calc\(100dvh \+ 2px\)/.test(r) && !/html\.on-chat, html\.on-chat body \{ overflow: hidden; \}/.test(r), "plus d'overflow:hidden sur la page du site");
   assert.ok(/html\.chat-kb #mobile-touch-bar \{ display: none/.test(r), "dock masqué clavier ouvert");
@@ -276,4 +276,10 @@ ok("chat iPhone : saisie remontée dès le toucher (avant le clavier), zone visi
   assert.ok(/function pan\(\)/.test(e) && /translate3d\(0,/.test(e) && /vv\.offsetTop/.test(e), "cadre ramené sur la zone visible");
   assert.ok(/tell\(\{ ma: "chat-pre" \}\)/.test(j) && /const still = \(\) =>/.test(j), "le chat annonce le toucher et remet les conteneurs à zéro");
   assert.ok(/@supports \(overflow: clip\) \{ html, body\.chat-page, \.chat-app \{ overflow: clip; \} \}/.test(c), "overflow:clip");
+});
+ok("chat iPhone : le clavier s'ouvre (barre remontée au relâchement du doigt, focus donné par le chat, repli natif si échec)", () => {
+  const j = read("js/chat.js"), c = read("css/chat3.css");
+  assert.ok(/input\.addEventListener\("touchend"/.test(j) && /e\.preventDefault\(\);\s*wrap\.style\.setProperty\("--kbp"/.test(j) && /input\.focus\(\{ preventScroll: true \}\)/.test(j), "remontée au relâchement puis focus");
+  assert.ok(!/input\.addEventListener\("(touchstart|pointerdown)", \(\) => tell/.test(j), "rien ne bouge pendant le toucher");
+  assert.ok(/native = true/.test(j) && /max\(var\(--kb, 0px\), var\(--kbp, 0px\)\)/.test(c), "repli natif et remontée provisoire");
 });
