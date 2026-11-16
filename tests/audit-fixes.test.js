@@ -258,3 +258,8 @@ ok("chat : cadres débloqués visibles autour des pdp (anneau propre, pas de fil
   assert.ok(/@keyframes chatFrameGlow/.test(c) && /cf-prism[^{]*\{ animation: chatFrameGlow/.test(c.replace(/\n/g, " ")), "animation sans hue-rotate");
   assert.ok(!/\.chat-app img\.avatar\.cosm-f \{[^}]*overflow: visible/.test(c), "la photo reste ronde");
 });
+ok("chat iPhone : saisie en cours signalée au site, la disposition au-dessus du clavier n'est pas annulée pendant l'animation", () => {
+  const j = read("js/chat.js"), e = read("js/chat-embed.js");
+  assert.ok(/tell\(\{ ma: "chat-focus" \}\)/.test(j) && /tell\(\{ ma: "chat-blur" \}\)/.test(j), "le chat signale focus et blur");
+  assert.ok(/d\.ma === "chat-focus"\) \{ hold = true/.test(e) && /hold && Date\.now\(\) - lastOpenAt < 1200/.test(e), "pas de remise en place pendant la saisie");
+});

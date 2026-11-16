@@ -1053,7 +1053,10 @@
       window.addEventListener("resize", fit);
       window.addEventListener("orientationchange", () => setTimeout(fit, 300));
       input.addEventListener("focus", () => { setTimeout(() => { if (stickBottom && state.conv) toBottom(false); }, 320); });
-      input.addEventListener("blur", () => { tell({ ma: "chat-blur" }); });
+      // le site doit savoir qu'une saisie est en cours (iOS décale alors la fenêtre pour montrer le champ)
+      const isField = (el) => !!el && (/^(INPUT|TEXTAREA)$/.test(el.tagName) || el.isContentEditable);
+      document.addEventListener("focusin", (e) => { if (isField(e.target)) tell({ ma: "chat-focus" }); });
+      document.addEventListener("focusout", () => { setTimeout(() => { if (!isField(document.activeElement)) tell({ ma: "chat-blur" }); }, 60); });
       fit();
     }
     window.addEventListener("popstate", () => { app.classList.add("instant"); clearTimeout(app._t); app._t = setTimeout(() => app.classList.remove("instant"), 450); });

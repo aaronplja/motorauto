@@ -8,7 +8,7 @@
 (function () {
   "use strict";
   const de = document.documentElement, $ = (id) => document.getElementById(id);
-  let frame = null, ready = false, onChat = false, view = "list", pending = "", kbOpen = false, topBase = "";
+  let frame = null, ready = false, onChat = false, view = "list", pending = "", kbOpen = false, topBase = "", hold = false, lastOpenAt = 0;
 
   function make(sub) {
     if (frame) return;
@@ -49,6 +49,9 @@
   function layout() {
     const host = $("chat-embed"); if (!host) return;
     const open = !!(onChat && vv && (window.innerHeight - vv.height) > 80);
+    if (open) lastOpenAt = Date.now();
+    // pendant l'animation du clavier, iOS annonce brièvement une hauteur intermédiaire : on garde la dernière disposition plutôt que de redescendre la saisie
+    if (hold && !open && kbOpen && Date.now() - lastOpenAt < 1200) { setTimeout(fitKb, 1250); return; }
     host.style.top = topBase; host.style.bottom = "";
     if (open) {
       const t = host.getBoundingClientRect().top;
@@ -71,7 +74,8 @@
     const d = e.data || {};
     if (d.ma === "chat-ready") { ready = true; const l = $("chat-embed-load"); if (l) l.hidden = true; sync(); if (pending) { go(pending); pending = ""; } }
     else if (d.ma === "chat-view") { view = d.view; flag(); }
-    else if (d.ma === "chat-blur") afterKeyboard();
+    else if (d.ma === "chat-focus") { hold = true; fitKb(); }
+    else if (d.ma === "chat-blur") { hold = false; fitKb(); afterKeyboard(); }
     else if (d.ma === "chat-nav" && typeof d.hash === "string" && d.hash.indexOf("#/") === 0) location.hash = d.hash;
   });
   // iOS fait défiler la page du site pour montrer le champ de saisie : une fois le clavier fermé, on la remet à sa place (barre de navigation et saisie tout en bas)
@@ -79,6 +83,7 @@
   function settle() {
     if (!onChat) return;
     if (vv && (window.innerHeight - vv.height) > 80) return;   // clavier encore ouvert
+    if (hold && Date.now() - lastOpenAt < 1200) return;          // saisie en cours : ne pas annuler le décalage que fait iOS pour la montrer
     if (window.scrollY || window.scrollX || (vv && (vv.offsetTop || vv.offsetLeft))) {
       window.scrollTo(0, 0); de.scrollTop = 0; document.body.scrollTop = 0;
     }
@@ -92,7 +97,7 @@
   window.addEventListener("resize", () => { peak = Math.max(peak, window.innerHeight); });
   window.addEventListener("orientationchange", () => setTimeout(() => { peak = window.innerHeight; }, 600));
   function remeasure() {
-    if (typing() || peak - window.innerHeight <= 4) return;
+    if (hold || typing() || peak - window.innerHeight <= 4) return;
     if (!sentinel) { sentinel = document.createElement("div"); sentinel.setAttribute("aria-hidden", "true"); sentinel.style.cssText = "position:fixed;left:0;top:0;width:1px;height:100%;pointer-events:none;visibility:hidden;z-index:-1"; document.body.appendChild(sentinel); }
     sentinel.style.display = "none"; void sentinel.offsetHeight; sentinel.style.display = "";
     void document.documentElement.offsetHeight;
