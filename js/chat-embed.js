@@ -8,7 +8,7 @@
 (function () {
   "use strict";
   const de = document.documentElement, $ = (id) => document.getElementById(id);
-  let frame = null, ready = false, onChat = false, view = "list", pending = "";
+  let frame = null, ready = false, onChat = false, view = "list", pending = "", kbOpen = false, topBase = "";
 
   function make(sub) {
     if (frame) return;
@@ -27,11 +27,11 @@
     const w = win(); if (!w || !w.document || !w.document.documentElement) return;
     const r = w.document.documentElement;
     ["data-theme", "data-tone", "data-anim", "data-contrast", "lang"].forEach((a) => { const v = de.getAttribute(a); if (v == null) r.removeAttribute(a); else if (r.getAttribute(a) !== v) r.setAttribute(a, v); });
-    const st = de.getAttribute("style") || ""; if (r.getAttribute("style") !== st && !/--vvh/.test(r.getAttribute("style") || "")) r.setAttribute("style", st);
+    const st = de.getAttribute("style") || ""; if (r.getAttribute("style") !== st) r.setAttribute("style", st);
     if (!probe) { probe = document.createElement("div"); probe.setAttribute("aria-hidden", "true"); probe.style.cssText = "position:fixed;left:-9px;top:0;width:1px;height:1px;visibility:hidden;padding-top:var(--safe-top,0px);padding-bottom:var(--safe-bottom,0px);box-sizing:content-box"; document.body.appendChild(probe); }
     const cs = getComputedStyle(probe), conv = de.classList.contains("chat-conv") && matchMedia("(max-width: 860px)").matches;
     r.style.setProperty("--safe-top", conv ? px(cs.paddingTop) + "px" : "0px");
-    r.style.setProperty("--safe-bottom", px(cs.paddingBottom) + "px");
+    r.style.setProperty("--safe-bottom", (kbOpen ? 0 : px(cs.paddingBottom)) + "px");
   }
   new MutationObserver(() => requestAnimationFrame(sync)).observe(de, { attributes: true, attributeFilter: ["data-theme", "data-tone", "data-anim", "data-contrast", "style", "lang", "class"] });
 
@@ -39,10 +39,27 @@
   function fitTop() {
     const host = $("chat-embed"); if (!host) return;
     const head = document.querySelector(".app-header");
-    if (!onChat || de.classList.contains("chat-conv") || !head || getComputedStyle(head).display === "none") { host.style.top = ""; return; }
-    host.style.top = Math.max(0, Math.round(head.getBoundingClientRect().bottom)) + "px";
+    if (!onChat || de.classList.contains("chat-conv") || !head || getComputedStyle(head).display === "none") topBase = "";
+    else topBase = Math.max(0, Math.round(head.getBoundingClientRect().bottom)) + "px";
+    layout();
   }
-  window.addEventListener("resize", fitTop); window.addEventListener("orientationchange", () => setTimeout(fitTop, 300));
+  // clavier : le cadre du chat épouse exactement la zone visible (au-dessus du clavier). C'est le site qui le mesure : à l'intérieur
+  // d'un cadre, iOS ne donne pas la hauteur du clavier, d'où la saisie qui restait cachée dessous.
+  const vv = window.visualViewport;
+  function layout() {
+    const host = $("chat-embed"); if (!host) return;
+    const open = !!(onChat && vv && (window.innerHeight - vv.height) > 80);
+    host.style.top = topBase; host.style.bottom = "";
+    if (open) {
+      const t = host.getBoundingClientRect().top;
+      host.style.top = Math.max(t, Math.round(vv.offsetTop)) + "px";
+      host.style.bottom = Math.max(0, Math.round(window.innerHeight - vv.offsetTop - vv.height)) + "px";
+    }
+    if (open !== kbOpen) { kbOpen = open; de.classList.toggle("chat-kb", open); sync(); }
+  }
+  let lraf = 0; const fitKb = () => { if (!lraf) lraf = requestAnimationFrame(() => { lraf = 0; layout(); }); };
+  if (vv) { vv.addEventListener("resize", fitKb); vv.addEventListener("scroll", fitKb); }
+  window.addEventListener("resize", () => { fitTop(); fitKb(); }); window.addEventListener("orientationchange", () => setTimeout(fitTop, 300));
   function flag() {
     de.classList.toggle("on-chat", onChat);
     de.classList.toggle("chat-conv", onChat && view === "conv");
@@ -58,11 +75,14 @@
     else if (d.ma === "chat-nav" && typeof d.hash === "string" && d.hash.indexOf("#/") === 0) location.hash = d.hash;
   });
   // iOS fait défiler la page du site pour montrer le champ de saisie : une fois le clavier fermé, on la remet à sa place (barre de navigation et saisie tout en bas)
-  const vv = window.visualViewport; let st = 0;
+  let st = 0;
   function settle() {
     if (!onChat) return;
     if (vv && (window.innerHeight - vv.height) > 80) return;   // clavier encore ouvert
-    if (window.scrollY || window.scrollX || (vv && (vv.offsetTop || vv.offsetLeft))) window.scrollTo(0, 0);
+    if (window.scrollY || window.scrollX || (vv && (vv.offsetTop || vv.offsetLeft))) {
+      window.scrollTo(0, 0); de.scrollTop = 0; document.body.scrollTop = 0;
+    }
+    layout();
   }
   // bug iOS (PWA installée) : après la première ouverture du clavier, la hauteur de la fenêtre reste réduite d'environ 60 px
   // (barre de navigation et saisie remontées, bande noire en bas). On mémorise la plus grande hauteur vue et, quand le clavier

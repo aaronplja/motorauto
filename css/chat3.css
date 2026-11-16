@@ -226,3 +226,15 @@ body:has(#chat-app:not([data-view="list"])) #mobile-touch-bar { display: none !i
 .embed .side-head { display: none !important; }
 .embed .side-search { margin-top: .85rem; }
 .embed .chat-side { padding-top: 0; }
+
+/* cadres débloqués autour des photos de profil : les règles d'avatar du chat (ombre d'1 px) écrasaient l'anneau du cadre ; ici l'anneau est
+   dimensionné pour de petits avatars, sans filtre sur la photo et sans être rogné */
+.chat-app img.avatar.cosm-f { border: 0; border-radius: 50%; filter: none;
+  box-shadow: 0 0 0 1.5px var(--bg-core), 0 0 0 3.5px var(--cf, #f4c542), 0 0 8px 2px color-mix(in srgb, var(--cf, #f4c542) 50%, transparent); }
+.chat-app img.avatar.cosm-f.cf-neon, .chat-app img.avatar.cosm-f.cf-flame, .chat-app img.avatar.cosm-f.cf-podium, .chat-app img.avatar.cosm-f.cf-s_royal,
+.chat-app img.avatar.cosm-f.cf-platinum, .chat-app img.avatar.cosm-f.cf-aurora, .chat-app img.avatar.cosm-f.cf-prism, .chat-app img.avatar.cosm-f.cf-s_eclipse,
+.chat-app img.avatar.cosm-f.cf-b_champ { animation: chatFrameGlow 2.4s ease-in-out infinite; }
+@keyframes chatFrameGlow { 50% { box-shadow: 0 0 0 1.5px var(--bg-core), 0 0 0 3.5px var(--cf), 0 0 13px 4px color-mix(in srgb, var(--cf) 65%, transparent); } }
+.chat-app .conv-badge:has(img.avatar.cosm-f) { overflow: visible; background: none; }
+.chat-app .msg > img.avatar.cosm-f:hover { transform: none; }
+@media (prefers-reduced-motion: reduce) { .chat-app img.avatar.cosm-f { animation: none !important; } }

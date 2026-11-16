@@ -1034,29 +1034,26 @@
         }
       }
     });
-    // clavier mobile : la page suit la zone réellement visible (visualViewport).
-    // Une seule mise à jour par image, ignorée si rien n'a bougé de plus de 2 px : plus de va-et-vient quand le clavier s'ouvre.
+    // clavier mobile : c'est la page du site (parent) qui réduit le cadre du chat à la zone visible (js/chat-embed.js) ;
+    // ici on se contente de rester collé en bas quand la hauteur du cadre change.
     {
-      const vv = window.visualViewport; let stickBottom = true, raf = 0, lastH = -1, lastT = -1;
+      let stickBottom = true, raf = 0, lastH = -1;
       scroller.addEventListener("scroll", () => { stickBottom = nearBottom(); }, { passive: true });
       // une image / une vidéo qui finit de charger agrandit la liste : si on était en bas, on y reste (plus de « saut » vers le haut)
       scroller.addEventListener("load", (e) => { if (stickBottom && e.target && /^(IMG|VIDEO|IFRAME)$/.test(e.target.tagName)) toBottom(false); }, true);
       scroller.addEventListener("loadedmetadata", (e) => { if (stickBottom) toBottom(false); }, true);
-      const apply = () => {
+      const onSize = () => {
         raf = 0;
-        // la page n'est redimensionnée QUE lorsque le clavier est ouvert ; sinon elle occupe tout le cadre (jamais de décalage de barre ou de saisie)
-        const kb = !!vv && (window.innerHeight - vv.height) > 80;
-        const h = kb ? Math.round(vv.height) : 0, top = kb ? Math.round(vv.offsetTop) : 0;
-        if (Math.abs(h - lastH) < 2 && Math.abs(top - lastT) < 2) return;
-        const resized = Math.abs(h - lastH) >= 2; lastH = h; lastT = top;
-        const root = document.documentElement.style; root.setProperty("--vvh", kb ? h + "px" : "100%"); root.setProperty("--vvt", top + "px");
-        if (resized && stickBottom && state.conv) toBottom(false);
+        const h = Math.round(window.innerHeight);
+        if (Math.abs(h - lastH) < 2) return;
+        lastH = h;
+        if (stickBottom && state.conv) toBottom(false);
       };
-      const fit = () => { if (!raf) raf = requestAnimationFrame(apply); };
-      if (vv) { vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); }
+      const fit = () => { if (!raf) raf = requestAnimationFrame(onSize); };
+      window.addEventListener("resize", fit);
       window.addEventListener("orientationchange", () => setTimeout(fit, 300));
-      input.addEventListener("focus", () => { fit(); setTimeout(fit, 320); });
-      input.addEventListener("blur", () => { setTimeout(fit, 150); tell({ ma: "chat-blur" }); });
+      input.addEventListener("focus", () => { setTimeout(() => { if (stickBottom && state.conv) toBottom(false); }, 320); });
+      input.addEventListener("blur", () => { tell({ ma: "chat-blur" }); });
       fit();
     }
     window.addEventListener("popstate", () => { app.classList.add("instant"); clearTimeout(app._t); app._t = setTimeout(() => app.classList.remove("instant"), 450); });

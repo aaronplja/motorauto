@@ -515,7 +515,12 @@ body:has(.me-layer.on) .ed-fab { display: none; }
 /* .chat-embed-spin : voir css/brand-loader.css */
 @keyframes chatSpin { to { transform: rotate(360deg); } }
 html.on-chat .site-footer { display: none; }
-html.on-chat, html.on-chat body { overflow: hidden; }
+/* Chat intégré : la page du site ne défile pas visuellement, mais elle reste « défilable » de 2 px. Avec overflow:hidden, iOS décale la fenêtre
+   (au lieu de faire défiler la page) quand le clavier s'ouvre dans le cadre, et ce décalage reste après la fermeture : barre du bas et saisie
+   restaient remontées. Une page réellement défilable revient à sa place avec scrollTo(0,0), comme sur l'accueil. */
+html.on-chat { overflow-x: hidden; overflow-y: auto; overscroll-behavior: none; }
+html.on-chat body { overflow: visible; min-height: calc(100dvh + 2px); overscroll-behavior: none; }
+html.chat-kb #mobile-touch-bar { display: none !important; }
 html.on-chat .app-header { transform: none !important; opacity: 1 !important; }
 @media (max-width: 999px) { html.chat-conv #mobile-touch-bar { display: none !important; } }
 @media (max-width: 860px) { html.chat-conv .app-header { display: none !important; } html.chat-conv .chat-embed { top: 0; } }

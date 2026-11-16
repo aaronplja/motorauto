@@ -228,7 +228,7 @@ ok("filtre : glissement sans rebond", () => {
 });
 ok("chat iPhone : page redimensionnée seulement clavier ouvert, saisie au niveau du dock, plus de date flottante", () => {
   const j = read("js/chat.js"), e = read("js/chat-embed.js"), c = read("css/chat3.css");
-  assert.ok(/const kb = !!vv && \(window\.innerHeight - vv\.height\) > 80/.test(j) && /kb \? h \+ "px" : "100%"/.test(j), "hauteur suivie seulement avec clavier");
+  assert.ok(!/--vvh/.test(j) && /window\.addEventListener\("resize", fit\)/.test(j), "le chat ne mesure plus le clavier lui-même");
   assert.ok(/chat-blur/.test(j) && /chat-blur/.test(e) && /function settle\(\)/.test(e), "page du site remise en place après le clavier");
   assert.ok(/max\(6px, calc\(var\(--safe-bottom, 0px\) - 12px\)\)/.test(c), "saisie au niveau du dock");
   assert.ok(/\.day-sep \{ position: static;/.test(c) && !/\.day-sep \{[^}]*position: sticky/.test(c), "date non collante");
@@ -241,4 +241,20 @@ ok("chat iPhone : recalcul de la hauteur après le clavier, salon sous la barre 
   assert.ok(/function fitTop\(\)/.test(e) && /getBoundingClientRect\(\)\.bottom/.test(e), "le salon commence sous la barre réelle");
   assert.ok(/box: "border-box"/.test(g) && /addEventListener\("resize", setH\)/.test(g), "hauteur de la barre du haut recalculée (encoche comprise)");
   assert.ok(/\.conv-head::before \{ display: block !important;[^}]*linear-gradient/.test(c), "voile sous l'heure en conversation");
+});
+
+// ---- série z11 : chat iPhone (décalage persistant, saisie sous le clavier, cadres débloqués)
+ok("chat iPhone : le cadre épouse la zone visible au-dessus du clavier, page du site défilable pour revenir à sa place", () => {
+  const e = read("js/chat-embed.js"), r = read("css/refonte.css"), c = read("css/chat.css");
+  assert.ok(/function layout\(\)/.test(e) && /vv\.offsetTop - vv\.height/.test(e) && /host\.style\.bottom = Math\.max\(0/.test(e), "bas du cadre = bas de la zone visible");
+  assert.ok(/classList\.toggle\("chat-kb", open\)/.test(e) && /kbOpen \? 0 : px\(cs\.paddingBottom\)/.test(e), "marge basse nulle clavier ouvert, dock masqué");
+  assert.ok(/html\.on-chat \{ overflow-x: hidden; overflow-y: auto;/.test(r) && /min-height: calc\(100dvh \+ 2px\)/.test(r) && !/html\.on-chat, html\.on-chat body \{ overflow: hidden; \}/.test(r), "plus d'overflow:hidden sur la page du site");
+  assert.ok(/html\.chat-kb #mobile-touch-bar \{ display: none/.test(r), "dock masqué clavier ouvert");
+  assert.ok(!/--vvh|--vvt/.test(c) && /body\.chat-page \{[^}]*height: 100%/.test(c), "la page du chat remplit son cadre");
+});
+ok("chat : cadres débloqués visibles autour des pdp (anneau propre, pas de filtre sur la photo)", () => {
+  const c = read("css/chat3.css");
+  assert.ok(/\.chat-app img\.avatar\.cosm-f \{[^}]*filter: none;[^}]*box-shadow:[^}]*var\(--cf/.test(c), "anneau prioritaire sur l'ombre d'avatar du chat");
+  assert.ok(/@keyframes chatFrameGlow/.test(c) && /cf-prism[^{]*\{ animation: chatFrameGlow/.test(c.replace(/\n/g, " ")), "animation sans hue-rotate");
+  assert.ok(!/\.chat-app img\.avatar\.cosm-f \{[^}]*overflow: visible/.test(c), "la photo reste ronde");
 });
