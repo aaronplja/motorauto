@@ -23,15 +23,26 @@ const ADMIN_MAIL = "admin@motorauto.fr";
 let VARIANTS = [];
 try { VARIANTS = require("./catalog-variants.json"); } catch (_) { /* absent : plus ou moins sur les fiches entières */ }
 
+/** une voiture de Firestore -> entrée du catalogue de jeu. DOIT donner les mêmes valeurs que le site (js/utils.js normalizeCar + js/minigames.js quizPool) :
+ *  sinon le quiz rejoué ici à partir de la graine n'a pas les mêmes questions que celles affichées, et le score est faux. */
+function poolEntry(id, x) {
+  x = x || {};
+  const num = (v) => { const n = typeof v === "number" ? v : parseFloat(String(v).replace(",", ".")); return Number.isFinite(n) ? n : 0; };
+  const engines = (Array.isArray(x.phases) ? x.phases : []).flatMap((p) => (Array.isArray(p && p.engines) ? p.engines : []));
+  const zeros = engines.map((e) => num(e.zeroToHundred)).filter((v) => v > 0);
+  return {
+    id, power: engines.length ? Math.max(...engines.map((e) => num(e.power))) : 0, speed: engines.length ? Math.max(...engines.map((e) => num(e.speed))) : 0,
+    zero: zeros.length ? Math.min(...zeros) : 0, name: (String(x.brand || "") + " " + String(x.model || "")).trim(), brand: String(x.brand || ""), category: x.category || "Berline",
+    year: gameCore.yearOf(Object.assign({}, x, { years: String(x.years || "") })), pics: gameCore.picKeys(x)
+  };
+}
+
 /** voitures tirables : catalogue local (catalog-static.json) + voitures ajoutées dans l'administration (Firestore) */
 async function loadPool() {
   const map = new Map(STATIC_CATALOG.map((c) => [c.id, { id: c.id, power: c.power, speed: c.speed || 0, zero: c.zero || 0, name: c.name, brand: c.brand || "", category: c.category || "", year: c.year || 0, pics: c.pics || [] }]));
   try {
     const snap = await db.collection("motorauto_catalog").limit(1000).get();
-    snap.forEach((d) => {
-      const x = d.data(), engines = (x.phases || []).flatMap((p) => p.engines || []);
-      map.set(d.id, { id: d.id, power: engines.length ? Math.max(...engines.map((e) => Number(e.power) || 0)) : 0, speed: engines.length ? Math.max(...engines.map((e) => Number(e.speed) || 0)) : 0, zero: Math.min(...engines.map((e) => Number(e.zero) || 0).filter((v) => v > 0), 0) || 0, name: ((x.brand || "") + " " + (x.model || "")).trim(), brand: x.brand || "", category: x.category || "", year: gameCore.yearOf(x), pics: gameCore.picKeys(x) });
-    });
+    snap.forEach((d) => { map.set(d.id, poolEntry(d.id, d.data())); });
   } catch (e) { logger.warn("Catalogue Firestore illisible, catalogue local utilisé", e); }
   return Array.from(map.values());
 }

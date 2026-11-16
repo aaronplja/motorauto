@@ -298,3 +298,20 @@ ok("pack ouvert sur mobile : les boutons de fin prennent la case libre de la gri
   assert.ok(/endBox\.classList\.add\("in-grid"\); grid\.appendChild\(endBox\)/.test(j) && /results\.length % cols !== 0/.test(j), "déplacement dans la grille quand la dernière ligne n'est pas pleine");
   assert.ok(/\.pk3 \.tcg-flips > #tcg-end\.in-grid \{ position: static;/.test(c), "boutons empilés, hors position collante");
 });
+ok("quiz : le serveur rejoue les mêmes questions que le site (même catalogue de jeu pour les voitures de Firestore, ordre et contenu)", () => {
+  const vm = require("vm"), fs2 = require("fs"), G = require("../js/game-core.js"), MA = require("../js/utils.js");
+  const idx = read("functions/index.js"), m = /function poolEntry\(id, x\) \{[\s\S]*?\n\}\n/.exec(idx);
+  assert.ok(m, "poolEntry présent dans functions/index.js");
+  const poolEntry = vm.runInNewContext("(" + m[0].replace(/^function poolEntry/, "function") + ")", { gameCore: G, Object, Array, Number, String, Math, parseFloat });
+  const docs = [
+    { id: "t-1", brand: "Test", model: "Un", years: "1998 - 2004", category: "", phases: [{ engines: [{ name: "a", power: "150", speed: 210, zeroToHundred: "7,9" }, { name: "b", power: 200, speed: "230", zeroToHundred: 6.5 }] }] },
+    { id: "t-2", brand: "Test", model: "Deux", years: "2010", phases: [] },
+    { id: "t-3", brand: "Test", model: "Trois" }
+  ];
+  const clientEntry = (raw) => { const c = MA.normalizeCar(raw); return { id: c.id, power: Number(c.stats && c.stats.power) || 0, speed: Number(c.stats && c.stats.speed) || 0, zero: Number(c.stats && c.stats.zero) || 0, name: ((c.brand || "") + " " + (c.model || "")).trim(), brand: c.brand || "", category: c.category || "", year: G.yearOf(c) }; };
+  docs.forEach((d) => { const a = clientEntry(d), b = poolEntry(d.id, d); ["id", "power", "speed", "zero", "name", "brand", "category", "year"].forEach((k) => assert.strictEqual(b[k], a[k], d.id + " : " + k)); });
+  // parties identiques de part et d'autre avec ces voitures en plus du catalogue
+  const stat = JSON.parse(fs2.readFileSync(require("path").join(__dirname, "..", "functions/catalog-static.json"), "utf8"));
+  const client = stat.map((c) => Object.assign({}, c)).concat(docs.map(clientEntry)), server = stat.map((c) => Object.assign({}, c)).concat(docs.map((d) => poolEntry(d.id, d)));
+  Object.keys(G.QCATS).forEach((cat) => [1, 3].forEach((lv) => { const seed = "t" + cat + lv, A = G.quizBuild(seed, cat, lv, client), B = G.quizBuild(seed, cat, lv, server); assert.deepStrictEqual(A.map((q) => [q.q, q.a, q.m]), B.map((q) => [q.q, q.a, q.m]), cat + lv); }));
+});
