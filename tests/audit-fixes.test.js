@@ -210,3 +210,26 @@ ok("en-tête : revient au changement de page", () => {
   const g = read("js/glassbar.js");
   assert.ok(/ma:route/.test(g) && /showHead/.test(g), "réaffichage sur ma:route");
 });
+
+// ---- série z9 : avatars, accueil, filtre, chat iPhone, date
+ok("avatars : jamais étirés (badge d'en-tête du chat)", () => {
+  const c = read("css/chat3.css");
+  assert.ok(/\.conv-badge \.avatar \{ position: absolute; inset: 0;[^}]*object-fit: cover/.test(c), "avatar du badge en absolu 100 %");
+  assert.ok(/aspect-ratio: 1 \/ 1/.test(read("css/float.css")), "avatars ronds : ratio 1/1");
+});
+ok("accueil : un seul bandeau garage (pas de dessins concurrents)", () => {
+  const g = read("js/garage-home.js");
+  assert.ok(/let painting = false/.test(g) && /async function paint1\(/.test(g), "verrou anti-chevauchement");
+  assert.ok(/querySelectorAll\("#home-garage"\)\.forEach\(\(x, i\) => \{ if \(i\) x\.remove\(\); \}\)/.test(g), "doublons retirés");
+});
+ok("filtre : glissement sans rebond", () => {
+  const t = read("css/themefix.css");
+  assert.ok(/animation:adv-up \.26s cubic-bezier\(\.22,\.9,\.3,1\)/.test(t) && !/adv-up \.28s var\(--m-spring/.test(t));
+});
+ok("chat iPhone : page redimensionnée seulement clavier ouvert, saisie au niveau du dock, plus de date flottante", () => {
+  const j = read("js/chat.js"), e = read("js/chat-embed.js"), c = read("css/chat3.css");
+  assert.ok(/const kb = !!vv && \(window\.innerHeight - vv\.height\) > 80/.test(j) && /kb \? h \+ "px" : "100%"/.test(j), "hauteur suivie seulement avec clavier");
+  assert.ok(/chat-blur/.test(j) && /chat-blur/.test(e) && /function settle\(\)/.test(e), "page du site remise en place après le clavier");
+  assert.ok(/max\(6px, calc\(var\(--safe-bottom, 0px\) - 12px\)\)/.test(c), "saisie au niveau du dock");
+  assert.ok(/\.day-sep \{ position: static;/.test(c) && !/\.day-sep \{[^}]*position: sticky/.test(c), "date non collante");
+});

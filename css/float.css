@@ -220,3 +220,6 @@ html #auth-modal .auth-form .fill-btn { min-height: 52px; margin-top: .25rem; }
   html #auth-modal .dialog-header, html #auth-modal .dialog-body { padding-inline: 1.25rem; }
   html #auth-modal .dialog-tabs { margin-inline: 1.25rem; }
 }
+
+/* Photos de profil : toujours rondes, jamais étirées (une hauteur en % non résolue donnait un ovale pour les photos hautes) */
+.me-avatar img, .ssn-av img, .ph-av img, .pe-prev .pe-av img, .gh-av img { aspect-ratio: 1 / 1; object-fit: cover; }

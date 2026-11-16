@@ -86,7 +86,8 @@ html, body.chat-page { background: var(--bg-core); }
 .conv-pill[data-kind="private"] { cursor: pointer; }
 .conv-pill[data-kind="private"]:active { transform: scale(.985); }
 .conv-badge { flex: none; width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--glow-soft); font-size: 1.15rem; display: grid; place-items: center; overflow: hidden; }
-.conv-badge .avatar { width: 100%; height: 100%; border: 0; border-radius: 50%; box-shadow: none; }
+.conv-badge { position: relative; }
+.conv-badge .avatar { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; border: 0; border-radius: 50%; box-shadow: none; object-fit: cover; }
 .conv-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
 .conv-titles h2 { font-family: var(--font-body, inherit); font-weight: 800; text-transform: none; font-size: 1rem; line-height: 1.15; letter-spacing: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .conv-titles p { margin: 0; font-size: .74rem; line-height: 1.2; color: var(--color-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -105,9 +106,9 @@ html, body.chat-page { background: var(--bg-core); }
 #chat-messages-container, .msg-scroll { padding: calc(var(--head-h, 60px) + 12px) max(.85rem, calc((100% - var(--chat-col)) / 2)) calc(var(--comp-h, 76px) + 14px) !important; scroll-padding-top: calc(var(--head-h, 60px) + 8px); scroll-padding-bottom: calc(var(--comp-h, 76px) + 8px); background:
   radial-gradient(color-mix(in srgb, var(--color-ink) 7%, transparent) 1px, transparent 1.4px) 0 0 / 22px 22px, var(--bg-core); scrollbar-width: none; }
 .msg-scroll::-webkit-scrollbar { display: none; }
-.day-sep { justify-content: center; margin: 1.2rem 0 .4rem; position: sticky; top: calc(var(--head-h, 60px) + 4px); z-index: 2; pointer-events: none; }
+.day-sep { position: static; justify-content: center; margin: 1.2rem 0 .4rem; pointer-events: none; }
 .day-sep::before, .day-sep::after { display: none; }
-.day-sep span { padding: .26rem .8rem; border-radius: 999px; background: var(--fl-bg); border: 1px solid var(--fl-line); -webkit-backdrop-filter: blur(14px) saturate(1.5); backdrop-filter: blur(14px) saturate(1.5); font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--color-muted); }
+.day-sep span { padding: 0; border: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--color-muted); opacity: .8; }
 
 /* bulles v3 : nom + badges dans la bulle, heure en bas à droite, coins arrondis « en grappe » */
 .msg { gap: .5rem; margin-top: .75rem; max-width: min(82%, 620px); align-items: flex-end; }
@@ -162,7 +163,7 @@ html, body.chat-page { background: var(--bg-core); }
 .chat-app .bubble:has(> .trade-card:only-child), .chat-app .bubble:has(> .car-share:only-child) { padding: 0; background: none; box-shadow: none; }
 
 /* ───────────────────────── saisie flottante ───────────────────────── */
-.compose-wrap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 0 max(.7rem, calc((100% - var(--chat-col)) / 2)) calc(.55rem + var(--safe-bottom)); background: none !important; border: 0; pointer-events: none; display: flex; flex-direction: column; gap: .4rem; }
+.compose-wrap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 0 max(.7rem, calc((100% - var(--chat-col)) / 2)) max(6px, calc(var(--safe-bottom, 0px) - 12px)); background: none !important; border: 0; pointer-events: none; display: flex; flex-direction: column; gap: .4rem; }
 .compose-wrap > * { pointer-events: auto; }
 body.kb-open .compose-wrap, .chat-page:focus-within .compose-wrap { padding-bottom: .5rem; }
 .compose-bar { margin: 0; padding: .45rem .7rem; border-radius: 22px; gap: .7rem; }

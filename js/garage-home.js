@@ -75,7 +75,14 @@
       box.hidden = false;
     } catch (_) { /* règles non publiées ou hors ligne : on n'affiche rien */ }
   }
+  // un seul dessin à la fois : plusieurs paint() qui se chevauchaient (entrée de page, minuterie, intervalle) créaient chacun leur bandeau → doublons
+  let painting = false, again = false;
   async function paint() {
+    if (painting) { again = true; return; }
+    painting = true;
+    try { await paint1(); } finally { painting = false; if (again) { again = false; setTimeout(paint, 80); } }
+  }
+  async function paint1() {
     const page = document.getElementById("page-home"); if (!page) return;
     const host = page;
     let box = document.getElementById("home-garage");
@@ -98,6 +105,8 @@
     const sig = [me, st.xp, st.days, doc.dust, doc.count, doc.lastPack, bonus, total].join("|");
     if (box && sig === last && !box.classList.contains("gh-skel")) return; last = sig;
     if (box) { box.classList.remove("gh-skel"); box.removeAttribute("aria-busy"); }
+    box = document.getElementById("home-garage") || box;
+    document.querySelectorAll("#home-garage").forEach((x, i) => { if (i) x.remove(); });
     if (!box) { box = document.createElement("section"); box.id = "home-garage"; box.className = "stage-shell home-section gh"; box.setAttribute("aria-label", T("Mon garage")); host.insertAdjacentElement("afterbegin", box); }
     const icon = (n) => (window.MAEmoji ? window.MAEmoji.html(n) : n);
     const dust = window.MA && window.MA.dustIcon ? window.MA.dustIcon(22) : icon("💎");

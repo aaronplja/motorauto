@@ -1044,17 +1044,19 @@
       scroller.addEventListener("loadedmetadata", (e) => { if (stickBottom) toBottom(false); }, true);
       const apply = () => {
         raf = 0;
-        const h = Math.round(vv ? vv.height : window.innerHeight), top = Math.round(vv ? vv.offsetTop : 0);
+        // la page n'est redimensionnée QUE lorsque le clavier est ouvert ; sinon elle occupe tout le cadre (jamais de décalage de barre ou de saisie)
+        const kb = !!vv && (window.innerHeight - vv.height) > 80;
+        const h = kb ? Math.round(vv.height) : 0, top = kb ? Math.round(vv.offsetTop) : 0;
         if (Math.abs(h - lastH) < 2 && Math.abs(top - lastT) < 2) return;
         const resized = Math.abs(h - lastH) >= 2; lastH = h; lastT = top;
-        const root = document.documentElement.style; root.setProperty("--vvh", h + "px"); root.setProperty("--vvt", top + "px");
+        const root = document.documentElement.style; root.setProperty("--vvh", kb ? h + "px" : "100%"); root.setProperty("--vvt", top + "px");
         if (resized && stickBottom && state.conv) toBottom(false);
       };
       const fit = () => { if (!raf) raf = requestAnimationFrame(apply); };
       if (vv) { vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); }
       window.addEventListener("orientationchange", () => setTimeout(fit, 300));
       input.addEventListener("focus", () => { fit(); setTimeout(fit, 320); });
-      input.addEventListener("blur", () => setTimeout(fit, 150));
+      input.addEventListener("blur", () => { setTimeout(fit, 150); tell({ ma: "chat-blur" }); });
       fit();
     }
     window.addEventListener("popstate", () => { app.classList.add("instant"); clearTimeout(app._t); app._t = setTimeout(() => app.classList.remove("instant"), 450); });

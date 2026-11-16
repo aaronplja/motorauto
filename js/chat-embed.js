@@ -46,8 +46,19 @@
     const d = e.data || {};
     if (d.ma === "chat-ready") { ready = true; const l = $("chat-embed-load"); if (l) l.hidden = true; sync(); if (pending) { go(pending); pending = ""; } }
     else if (d.ma === "chat-view") { view = d.view; flag(); }
+    else if (d.ma === "chat-blur") { [0, 120, 350, 800].forEach((t) => setTimeout(settle, t)); }
     else if (d.ma === "chat-nav" && typeof d.hash === "string" && d.hash.indexOf("#/") === 0) location.hash = d.hash;
   });
+  // iOS fait défiler la page du site pour montrer le champ de saisie : une fois le clavier fermé, on la remet à sa place (barre de navigation et saisie tout en bas)
+  const vv = window.visualViewport; let st = 0;
+  function settle() {
+    if (!onChat) return;
+    if (vv && (window.innerHeight - vv.height) > 80) return;   // clavier encore ouvert
+    if (window.scrollY || window.scrollX || (vv && (vv.offsetTop || vv.offsetLeft))) window.scrollTo(0, 0);
+  }
+  const later = () => { clearTimeout(st); st = setTimeout(settle, 60); };
+  if (vv) { vv.addEventListener("resize", later); vv.addEventListener("scroll", later); }
+  window.addEventListener("scroll", later, { passive: true });
   function go(sub) { const w = win(); if (w && sub && w.location.hash !== "#" + sub) w.location.hash = "#" + sub; }
 
   // préchargement : dès que le doigt / la souris s'approche de l'onglet Chat
