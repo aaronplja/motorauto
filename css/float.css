@@ -52,8 +52,12 @@ html[data-tone="dark"] .nav-link.active { background: linear-gradient(180deg, rg
 html .app-header .header-actions { gap: .4rem; flex: none; --hb: inherit; }
 @media (max-width: 999px) { html .app-header .header-actions { gap: .2rem; } html .app-header .header-bar { gap: .3rem; } html .app-header { padding-left: .5rem !important; padding-right: .5rem !important; } }
 html .app-header .header-actions .icon-btn, html .app-header .header-actions .pilot-chip.is-gear { width: var(--hb) !important; min-width: var(--hb) !important; max-width: var(--hb) !important; border-radius: 50% !important; padding: 0; }
-html .app-header .header-actions .mp-chip { background: color-mix(in srgb, var(--accent) 80%, transparent) !important; color: var(--on-accent) !important; padding: 0 calc(var(--hb) * .3) !important; font-size: calc(var(--hb) * .29); }
+html .app-header .header-actions .mp-chip { color: var(--color-ink) !important; font-weight: 800; letter-spacing: .08em; display: inline-flex; align-items: center; justify-content: center; padding: 0 calc(var(--hb) * .3) !important; font-size: calc(var(--hb) * .29); }
 html .app-header .header-actions .icon-btn, html .app-header .header-actions .pilot-chip.is-gear { color: var(--color-ink) !important; }
+html .app-header .header-actions .mp-chip:hover { color: var(--accent) !important; transform: translateY(-1px); }
+html .app-header .header-actions .mp-chip:active { transform: scale(.92); }
+html .app-header .header-actions > *, html .brand-link, html .desktop-navigation { transition: transform .32s var(--dock-spring, cubic-bezier(.34,1.45,.56,1)), opacity .28s ease, color .2s, box-shadow .25s; }
+html .app-header.hide-up .brand-link, html .app-header.hide-up .desktop-navigation, html .app-header.hide-up .header-actions > * { transition: transform .38s cubic-bezier(.22,.9,.3,1), opacity .28s ease; }
 html .app-header .header-actions .icon-btn:hover, html .app-header .header-actions .pilot-chip:hover { color: var(--accent) !important; transform: translateY(-1px); }
 html .app-header .header-actions .icon-btn:active, html .app-header .header-actions .pilot-chip:active { transform: scale(.92); }
 html .app-header .header-actions .icon-btn svg { width: calc(var(--hb) * .44); height: calc(var(--hb) * .44); }
@@ -122,3 +126,37 @@ h1:where(:not(.app-header *, [class*="dock"] *)), h2:where(:not(.app-header *, [
 /* ---------- chat intégré : la zone sous les pastilles a exactement le fond du chat (plus de bandeau d'une autre teinte) ---------- */
 html.on-chat, html.on-chat body { background: var(--bg-core) !important; }
 html.on-chat .chat-embed { top: var(--hdr-h, 66px); }
+
+/* ---------- navigation compacte (1000–1279 px) : le même dock que sur mobile — icône au-dessus du libellé, pilule active — mais en haut ---------- */
+@media (min-width: 1000px) and (max-width: 1279px) {
+  html .desktop-navigation { padding: 4px; gap: 2px; }
+  html .nav-link { flex-direction: column; justify-content: center; gap: 1px; width: 66px; height: calc(var(--hb) - 10px); padding: 0; }
+  html .nav-link svg { display: block !important; width: 18px; height: 18px; }
+  html .nav-link span { position: static !important; width: auto !important; height: auto !important; clip: auto !important; overflow: visible !important; font-size: .6rem; line-height: 1; font-weight: 700; letter-spacing: .01em; }
+  html .nav-link.active { background: var(--fl-pill); }
+  html .nav-link .unread-dot-indicator { top: 4px; right: 12px; }
+}
+
+/* ---------- menu de la roue crantée : même verre que le reste ---------- */
+html .me-sheet { background: color-mix(in srgb, var(--bg-surface) 58%, transparent) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow) !important; -webkit-backdrop-filter: var(--fl-blur) !important; backdrop-filter: var(--fl-blur) !important; }
+html .me-backdrop { background: rgba(8,10,16,.22) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html .me-sheet .me-row { background: var(--fl-bg-soft); border: 1px solid var(--fl-line); border-radius: 18px; box-shadow: var(--fl-shadow-sm); }
+html .me-sheet .me-row:hover { background: var(--fl-on); }
+html .me-sheet .me-close { background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; border-radius: 50% !important; box-shadow: var(--fl-shadow-sm); }
+html .me-sheet .me-ico { border-radius: 50%; }
+html[data-tone="dark"] .me-sheet { background: color-mix(in srgb, var(--bg-surface) 62%, transparent) !important; }
+@media (prefers-reduced-transparency: reduce) { html .me-sheet { background: var(--bg-surface) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; } }
+
+/* ---------- catalogue sur mobile : un panneau compact (2 rangées défilantes + marque / tri / filtres sur une ligne) ---------- */
+@media (max-width: 700px) {
+  html .toolbar-cluster { display: grid !important; gap: .5rem !important; padding: .65rem !important; border-radius: 24px !important; }
+  html .toolbar-cluster .side-label { display: none !important; }
+  html .toolbar-cluster .categories-scroll, html .toolbar-cluster .era-chips { display: flex !important; flex-wrap: nowrap !important; gap: .4rem !important; overflow-x: auto; margin: 0 -.65rem; padding: 3px .65rem 8px; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 .65rem, #000 calc(100% - 1.2rem), transparent); mask-image: linear-gradient(90deg, transparent 0, #000 .65rem, #000 calc(100% - 1.2rem), transparent); background: none !important; box-shadow: none !important; }
+  html .toolbar-cluster .filter-pill { box-shadow: var(--fl-hi), 0 3px 6px -3px rgba(0,0,0,.25) !important; flex: none; height: 36px; min-height: 0; padding: 0 .9rem; font-size: .82rem; border-radius: 999px; white-space: nowrap; }
+  html .toolbar-cluster .selectors-cluster { display: grid !important; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; gap: .4rem !important; align-items: center; }
+  html .toolbar-cluster .sort-cluster { display: block; margin: 0; min-width: 0; }
+  html .toolbar-cluster .sort-title { display: none !important; }
+  html .toolbar-cluster select.custom-select { width: 100%; height: 40px; min-height: 0; padding: 0 .8rem; font-size: .84rem; border-radius: 999px; text-overflow: ellipsis; }
+  html .toolbar-cluster .adv-toggle { height: 40px; min-height: 0; padding: 0 .85rem; border-radius: 999px; font-size: .84rem; gap: .35rem; white-space: nowrap; }
+  html .toolbar-cluster .adv-toggle svg { width: 16px; height: 16px; }
+}

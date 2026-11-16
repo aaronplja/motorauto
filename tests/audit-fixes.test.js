@@ -149,7 +149,7 @@ ok("style flottant : verre de la barre du bas sur tout le site (en-tête en past
   assert(/css\/float\.css/.test(h) && h.indexOf("css/float.css") > h.indexOf("css/themes-studio.css"), "float.css chargé en dernier");
   assert(/\.brand-link[^}]*backdrop-filter/.test(f) && /\.desktop-navigation[^}]*backdrop-filter/.test(f) && /\.back-link/.test(f) && /\.play-back/.test(f) && /\.page-tabs/.test(f) && /\.seg-btn/.test(f), "pastilles, retours et onglets en verre");
   assert(/prefers-reduced-transparency/.test(f) && /@supports not/.test(f), "repli sans transparence");
-  assert(!/\.toolbar-cluster[^{]*\{[^}]*border-radius: 999px/.test(f), "le panneau de filtres n'est pas une bulle");
+  assert(!/\.toolbar-cluster\s*\{[^}]*border-radius: 999px/.test(f), "le panneau de filtres n'est pas une bulle");
   assert(/letter-spacing: \.004em/.test(f) && /line-height: 1\.1/.test(f), "serif : crénage et interligne détendus");
 });
 ok("barre du haut : mêmes dimensions que le chat (50 px), pas de rectangle au repli, onglet actif = pilule qui épouse la barre", () => {
@@ -159,5 +159,12 @@ ok("barre du haut : mêmes dimensions que le chat (50 px), pas de rectangle au r
   assert(/\.app-header\.hide-up \.brand-link/.test(f) && /transform: none !important;/.test(f), "repli pastille par pastille, sans parent animé");
   assert(/\.page-tabs\.fit \.page-tab \{ border-radius: 999px !important/.test(f) && /align-self: stretch/.test(f), "onglet actif : pilule pleine hauteur de la barre");
   assert(/html\.on-chat, html\.on-chat body \{ background: var\(--bg-core\)/.test(f), "fond du chat sans bandeau");
+});
+ok("bouton PRO en verre, navigation compacte en dock, menu roue en verre, filtres du catalogue compacts sur mobile", () => {
+  const f = read("css/float.css");
+  assert(/\.mp-chip \{ color: var\(--color-ink\) !important/.test(f) && /\.mp-chip:active \{ transform: scale\(\.92\)/.test(f), "PRO = même verre et mêmes animations");
+  assert(/max-width: 1279px\)/.test(f) && /\.nav-link \{ flex-direction: column/.test(f), "nav compacte : icône au-dessus du libellé");
+  assert(/html \.me-sheet \{ background: color-mix\(in srgb, var\(--bg-surface\) 58%/.test(f), "menu de la roue crantée translucide");
+  assert(/max-width: 700px\)[\s\S]*grid-template-columns: minmax\(0,1fr\) minmax\(0,1fr\) auto/.test(f) && /\.side-label \{ display: none/.test(f), "filtres du catalogue : 2 rangées défilantes + marque / tri / filtres");
 });
 console.log(n + " vérifications audit OK");
