@@ -1213,15 +1213,44 @@
       });
     }
 
-    // ---------------------------------------------------------------- Quiz : le serveur rejoue les questions de la graine et corrige
+    // ---------------------------------------------------------------- Quiz : le serveur construit les questions, les envoie au site et garde la clé de correction
+    // (le site affiche exactement ce que le serveur a tiré : le score ne dépend plus de la version du site, de sa langue ni de son catalogue)
+    const QLANG = /^(fr|en|es|de|it)$/;
+    const langOf = (data) => (QLANG.test(String(data && data.lang)) ? String(data.lang) : "fr");
+    const newSeed = () => (rng().toString(36).slice(2, 9) + rng().toString(36).slice(2, 9)).replace(/[^a-z0-9]/g, "a").padEnd(8, "a");
+    /** clé de correction : une entrée par question (« 2 », ou « m0,3 » pour une question à réponses multiples), séparées par « ; » */
+    const keyOf = (qs) => qs.map((q) => (q.m ? "m" + q.m.join(",") : String(q.a))).join(";");
+    const keyQs = (key) => String(key || "").split(";").filter((x) => x !== "").map((x) => (x[0] === "m" ? { m: x.slice(1).split(",").map(Number), a: Number(x.slice(1).split(",")[0]) } : { a: Number(x) }));
+    /** question telle qu'elle part vers le site (sans les détails de correction de l'entraînement) */
+    const slim = (qs) => qs.map((q) => { const r = { q: q.q, o: q.o, a: q.a, k: q.k }; if (q.m) r.m = q.m; return r; });
     async function quizSubmit(caller, data) {
-      const uid = caller.uid, pool = await getPool(), seed = str(data && data.seed, 40), cat = str(data && data.cat, 12), level = Math.max(1, Math.min(4, Number(data && data.level) | 0));
+      const uid = caller.uid, pool = await getPool();
+      if (data && data.op === "start") {
+        const cat = str(data.cat, 12), level = Math.max(1, Math.min(4, Number(data.level) | 0 || 1));
+        if (!core.QCATS[cat]) fail("invalid-argument", "Catégorie inconnue.");
+        const seed = newSeed(), qs = core.quizBuild(seed, cat, level, pool.list, { lang: langOf(data) });
+        if (!qs.length) fail("unavailable", "Pas assez de questions pour cette catégorie.");
+        return db.runTransaction(async (tx) => {
+          const g = await readStats(tx, uid);
+          g.quizCur = { seed, cat, level, key: keyOf(qs), t0: now() };
+          writeStats(tx, uid, g);
+          return { seed, cat, level, qs: slim(qs) };
+        });
+      }
+      const seed = str(data && data.seed, 40);
       if (!/^[\w-]{4,40}$/.test(seed)) fail("invalid-argument", "Quiz invalide.");
-      if (!core.QCATS[cat]) fail("invalid-argument", "Catégorie inconnue.");
       const answers = (Array.isArray(data && data.answers) ? data.answers : []).slice(0, core.QUIZ_N).map((x) => (Array.isArray(x) ? x.slice(0, 6).map((y) => Number(y) | 0) : Number(x) | 0));
-      const questions = core.quizBuild(seed, cat, level, pool.list), score = core.quizScore(questions, answers);
       return db.runTransaction(async (tx) => {
-        const g = await readStats(tx, uid), d = await readCol(tx, uid);
+        const g = await readStats(tx, uid), d = await readCol(tx, uid), cur = g.quizCur && g.quizCur.seed === seed && g.quizCur.key ? g.quizCur : null;
+        let cat, level, questions;
+        if (cur) { cat = cur.cat; level = cur.level; questions = keyQs(cur.key); }
+        else { // site resté sur une ancienne version (questions construites dans le navigateur) : le serveur rejoue la graine, comme avant
+          cat = str(data && data.cat, 12); level = Math.max(1, Math.min(4, Number(data && data.level) | 0));
+          if (!core.QCATS[cat]) fail("invalid-argument", "Catégorie inconnue.");
+          questions = core.quizBuild(seed, cat, level, pool.list);
+        }
+        delete g.quizCur;
+        const score = core.quizScore(questions, answers);
         const key = cat + "_" + level, day = dayOf(g, "quizDay");
         if (!g.quizBest || typeof g.quizBest !== "object") g.quizBest = {};
         g.quizBest[key] = Math.max(g.quizBest[key] || 0, score);
@@ -1238,12 +1267,13 @@
 
     // ---------------------------------------------------------------- Quiz chrono : 60 s, classement hebdomadaire par niveau
     async function chronoStart(caller, data) {
-      const uid = caller.uid, level = Math.max(1, Math.min(4, Number(data && data.level) | 0 || 1));
+      const uid = caller.uid, level = Math.max(1, Math.min(4, Number(data && data.level) | 0 || 1)), pool = await getPool();
+      const seed = newSeed(), qs = core.chronoQuestions(seed, level, pool.list, { lang: langOf(data) });
       return db.runTransaction(async (tx) => {
-        const g = await readStats(tx, uid), seed = (rng().toString(36).slice(2, 9) + rng().toString(36).slice(2, 9)).replace(/[^a-z0-9]/g, "a").padEnd(8, "a");
-        g.chrono = { seed, level, t0: now() };
+        const g = await readStats(tx, uid);
+        g.chrono = { seed, level, t0: now(), key: keyOf(qs) };
         writeStats(tx, uid, g);
-        return { seed, level };
+        return { seed, level, qs: slim(qs) };
       });
     }
     async function chronoSubmit(caller, data) {
@@ -1252,7 +1282,7 @@
       return db.runTransaction(async (tx) => {
         const g = await readStats(tx, uid), d = await readCol(tx, uid), c = g.chrono;
         if (!c || !c.seed) fail("failed-precondition", "Aucune partie chrono en cours : relance-en une.");
-        const el = (now() - c.t0) / 1000, qs = core.chronoQuestions(c.seed, c.level, pool.list);
+        const el = (now() - c.t0) / 1000, qs = c.key ? keyQs(c.key) : core.chronoQuestions(c.seed, c.level, pool.list);
         let ok = 0; answers.forEach((a, i) => { if (qs[i] && a === qs[i].a) ok++; });
         const wrong = answers.length - ok;
         g.chrono = null;
@@ -1272,12 +1302,13 @@
 
     // ---------------------------------------------------------------- quiz « survie » : 3 vies, temps par question décroissant
     async function survivalStart(caller, data) {
-      const uid = caller.uid, level = Math.max(1, Math.min(4, Number(data && data.level) | 0 || 1));
+      const uid = caller.uid, level = Math.max(1, Math.min(4, Number(data && data.level) | 0 || 1)), pool = await getPool();
+      const seed = newSeed(), qs = core.survivalQuestions(seed, level, pool.list, { lang: langOf(data) });
       return db.runTransaction(async (tx) => {
-        const g = await readStats(tx, uid), seed = (rng().toString(36).slice(2, 9) + rng().toString(36).slice(2, 9)).replace(/[^a-z0-9]/g, "a").padEnd(8, "a");
-        g.surv = { seed, level, t0: now() };
+        const g = await readStats(tx, uid);
+        g.surv = { seed, level, t0: now(), key: keyOf(qs) };
         writeStats(tx, uid, g);
-        return { seed, level };
+        return { seed, level, qs: slim(qs) };
       });
     }
     async function survivalSubmit(caller, data) {
@@ -1286,7 +1317,7 @@
       return db.runTransaction(async (tx) => {
         const g = await readStats(tx, uid), d = await readCol(tx, uid), c = g.surv;
         if (!c || !c.seed) fail("failed-precondition", "Aucune partie survie en cours : relance-en une.");
-        const qs = core.survivalQuestions(c.seed, c.level, pool.list), res = core.survivalPlay(qs, answers), el = (now() - c.t0) / 1000;
+        const qs = c.key ? keyQs(c.key) : core.survivalQuestions(c.seed, c.level, pool.list), res = core.survivalPlay(qs, answers), el = (now() - c.t0) / 1000;
         g.surv = null;
         // une partie ne peut pas aller plus vite qu'un humain ni durer plus que le temps accordé aux questions
         if (el < res.used * 0.8 - 1 || el > res.used * S.secs + 90) { writeStats(tx, uid, g); fail("failed-precondition", "Partie survie non valide (temps incohérent)."); }

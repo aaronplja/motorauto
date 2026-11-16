@@ -62,8 +62,9 @@
   }
   async function survivalRun(level) {
     let r; const b = ov.querySelector(".qp-body"); b.innerHTML = `<p class="mut">${T("Préparation…")}</p>`;
-    try { r = await window.MAGameAPI.call("survivalStart", { level }); } catch (e) { C.toast(e.message || "Erreur", "err"); return survivalMenu(); }
-    const qs = G.survivalQuestions(r.seed, r.level, quizPool(), { t: T, lang: lang() });
+    try { r = await window.MAGameAPI.call("survivalStart", { level, lang: lang() }); } catch (e) { C.toast(e.message || "Erreur", "err"); return survivalMenu(); }
+    // le serveur envoie les questions qu'il corrigera ; un serveur plus ancien n'envoie que la graine (questions alors construites ici)
+    const qs = Array.isArray(r.qs) && r.qs.length ? (lang() === "fr" ? r.qs : r.qs.map((q) => Object.assign({}, q, { q: T(q.q), o: q.o.map((o) => T(o)) }))) : G.survivalQuestions(r.seed, r.level, quizPool(), { t: T, lang: lang() });
     const st = { i: 0, ok: 0, lives: G.SURVIVAL.lives, answers: [], lock: false };
     const draw = () => {
       const q = qs[st.i]; if (!q) return finish();

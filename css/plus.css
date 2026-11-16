@@ -301,3 +301,5 @@ body[data-page="news"] .news-btn,.news-btn[aria-current="page"]{border-color:var
 .lv-list em { font-style: normal; font-size: .78rem; color: var(--color-muted); font-variant-numeric: tabular-nums; }
 
 .img-credit { margin: .35rem 0 0; font-size: .72rem; color: var(--color-muted); text-align: right; }
+/* frise : les pastilles hors de la zone visible ne sont ni mesurées ni dessinées (page de ~1 600 éléments) */
+.fr-chip:not(.fr-mini){content-visibility:auto;contain-intrinsic-size:128px 52px}

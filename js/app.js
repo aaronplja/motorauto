@@ -848,7 +848,8 @@
     $("garage-pilot-name").textContent = profile.username;
     { const av = $("garage-pilot-avatar"); if (av) { av.dataset.fallback = "avatar"; av.src = AVATAR_SRC(profile.avatar); } }
     $("garage-pilot-meta").textContent = `Projet actuel : ${profile.currentCar}`;
-    $("garage-badges").innerHTML = "";
+    // les badges déjà affichés restent en place pendant le recalcul (sinon la ligne disparaît puis revient et tout le bas de la page saute)
+    { const gb = $("garage-badges"), who = currentUser ? currentUser.uid : ""; if (gb.dataset.uid !== who) { gb.innerHTML = ""; gb.dataset.uid = who; } }
     if (currentUser) {
       renderSocial("garage", currentUser.uid);
       fetchAllLaps().then(() => {

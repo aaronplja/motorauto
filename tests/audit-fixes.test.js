@@ -315,3 +315,55 @@ ok("quiz : le serveur rejoue les mêmes questions que le site (même catalogue d
   const client = stat.map((c) => Object.assign({}, c)).concat(docs.map(clientEntry)), server = stat.map((c) => Object.assign({}, c)).concat(docs.map((d) => poolEntry(d.id, d)));
   Object.keys(G.QCATS).forEach((cat) => [1, 3].forEach((lv) => { const seed = "t" + cat + lv, A = G.quizBuild(seed, cat, lv, client), B = G.quizBuild(seed, cat, lv, server); assert.deepStrictEqual(A.map((q) => [q.q, q.a, q.m]), B.map((q) => [q.q, q.a, q.m]), cat + lv); }));
 });
+ok("bandeau Comparer / bouton flottant / passe de saison : plus de chevauchement ni de mot coupé", () => {
+  const t = read("css/themefix.css"), s = read("css/season.css");
+  assert.ok(/#compare-go\{flex:none;white-space:nowrap\}/.test(t), "bouton Comparer sur une ligne");
+  assert.ok(/#compare-tray:not\(\[hidden\]\)~\.fab-pack\{bottom:calc\(10\.1rem/.test(t), "bouton flottant au-dessus du bandeau");
+  assert.ok(/\.ssn-left small\{display:block;overflow-wrap:normal;word-break:keep-all/.test(s), "libellé du niveau de saison non coupé");
+});
+ok("traductions : les libellés de jeu, de marque et d'accueil ajoutés existent dans les 4 langues", () => {
+  const keys = ["Retour au catalogue", "Objectif d'équipe", "pour le niveau", "cartes pour compléter la collection", "Tous les modèles", "secondes de 0 à 100", "{0} à faire · nouvelles à minuit", "Ouvre un pack {0}", "Ouvre 3 packs", "Flamme", "Platine", "Tueur de géants", "2026 MOTORAUTOFR - by aaronplja / Tous droits réservés", "contient une carte rare ou mieux, garantie"];
+  ["en", "es", "de", "it"].forEach((l) => { const d = dict(l); keys.forEach((k) => assert.ok(d[k] && d[k].trim(), l + " : manque « " + k + " »")); });
+  assert.ok(Object.keys(dict("en")).length === Object.keys(dict("es")).length && Object.keys(dict("de")).length === Object.keys(dict("it")).length && Object.keys(dict("en")).length === Object.keys(dict("de")).length, "mêmes clés dans les 4 langues");
+});
+ok("frise : pastilles hors écran non dessinées (content-visibility), pastilles-points exclues", () => assert.ok(/\.fr-chip:not\(\.fr-mini\)\{content-visibility:auto;contain-intrinsic-size:128px 52px\}/.test(read("css/plus.css"))));
+ok("quiz, chrono, survie : le site joue les questions envoyées par le serveur (plus de reconstruction côté site), repli prévu si le serveur n'est pas à jour", () => {
+  const m = read("js/minigames.js"), q = read("js/quiz-plus.js"), g = read("functions/game.js"), i = read("functions/index.js");
+  assert.ok(/MAGameAPI\.call\("quizSubmit", \{ op: "start", cat, level, lang: lang\(\) \}\)/.test(m), "partie notée lancée par le serveur");
+  assert.ok(/qz\.seed = r\.seed; qz\.qs = fromServer\(r\.qs\)/.test(m), "questions du serveur affichées telles quelles");
+  assert.ok(/e\.code === "invalid-argument"\) old = true/.test(m) && /G\.quizBuild\(qz\.seed, cat, level, quizPool\(\)/.test(m), "repli sur l'ancienne méthode si le serveur n'a pas encore la mise à jour");
+  assert.ok(/Array\.isArray\(r\.qs\) && r\.qs\.length \? fromServer\(r\.qs\) : G\.chronoQuestions/.test(m), "chrono : questions du serveur");
+  assert.ok(/Array\.isArray\(r\.qs\) && r\.qs\.length \? \(lang\(\) === "fr" \? r\.qs/.test(q), "survie : questions du serveur");
+  assert.ok(/g\.quizCur = \{ seed, cat, level, key: keyOf\(qs\), t0: now\(\) \}/.test(g) && /questions = keyQs\(cur\.key\)/.test(g) && /delete g\.quizCur/.test(g), "clé de correction gardée par le serveur puis effacée");
+  assert.ok(/qs = c\.key \? keyQs\(c\.key\) : core\.chronoQuestions/.test(g) && /qs = c\.key \? keyQs\(c\.key\) : core\.survivalQuestions/.test(g), "chrono et survie corrigés avec la clé enregistrée");
+  assert.strictEqual(read("js/game-engine.js"), g, "js/game-engine.js identique à functions/game.js");
+  assert.ok(/collection\("motorauto_catalog"\)\.limit\(5000\)/.test(i), "le serveur lit tout le catalogue en ligne, comme le site");
+});
+ok("clignotements et sauts : pied de page hors écran pendant les chargements, badges de « Mon espace » gardés en place", () => {
+  const p = read("css/pages.css"), t = read("css/themefix.css"), a = read("js/app.js");
+  assert.ok(/\.app-pages \{ min-height: 100vh; min-height: 100dvh; outline: none; \}/.test(p), "zone de page haute d'un écran au minimum");
+  assert.ok(/#garage-badges:empty\{display:block;min-height:39px\}/.test(t), "place réservée pour la ligne des badges");
+  assert.ok(/if \(gb\.dataset\.uid !== who\) \{ gb\.innerHTML = ""; gb\.dataset\.uid = who; \}/.test(a) && !/\$\("garage-badges"\)\.innerHTML = "";\n    if \(currentUser\)/.test(a), "badges non vidés à chaque rendu");
+});
+ok("voiture du jour (téléphone), niveaux du quiz (ordinateur), bandeau Comparer dans le salon", () => {
+  const t = read("css/themefix.css");
+  assert.ok(/@media \(max-width:480px\)\{#page-main \.cod-card img,#page-main \.cod-ph\{width:104px;height:72px\}/.test(t), "photo de la voiture du jour réduite sur téléphone");
+  assert.ok(/\.qz-cat\{container-type:inline-size\}/.test(t) && /@container \(max-width:318px\)\{\.qz-cat \.qz-levels\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important\}\}/.test(t), "niveaux en 2 × 2 quand 4 ne tiennent pas");
+  assert.ok(/html\.on-chat #compare-tray\{display:none!important\}/.test(t), "bandeau Comparer masqué dans le salon");
+  assert.ok(!require("fs").existsSync(require("path").join(__dirname, "..", "css/chat2.css")) && !require("fs").existsSync(require("path").join(__dirname, "..", "css/chatglass.css")), "anciennes feuilles du salon supprimées");
+  assert.ok(/Touche « Nouveau » pour écrire à un pilote\./.test(read("js/chat.js")), "texte d'aide du salon sans pictogramme décalé");
+});
+ok("site ouvert depuis longtemps : il se recharge seul quand une nouvelle version est en ligne (hors saisie, partie ou salon), une seule fois par version", () => {
+  const u = read("js/update-check.js"), s = read("index.src.html");
+  assert.ok(/<script defer src="js\/update-check\.js"><\/script>/.test(s), "script chargé par la page");
+  assert.ok(/cache: "no-store"/.test(u) && /next !== mine/.test(u), "comparaison avec la page réellement servie");
+  assert.ok(/tried\(\) === target/.test(u) && /sessionStorage\.setItem\("ma_upd", target\)/.test(u), "un seul rechargement par version");
+  assert.ok(/!typing\(\) && !playing\(\)/.test(u) && /on-chat/.test(u) && /\.qz-card/.test(u), "jamais pendant une saisie, une partie ou dans le salon");
+});
+ok("traductions : salon entièrement traduit et questions de quiz écrites disponibles en anglais", () => {
+  const keys = ["Salon général", "Chercher un canal ou un pilote", "Écris un message…", "Aucun message pour l'instant", "Sois le premier à écrire dans ce canal.", "Enregistrer un message vocal", "Supprimer ce message pour tout le monde ?", "Envoi impossible : {0}", "Laquelle de ces voitures est japonaise ?"];
+  ["en", "es", "de", "it"].forEach((l) => { const d = dict(l); keys.forEach((k) => assert.ok(d[k] && d[k].trim(), l + " : manque « " + k + " »")); });
+  const B = require("../js/game-core.js").QBANK;
+  assert.strictEqual(B.filter((b) => b[4] === b[2]).length, 0, "plus aucune question écrite restée en français dans la version anglaise");
+  assert.ok(B.every((b) => b[5].length === b[3].length && new Set(b[5]).size === b[5].length), "mêmes réponses, dans le même ordre, sans doublon");
+});

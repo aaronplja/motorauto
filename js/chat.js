@@ -223,7 +223,7 @@
         </span>
         ${unread ? `<span class="unread-pip" aria-label="Nouveaux messages"></span>` : ""}
       </div>`;
-    }).join("") : `<div class="empty-note small">${state.convs.size ? "Aucune conversation trouvée." : "Aucune discussion pour l'instant. Touche « ✉ Nouveau » pour écrire à un pilote."}</div>`);
+    }).join("") : `<div class="empty-note small">${state.convs.size ? "Aucune conversation trouvée." : "Aucune discussion pour l'instant. Touche « Nouveau » pour écrire à un pilote."}</div>`);
 
     // --- sélecteur de pilote (nouvelle conversation) : visible à la demande ou pendant une recherche
     const showPicker = state.showPicker || !!q;

@@ -1,7 +1,8 @@
 /* MOTORAUTO — vraies pages (routeur #/…), onglets, fil, événements, circuits, tableau de bord, garage */
 
 /* ---------- pages ---------- */
-.app-pages { min-height: 60vh; outline: none; }
+/* hauteur d'un écran au minimum : le pied de page ne remonte plus dans l'écran pendant qu'une page charge (il apparaissait puis disparaissait) */
+.app-pages { min-height: 100vh; min-height: 100dvh; outline: none; }
 .page { display: none; }
 .page.page-on { display: block; animation: pageIn 0.18s ease-out; }
 html.nav-back .page.page-on { animation: none; }

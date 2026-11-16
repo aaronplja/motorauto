@@ -465,3 +465,15 @@ html[data-chal-ready] .gh-chal-link::after,html[data-chal-ready] .play-subtabs a
 /* prix en cristaux : couleur normale du texte (noir, ou blanc sur fond sombre) quand on a assez, rouge sinon */
 .cg-price, .cg-price :is(s, b), .mkt-price, .mkt-price * { color: var(--color-ink); }
 .cg-price.lack, .cg-price.lack :is(s, b), .mkt-price.lack, .mkt-price.lack * { color: #ef4444 !important; }
+/* bandeau « Comparer » : le bouton ne se coupe plus en deux, et le bouton flottant « Pack du jour » se place au-dessus du bandeau au lieu de le recouvrir (mobile) */
+#compare-go{flex:none;white-space:nowrap}
+@media(max-width:899px){#compare-tray:not([hidden])~.fab-pack{bottom:calc(10.1rem + env(safe-area-inset-bottom))}}
+/* mon espace : la place de la ligne des badges est réservée pendant leur calcul (le bas de la page ne descend plus d'un cran à l'arrivée) */
+#garage-badges:empty{display:block;min-height:39px}
+/* voiture du jour sur téléphone : la photo reprend sa petite taille prévue (elle écrasait le texte, qui sortait de la carte sous 400 px) */
+@media (max-width:480px){#page-main .cod-card img,#page-main .cod-ph{width:104px;height:72px}#page-main .cod-card{padding:1rem;gap:.9rem}#page-main .cod-txt b{font-size:1.2rem;line-height:1.15;overflow-wrap:anywhere}}
+/* quiz sur grand écran : quand les 4 niveaux ne tiennent pas sur une ligne dans la carte, ils se rangent en 2 × 2 (au lieu de 3 puis « Expert » seul dessous) */
+.qz-cat{container-type:inline-size}
+@container (max-width:318px){.qz-cat .qz-levels{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+/* salon : le bandeau « Comparer » ne recouvre plus les messages ni la zone de saisie (la sélection est gardée, il revient sur les autres pages) */
+html.on-chat #compare-tray{display:none!important}

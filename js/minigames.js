@@ -101,6 +101,8 @@
   function quizPool() {
     return (C.cars || []).map((c) => ({ id: c.id, power: Number(c.stats && c.stats.power) || 0, speed: Number(c.stats && c.stats.speed) || 0, zero: Number(c.stats && c.stats.zero) || 0, name: ((c.brand || "") + " " + (c.model || "")).trim(), brand: c.brand || "", category: c.category || "", year: G.yearOf(c) }));
   }
+  /** questions reçues du serveur : textes mis dans la langue du site (le serveur les construit en français) */
+  const fromServer = (qs) => (lang() === "fr" ? qs : qs.map((q) => Object.assign({}, q, { q: T(q.q), o: q.o.map((o) => T(o)) })));
   const newSeed = () => { const a = new Uint32Array(2); (window.crypto || window.msCrypto).getRandomValues(a); return a[0].toString(36) + a[1].toString(36); };
   function qzRender() {
     const root = rootOf("quizgame"); if (!root) return;
@@ -190,8 +192,9 @@
   async function chronoStart(level) {
     if (qz.busy) return; qz.busy = true; qz.err = ""; qzRender();
     try {
-      const r = await window.MAGameAPI.call("chronoStart", { level });
-      ch = { qs: G.chronoQuestions(r.seed, r.level, quizPool(), { t: T, lang: lang() }), i: 0, ok: 0, wrong: 0, answers: [], end: Date.now() + G.CHRONO.secs * 1000, timer: 0, left: G.CHRONO.secs, flash: "", seed: r.seed, level: r.level, result: null, lock: false };
+      const r = await window.MAGameAPI.call("chronoStart", { level, lang: lang() });
+      // le serveur envoie les questions qu'il corrigera ; un serveur plus ancien n'envoie que la graine (questions alors construites ici)
+      ch = { qs: Array.isArray(r.qs) && r.qs.length ? fromServer(r.qs) : G.chronoQuestions(r.seed, r.level, quizPool(), { t: T, lang: lang() }), i: 0, ok: 0, wrong: 0, answers: [], end: Date.now() + G.CHRONO.secs * 1000, timer: 0, left: G.CHRONO.secs, flash: "", seed: r.seed, level: r.level, result: null, lock: false };
       if (!ch.qs.length) throw new Error(T("Pas assez de questions pour cette catégorie."));
       qz.state = "chrono"; qz.busy = false; chronoRender();
       ch.timer = setInterval(chronoTick, 200);
@@ -217,11 +220,23 @@
     } catch (e) { qz.err = e.message; qz.state = "menu"; }
     qzRender();
   }
-  function qzBegin(cat, level) {
-    qz.train = false;
-    qz.cat = cat; qz.level = level; qz.seed = newSeed(); qz.i = 0; qz.answers = []; qz.picked = -1; qz.sel = []; qz.result = null; qz.err = "";
-    try { qz.qs = G.quizBuild(qz.seed, cat, level, quizPool(), { t: T, lang: lang() }); } catch (e) { qz.err = T("Impossible de préparer le quiz."); }
-    if (!qz.qs.length) qz.err = qz.err || T("Pas assez de questions pour cette catégorie.");
+  /** partie notée : le serveur tire les questions, les envoie et garde la clé de correction — le score affiché à la fin correspond donc toujours aux questions vues */
+  async function qzBegin(cat, level) {
+    if (qz.busy) return;
+    qz.busy = true; qz.train = false; qz.err = "";
+    let r = null, old = false;
+    try { r = await window.MAGameAPI.call("quizSubmit", { op: "start", cat, level, lang: lang() }); }
+    catch (e) { if (e && e.code === "invalid-argument") old = true; else qz.err = (e && e.message) || T("Impossible de préparer le quiz."); }
+    qz.busy = false;
+    qz.cat = cat; qz.level = level; qz.i = 0; qz.answers = []; qz.picked = -1; qz.sel = []; qz.result = null; qz.qs = [];
+    if (!qz.err) {
+      if (r && Array.isArray(r.qs) && r.qs.length) { qz.seed = r.seed; qz.qs = fromServer(r.qs); }
+      else if (old || r) { // serveur de jeu pas encore à jour : questions construites ici et rejouées par le serveur, comme avant
+        qz.seed = newSeed();
+        try { qz.qs = G.quizBuild(qz.seed, cat, level, quizPool(), { t: T, lang: lang() }); } catch (e) { qz.err = T("Impossible de préparer le quiz."); }
+      }
+      if (!qz.qs.length) qz.err = qz.err || T("Pas assez de questions pour cette catégorie.");
+    }
     qz.state = qz.err ? "menu" : "play"; qzRender();
   }
   async function qzFinish() {

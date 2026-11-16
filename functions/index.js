@@ -41,7 +41,7 @@ function poolEntry(id, x) {
 async function loadPool() {
   const map = new Map(STATIC_CATALOG.map((c) => [c.id, { id: c.id, power: c.power, speed: c.speed || 0, zero: c.zero || 0, name: c.name, brand: c.brand || "", category: c.category || "", year: c.year || 0, pics: c.pics || [] }]));
   try {
-    const snap = await db.collection("motorauto_catalog").limit(1000).get();
+    const snap = await db.collection("motorauto_catalog").limit(5000).get();
     snap.forEach((d) => { map.set(d.id, poolEntry(d.id, d.data())); });
   } catch (e) { logger.warn("Catalogue Firestore illisible, catalogue local utilisé", e); }
   return Array.from(map.values());
