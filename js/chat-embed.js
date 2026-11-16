@@ -32,7 +32,8 @@
     const cs = getComputedStyle(probe), conv = de.classList.contains("chat-conv") && matchMedia("(max-width: 860px)").matches;
     r.style.setProperty("--safe-top", conv ? px(cs.paddingTop) + "px" : "0px");
     r.style.setProperty("--safe-bottom", (kbOpen ? 0 : px(cs.paddingBottom)) + "px");
-    r.style.setProperty("--kb-extra", kbOpen ? "40px" : "0px");   // barre d'accessoires d'iOS (flèches / ✓) au-dessus du clavier : la saisie reste au-dessus
+    // clavier : la saisie remonte de sa hauteur + 40 px pour la barre d'accessoires d'iOS (flèches / ✓) qui flotte au-dessus du clavier
+    r.style.setProperty("--kb", kbOpen && kbPx ? (kbPx + 40) + "px" : "0px");
   }
   new MutationObserver(() => requestAnimationFrame(sync)).observe(de, { attributes: true, attributeFilter: ["data-theme", "data-tone", "data-anim", "data-contrast", "style", "lang", "class"] });
 
@@ -47,36 +48,24 @@
   // clavier : le cadre du chat épouse exactement la zone visible (au-dessus du clavier). C'est le site qui le mesure : à l'intérieur
   // d'un cadre, iOS ne donne pas la hauteur du clavier, d'où la saisie qui restait cachée dessous.
   const vv = window.visualViewport;
-  function baseTop(host) {
-    const pt = host.style.top, pb = host.style.bottom;
-    host.style.top = topBase; host.style.bottom = "";
-    const t = host.getBoundingClientRect().top;
-    host.style.top = pt; host.style.bottom = pb;
-    return t;
-  }
-  let stabT = 0;
+  // Seule la barre de saisie suit le clavier : le cadre du chat, l'en-tête et la liste ne bougent jamais.
+  // Le site mesure la hauteur du clavier et la donne à la page du chat (--kb) ; une valeur n'est retenue que si elle reste identique 90 ms.
+  let stabT = 0, kbPx = 0;
   function layout(now) {
     const host = $("chat-embed"); if (!host) return;
-    const open = !!(onChat && vv && (window.innerHeight - vv.height) > 80);
+    host.style.top = topBase; host.style.bottom = "";
+    const raw = onChat && vv ? Math.max(0, Math.round(window.innerHeight - vv.offsetTop - vv.height)) : 0;
+    if (raw >= window.innerHeight * 0.7) return;           // valeur absurde annoncée par iOS pendant l'animation : ignorée
+    const open = raw > 80;
     if (open) lastOpenAt = Date.now();
-    // pendant l'animation du clavier, iOS annonce brièvement une hauteur intermédiaire : on garde la dernière disposition plutôt que de redescendre la saisie
+    // pendant l'animation du clavier, iOS annonce brièvement une hauteur intermédiaire : on garde la dernière position plutôt que de redescendre la saisie
     if (hold && !open && kbOpen && Date.now() - lastOpenAt < 1200) { setTimeout(fitKb, 1250); return; }
-    let top = topBase, bottom = "";
-    if (open) {
-      top = Math.max(Math.round(baseTop(host)), Math.round(vv.offsetTop));
-      const b = Math.max(0, Math.round(window.innerHeight - vv.offsetTop - vv.height));
-      // valeurs absurdes annoncées par iOS pendant l'animation (cadre quasi vide) : ignorées
-      if (!(window.innerHeight - top - b > window.innerHeight * 0.3)) return;
-      top += "px"; bottom = b + "px";
-    }
-    // pendant le clavier, on n'applique qu'une disposition stable (même valeur 90 ms de suite) : plus de saut ni d'écran vide
-    if ((open || kbOpen) && !now && (top !== host.style.top || bottom !== host.style.bottom || open !== kbOpen)) {
-      clearTimeout(stabT); stabT = setTimeout(() => layout(true), 90); return;
-    }
-    const moved = top !== host.style.top || bottom !== host.style.bottom;
-    if (moved) { host.style.top = top; host.style.bottom = bottom; }
-    if (open !== kbOpen) { kbOpen = open; de.classList.toggle("chat-kb", open); sync(); }
-    if (moved) note("→ " + (top || "-") + "/" + (bottom || "-"));
+    const k = open ? raw : 0;
+    if (!now && k !== kbPx && (open || kbOpen)) { clearTimeout(stabT); stabT = setTimeout(() => layout(true), 90); return; }
+    const changed = k !== kbPx || open !== kbOpen;
+    kbPx = k;
+    if (open !== kbOpen) { kbOpen = open; de.classList.toggle("chat-kb", open); }
+    if (changed) { sync(); note("kb " + k); }
   }
   // mesure de mise au point (désactivée ; localStorage.ma_kbdbg = "1" pour l'afficher)
   let hud = null, hlog = [], ht0 = 0, hhide = 0;

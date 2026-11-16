@@ -1050,6 +1050,9 @@
         if (stickBottom && state.conv) toBottom(false);
       };
       const fit = () => { if (!raf) raf = requestAnimationFrame(onSize); };
+      // le site remonte la saisie au-dessus du clavier (--kb) : on reste collé en bas de la conversation
+      let lastKb = "";
+      new MutationObserver(() => { const v = document.documentElement.style.getPropertyValue("--kb"); if (v === lastKb) return; lastKb = v; if (stickBottom && state.conv) toBottom(false); }).observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
       window.addEventListener("resize", fit);
       window.addEventListener("orientationchange", () => setTimeout(fit, 300));
       input.addEventListener("focus", () => { setTimeout(() => { if (stickBottom && state.conv) toBottom(false); }, 320); });
