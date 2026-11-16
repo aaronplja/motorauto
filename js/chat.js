@@ -1051,8 +1051,10 @@
       };
       const fit = () => { if (!raf) raf = requestAnimationFrame(onSize); };
       // le site remonte la saisie au-dessus du clavier (--kb) : on reste collé en bas de la conversation
+      // la liste glisse en même temps que la barre : on reste collé en bas image par image pendant l'animation
+      let fT = 0; const follow = () => { const t0 = performance.now(); cancelAnimationFrame(fT); const step = () => { if (stickBottom && state.conv) toBottom(false); if (performance.now() - t0 < 420) fT = requestAnimationFrame(step); }; step(); };
       let lastKb = "";
-      new MutationObserver(() => { const v = document.documentElement.style.getPropertyValue("--kb"); if (v === lastKb) return; lastKb = v; if (parseFloat(v) > 0 && window.__maDropKbp) window.__maDropKbp(); if (stickBottom && state.conv) toBottom(false); }).observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
+      new MutationObserver(() => { const v = document.documentElement.style.getPropertyValue("--kb"); if (v === lastKb) return; lastKb = v; if (parseFloat(v) > 0 && window.__maDropKbp) window.__maDropKbp(); follow(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
       window.addEventListener("resize", fit);
       window.addEventListener("orientationchange", () => setTimeout(fit, 300));
       input.addEventListener("focus", () => { setTimeout(() => { if (stickBottom && state.conv) toBottom(false); }, 320); });
@@ -1061,7 +1063,7 @@
       // barre puis on donne le focus nous-mêmes. Si le focus échoue une fois, on reprend le comportement natif.
       {
         const wrap = document.querySelector(".chat-main"); let tx = 0, ty = 0, moved = false, native = false;
-        const kbGuess = () => { let v = 0; try { v = parseInt(localStorage.getItem("ma_kbh"), 10) || 0; } catch (_) {} if (!(v > 150 && v < 600)) v = Math.round(window.innerHeight * 0.38); return v + 40; };
+        const kbGuess = () => { let v = 0; try { v = parseInt(localStorage.getItem("ma_kbh"), 10) || 0; } catch (_) {} if (!(v > 150 && v < 600)) v = Math.round(window.innerHeight * 0.38); return v + 30; };
         input.addEventListener("touchstart", (e) => { const t = e.touches[0]; if (t) { tx = t.clientX; ty = t.clientY; } moved = false; }, { passive: true });
         input.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (t && (Math.abs(t.clientX - tx) > 10 || Math.abs(t.clientY - ty) > 10)) moved = true; }, { passive: true });
         input.addEventListener("touchend", (e) => {

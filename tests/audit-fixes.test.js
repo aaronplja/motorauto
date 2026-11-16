@@ -268,7 +268,7 @@ ok("chat iPhone : saisie en cours signalée au site, la disposition au-dessus du
 ok("chat iPhone : hauteur de clavier stable (90 ms), valeurs absurdes ignorées, marge pour la barre d'accessoires iOS", () => {
   const e = read("js/chat-embed.js");
   assert.ok(/stabT = setTimeout\(\(\) => layout\(true\), 90\)/.test(e) && /window\.innerHeight \* 0\.7/.test(e), "stabilisation");
-  assert.ok(/\(kbPx \+ 40\) \+ "px"/.test(e), "marge au-dessus de la barre d'accessoires");
+  assert.ok(/\(kbPx \+ 30\) \+ "px"/.test(e), "marge au-dessus de la barre d'accessoires");
 });
 ok("chat iPhone : saisie remontée dès le toucher (avant le clavier), zone visible suivie sans bouger l'en-tête, conteneurs non défilables", () => {
   const e = read("js/chat-embed.js"), j = read("js/chat.js"), c = read("css/chat3.css");

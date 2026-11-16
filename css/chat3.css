@@ -164,7 +164,7 @@ html, body.chat-page { background: var(--bg-core); }
 .chat-app .bubble:has(> .trade-card:only-child), .chat-app .bubble:has(> .car-share:only-child) { padding: 0; background: none; box-shadow: none; }
 
 /* ───────────────────────── saisie flottante ───────────────────────── */
-.compose-wrap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 0 max(.7rem, calc((100% - var(--chat-col)) / 2)) max(6px, calc(var(--safe-bottom, 0px) - 12px)); transform: translate3d(0, calc(-1 * max(var(--kb, 0px), var(--kbp, 0px))), 0); transition: transform .2s cubic-bezier(.22, .9, .3, 1); background: none !important; border: 0; pointer-events: none; display: flex; flex-direction: column; gap: .4rem; }
+.compose-wrap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 0 max(.7rem, calc((100% - var(--chat-col)) / 2)) max(6px, calc(var(--safe-bottom, 0px) - 12px)); transform: translate3d(0, calc(-1 * max(var(--kb, 0px), var(--kbp, 0px))), 0); transition: transform .28s cubic-bezier(.2, .8, .2, 1); will-change: transform; background: none !important; border: 0; pointer-events: none; display: flex; flex-direction: column; gap: .4rem; }
 .compose-wrap > * { pointer-events: auto; }
 body.kb-open .compose-wrap, .chat-page:focus-within .compose-wrap { padding-bottom: .5rem; }
 .compose-bar { margin: 0; padding: .45rem .7rem; border-radius: 22px; gap: .7rem; }
@@ -241,3 +241,6 @@ body:has(#chat-app:not([data-view="list"])) #mobile-touch-bar { display: none !i
 
 /* iOS ne peut plus décaler ces conteneurs pour montrer la saisie : « clip » n'est jamais défilable, contrairement à « hidden » */
 @supports (overflow: clip) { html, body.chat-page, .chat-app { overflow: clip; } }
+/* la liste et le bouton « dernier message » accompagnent la saisie avec la même courbe */
+#chat-messages-container, .msg-scroll { transition: padding-bottom .28s cubic-bezier(.2, .8, .2, 1); }
+.jump-latest { transition: bottom .28s cubic-bezier(.2, .8, .2, 1), opacity .2s; }
