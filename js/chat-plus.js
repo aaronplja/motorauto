@@ -34,13 +34,19 @@
   const hl = (text, q) => { const t = String(text), i = norm(t).indexOf(q); return i < 0 ? esc(t.slice(0, 140)) : esc(t.slice(Math.max(0, i - 30), i)) + "<mark>" + esc(t.slice(i, i + q.length)) + "</mark>" + esc(t.slice(i + q.length, i + q.length + 90)); };
   const dateOf = (m) => { const t = m.timestamp && m.timestamp.toMillis ? m.timestamp.toMillis() : Number(m.timestamp) || 0; return t ? new Date(t).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""; };
 
+  // pile flottante sous l'en-tête : recherche + messages épinglés
+  function stack() {
+    let st = document.getElementById("cp-stack"); if (st) return st;
+    const main = document.querySelector(".chat-main"); if (!main) return null;
+    st = document.createElement("div"); st.id = "cp-stack"; st.className = "cp-stack"; main.appendChild(st); return st;
+  }
   // ------------------------------------------------------------------ recherche
   function toggleSearch() {
     const head = document.querySelector(".conv-head"); if (!head) return;
     if (searchBar) { searchBar.remove(); searchBar = null; deep = null; return; }
     searchBar = document.createElement("div"); searchBar.className = "cp-search";
     searchBar.innerHTML = `<input type="search" placeholder="${T("Rechercher dans cette conversation…")}" aria-label="${T("Rechercher dans cette conversation")}" autocomplete="off"><div class="cp-res" role="list"></div><small class="cp-info"></small>`;
-    head.insertAdjacentElement("afterend", searchBar);
+    stack().prepend(searchBar);
     const input = searchBar.querySelector("input"), res = searchBar.querySelector(".cp-res"), info = searchBar.querySelector(".cp-info");
     const run = () => {
       const q = norm(input.value.trim()); if (q.length < 2) { res.innerHTML = ""; info.textContent = T("Au moins 2 lettres."); return; }
@@ -64,9 +70,11 @@
     });
     input.focus();
   }
+  // loupe dessinée à la main (trait légèrement irrégulier, extrémités rondes)
+  const LOUPE = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 3.6c3.9-.2 7 2.8 7.1 6.6.1 3.9-3 7-6.8 7-3.9 0-7-3-7-6.8 0-3.7 2.9-6.7 6.7-6.8z"/><path d="M16.2 16.1c1.6 1.5 3.1 3 4.6 4.4"/><path d="M7.4 9.2c.5-1.4 1.6-2.2 3-2.4" stroke-width="1.5" opacity=".55"/></svg>';
   function injectBtn() {
     const head = document.querySelector(".conv-head"); if (!head || head.querySelector(".cp-sbtn")) return;
-    const b = document.createElement("button"); b.type = "button"; b.className = "cp-sbtn"; b.textContent = "🔍"; b.setAttribute("aria-label", T("Rechercher dans la conversation")); b.title = T("Rechercher dans la conversation");
+    const b = document.createElement("button"); b.type = "button"; b.className = "cp-sbtn fl-btn"; b.innerHTML = LOUPE; b.setAttribute("aria-label", T("Rechercher dans la conversation")); b.title = T("Rechercher dans la conversation");
     b.addEventListener("click", toggleSearch); head.appendChild(b);
   }
 
@@ -76,10 +84,10 @@
     if (pinBar) { pinBar.remove(); pinBar = null; }
     const pins = (clubDoc && Array.isArray(clubDoc.pins) ? clubDoc.pins : []).slice(0, 3);
     if (!pins.length) return;
-    const head = (searchBar || document.querySelector(".conv-head")); if (!head) return;
+    if (!stack()) return;
     pinBar = document.createElement("div"); pinBar.className = "cp-pins"; pinBar.setAttribute("aria-label", T("Messages épinglés"));
     pinBar.innerHTML = pins.map((p) => `<div class="cp-pin" data-id="${esc(p.id)}">📌 <span><b>${esc(p.name || "Pilote")}</b> : ${esc(p.text || "")}</span>${isStaff() ? `<button type="button" data-unpin="${esc(p.id)}" aria-label="${T("Désépingler")}" title="${T("Désépingler")}">✕</button>` : ""}</div>`).join("");
-    head.insertAdjacentElement("afterend", pinBar);
+    stack().appendChild(pinBar);
   }
   async function savePins(list) {
     const c = ctl().conv(); try { await fb().db.collection("clubs").doc(c.id).update({ pins: list.slice(0, 3) }); } catch (e) { alert(T("Impossible d'épingler") + " : " + (e.message || "")); }

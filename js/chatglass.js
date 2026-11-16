@@ -10,6 +10,20 @@
   }
   tone();
   new MutationObserver(() => requestAnimationFrame(tone)).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "style"] });
+  // en-tête et saisie flottants : on mesure leur hauteur pour que les messages passent dessous sans être cachés
+  const head = document.querySelector(".conv-head"), comp = document.querySelector(".compose-wrap"), root = document.documentElement.style;
+  if (window.ResizeObserver) {
+    if (head) new ResizeObserver(() => root.setProperty("--head-h", head.offsetHeight + "px")).observe(head);
+    if (comp) new ResizeObserver(() => root.setProperty("--comp-h", comp.offsetHeight + "px")).observe(comp);
+  }
+  // toucher le nom en haut d'une conversation privée ouvre le profil du pilote
+  const pill = document.getElementById("conv-pill");
+  if (pill) {
+    const go = () => { const c = window.MAChatCtl && window.MAChatCtl.conv && window.MAChatCtl.conv(); if (c && c.type === "private") location.href = "index.html?pilot=" + encodeURIComponent(c.id); };
+    pill.addEventListener("click", go);
+    pill.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && pill.dataset.kind === "private") { e.preventDefault(); go(); } });
+    new MutationObserver(() => { const p = pill.dataset.kind === "private"; pill.setAttribute("role", p ? "button" : "group"); if (p) { pill.tabIndex = 0; pill.setAttribute("aria-label", "Voir le profil"); } else { pill.removeAttribute("tabindex"); pill.removeAttribute("aria-label"); } }).observe(pill, { attributes: true, attributeFilter: ["data-kind"] });
+  }
   // onglets de la liste : Tout / Canaux / Privés (+ pastille quand un onglet cache un message non lu)
   const side = document.getElementById("chat-side"), tabs = document.getElementById("side-tabs");
   if (side && tabs) {

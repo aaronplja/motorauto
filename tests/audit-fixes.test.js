@@ -128,4 +128,17 @@ ok("chat : nouvelle interface (chat3.css) avec onglets Tout / Canaux / Privés, 
   assert(/data-tab="all"[\s\S]*data-tab="channels"[\s\S]*data-tab="dms"/.test(h) && /data-grp="dms"/.test(h));
   assert(/\[data-grp="dms"\]/.test(c) && /@media \(max-width: 860px\)/.test(c));
 });
+ok("chat v3.1 : en-tête / recherche / retour / saisie flottants (verre du dock), dock du bas sur la liste, nom cliquable, bulles avec heure", () => {
+  const h = read("chat.html"), c = read("css/chat3.css"), g = read("js/chatglass.js"), cp = read("js/chat-plus.js"), ch = read("js/chat.js");
+  assert(/id="mobile-touch-bar"/.test(h) && /css\/dock\.css/.test(h) && /js\/glassbar\.js/.test(h), "dock du bas dans la page chat");
+  assert(/body:has\(#chat-app:not\(\[data-view="list"\]\)\) #mobile-touch-bar \{ display: none/.test(c), "dock masqué dans une conversation");
+  assert(/id="conv-pill"/.test(h) && /class="back-list fl-btn"/.test(h) && /--fl-bg/.test(c) && /\.compose-wrap \{ position: absolute/.test(c), "pilule + boutons + saisie flottants");
+  assert(/location\.href = "index\.html\?pilot="/.test(g) && /conv-pill/.test(g), "toucher le nom ouvre le profil");
+  assert(/LOUPE/.test(cp) && !/textContent = "🔍"/.test(cp), "loupe dessinée, plus d'emoji");
+  assert(/class="b-time"/.test(ch) && /class="msg-meta"/.test(ch), "heure dans la bulle, pseudo + admin + titre dans la bulle");
+});
+ok("croix et boutons : croix dessinées automatiquement, barre du haut à hauteur unique, plus de double croix dans la recherche", () => {
+  assert(/x-drawn/.test(read("js/a11y.js")) && /\.x-drawn::before/.test(read("css/base.css")));
+  assert(/--hb: 40px/.test(read("css/refonte.css")) && /spot-field input::-webkit-search-cancel-button/.test(read("css/refonte.css")));
+});
 console.log(n + " vérifications audit OK");

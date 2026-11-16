@@ -490,3 +490,18 @@ body:not([data-admin-todo="0"])[data-admin-todo] .page-tab[data-tab="tableau"]::
 .play-back:hover { text-decoration: underline; }
 /* le bouton flottant « Éditeur » (admin) passe sous la feuille du compte quand elle est ouverte */
 body:has(.me-layer.on) .ed-fab { display: none; }
+/* recherche rapide : la croix native de Safari doublait notre bouton « × » */
+.spot-field input::-webkit-search-cancel-button, .spot-field input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+/* retour « ‹ Jouer » : un bouton à sa taille, pas une barre pleine largeur */
+.play-back { width: fit-content; justify-self: start; align-self: flex-start; }
+
+/* barre du haut : recherche, PRO, cloche, roue ont exactement la même hauteur et leur contenu est centré */
+.app-header .header-actions { --hb: 40px; align-items: center; }
+.app-header .header-actions .icon-btn, .app-header .header-actions .mp-chip, .app-header .header-actions .pilot-chip, .app-header .header-actions #admin-gear-container > * { box-sizing: border-box; height: var(--hb) !important; min-height: var(--hb) !important; max-height: var(--hb); }
+.app-header .header-actions .icon-btn { width: var(--hb) !important; min-width: var(--hb) !important; border-radius: 50%; display: inline-grid; place-items: center; padding: 0; }
+.app-header .header-actions .mp-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0 .9rem !important; font-size: .76rem; line-height: 1; border-radius: 999px; }
+.app-header .header-actions .pilot-chip.is-gear { width: var(--hb) !important; min-width: var(--hb) !important; max-width: var(--hb) !important; }
+@media (max-width: 999px) { .app-header .header-actions { --hb: 38px; } .app-header .header-actions .mp-chip { padding: 0 .75rem !important; } }
+@media (max-width: 380px) { .app-header .header-actions { --hb: 34px; } .app-header .header-actions .mp-chip { padding: 0 .55rem !important; font-size: .68rem; } }
+/* profil : la roue Réglages est une vraie pastille ronde alignée avec les autres boutons */
+.pub-gear { border-radius: 50%; }

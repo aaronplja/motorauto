@@ -257,14 +257,16 @@
     if (!c) return;
     const name = convName(c);
     const badge = $("conv-badge");
+    const pill = $("conv-pill"); if (pill) pill.dataset.kind = c.type;
+    $("chat-header-sub").classList.remove("on");
     if (c.type === "private") {
       const badgeSrc = avatarOf(c.id);
       const cur = badge.querySelector("img");
       if (cur && cur.dataset.uid === c.id) { if (cur.getAttribute("src") !== badgeSrc) cur.src = badgeSrc; }
       else badge.innerHTML = `<img class="avatar" data-uid="${esc(c.id)}" src="${esc(badgeSrc)}" alt="" data-fallback="avatar">`;
       $("chat-header-title").textContent = name;
-      $("chat-header-sub").textContent = "Conversation privée entre vous deux";
-      if (window.MAPresence) window.MAPresence.get(c.id).then((pr) => { if (pr && state.conv === c) $("chat-header-sub").textContent = pr.text + " · conversation privée"; });
+      $("chat-header-sub").textContent = "Message privé"; $("chat-header-sub").classList.remove("on");
+      if (window.MAPresence) window.MAPresence.get(c.id).then((pr) => { if (pr && state.conv === c) { const sub = $("chat-header-sub"); sub.textContent = pr.text; sub.classList.toggle("on", !!pr.online); } });
     } else if (c.type === "global") {
       badge.textContent = "🌐";
       $("chat-header-title").textContent = "Salon général";
@@ -477,14 +479,15 @@
       <article class="msg ${mine ? "mine" : "theirs"} ${grouped ? "grouped" : ""}" data-id="${esc(m.id)}">
         ${mine ? "" : avatar}
         <div class="msg-col">
-          ${first ? `<header class="msg-meta"><button type="button" class="msg-author" data-action="profile" data-uid="${esc(m.uid)}">${esc(mine ? "Toi" : m.pilot || "Pilote")}</button>${MA.admins.tag(m.uid)}${window.MATitles && !mine ? window.MATitles.slot(m.uid) : ""}<time>${esc(timeFmt.format(d))}</time></header>` : ""}
           <div class="bubble" title="${esc(timeFmt.format(d))}">
+            ${first && !mine ? `<header class="msg-meta"><button type="button" class="msg-author" data-action="profile" data-uid="${esc(m.uid)}">${esc(m.pilot || "Pilote")}</button>${MA.admins.tag(m.uid)}${window.MATitles ? window.MATitles.slot(m.uid) : ""}</header>` : ""}
             ${quote}
-            ${m.text && !m.tradeId ? `<p class="txt">${linkify(m.text)}</p>` : ""}
+            ${m.text && !m.tradeId ? `<p class="txt">${linkify(m.text)}<time class="b-time">${esc(timeFmt.format(d))}</time></p>` : ""}
             ${carCardHtml(m)}
             ${tradeCardHtml(m)}
             ${audioHtml(m)}
             ${media ? `<img class="photo" src="${esc(media)}" alt="Photo partagée" loading="lazy" data-action="lightbox" data-src="${esc(media)}">` : ""}
+            ${m.text && !m.tradeId ? "" : `<time class="b-time solo">${esc(timeFmt.format(d))}</time>`}
           </div>
           ${reactions}
           <div class="msg-actions" role="toolbar" aria-label="Actions sur le message">

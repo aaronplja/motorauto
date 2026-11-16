@@ -40,5 +40,23 @@
   document.addEventListener("change", (e) => { if (e.target.id === "a11y-contrast") { const p = read(); p.contrast = e.target.checked; write(p); apply(); } });
   window.addEventListener("hashchange", () => setTimeout(panel, 80));
   window.addEventListener("DOMContentLoaded", () => setTimeout(panel, 300));
+  // croix : tout bouton dont le texte est un simple « × » reçoit l'icône dessinée (centrée quelle que soit la police)
+  (function () {
+    const X = "×✕✖✗";
+    const fix = (el) => {
+      if (!el || el.nodeType !== 1) return;
+      const list = el.matches && el.matches("button, [role=button]") ? [el] : [];
+      if (el.querySelectorAll) el.querySelectorAll("button, [role=button]").forEach((b) => list.push(b));
+      list.forEach((b) => {
+        if (b.classList.contains("x-drawn") || b.children.length) return;
+        const t = (b.textContent || "").trim();
+        if (t.length === 1 && X.indexOf(t) >= 0) { b.classList.add("x-drawn"); if (!b.getAttribute("aria-label") && !b.title) b.setAttribute("aria-label", "Fermer"); }
+      });
+    };
+    let q = [], raf = 0;
+    const flush = () => { raf = 0; const l = q; q = []; l.forEach(fix); };
+    new MutationObserver((ms) => { ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1) q.push(n); })); if (q.length && !raf) raf = requestAnimationFrame(flush); }).observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener("DOMContentLoaded", () => fix(document.body));
+  })();
   window.MAA11y = { apply, panel };
 })();

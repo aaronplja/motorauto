@@ -398,7 +398,7 @@
           </button>
           <button type="button" class="notif-del" data-del="${MA.esc(n.id)}" aria-label="Supprimer cette notification" title="Supprimer">${trash}</button>
         </div>`;
-      }).join("") : `<div class="notif-empty">Rien pour l'instant.<br><small>Tu seras prévenu ici quand quelqu'un te répond, te mentionne ou t'écrit.</small></div>`;
+      }).join("") : (extra.html ? "" : `<div class="notif-empty">Rien pour l'instant.<br><small>Tu seras prévenu ici quand quelqu'un te répond, te mentionne ou t'écrit.</small></div>`);
       panel.innerHTML = `<div class="notif-head"><b>Notifications</b><span class="notif-actions"><button type="button" class="notif-all" ${unreadCount() ? "" : "disabled"}>Tout lire</button><button type="button" class="notif-clear" ${items.length ? "" : "disabled"} aria-label="Tout effacer" title="Tout effacer">${trash}</button></span></div>${extra.html}<div class="notif-list">${list}</div><a class="notif-foot" href="${/(^|\/)(index\.html)?$/.test(location.pathname) ? "" : "index.html"}#/nouveautes">Toutes les nouveautés</a>${undoBuf ? `<div class="notif-undo" role="status"><span>${undoBuf.length > 1 ? undoBuf.length + " notifications supprimées" : "Notification supprimée"}</span><button type="button" class="notif-undo-btn">Annuler</button></div>` : ""}`;
     }
     function placePanel() {
