@@ -1853,5 +1853,8 @@
 "Toutes les nouveautés": "Alle Neuigkeiten",
 "Réglages et compte": "Einstellungen und Konto",
 "Administration": "Verwaltung",
-"Tout lire": "Alle als gelesen markieren"
+"Tout lire": "Alle als gelesen markieren",
+"Découvre ta carte": "Entdecke deine Karte",
+"1 carte commune gratuite · touche pour la révéler": "1 kostenlose gewöhnliche Karte · tippen zum Aufdecken",
+"Reviens demain pour une nouvelle carte": "Komm morgen für eine neue Karte wieder"
 }]);

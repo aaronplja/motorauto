@@ -12,9 +12,22 @@
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   function themeCars(id) { const cars = (M() && M().pool && M().pool()) || []; return cars.filter((c) => G.themeMatch(id, c) && M().rarityOf(c) !== "mythic"); }
+  /** la carte offerte aujourd'hui : on la retrouve dans l'historique (entrée « gift » datée d'aujourd'hui) */
+  function todayGiftId(doc) {
+    const today = G.dayKey(), h = doc.hist || {}; let best = "", bt = 0;
+    Object.keys(h).forEach((id) => (h[id].e || []).forEach((x) => { if (x && x[1] === "gift" && x[0] > bt && G.dayKey(x[0]) === today) { bt = x[0]; best = id; } }));
+    return best;
+  }
+  const giftSig = (doc) => { const done = doc.dcDay === G.dayKey(); return (done ? "d:" + todayGiftId(doc) : "r") + (busy ? ":b" : ""); };
+  /** carte du jour offerte : avant de la récupérer on voit une carte face cachée, ensuite la carte elle-même (jamais seulement un nom) */
   function giftHtml(doc) {
-    const done = doc.dcDay === G.dayKey();
-    return `<button type="button" class="cg-gift ${done ? "off" : "ready"}" data-daycard ${done || busy ? "disabled" : ""} aria-label="${T("Carte du jour offerte")}"><span class="cg-gi">🃏</span><b>${done ? T("Carte offerte récupérée") : T("Carte du jour offerte")}</b><small>${done ? T("reviens demain") : T("1 carte commune gratuite")}</small></button>`;
+    const done = doc.dcDay === G.dayKey(), id = done ? todayGiftId(doc) : "", car = id && M() && M().cardObj ? M().cardObj(id) : null, sig = giftSig(doc);
+    if (done && car) {
+      const name = esc(car.brand + " " + String(car.model).replace(/\s*\(.*$/, ""));
+      return `<div class="cg-gift cg-daycard done" data-daydone="${esc(id)}" data-sig="${sig}"><span class="cg-gcard">${M().cardHtml(car, { owned: true, count: 1, cls: "tcg-mini" })}</span><span class="cg-gtx"><small class="cg-gk">${T("Ta carte du jour")}</small><b>${name}</b><small>${T("Reviens demain pour une nouvelle carte")}</small></span></div>`;
+    }
+    if (done) return `<div class="cg-gift cg-daycard done" data-daydone="" data-sig="${sig}"><span class="cg-gcard cg-gback" aria-hidden="true"><i>✓</i></span><span class="cg-gtx"><small class="cg-gk">${T("Carte du jour offerte")}</small><b>${T("Carte offerte récupérée")}</b><small>${T("reviens demain")}</small></span></div>`;
+    return `<button type="button" class="cg-gift cg-daycard ready" data-daycard data-sig="${sig}" ${busy ? "disabled" : ""} aria-label="${T("Carte du jour offerte")}"><span class="cg-gcard cg-gback" aria-hidden="true"><i>?</i></span><span class="cg-gtx"><small class="cg-gk">${T("Carte du jour offerte")}</small><b>${T("Découvre ta carte")}</b><small>${T("1 carte commune gratuite · touche pour la révéler")}</small></span></button>`;
   }
   function packsHtml(doc) {
     const now = Date.now(), act = G.themePacksNow(now), soon = Object.keys(G.THEME_PACKS).filter((id) => !G.themePackActive(id, now)).map((id) => ({ t: G.THEME_PACKS[id], d: G.themePackNext(id, now) })).filter((x) => x.d > 0).sort((a, b) => a.d - b.d).slice(0, 3);
@@ -34,9 +47,9 @@
     if (!root || !doc || !C || !C.user) return;
     const free = root.querySelector(".cg-free");
     if (free) {
-      const cur = free.querySelector("[data-daycard]"), html = giftHtml(doc);
-      if (!cur) free.insertAdjacentHTML("beforeend", html);
-      else if (cur.disabled !== (doc.dcDay === G.dayKey() || busy)) cur.outerHTML = html;
+      const cur = free.querySelector("[data-daycard],[data-daydone]");
+      if (!cur) free.insertAdjacentHTML("beforeend", giftHtml(doc));
+      else if (cur.dataset.sig !== giftSig(doc)) cur.outerHTML = giftHtml(doc);
       const grid = root.querySelector(".cg-block .cg-packgrid"), anchor = root.querySelector('section[aria-label="Packs par pays"]') || (grid && grid.closest("section"));   // le libellé est traduit : on retrouve la section par sa grille
       if (anchor && !root.querySelector("#shop-themed")) anchor.insertAdjacentHTML("beforebegin", packsHtml(doc));
     }

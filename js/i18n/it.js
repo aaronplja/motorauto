@@ -1853,5 +1853,8 @@
 "Toutes les nouveautés": "Tutte le novità",
 "Réglages et compte": "Impostazioni e account",
 "Administration": "Amministrazione",
-"Tout lire": "Segna tutto come letto"
+"Tout lire": "Segna tutto come letto",
+"Découvre ta carte": "Scopri la tua carta",
+"1 carte commune gratuite · touche pour la révéler": "1 carta comune gratis · tocca per rivelarla",
+"Reviens demain pour une nouvelle carte": "Torna domani per una nuova carta"
 }]);

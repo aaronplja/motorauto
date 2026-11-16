@@ -160,3 +160,63 @@ html[data-tone="dark"] .me-sheet { background: color-mix(in srgb, var(--bg-surfa
   html .toolbar-cluster .adv-toggle { height: 40px; min-height: 0; padding: 0 .85rem; border-radius: 999px; font-size: .84rem; gap: .35rem; white-space: nowrap; }
   html .toolbar-cluster .adv-toggle svg { width: 16px; height: 16px; }
 }
+
+/* ---- menu de la roue crantée : blocs espacés ---- */
+html .me-sheet .me-group { display: grid; gap: .95rem; padding-block: .25rem; }
+html .me-sheet .me-row { min-height: 56px; padding: .45rem .7rem; }
+
+/* ---- Jouer / Pilotes : retour + sous-onglets sur UNE seule ligne, même sur Collection, Boutique et Fusion ---- */
+html .play-bar.inner { display: flex; align-items: center; gap: .6rem; margin: .2rem 0 1.1rem; }
+html .play-bar.inner .play-back { margin: 0; flex: none; min-height: 44px; padding: .5rem 1rem .5rem .85rem; font-size: .88rem; }
+html .play-bar.inner .play-subtabs { flex: 1 1 auto; min-width: 0; margin: 0; max-width: calc(var(--n, 3) * 10rem); }
+@media (max-width: 560px) {
+  html .play-bar.inner { gap: .45rem; }
+  html .play-bar.inner .play-back { width: 44px; padding: 0; justify-content: center; }
+  html .play-bar.inner .play-back .pb-l { display: none; }
+  html .play-bar.inner .play-back > span:first-child { font-size: 1.5rem; line-height: 1; margin-top: -.1rem; }
+}
+
+/* ---- page Fusion : introduction en carte, raretés en deux colonnes sur grand écran ---- */
+#fusion-root { display: grid; gap: .9rem; }
+#fusion-root .fz-intro { max-width: none; margin: 0; padding: .9rem 1.1rem; border-radius: 20px; background: var(--fl-bg-soft); border: 1px solid var(--fl-line); box-shadow: var(--fl-shadow-sm); }
+#fusion-root .fz-block { margin: 0; }
+@media (min-width: 900px) { #fusion-root { grid-template-columns: 1fr 1fr; align-items: start; } #fusion-root > .fz-intro { grid-column: 1 / -1; } }
+@media (max-width: 600px) { #fusion-root .fz-actions .cta-btn { flex: 1 1 auto; } }
+
+/* ---- Fusion : même en-tête que Collection et Boutique, seul le contenu change quand on passe d'un onglet à l'autre ---- */
+.play-sec-head { margin: .2rem 0 1rem; }
+.play-sec-title { font: 400 clamp(1.5rem, 3.4vw, 2rem)/1.1 'Instrument Serif', Georgia, serif; margin: 0; color: var(--color-ink); }
+.play-sec-sub { margin: .25rem 0 0; color: var(--color-secondary); font-size: .92rem; max-width: 65ch; }
+#fusion-root .fz-intro p { font-size: .92rem; line-height: 1.5; }
+#fusion-root .fz-intro p.lap-meta { font-size: .8rem; }
+#fusion-root .fz-block { margin: 0; }
+#fusion-root { display: grid; gap: .9rem; }
+
+/* ---------- Connexion / inscription : carte pleine, en-tête centré, onglets et champs en pilules ---------- */
+html #auth-modal .modal-dialog.auth-box { background: linear-gradient(var(--bg-surface), var(--bg-surface)), var(--bg-core) !important; max-width: 440px; border-radius: 28px; border: 1px solid var(--fl-line); box-shadow: var(--fl-shadow, 0 30px 70px -30px rgba(0,0,0,.55)); }
+html #auth-modal .dialog-header { background: transparent; flex-direction: column; align-items: center; text-align: center; padding: 2rem 1.5rem .6rem; position: relative; top: auto; }
+html #auth-modal .dialog-header > div { flex: none; width: 100%; }
+html #auth-modal .dialog-close-btn { position: absolute; top: .9rem; right: .9rem; width: 40px; height: 40px; border-radius: 50%; }
+html #auth-modal .auth-mark { display: block; width: 34px; height: 39px; margin: 0 auto .85rem; overflow: visible; }
+html #auth-modal .auth-mark .am1 { fill: var(--color-ink, currentColor); }
+html #auth-modal .auth-mark .am2 { fill: var(--accent); }
+html #auth-modal .dialog-title { font-size: clamp(1.7rem, 6vw, 2.1rem); }
+html #auth-modal .dialog-sub { max-width: 30ch; margin: .45rem auto 0; line-height: 1.4; }
+html #auth-modal .dialog-tabs { margin: .9rem 1.5rem 0; padding: 4px; border-radius: 999px; background: var(--bg-elevated); border: 1px solid var(--stroke-line); gap: 4px; }
+html #auth-modal .dialog-tab-btn { min-height: 44px; border-radius: 999px; border: 0; box-shadow: none; background: transparent; }
+html #auth-modal .dialog-tab-btn.active { background: var(--accent); color: var(--on-accent); box-shadow: 0 10px 20px -12px var(--accent); }
+html #auth-modal .dialog-body { padding: 1.15rem 1.5rem 1.6rem; gap: 1.05rem; }
+html #auth-modal .google-auth-btn { border-radius: 999px; min-height: 50px; }
+html #auth-modal .divider-or span { padding-inline: .2rem; }
+html #auth-modal .auth-form { gap: 1rem; }
+html #auth-modal .input-stack { gap: .4rem; }
+html #auth-modal .input-stack label { padding-left: .85rem; }
+html #auth-modal .input-stack input { border-radius: 999px; min-height: 50px; padding-inline: 1.1rem; }
+html #auth-modal .consent-row { font-size: .84rem; line-height: 1.4; }
+html #auth-modal .auth-form .fill-btn { min-height: 52px; margin-top: .25rem; }
+@media (max-width: 720px) {
+  html #auth-modal .modal-dialog.auth-box { border-radius: 28px 28px 0 0; max-width: 100%; }
+  html #auth-modal .dialog-header { padding-top: 2.1rem; }
+  html #auth-modal .dialog-header, html #auth-modal .dialog-body { padding-inline: 1.25rem; }
+  html #auth-modal .dialog-tabs { margin-inline: 1.25rem; }
+}

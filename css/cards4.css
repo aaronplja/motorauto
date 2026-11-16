@@ -180,3 +180,22 @@
 @media (max-width: 420px) { .cg-gift.adv small { display: block; font-size: .64rem; } }
 @keyframes adv-pulse { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, #16a34a 22%, transparent); } }
 @media (prefers-reduced-motion: reduce) { .cg-gift.adv.ready { animation: none; } }
+
+/* carte du jour offerte : une vraie carte (face cachée avant de la récupérer, face visible ensuite) */
+.cg-gift.cg-daycard { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; justify-items: start; align-items: center; text-align: left; padding: .9rem 1.1rem; }
+.cg-daycard .cg-gcard { width: 92px; flex: none; display: block; }
+.cg-daycard .cg-gcard .tcg { width: 100%; }
+.cg-daycard .cg-gback { display: grid; }
+.cg-daycard .cg-gtx { display: grid; gap: .2rem; min-width: 0; }
+.cg-daycard .cg-gtx b { font-size: 1.02rem; }
+.cg-daycard .cg-gtx small { display: block; font-size: .78rem; }
+.cg-daycard .cg-gk { font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; color: var(--accent-ink, var(--accent)); }
+.cg-gback { aspect-ratio: 5 / 7; border-radius: 12px; display: grid; place-items: center; border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 26%, var(--bg-surface)) 0 7px, color-mix(in srgb, var(--accent) 12%, var(--bg-surface)) 7px 14px);
+  box-shadow: 0 10px 22px -12px var(--accent); }
+.cg-gback i { font: 400 2.2rem/1 'Instrument Serif', Georgia, serif; font-style: normal; color: var(--accent-ink, var(--accent)); }
+.cg-gift.cg-daycard.ready .cg-gback { animation: cgNod 2.6s ease-in-out infinite; }
+@keyframes cgNod { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg) translateY(-3px); } }
+.cg-gift.cg-daycard.done { opacity: 1; cursor: default; }
+.cg-gift.cg-daycard.done .tcg { cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .cg-gift.cg-daycard.ready .cg-gback { animation: none; } }

@@ -1853,5 +1853,8 @@
 "Toutes les nouveautés": "All updates",
 "Réglages et compte": "Settings and account",
 "Administration": "Administration",
-"Tout lire": "Mark all read"
+"Tout lire": "Mark all read",
+"Découvre ta carte": "Discover your card",
+"1 carte commune gratuite · touche pour la révéler": "1 free common card · tap to reveal",
+"Reviens demain pour une nouvelle carte": "Come back tomorrow for a new card"
 }]);

@@ -86,6 +86,10 @@
     if (!head || hide === headHidden) return; headHidden = hide;
     head.classList.toggle("hide-up", hide); de.classList.toggle("hdr-hidden", hide);
   }
+  // changement de page : la barre du haut revient toujours (avant, elle restait cachée si la nouvelle page s'ouvrait en haut pendant la pause du dock)
+  const showHead = () => { setHead(false); lastY = Math.max(0, window.scrollY); acc = 0; dir = 0; };
+  window.addEventListener("hashchange", showHead); window.addEventListener("popstate", showHead);
+  document.addEventListener("ma:route", showHead);
   if (head) {
     head.addEventListener("focusin", () => setHead(false));
     const setH = () => de.style.setProperty("--hdr-h", head.offsetHeight + "px");
@@ -107,6 +111,7 @@
     raf = requestAnimationFrame(() => {
       raf = 0;
       const y = Math.max(0, window.scrollY), dy = y - lastY; lastY = y;
+      if (y < 60 && (headHidden || compact)) { setCompact(false); setHead(false); }   // en haut de page la barre est toujours là, même pendant la « pause » d'un changement de page
       if (!dy || Date.now() < hold) return;
       const d = dy > 0 ? 1 : -1; if (d !== dir) { dir = d; acc = 0; } acc += dy;
       const menuOpen = !!document.querySelector(".modal-layer.active, .notif-panel:not([hidden])");

@@ -83,20 +83,20 @@
   <link rel="stylesheet" href="css/ui-kit.css">
   <link rel="stylesheet" href="css/pro.css">
 <style id="splash-css">#splash{display:none}
-#splash,#boot-splash{background:#0b0e0c;color:#fff}
+#splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.95s linear forwards}
 #splash .sp-mark,#boot-splash .sp-mark{display:block;width:min(30vw,128px);height:auto;overflow:visible}
-#splash .sp-bar1,#boot-splash .sp-bar1{fill:#fff;stroke:#fff}
-#splash .sp-bar2,#boot-splash .sp-bar2{fill:#3fbf82;stroke:#3fbf82}
+#splash .sp-bar1,#boot-splash .sp-bar1{fill:var(--sp-ink);stroke:var(--sp-ink)}
+#splash .sp-bar2,#boot-splash .sp-bar2{fill:var(--sp-ac);stroke:var(--sp-ac)}
 #splash .sp-bar1,#splash .sp-bar2,#boot-splash .sp-bar1,#boot-splash .sp-bar2{stroke-width:1.3;stroke-linejoin:miter;stroke-dasharray:200;animation:spDraw 1.05s .1s ease both}
 #splash .sp-bar2,#boot-splash .sp-bar2{animation-delay:.28s}
 #splash .sp-word,#boot-splash .sp-word{display:flex;font:900 clamp(1.7rem,7.6vw,2.3rem)/1 "Big Shoulders Display","Arial Narrow","Helvetica Neue",sans-serif;letter-spacing:.07em;text-transform:uppercase;animation:spWord .45s 1.1s ease both}
-#splash .sp-m,#boot-splash .sp-m{color:#fff}#splash .sp-a,#boot-splash .sp-a{color:#3fbf82}
+#splash .sp-m,#boot-splash .sp-m{color:var(--sp-ink)}#splash .sp-a,#boot-splash .sp-a{color:var(--sp-ac)}
 @keyframes spDraw{from{stroke-dashoffset:200;fill-opacity:0}60%{stroke-dashoffset:0;fill-opacity:0}to{stroke-dashoffset:0;fill-opacity:1}}
 @keyframes spWord{from{opacity:0;transform:translateY(6px)}}
 @keyframes spLife{0%,88%{opacity:1;visibility:visible}99%{opacity:0;visibility:visible}100%{opacity:0;visibility:hidden;pointer-events:none}}
 @media (prefers-reduced-motion:reduce){#splash .sp-bar1,#splash .sp-bar2,#boot-splash .sp-bar1,#boot-splash .sp-bar2,#splash .sp-word,#boot-splash .sp-word{animation:none}}</style>
-<script>try{document.fonts&&document.fonts.load('900 1em "Big Shoulders Display"')}catch(e){}try{var d=document.documentElement,sa=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true,co=window.matchMedia&&matchMedia("(pointer: coarse)").matches;if((sa||co)&&!sessionStorage.getItem("ma_splash")){sessionStorage.setItem("ma_splash","1");d.classList.add("splash-on","splash-ran")}}catch(e){}</script>
+<script>try{document.fonts&&document.fonts.load('900 1em "Big Shoulders Display"')}catch(e){}try{var r=document.documentElement,H=function(h){var m=/^#?([0-9a-f]{6})$/i.exec(h||'');return m?parseInt(m[1],16):-1},Lm=function(v){return[v>>16,(v>>8)&255,v&255].map(function(x){x/=255;return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4)})},ct=JSON.parse(localStorage.getItem('motorauto_custom_theme')||'null');if(r.getAttribute('data-theme')==='custom'&&ct&&H(ct.bg)>=0){var c=Lm(H(ct.bg));r.style.setProperty('--spx-bg',ct.bg);r.style.setProperty('--spx-ink',.2126*c[0]+.7152*c[1]+.0722*c[2]<.25?'#f4f4f5':'#14181a');if(H(ct.accent)>=0)r.style.setProperty('--spx-ac',ct.accent)}var tc=document.querySelector('meta[name="theme-color"]'),bg=(r.style.getPropertyValue('--spx-bg')||getComputedStyle(r).getPropertyValue('--bg-core')).trim();if(tc&&/^#[0-9a-f]{6}$/i.test(bg))tc.content=bg}catch(e){}try{var d=document.documentElement,sa=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true,co=window.matchMedia&&matchMedia("(pointer: coarse)").matches;if((sa||co)&&!sessionStorage.getItem("ma_splash")){sessionStorage.setItem("ma_splash","1");d.classList.add("splash-on","splash-ran")}}catch(e){}</script>
 </head>
 <body>
 <div id="boot-splash" aria-hidden="true"><svg class="sp-mark" viewBox="-2 -2 55.5 64" xmlns="http://www.w3.org/2000/svg"><polygon class="sp-bar1" points="0,60 12,60 31.5,0 19.5,0"/><polygon class="sp-bar2" points="20,60 32,60 51.5,0 39.5,0"/></svg><div class="sp-word"><span class="sp-m">MOTOR</span><span class="sp-a">AUTO</span></div></div>
@@ -852,8 +852,16 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-fusion" data-page="fusion">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Fusion de cartes</h1><p class="page-sub">Transforme 5 doublons en une carte de rareté supérieure.</p></div></header>
+    <header class="page-head">
+      <div class="page-head-text">
+        <span class="status-tag-verified">Jouer</span>
+        <h1 class="page-title">Jouer</h1>
+        <p class="page-sub">Cartes à collectionner, mini-jeux, défis de la semaine et concours photo.</p>
+      </div>
+    </header>
+    <div class="ssn-cta-wrap" data-ssn></div>
     <nav data-section="play"></nav>
+    <div class="play-sec-head"><h2 class="play-sec-title">Fusion de cartes</h2><p class="play-sec-sub">Transforme 5 doublons en une carte de rareté supérieure.</p></div>
     <div id="fusion-root"></div>
   </div>
   </div>
@@ -1036,6 +1044,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <div class="modal-dialog auth-box">
       <div class="dialog-header">
         <div>
+          <svg class="auth-mark" viewBox="-2 -2 55.5 64" aria-hidden="true"><polygon class="am1" points="0,60 12,60 31.5,0 19.5,0"/><polygon class="am2" points="20,60 32,60 51.5,0 39.5,0"/></svg>
           <h2 class="dialog-title" id="auth-title">Cockpit pilote</h2>
           <p class="dialog-sub">Synchronise tes chronos et ton écurie sur tous tes appareils</p>
         </div>

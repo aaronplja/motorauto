@@ -184,3 +184,29 @@ ok("démarrage D2 (tracé), chargement C8 (respiration) et icône noire", () => 
   const lt = read("js/loading-tips.js");
   assert.ok(/Big Shoulders Display/.test(lt) && !/ltSpin/.test(lt), "écran d'attente : police du logo + marque");
 });
+
+// ---- série z8 : thème du démarrage, connexion, tutoriels, nouveautés, en-tête
+ok("écran de démarrage : couleurs du thème choisi (y compris Mon thème)", () => {
+  const src = read("index.src.html");
+  assert.ok(/--sp-bg:var\(--spx-bg,var\(--bg-core/.test(src) && /--sp-ink:var\(--spx-ink,var\(--color-ink/.test(src) && /--sp-ac:var\(--spx-ac,var\(--accent/.test(src), "variables du splash liées au thème");
+  assert.ok(/motorauto_custom_theme/.test(src) && /--spx-bg/.test(src), "thème sur mesure lu avant le premier affichage");
+  assert.ok(!/#splash,#boot-splash\{background:#0b0e0c/.test(src), "fond du splash plus figé en noir");
+});
+ok("connexion : carte pleine, marque et pilules", () => {
+  assert.ok(/class="auth-mark"/.test(read("index.src.html")));
+  assert.ok(/#auth-modal \.modal-dialog\.auth-box/.test(read("css/float.css")));
+});
+ok("tutoriels : une aide pour chaque page de Jouer", () => {
+  const g = read("js/guides.js");
+  ["play/collection", "play/boutique", "fusion", "quizgame", "plusmoins", "cardmarket", "wishfeed", "achievements", "pro", "chat", "news", "contact"].forEach((k) => assert.ok(new RegExp('"' + k + '":').test(g), "aide : " + k));
+});
+ok("nouveautés : entrées du 16 novembre publiées (fr + en)", () => {
+  const w = {}; new Function("window", read("js/news-seed.js"))(w);
+  const seed = w.MA_NEWS_SEED, ids = seed.map((e) => e.id);
+  assert.strictEqual(new Set(ids).size, ids.length, "ids uniques");
+  ["s-2026-11-16", "s-2026-11-15", "s-2026-11-14", "s-2026-11-12"].forEach((i) => { const e = seed.find((x) => x.id === i); assert.ok(e && e.fr.title && e.en.title && e.fr.body && e.en.body, i); });
+});
+ok("en-tête : revient au changement de page", () => {
+  const g = read("js/glassbar.js");
+  assert.ok(/ma:route/.test(g) && /showHead/.test(g), "réaffichage sur ma:route");
+});
