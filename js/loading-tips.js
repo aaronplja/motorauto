@@ -3,7 +3,7 @@
  *  1. Écran d'accueil : si le catalogue met plus de ~0,7 s à arriver, un écran MOTORAUTO affiche une astuce qui change toutes les 3,5 s
  *     (jamais plus de 8 s ; Échap ou un clic pour passer). Rien ne s'affiche si tout est rapide.
  *  2. Squelettes : un chargement qui dure plus de 1,5 s ajoute une astuce sous le squelette.
- * Les spinners restent tels quels : c'est un complément, pas un remplacement.
+ * Le chargement affiché est la marque « Respiration » (css/brand-loader.css).
  */
 (function () {
   "use strict";
@@ -44,11 +44,11 @@
     if (document.getElementById("ltips-css")) return;
     const s = document.createElement("style"); s.id = "ltips-css";
     s.textContent = `#ltips{position:fixed;inset:0;z-index:99990;background:var(--bg-core,#0b0d12);color:var(--color-ink,#fff);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;opacity:1;transition:opacity .35s}
-      #ltips.off{opacity:0;pointer-events:none}#ltips b{font-size:1.25rem;letter-spacing:.14em}
-      #ltips .lt-sp{width:34px;height:34px;border-radius:50%;border:3px solid var(--stroke-line,#333);border-top-color:var(--accent,#ef4444);animation:ltSpin .8s linear infinite}
+      #ltips.off{opacity:0;pointer-events:none}#ltips b{font:900 1.9rem/1 var(--font-display,"Big Shoulders Display","Arial Narrow",sans-serif);letter-spacing:.07em}#ltips b i{font-style:normal;color:var(--accent,#3fbf82)}
+      
       #ltips p,.lt-tip{max-width:34rem;margin:0;color:var(--color-secondary,#aaa);font-size:.95rem;line-height:1.5;min-height:3em}
       #ltips small{color:var(--color-muted,#888)}.lt-tip{font-size:.82rem;text-align:center;margin:.4rem auto 0;min-height:0}
-      @keyframes ltSpin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){#ltips .lt-sp{animation:none}#ltips{transition:none}}`;
+      @media (prefers-reduced-motion:reduce){#ltips{transition:none}}`;
     document.head.appendChild(s);
   }
   // 1. écran d'accueil
@@ -58,7 +58,7 @@
     if (done || splash || !document.body) return;
     css(); shown = Date.now();
     splash = document.createElement("div"); splash.id = "ltips"; splash.setAttribute("role", "status"); splash.setAttribute("aria-live", "polite");
-    splash.innerHTML = `<b>MOTORAUTO</b><span class="lt-sp" aria-hidden="true"></span><p>${next()}</p><small>${T("Touche l'écran pour passer")}</small>`;
+    splash.innerHTML = `<span class="lt-sp" aria-hidden="true"></span><b>MOTOR<i>AUTO</i></b><p>${next()}</p><small>${T("Touche l'écran pour passer")}</small>`;
     document.body.appendChild(splash);
     tick = setInterval(() => { const p = splash.querySelector("p"); if (p) p.textContent = next(); if (Date.now() - shown > 8000) hide(); }, 3500);
     splash.addEventListener("click", hide);

@@ -19,7 +19,7 @@ body.chat-page { position: fixed; left: 0; right: 0; top: 0; width: 100%; height
 
 .avatar { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--bg-elevated); border: 2px solid var(--stroke-line); }
 .avatar.sm { width: 34px; height: 34px; border-width: 1.5px; }
-.spinner { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--stroke-line); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+/* .spinner : voir css/brand-loader.css */
 
 /* ------------------------------------------------------------ colonne gauche */
 .chat-side { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: color-mix(in srgb, var(--bg-surface) 82%, transparent); border-right: 1px solid var(--stroke-line); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }

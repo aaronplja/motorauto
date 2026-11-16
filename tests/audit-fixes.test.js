@@ -168,3 +168,19 @@ ok("bouton PRO en verre, navigation compacte en dock, menu roue en verre, filtre
   assert(/max-width: 700px\)[\s\S]*grid-template-columns: minmax\(0,1fr\) minmax\(0,1fr\) auto/.test(f) && /\.side-label \{ display: none/.test(f), "filtres du catalogue : 2 rangées défilantes + marque / tri / filtres");
 });
 console.log(n + " vérifications audit OK");
+
+// ---- démarrage D2 + chargement C8 + icône noire
+ok("démarrage D2 (tracé), chargement C8 (respiration) et icône noire", () => {
+  const src = read("index.src.html");
+  assert.ok(/<style id="splash-css">[\s\S]*spDraw[\s\S]*Big Shoulders Display/.test(src), "splash : tracé + police du logo");
+  assert.ok(!/sp-line/.test(src), "plus de barre de progression dans le splash");
+  assert.ok(/href="css\/brand-loader\.css"/.test(src) && /brand-loader\.css/.test(read("chat.html")), "feuille du chargement liée (site + chat)");
+  const bl = read("css/brand-loader.css");
+  ["\\.spinner", "\\.chat-embed-spin", "\\.ptr span", "\\.skel-wrap::before", "\\.tcg-skeleton::before", "\\.ma-busy::after", "#ltips \\.lt-sp"].forEach((r) => assert.ok(new RegExp(r).test(bl), "loader : " + r));
+  assert.ok(/maBreathe/.test(bl) && /clip-path/.test(bl), "respiration en clip-path");
+  const fav = src.split("\n").filter((l) => /rel="icon"/.test(l)).join("");
+  assert.ok(/%230b0e0c/.test(fav) && /%233fbf82/.test(fav) && !/%23ef4444/.test(fav), "favicon noir/blanc/vert");
+  assert.strictEqual(JSON.parse(read("manifest.webmanifest")).background_color, "#0b0e0c");
+  const lt = read("js/loading-tips.js");
+  assert.ok(/Big Shoulders Display/.test(lt) && !/ltSpin/.test(lt), "écran d'attente : police du logo + marque");
+});

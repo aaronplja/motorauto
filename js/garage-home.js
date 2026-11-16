@@ -137,7 +137,8 @@
   let gone = false, t0 = Date.now();
   function hide() {
     if (gone) return; gone = true; const e = el(); if (!e) return;
-    const wait = Math.max(0, 600 - (Date.now() - t0));
+    const min = document.documentElement.classList.contains("splash-ran") ? 600 : 1700;   // le tracé du logo dure ~1,6 s
+    const wait = Math.max(0, min - (Date.now() - t0));
     setTimeout(() => { e.classList.add("out"); setTimeout(() => e.remove(), 520); }, wait);
   }
   setTimeout(hide, 8000);

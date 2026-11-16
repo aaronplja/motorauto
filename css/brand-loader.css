@@ -1,0 +1,50 @@
+/* ==========================================================================
+   MOTORAUTO — animation de chargement « Respiration » (C8)
+   Les deux traits de la marque (gauche : couleur du texte, droit : couleur d'accent) gonflent et se
+   dégonflent en boucle. Un seul élément, aucun SVG : on dessine les deux traits avec un clip-path et un
+   dégradé à bord oblique. Taille : --ml (hauteur de la marque, 26px par défaut).
+   S'applique à : .ma-load (utilisable partout), .spinner (salon de chat), .chat-embed-spin (salon intégré),
+   #ltips .lt-sp (écran d'attente), .ptr (tirer pour actualiser), les squelettes (.skel-wrap, .tcg-skeleton)
+   et les boutons occupés (.ma-busy).
+   ========================================================================== */
+.ma-load, .spinner, .chat-embed-spin, #ltips .lt-sp, .ptr span, .skel-wrap::before, .tcg-skeleton::before, .ma-busy::after {
+  display: block; flex: none; box-sizing: border-box;
+  width: calc(var(--ml, 26px) * .858); height: var(--ml, 26px); min-width: 0; min-height: 0;
+  margin: 0; padding: 0; border: 0 !important; border-radius: 0 !important;
+  background: linear-gradient(108deg, var(--ml-l, var(--color-ink, #fff)) 0 50%, var(--ml-r, var(--accent, #3fbf82)) 50% 100%) !important;
+  -webkit-clip-path: polygon(0% 100%, 37.86% 0%, 61.17% 0%, 23.3% 100%, 38.83% 100%, 76.7% 0%, 100% 0%, 62.14% 100%, 38.83% 100%, 23.3% 100%);
+  clip-path: polygon(0% 100%, 37.86% 0%, 61.17% 0%, 23.3% 100%, 38.83% 100%, 76.7% 0%, 100% 0%, 62.14% 100%, 38.83% 100%, 23.3% 100%);
+  animation: maBreathe 1.6s ease-in-out infinite;
+  transform-origin: 50% 60%;
+}
+@keyframes maBreathe { 0%, 100% { transform: scale(.92); opacity: .55; } 50% { transform: scale(1.08); opacity: 1; } }
+
+.spinner { --ml: 26px; }
+.chat-embed-spin { --ml: 34px; }
+#ltips .lt-sp { --ml: 40px; }
+
+/* attente d'un squelette : la marque en haut, les blocs animés dessous */
+.skel-wrap, .tcg-skeleton { position: relative; }
+.skel-wrap { padding-top: 46px; }
+.skel-wrap::before, .tcg-skeleton::before { content: ""; --ml: 26px; position: absolute; top: 4px; left: 50%; margin-left: calc(var(--ml) * -.429); z-index: 1; }
+.tcg-skeleton { padding-top: 46px; }
+
+/* tirer pour actualiser : la marque remplace l'anneau, sans rotation */
+.ptr span { --ml: 18px; animation: none; transition: opacity .2s, transform .2s; opacity: .5; transform: none !important; }
+.ptr.ready span { opacity: 1; transform: scale(1.1) !important; }
+.ptr.spin span { animation: maBreathe 1.2s ease-in-out infinite; }
+
+/* bouton occupé : la marque (couleur du texte du bouton) remplace l'anneau */
+.ma-busy::after {
+  --ml: 1.15em; position: absolute; inset: 0; margin: auto; min-width: 0 !important; min-height: 0 !important; width: calc(var(--ml) * .858); height: var(--ml);
+  background: linear-gradient(108deg, var(--on-accent, #fff) 0 50%, color-mix(in srgb, var(--on-accent, #fff) 62%, transparent) 50% 100%) !important;
+}
+.btn-ghost.ma-busy::after, .ghost.ma-busy::after { background: linear-gradient(108deg, var(--color-ink, #111) 0 50%, var(--accent, #3fbf82) 50% 100%) !important; }
+
+/* sur fond de couleur d'accent (boutons pleins), les deux traits sont de la couleur du texte du bouton */
+@media (prefers-reduced-motion: reduce) {
+  .ma-load, .spinner, .chat-embed-spin, #ltips .lt-sp, .ptr.spin span, .skel-wrap::before, .tcg-skeleton::before, .ma-busy::after { animation-duration: 3.2s; }
+}
+
+/* le texte du bouton occupé disparaît quel que soit le style du bouton (verre, plein, fantôme…) */
+html body .ma-busy.ma-busy, html body .ma-busy.ma-busy > * { color: transparent !important; text-shadow: none !important; }
