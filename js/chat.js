@@ -1063,7 +1063,7 @@
       // barre puis on donne le focus nous-mêmes. Si le focus échoue une fois, on reprend le comportement natif.
       {
         const wrap = document.querySelector(".chat-main"); let tx = 0, ty = 0, moved = false, native = false;
-        const kbGuess = () => { let v = 0; try { v = parseInt(localStorage.getItem("ma_kbh"), 10) || 0; } catch (_) {} if (!(v > 150 && v < 600)) v = Math.round(window.innerHeight * 0.38); return v + 30; };
+        const kbGuess = () => { let v = 0; try { v = parseInt(localStorage.getItem("ma_kbh"), 10) || 0; } catch (_) {} if (!(v > 150 && v < 600)) v = Math.round(window.innerHeight * 0.38); return v + 18; };
         input.addEventListener("touchstart", (e) => { const t = e.touches[0]; if (t) { tx = t.clientX; ty = t.clientY; } moved = false; }, { passive: true });
         input.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (t && (Math.abs(t.clientX - tx) > 10 || Math.abs(t.clientY - ty) > 10)) moved = true; }, { passive: true });
         input.addEventListener("touchend", (e) => {

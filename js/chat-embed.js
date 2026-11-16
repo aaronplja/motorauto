@@ -32,8 +32,8 @@
     const cs = getComputedStyle(probe), conv = de.classList.contains("chat-conv") && matchMedia("(max-width: 860px)").matches;
     r.style.setProperty("--safe-top", conv ? px(cs.paddingTop) + "px" : "0px");
     r.style.setProperty("--safe-bottom", (kbOpen ? 0 : px(cs.paddingBottom)) + "px");
-    // clavier : la saisie remonte de sa hauteur + 30 px pour la barre d'accessoires d'iOS (flèches / ✓) qui flotte au-dessus du clavier
-    r.style.setProperty("--kb", kbOpen && kbPx ? (kbPx + 30) + "px" : "0px");
+    // clavier : la saisie remonte de sa hauteur + 18 px pour la barre d'accessoires d'iOS (flèches / ✓) qui flotte au-dessus du clavier
+    r.style.setProperty("--kb", kbOpen && kbPx ? (kbPx + 18) + "px" : "0px");
   }
   new MutationObserver(() => requestAnimationFrame(sync)).observe(de, { attributes: true, attributeFilter: ["data-theme", "data-tone", "data-anim", "data-contrast", "style", "lang", "class"] });
 
