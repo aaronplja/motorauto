@@ -14,6 +14,7 @@
   --fl-shadow-sm: var(--fl-hi), 0 6px 14px -8px rgba(0,0,0,.34);
   --fl-on: color-mix(in srgb, var(--accent) 16%, transparent);
   --fl-blur: blur(18px) saturate(1.7);
+  --fl-pill: linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,.22));
 }
 :root[data-tone="dark"] {
   --fl-line: rgba(255,255,255,.11);
@@ -21,39 +22,47 @@
   --fl-shadow: var(--fl-hi), 0 14px 30px -12px rgba(0,0,0,.7);
   --fl-shadow-sm: var(--fl-hi), 0 6px 14px -8px rgba(0,0,0,.6);
   --fl-on: color-mix(in srgb, var(--accent) 24%, transparent);
+  --fl-pill: linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.05));
 }
 
-/* ---------- 1. en-tête : plus de barre, des pastilles de verre qui flottent ---------- */
-html .app-header { background: none !important; border: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
-  padding: calc(var(--safe-top, 0px) + 8px) clamp(.6rem, 2vw, 1.25rem) 4px !important; pointer-events: none; }
+/* ---------- 1. en-tête : mêmes pastilles et mêmes dimensions que dans le chat (50 px, verre, liseré, reflet) ---------- */
+html { --hb: 50px; }
+@media (max-width: 430px) { html { --hb: 44px; } }
+@media (max-width: 380px) { html { --hb: 40px; } }
+@media (max-width: 340px) { html { --hb: 34px; } }
+html .app-header { background: none !important; border: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; will-change: auto !important; transform: none !important;
+  padding: calc(var(--safe-top, 0px) + .55rem) max(.7rem, 2vw) 6px !important; pointer-events: none; }
 html .app-header::before, html .app-header::after { display: none !important; }
-html .app-header .header-bar { pointer-events: none; min-height: 0 !important; padding: 0 !important; gap: .55rem; }
-html .app-header .header-bar > * { pointer-events: auto; }
-html .app-header.scrolled { box-shadow: none !important; }
+/* pendant le défilement, une règle de performance posait un fond presque plein sur toute la barre : c'était le rectangle blanc */
+html[data-anim] .app-header, html[data-anim] .app-header.is-scrolling, html .app-header.scrolled, html .app-header.hide-up { background: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
+html .app-header .header-bar { pointer-events: none; min-height: 0 !important; padding: 0 !important; gap: .5rem; align-items: center; }
+html .app-header .header-bar > *, html .app-header .header-actions > * { pointer-events: auto; }
 
-html .brand-link { height: 46px; padding: 0 1.1rem 0 .85rem; border-radius: 999px; font-size: 1.6rem; background: var(--fl-bg); border: 1px solid var(--fl-line); box-shadow: var(--fl-shadow); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); }
-html .brand-mark { width: 26px; height: 26px; margin-right: .3rem; filter: none; }
-html .desktop-navigation { padding: 5px; gap: .1rem; border-radius: 999px; background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); }
-html .nav-link { height: 38px; padding: 0 .95rem; border-radius: 999px; border: 1px solid transparent; }
+html .brand-link, html .desktop-navigation, html .app-header .header-actions .icon-btn, html .app-header .header-actions .pilot-chip, html .app-header .header-actions .mp-chip {
+  height: var(--hb) !important; min-height: 0 !important; box-sizing: border-box; background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow) !important; -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); }
+html .brand-link { padding: 0 calc(var(--hb) * .32); border-radius: 999px; font-size: calc(var(--hb) * .44); display: inline-flex; align-items: center; min-width: 0; }
+html .brand-mark { display: none; }
+@media (min-width: 1000px) { html .brand-mark { display: block; width: 26px; height: 26px; margin-right: .3rem; filter: none; } }
+html .desktop-navigation { padding: 4px; gap: .1rem; border-radius: 999px; }
+html .nav-link { height: calc(var(--hb) - 10px); padding: 0 1rem; border-radius: 999px; border: 1px solid transparent; }
 html .nav-link:hover { background: color-mix(in srgb, #fff 22%, transparent); }
 html .nav-link.active { background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.18)); border-color: var(--fl-line); box-shadow: var(--fl-shadow-sm); color: var(--accent); }
 html[data-tone="dark"] .nav-link.active { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04)) !important; }
 
-/* actions de l'en-tête : cercles et pastille de verre */
-html .app-header .header-actions { gap: .4rem; }
-html .app-header .header-actions .icon-btn, html .app-header .header-actions .pilot-chip, html .app-header .header-actions .mp-chip {
-  background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); color: var(--color-ink); }
-html .app-header .header-actions .mp-chip { background: color-mix(in srgb, var(--accent) 80%, transparent) !important; color: var(--on-accent) !important; }
-html .app-header .header-actions .icon-btn:hover, html .app-header .header-actions .pilot-chip:hover { border-color: var(--fl-line) !important; color: var(--accent); transform: translateY(-1px); }
-html .app-header .header-actions .icon-btn:active, html .app-header .header-actions .pilot-chip:active { transform: scale(.94); }
-@media (max-width: 999px) {
-  html .app-header .header-bar { gap: .35rem; }
-  html .app-header .header-actions { gap: .2rem; flex: none; }
-  html .brand-link { height: 40px; font-size: 1.25rem; padding: 0 .8rem; min-width: 0; flex: 0 1 auto; }
-  html .brand-mark { display: none; }
-  html .app-header { padding-left: .5rem !important; padding-right: .5rem !important; }
-}
-@media (max-width: 380px) { html .brand-link { font-size: 1.1rem; padding: 0 .6rem; height: 36px; } html .app-header .header-actions { gap: .15rem; } }
+html .app-header .header-actions { gap: .4rem; flex: none; --hb: inherit; }
+@media (max-width: 999px) { html .app-header .header-actions { gap: .2rem; } html .app-header .header-bar { gap: .3rem; } html .app-header { padding-left: .5rem !important; padding-right: .5rem !important; } }
+html .app-header .header-actions .icon-btn, html .app-header .header-actions .pilot-chip.is-gear { width: var(--hb) !important; min-width: var(--hb) !important; max-width: var(--hb) !important; border-radius: 50% !important; padding: 0; }
+html .app-header .header-actions .mp-chip { background: color-mix(in srgb, var(--accent) 80%, transparent) !important; color: var(--on-accent) !important; padding: 0 calc(var(--hb) * .3) !important; font-size: calc(var(--hb) * .29); }
+html .app-header .header-actions .icon-btn, html .app-header .header-actions .pilot-chip.is-gear { color: var(--color-ink) !important; }
+html .app-header .header-actions .icon-btn:hover, html .app-header .header-actions .pilot-chip:hover { color: var(--accent) !important; transform: translateY(-1px); }
+html .app-header .header-actions .icon-btn:active, html .app-header .header-actions .pilot-chip:active { transform: scale(.92); }
+html .app-header .header-actions .icon-btn svg { width: calc(var(--hb) * .44); height: calc(var(--hb) * .44); }
+
+/* repli en descendant : chaque pastille remonte seule (un parent animé avec du flou donnait un rectangle blanc sur iOS) */
+html .app-header .brand-link, html .app-header .desktop-navigation, html .app-header .header-actions > * { transition: transform .38s cubic-bezier(.22,.9,.3,1), opacity .28s ease; }
+html .app-header.hide-up .brand-link, html .app-header.hide-up .desktop-navigation, html .app-header.hide-up .header-actions > * { transform: translateY(calc(-100% - 26px)); opacity: 0; pointer-events: none; }
+html.on-chat .app-header.hide-up .brand-link, html.on-chat .app-header.hide-up .desktop-navigation, html.on-chat .app-header.hide-up .header-actions > * { transform: none; opacity: 1; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { html .app-header .brand-link, html .app-header .desktop-navigation, html .app-header .header-actions > * { transition: none; } }
 
 /* ---------- 2. boutons : secondaires en verre, principaux en verre teinté ---------- */
 .cta-btn.btn-ghost, .btn-ghost, .btn-outline, .btn-compare-action, .btn-bookmark-action, .google-auth-btn, .ui-more-btn, .related-chip, .react-btn, .like-btn,
@@ -75,16 +84,16 @@ html .app-header .header-actions .icon-btn:active, html .app-header .header-acti
   box-shadow: inset 0 1.5px 0 rgba(255,255,255,.38), inset 0 0 16px rgba(255,255,255,.08), 0 12px 26px -12px var(--accent) !important; -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5); }
 .cta-btn.fill-btn:disabled, .btn-primary:disabled { opacity: .5; box-shadow: none !important; }
 
-/* ---------- 3. onglets et barres de sélection : une pilule de verre, l'onglet actif est une bulle ---------- */
+/* ---------- 3. onglets et barres de sélection : une pilule de verre, l'onglet actif est une pilule qui épouse la barre ---------- */
 html .toolbar-cluster { border-radius: 26px !important; padding: .9rem 1rem !important; background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow) !important; -webkit-backdrop-filter: var(--fl-blur) !important; backdrop-filter: var(--fl-blur) !important; }
-html .page-tabs { border-radius: 999px !important; padding: 5px !important; background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow) !important; -webkit-backdrop-filter: var(--fl-blur) !important; backdrop-filter: var(--fl-blur) !important; }
-html .page-tabs .page-tab { border-radius: 999px; border: 1px solid transparent; background: none; }
-html .page-tabs .page-tab.active { background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.18)) !important; border-color: var(--fl-line); box-shadow: var(--fl-shadow-sm); color: var(--accent); }
-html[data-tone="dark"] .page-tabs .page-tab.active { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04)) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 4px 10px -6px rgba(0,0,0,.6); }
-:has(> .seg-btn):not(.seg-btn) { padding: 4px; border-radius: 999px; background: var(--fl-bg); border: 1px solid var(--fl-line); box-shadow: var(--fl-shadow-sm); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); gap: 2px; }
-.seg-btn { border-color: transparent !important; box-shadow: none; background: none !important; border-radius: 999px; }
-.seg-btn.active { background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.18)) !important; border-color: var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); color: var(--accent) !important; }
-html[data-tone="dark"] .seg-btn.active { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04)) !important; }
+html .page-tabs { border-radius: 999px !important; padding: 4px !important; height: 52px; box-sizing: border-box; align-items: stretch; background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow) !important; -webkit-backdrop-filter: var(--fl-blur) !important; backdrop-filter: var(--fl-blur) !important; overflow-y: hidden; }
+html .page-tabs .page-tab, html .page-tabs.fit .page-tab { border-radius: 999px !important; border: 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important; align-self: stretch; padding-block: 0 !important; background: none !important; box-shadow: none; }
+html .page-tabs .page-tab.active, html .page-tabs.fit .page-tab.active, html .mkt-tabs .page-tab.active { background: var(--fl-pill) !important; box-shadow: var(--fl-shadow-sm), 0 0 0 1px var(--fl-line) inset; color: var(--accent); }
+html[data-tone="dark"] .page-tabs .page-tab.active, html[data-tone="dark"] .page-tabs.fit .page-tab.active { box-shadow: var(--fl-shadow-sm), 0 0 0 1px var(--fl-line) inset; }
+html .page-tabs .page-tab.has-dot::after { top: 8px; right: 12px; }
+:has(> .seg-btn):not(.seg-btn) { padding: 4px; border-radius: 999px; background: var(--fl-bg); border: 1px solid var(--fl-line); box-shadow: var(--fl-shadow-sm); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); gap: 2px; align-items: stretch; }
+.seg-btn { border-color: transparent !important; box-shadow: none; background: none !important; border-radius: 999px !important; }
+.seg-btn.active { background: var(--fl-pill) !important; border-color: var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); color: var(--accent) !important; }
 
 /* ---------- 4. champs de recherche et listes déroulantes : pilules de verre ---------- */
 input[type="search"], select, .combo-input, .custom-select { background: var(--fl-bg-soft) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); }
@@ -109,3 +118,7 @@ h1:where(:not(.app-header *, [class*="dock"] *)), h2:where(:not(.app-header *, [
 .sheet-big-title:where(:not(.app-header *, [class*="dock"] *)) { letter-spacing: .004em; line-height: 1.04; }
 .hero-stats dd:where(:not(.app-header *, [class*="dock"] *)), .sheet-kpis b:where(:not(.app-header *, [class*="dock"] *)), .sheet-stat b:where(:not(.app-header *, [class*="dock"] *)), [class*="big-stat"] b:where(:not(.app-header *, [class*="dock"] *)) { letter-spacing: .008em; }
 .page-title:where(:not(.app-header *, [class*="dock"] *)) { font-size: clamp(1.8rem, 4.6vw, 2.9rem); }
+
+/* ---------- chat intégré : la zone sous les pastilles a exactement le fond du chat (plus de bandeau d'une autre teinte) ---------- */
+html.on-chat, html.on-chat body { background: var(--bg-core) !important; }
+html.on-chat .chat-embed { top: var(--hdr-h, 66px); }

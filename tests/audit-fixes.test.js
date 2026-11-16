@@ -152,4 +152,12 @@ ok("style flottant : verre de la barre du bas sur tout le site (en-tête en past
   assert(!/\.toolbar-cluster[^{]*\{[^}]*border-radius: 999px/.test(f), "le panneau de filtres n'est pas une bulle");
   assert(/letter-spacing: \.004em/.test(f) && /line-height: 1\.1/.test(f), "serif : crénage et interligne détendus");
 });
+ok("barre du haut : mêmes dimensions que le chat (50 px), pas de rectangle au repli, onglet actif = pilule qui épouse la barre", () => {
+  const f = read("css/float.css");
+  assert(/html \{ --hb: 50px; \}/.test(f), "pastilles de 50 px comme dans le chat");
+  assert(/html\[data-anim\] \.app-header\.is-scrolling[^{]*\{[^}]*background: none !important/.test(f), "plus de fond plein pendant le défilement");
+  assert(/\.app-header\.hide-up \.brand-link/.test(f) && /transform: none !important;/.test(f), "repli pastille par pastille, sans parent animé");
+  assert(/\.page-tabs\.fit \.page-tab \{ border-radius: 999px !important/.test(f) && /align-self: stretch/.test(f), "onglet actif : pilule pleine hauteur de la barre");
+  assert(/html\.on-chat, html\.on-chat body \{ background: var\(--bg-core\)/.test(f), "fond du chat sans bandeau");
+});
 console.log(n + " vérifications audit OK");
