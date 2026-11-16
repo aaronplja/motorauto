@@ -1,0 +1,111 @@
+/* ==========================================================================
+   MOTORAUTO — style « flottant » unifié : la matière de la barre du bas (verre translucide, liseré clair,
+   reflet intérieur, ombre douce) appliquée à tout le site — en-tête en pastilles, boutons, retours, onglets, champs de recherche.
+   Chargé en dernier. Tout passe par les variables du thème (clair / sombre / 16 ambiances).
+   Perf : le flou (backdrop-filter) n'est posé que sur les éléments peu nombreux (en-tête, onglets, retours, fenêtres) ;
+   les boutons répétés (listes, puces) gardent l'aspect verre sans flou.
+   ========================================================================== */
+:root {
+  --fl-bg: color-mix(in srgb, var(--bg-surface) 46%, transparent);
+  --fl-bg-soft: color-mix(in srgb, var(--bg-surface) 70%, transparent);
+  --fl-line: color-mix(in srgb, #fff 32%, transparent);
+  --fl-hi: inset 0 1.5px 0 rgba(255,255,255,.5), inset 0 0 18px rgba(255,255,255,.07);
+  --fl-shadow: var(--fl-hi), 0 12px 28px -12px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.1);
+  --fl-shadow-sm: var(--fl-hi), 0 6px 14px -8px rgba(0,0,0,.34);
+  --fl-on: color-mix(in srgb, var(--accent) 16%, transparent);
+  --fl-blur: blur(18px) saturate(1.7);
+}
+:root[data-tone="dark"] {
+  --fl-line: rgba(255,255,255,.11);
+  --fl-hi: inset 0 1px 0 rgba(255,255,255,.12);
+  --fl-shadow: var(--fl-hi), 0 14px 30px -12px rgba(0,0,0,.7);
+  --fl-shadow-sm: var(--fl-hi), 0 6px 14px -8px rgba(0,0,0,.6);
+  --fl-on: color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+/* ---------- 1. en-tête : plus de barre, des pastilles de verre qui flottent ---------- */
+html .app-header { background: none !important; border: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  padding: calc(var(--safe-top, 0px) + 8px) clamp(.6rem, 2vw, 1.25rem) 4px !important; pointer-events: none; }
+html .app-header::before, html .app-header::after { display: none !important; }
+html .app-header .header-bar { pointer-events: none; min-height: 0 !important; padding: 0 !important; gap: .55rem; }
+html .app-header .header-bar > * { pointer-events: auto; }
+html .app-header.scrolled { box-shadow: none !important; }
+
+html .brand-link { height: 46px; padding: 0 1.1rem 0 .85rem; border-radius: 999px; font-size: 1.6rem; background: var(--fl-bg); border: 1px solid var(--fl-line); box-shadow: var(--fl-shadow); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); }
+html .brand-mark { width: 26px; height: 26px; margin-right: .3rem; filter: none; }
+html .desktop-navigation { padding: 5px; gap: .1rem; border-radius: 999px; background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); }
+html .nav-link { height: 38px; padding: 0 .95rem; border-radius: 999px; border: 1px solid transparent; }
+html .nav-link:hover { background: color-mix(in srgb, #fff 22%, transparent); }
+html .nav-link.active { background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.18)); border-color: var(--fl-line); box-shadow: var(--fl-shadow-sm); color: var(--accent); }
+html[data-tone="dark"] .nav-link.active { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04)) !important; }
+
+/* actions de l'en-tête : cercles et pastille de verre */
+html .app-header .header-actions { gap: .4rem; }
+html .app-header .header-actions .icon-btn, html .app-header .header-actions .pilot-chip, html .app-header .header-actions .mp-chip {
+  background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); color: var(--color-ink); }
+html .app-header .header-actions .mp-chip { background: color-mix(in srgb, var(--accent) 80%, transparent) !important; color: var(--on-accent) !important; }
+html .app-header .header-actions .icon-btn:hover, html .app-header .header-actions .pilot-chip:hover { border-color: var(--fl-line) !important; color: var(--accent); transform: translateY(-1px); }
+html .app-header .header-actions .icon-btn:active, html .app-header .header-actions .pilot-chip:active { transform: scale(.94); }
+@media (max-width: 999px) {
+  html .app-header .header-bar { gap: .35rem; }
+  html .app-header .header-actions { gap: .2rem; flex: none; }
+  html .brand-link { height: 40px; font-size: 1.25rem; padding: 0 .8rem; min-width: 0; flex: 0 1 auto; }
+  html .brand-mark { display: none; }
+  html .app-header { padding-left: .5rem !important; padding-right: .5rem !important; }
+}
+@media (max-width: 380px) { html .brand-link { font-size: 1.1rem; padding: 0 .6rem; height: 36px; } html .app-header .header-actions { gap: .15rem; } }
+
+/* ---------- 2. boutons : secondaires en verre, principaux en verre teinté ---------- */
+.cta-btn.btn-ghost, .btn-ghost, .btn-outline, .btn-compare-action, .btn-bookmark-action, .google-auth-btn, .ui-more-btn, .related-chip, .react-btn, .like-btn,
+.chip, .filter-pill, .quick-chip, .mkt-chip, .bs-chip, .page-btn, .seg-btn, .phase-pill-btn, .dialog-tab-btn, .pro-tab, .guide-help, .secondary-destructive-btn {
+  background: var(--fl-bg-soft) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); transition: transform .25s var(--dock-spring, ease), box-shadow .25s, background .25s, color .2s, border-color .2s; }
+.icon-btn:not(.app-header .icon-btn), .dialog-close-btn, .back-link, .play-back, .link-more, a.mp-chip:not(.app-header .mp-chip) {
+  background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); }
+.back-link, .play-back { border-radius: 999px; padding: .45rem 1rem; display: inline-flex; align-items: center; gap: .4rem; text-decoration: none; }
+.cta-btn.btn-ghost:hover, .btn-ghost:hover, .chip:hover, .filter-pill:hover, .bs-chip:hover, .icon-btn:hover, .back-link:hover, .play-back:hover { transform: translateY(-1px); box-shadow: var(--fl-shadow); }
+.cta-btn:active, .btn-ghost:active, .chip:active, .filter-pill:active, .bs-chip:active, .icon-btn:active, .back-link:active, .play-back:active { transform: scale(.96); }
+
+/* états « actif / sélectionné » : verre teinté de la couleur d'accent */
+.seg-btn.active, .bs-chip.on, .chip.active, .filter-pill.active, .mkt-chip.on, .page-btn.active, .dialog-tab-btn.active, .phase-pill-btn.active, .pro-tab.active, button.on:not(.icon-btn) {
+  background: var(--fl-on) !important; color: var(--accent) !important; border-color: color-mix(in srgb, var(--accent) 38%, var(--fl-line)) !important; }
+
+/* boutons principaux : accent translucide, même liseré et reflet */
+.cta-btn.fill-btn, .btn-primary, .btn.primary, button.fill-btn, a.fill-btn {
+  background: color-mix(in srgb, var(--accent) 86%, transparent) !important; color: var(--on-accent) !important; border: 1px solid color-mix(in srgb, #fff 30%, transparent) !important;
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.38), inset 0 0 16px rgba(255,255,255,.08), 0 12px 26px -12px var(--accent) !important; -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5); }
+.cta-btn.fill-btn:disabled, .btn-primary:disabled { opacity: .5; box-shadow: none !important; }
+
+/* ---------- 3. onglets et barres de sélection : une pilule de verre, l'onglet actif est une bulle ---------- */
+html .toolbar-cluster { border-radius: 26px !important; padding: .9rem 1rem !important; background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow) !important; -webkit-backdrop-filter: var(--fl-blur) !important; backdrop-filter: var(--fl-blur) !important; }
+html .page-tabs { border-radius: 999px !important; padding: 5px !important; background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow) !important; -webkit-backdrop-filter: var(--fl-blur) !important; backdrop-filter: var(--fl-blur) !important; }
+html .page-tabs .page-tab { border-radius: 999px; border: 1px solid transparent; background: none; }
+html .page-tabs .page-tab.active { background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.18)) !important; border-color: var(--fl-line); box-shadow: var(--fl-shadow-sm); color: var(--accent); }
+html[data-tone="dark"] .page-tabs .page-tab.active { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04)) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 4px 10px -6px rgba(0,0,0,.6); }
+:has(> .seg-btn):not(.seg-btn) { padding: 4px; border-radius: 999px; background: var(--fl-bg); border: 1px solid var(--fl-line); box-shadow: var(--fl-shadow-sm); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); gap: 2px; }
+.seg-btn { border-color: transparent !important; box-shadow: none; background: none !important; border-radius: 999px; }
+.seg-btn.active { background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.18)) !important; border-color: var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); color: var(--accent) !important; }
+html[data-tone="dark"] .seg-btn.active { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04)) !important; }
+
+/* ---------- 4. champs de recherche et listes déroulantes : pilules de verre ---------- */
+input[type="search"], select, .combo-input, .custom-select { background: var(--fl-bg-soft) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); }
+input[type="search"]:focus, select:focus, .combo-input:focus { border-color: var(--accent) !important; box-shadow: var(--fl-shadow-sm), 0 0 0 3px var(--glow-soft); }
+.command-search-wrapper, .spot-field { box-shadow: var(--fl-shadow) !important; }
+
+/* ---------- repli / accessibilité ---------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html .brand-link, html .desktop-navigation, html .page-tabs, html .toolbar-cluster, html .app-header .header-actions .icon-btn, html .app-header .header-actions .pilot-chip, .back-link, .play-back, .icon-btn, .dialog-close-btn { background: var(--bg-surface) !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  html .brand-link, html .desktop-navigation, html .page-tabs, html .toolbar-cluster, html .app-header .header-actions > *, .back-link, .play-back, .icon-btn, .dialog-close-btn { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: var(--bg-surface) !important; }
+}
+@media (prefers-reduced-motion: reduce) { .cta-btn, .chip, .icon-btn { transition: none !important; } }
+
+/* ---------- 5. serif (Instrument Serif) : moins étiré vers le haut ---------- */
+/* la police est étroite et haute : on enlève le crénage serré, on aère l'interligne et on réduit un peu les très grands corps */
+h1:where(:not(.app-header *, [class*="dock"] *)), h2:where(:not(.app-header *, [class*="dock"] *)), h3:where(:not(.app-header *, [class*="dock"] *)),
+.page-title:where(:not(.app-header *, [class*="dock"] *)), .section-title:where(:not(.app-header *, [class*="dock"] *)), .dialog-title:where(:not(.app-header *, [class*="dock"] *)),
+.cta-copy h2:where(:not(.app-header *, [class*="dock"] *)), .bento-tile b:where(:not(.app-header *, [class*="dock"] *)) { letter-spacing: .004em; line-height: 1.1; word-spacing: .03em; }
+.hero-heroic-title:where(:not(.app-header *, [class*="dock"] *)) { letter-spacing: .002em; line-height: 1.06; font-size: clamp(2.5rem, 6.4vw, 4.9rem); }
+.sheet-big-title:where(:not(.app-header *, [class*="dock"] *)) { letter-spacing: .004em; line-height: 1.04; }
+.hero-stats dd:where(:not(.app-header *, [class*="dock"] *)), .sheet-kpis b:where(:not(.app-header *, [class*="dock"] *)), .sheet-stat b:where(:not(.app-header *, [class*="dock"] *)), [class*="big-stat"] b:where(:not(.app-header *, [class*="dock"] *)) { letter-spacing: .008em; }
+.page-title:where(:not(.app-header *, [class*="dock"] *)) { font-size: clamp(1.8rem, 4.6vw, 2.9rem); }

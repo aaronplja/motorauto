@@ -144,4 +144,12 @@ ok("croix et boutons : croix dessinées automatiquement, barre du haut à hauteu
   assert(/x-drawn/.test(read("js/a11y.js")) && /\.x-drawn::before/.test(read("css/base.css")));
   assert(/--hb: 40px/.test(read("css/refonte.css")) && /spot-field input::-webkit-search-cancel-button/.test(read("css/refonte.css")));
 });
+ok("style flottant : verre de la barre du bas sur tout le site (en-tête en pastilles, boutons, retours, onglets), serif moins étiré", () => {
+  const f = read("css/float.css"), h = read("index.src.html");
+  assert(/css\/float\.css/.test(h) && h.indexOf("css/float.css") > h.indexOf("css/themes-studio.css"), "float.css chargé en dernier");
+  assert(/\.brand-link[^}]*backdrop-filter/.test(f) && /\.desktop-navigation[^}]*backdrop-filter/.test(f) && /\.back-link/.test(f) && /\.play-back/.test(f) && /\.page-tabs/.test(f) && /\.seg-btn/.test(f), "pastilles, retours et onglets en verre");
+  assert(/prefers-reduced-transparency/.test(f) && /@supports not/.test(f), "repli sans transparence");
+  assert(!/\.toolbar-cluster[^{]*\{[^}]*border-radius: 999px/.test(f), "le panneau de filtres n'est pas une bulle");
+  assert(/letter-spacing: \.004em/.test(f) && /line-height: 1\.1/.test(f), "serif : crénage et interligne détendus");
+});
 console.log(n + " vérifications audit OK");
