@@ -11,7 +11,7 @@
   const card = (id) => window.MACards.cardObj(id);
   const mini = (id, extra) => { const c = card(id); return c ? window.MACards.cardHtml(c, { cls: "tcg-mini " + (extra || "") }) : `<span class="wish-chip">carte retirée</span>`; };
   const name = (id) => { const c = card(id); return c ? String(c.model).replace(/\s*\(.*$/, "") : id; };
-  const dm = (uid) => "chat.html#dm/" + encodeURIComponent(uid);
+  const dm = (uid) => "#/chat/dm/" + encodeURIComponent(uid);
 
   async function load(force) {
     if (!C.user) return;

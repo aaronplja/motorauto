@@ -219,3 +219,8 @@ body:has(#chat-app:not([data-view="list"])) #mobile-touch-bar { display: none !i
 /* le style injecté par chat-plus.js ne doit pas déformer le bouton rond */
 .conv-head .cp-sbtn.fl-btn { border-radius: 50% !important; margin: 0 !important; width: 50px; height: 50px; padding: 0; font-size: 1rem; }
 .composer textarea::placeholder { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* intégré au site (#/chat) : l'en-tête et la barre du bas sont ceux du site, pas ceux de cette page */
+.embed .side-head { display: none !important; }
+.embed .side-search { margin-top: .85rem; }
+.embed .chat-side { padding-top: 0; }

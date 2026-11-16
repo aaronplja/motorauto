@@ -26,7 +26,7 @@
       <div class="mk-body"><span class="mk-meta">${esc(KINDS[l.kind] || "")}${l.status === "sold" ? " · terminé" : ""}</span><h3>${esc(l.title)}</h3>${l.price > 0 ? `<span class="mk-price">${Number(l.price).toLocaleString("fr-FR")} €</span>` : ""}
       <p class="mk-meta">${esc(String(l.desc || "").slice(0, 160))}</p><span class="mk-meta">par <a href="#/pilote/${encodeURIComponent(l.uid)}">${esc(l.name || "Pilote")}</a> · ${window.MACommunity ? window.MACommunity.ago(tsMs(l.createdAt)) : ""}</span>
       <div class="mk-actions">${own ? `${l.status === "open" ? `<button type="button" class="cta-btn btn-ghost compact-btn" data-mk="sold" data-id="${esc(l.id)}">Marquer terminé</button>` : ""}<button type="button" class="secondary-destructive-btn" data-mk="del" data-id="${esc(l.id)}">Supprimer</button>`
-        : `<a class="cta-btn fill-btn compact-btn" href="chat.html#dm/${encodeURIComponent(l.uid)}">✉ Contacter</a><button type="button" class="cta-btn btn-ghost compact-btn" data-mk="report" data-id="${esc(l.id)}">Signaler</button>${C.isAdmin ? `<button type="button" class="secondary-destructive-btn" data-mk="del" data-id="${esc(l.id)}">Retirer</button>` : ""}`}</div></div></article>`;
+        : `<a class="cta-btn fill-btn compact-btn" href="#/chat/dm/${encodeURIComponent(l.uid)}">✉ Contacter</a><button type="button" class="cta-btn btn-ghost compact-btn" data-mk="report" data-id="${esc(l.id)}">Signaler</button>${C.isAdmin ? `<button type="button" class="secondary-destructive-btn" data-mk="del" data-id="${esc(l.id)}">Retirer</button>` : ""}`}</div></div></article>`;
   }
   async function render() {
     const root = document.getElementById("market-root"); if (!root) return;

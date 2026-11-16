@@ -118,7 +118,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <a class="nav-link active" href="#/" data-nav="home" title="Accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>Accueil</span></a>
         <a class="nav-link" href="#/catalogue" data-nav="catalog" title="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg><span>Catalogue</span></a>
         <a class="nav-link" href="#/jouer" data-nav="play" title="Jouer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/><path d="m7.5 12.5 2 2 3.5-4"/></svg><span>Jouer</span></a>
-        <a class="nav-link" href="chat.html" data-nav="chat" title="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span><span id="header-chat-badge" class="unread-dot-indicator" style="display:none"></span></a>
+        <a class="nav-link" href="#/chat" data-nav="chat" title="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span><span id="header-chat-badge" class="unread-dot-indicator" style="display:none"></span></a>
         <a class="nav-link" href="#/pilotes" data-nav="pilotes" title="Pilotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 14.2V21M3.4 10.5l6.4 1M20.6 10.5l-6.4 1"/></svg><span>Pilotes</span></a>
       </nav>
 
@@ -270,7 +270,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       </div>
       <div class="cta-actions">
         <button type="button" class="cta-btn fill-btn" data-action="open-auth">Créer mon compte</button>
-        <a class="cta-btn btn-ghost" href="chat.html">Ouvrir le salon</a>
+        <a class="cta-btn btn-ghost" href="#/chat">Ouvrir le salon</a>
       </div>
     </div>
   </section>
@@ -373,7 +373,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <h1 class="page-title">La communauté</h1>
           <p class="page-sub">Les pilotes, leurs voitures, les sorties et l'actualité du site.</p>
         </div>
-        <div class="page-head-actions"><a class="cta-btn fill-btn compact-btn" href="chat.html">💬 Ouvrir le salon</a></div>
+        <div class="page-head-actions"><a class="cta-btn fill-btn compact-btn" href="#/chat">💬 Ouvrir le salon</a></div>
       </header>
     <nav data-section="pilotes"></nav>
     <section class="tab-panel" data-tab="hub-pilotes" hidden><div id="comm-hub-pilotes"></div></section>
@@ -638,7 +638,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       <div hidden aria-hidden="true"><span id="adm-stat-cars"></span><span id="adm-stat-users"></span><span id="adm-stat-laps"></span><span id="adm-stat-msgs"></span><span id="adm-stat-sg"></span><span id="adm-stat-rp"></span></div>
     </section>
     <section class="tab-panel" data-tab="moderation" hidden>
-      <details class="adm-sec" open><summary><span class="adm-t">Messages signalés du salon</span></summary><div class="adm-body"><div class="admin-list" id="admin-rp-list"></div></div></details><details class="adm-sec" open><summary><span class="adm-t">Propositions de la communauté</span></summary><div class="adm-body"><div class="admin-list" id="admin-sg-list"></div></div></details><details class="adm-sec" open><summary><span class="adm-t">Messages reçus (contact)</span></summary><div class="adm-body"><div class="admin-list" id="admin-msg-list"></div></div></details><details class="adm-sec"><summary><span class="adm-t">Pilotes en sourdine</span></summary><div class="adm-body"><div class="admin-list" id="admin-mute-list"></div></div></details><details class="adm-sec"><summary><span class="adm-t">Raccourcis</span></summary><div class="adm-body"><div class="admin-quick"><a class="cta-btn btn-ghost" href="#/communaute/pilotes">Gérer les pilotes</a><a class="cta-btn btn-ghost" href="#/classement/chronos">Modérer les chronos</a><a class="cta-btn btn-ghost" href="chat.html">Modérer le salon &amp; canaux</a></div></div></details><details class="adm-sec"><summary><span class="adm-t">Réponses toutes prêtes</span></summary><div class="adm-body"><p class="lap-meta">Elles apparaissent dans le menu « Réponse rapide » de la messagerie, pour répondre en un clic aux demandes fréquentes.</p><div id="canned-root"></div></div></details>
+      <details class="adm-sec" open><summary><span class="adm-t">Messages signalés du salon</span></summary><div class="adm-body"><div class="admin-list" id="admin-rp-list"></div></div></details><details class="adm-sec" open><summary><span class="adm-t">Propositions de la communauté</span></summary><div class="adm-body"><div class="admin-list" id="admin-sg-list"></div></div></details><details class="adm-sec" open><summary><span class="adm-t">Messages reçus (contact)</span></summary><div class="adm-body"><div class="admin-list" id="admin-msg-list"></div></div></details><details class="adm-sec"><summary><span class="adm-t">Pilotes en sourdine</span></summary><div class="adm-body"><div class="admin-list" id="admin-mute-list"></div></div></details><details class="adm-sec"><summary><span class="adm-t">Raccourcis</span></summary><div class="adm-body"><div class="admin-quick"><a class="cta-btn btn-ghost" href="#/communaute/pilotes">Gérer les pilotes</a><a class="cta-btn btn-ghost" href="#/classement/chronos">Modérer les chronos</a><a class="cta-btn btn-ghost" href="#/chat">Modérer le salon &amp; canaux</a></div></div></details><details class="adm-sec"><summary><span class="adm-t">Réponses toutes prêtes</span></summary><div class="adm-body"><p class="lap-meta">Elles apparaissent dans le menu « Réponse rapide » de la messagerie, pour répondre en un clic aux demandes fréquentes.</p><div id="canned-root"></div></div></details>
     </section>
     <section class="tab-panel" data-tab="catalogue" hidden>
       <div class="admin-quick">
@@ -930,6 +930,10 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   </div>
   </div>
 
+  <div class="page" id="page-chat" data-page="chat">
+    <div class="chat-embed" id="chat-embed"><div class="chat-embed-load" id="chat-embed-load" role="status" aria-live="polite"><span class="chat-embed-spin"></span></div></div>
+  </div>
+
   <div class="page" id="page-contact" data-page="contact">
   <section class="stage-shell page-wrap contact-section" id="contact">
     <div class="contact-card">
@@ -988,7 +992,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <a href="#/jouer">Jouer</a>
           <a href="#/communaute">Communauté</a>
           <a href="#/classement">Classement</a>
-          <a href="chat.html">Salon</a>
+          <a href="#/chat">Salon</a>
           <a href="#/contact">Contact</a>
           <a href="#/nouveautes">Nouveautés</a>
           <a href="#/legal/mentions">Mentions légales</a>
@@ -1012,7 +1016,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <a class="touch-bar-item active" href="#/" data-touch="home" aria-label="Accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>Accueil</span></a>
     <a class="touch-bar-item" href="#/catalogue" data-touch="catalog" aria-label="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg><span>Catalogue</span></a>
     <a class="touch-bar-item touch-bar-highlight" href="#/jouer" data-touch="play" aria-label="Jouer"><i class="touch-dot" id="touch-play-dot" hidden></i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/><path d="m7.5 12.5 2 2 3.5-4"/></svg><span>Jouer</span></a>
-    <a class="touch-bar-item" href="chat.html" data-touch="chat" aria-label="Chat"><i class="touch-dot" id="touch-chat-dot" hidden></i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a>
+    <a class="touch-bar-item" href="#/chat" data-touch="chat" aria-label="Chat"><i class="touch-dot" id="touch-chat-dot" hidden></i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a>
     <a class="touch-bar-item" href="#/pilotes" data-touch="pilotes" aria-label="Pilotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 14.2V21M3.4 10.5l6.4 1M20.6 10.5l-6.4 1"/></svg><span>Pilotes</span></a>
   </nav>
 
@@ -1562,6 +1566,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/pro-cats.js"></script>
   <script defer src="js/pro.js"></script>
   <script defer src="js/news.js"></script>
+  <script defer src="js/chat-embed.js"></script>
   <script defer src="js/blocks.js"></script>
   <script defer src="js/native.js"></script>
   <script defer src="js/share.js"></script>

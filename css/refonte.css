@@ -505,3 +505,19 @@ body:has(.me-layer.on) .ed-fab { display: none; }
 @media (max-width: 380px) { .app-header .header-actions { --hb: 34px; } .app-header .header-actions .mp-chip { padding: 0 .55rem !important; font-size: .68rem; } }
 /* profil : la roue Réglages est une vraie pastille ronde alignée avec les autres boutons */
 .pub-gear { border-radius: 50%; }
+
+/* ---------- Chat intégré (#/chat) : une page comme les autres ---------- */
+#page-chat.page-on { display: block; animation: none !important; padding: 0; }
+.chat-embed { position: fixed; left: 0; right: 0; top: var(--hdr-h, 64px); bottom: 0; z-index: 5; background: var(--bg-core); }
+.chat-embed iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--bg-core); }
+.chat-embed-load { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; background: var(--bg-core); }
+.chat-embed-load[hidden] { display: none; }
+.chat-embed-spin { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--stroke-line); border-top-color: var(--accent); animation: chatSpin .8s linear infinite; }
+@keyframes chatSpin { to { transform: rotate(360deg); } }
+html.on-chat .site-footer { display: none; }
+html.on-chat, html.on-chat body { overflow: hidden; }
+html.on-chat .app-header { transform: none !important; opacity: 1 !important; }
+@media (max-width: 999px) { html.chat-conv #mobile-touch-bar { display: none !important; } }
+@media (max-width: 860px) { html.chat-conv .app-header { display: none !important; } html.chat-conv .chat-embed { top: 0; } }
+/* sur le Chat : pas de boutons flottants par-dessus la messagerie */
+html.on-chat .fab-pack, html.on-chat .ed-fab { display: none !important; }

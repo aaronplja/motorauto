@@ -128,12 +128,15 @@ ok("chat : nouvelle interface (chat3.css) avec onglets Tout / Canaux / Privés, 
   assert(/data-tab="all"[\s\S]*data-tab="channels"[\s\S]*data-tab="dms"/.test(h) && /data-grp="dms"/.test(h));
   assert(/\[data-grp="dms"\]/.test(c) && /@media \(max-width: 860px\)/.test(c));
 });
-ok("chat v3.1 : en-tête / recherche / retour / saisie flottants (verre du dock), dock du bas sur la liste, nom cliquable, bulles avec heure", () => {
-  const h = read("chat.html"), c = read("css/chat3.css"), g = read("js/chatglass.js"), cp = read("js/chat-plus.js"), ch = read("js/chat.js");
-  assert(/id="mobile-touch-bar"/.test(h) && /css\/dock\.css/.test(h) && /js\/glassbar\.js/.test(h), "dock du bas dans la page chat");
-  assert(/body:has\(#chat-app:not\(\[data-view="list"\]\)\) #mobile-touch-bar \{ display: none/.test(c), "dock masqué dans une conversation");
+ok("chat v3.2 : page du site (#/chat) intégrée sans rechargement, en-tête flottant, nom cliquable, bulles avec heure", () => {
+  const h = read("chat.html"), c = read("css/chat3.css"), g = read("js/chatglass.js"), cp = read("js/chat-plus.js"), ch = read("js/chat.js"), ce = read("js/chat-embed.js"), rt = read("js/router.js"), ix = read("index.src.html");
+  assert(/name: "chat", re:/.test(rt) && /chat: "page-chat"/.test(rt) && /chat: "chat"/.test(rt), "route #/chat");
+  assert(/id="page-chat"/.test(ix) && /js\/chat-embed\.js/.test(ix) && /data-nav="chat"/.test(ix) && !/href="chat\.html"/.test(ix), "page + liens vers #/chat");
+  assert(/location\.replace\("index\.html#\/chat"/.test(h) && !/id="mobile-touch-bar"/.test(h), "chat.html seul → redirigé ; plus de dock en double");
+  assert(/chat-view/.test(ch) && /chat-ready/.test(ch) && /chat-conv/.test(ce) && /on-chat/.test(ce), "la page parente suit la vue (liste / conversation)");
+  assert(/html\.chat-conv \.app-header/.test(read("css/refonte.css")), "en-tête masqué dans une conversation (mobile)");
   assert(/id="conv-pill"/.test(h) && /class="back-list fl-btn"/.test(h) && /--fl-bg/.test(c) && /\.compose-wrap \{ position: absolute/.test(c), "pilule + boutons + saisie flottants");
-  assert(/location\.href = "index\.html\?pilot="/.test(g) && /conv-pill/.test(g), "toucher le nom ouvre le profil");
+  assert(/chat-nav/.test(g) && /conv-pill/.test(g), "toucher le nom ouvre le profil");
   assert(/LOUPE/.test(cp) && !/textContent = "🔍"/.test(cp), "loupe dessinée, plus d'emoji");
   assert(/class="b-time"/.test(ch) && /class="msg-meta"/.test(ch), "heure dans la bulle, pseudo + admin + titre dans la bulle");
 });

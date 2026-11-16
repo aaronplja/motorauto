@@ -360,6 +360,7 @@
       if (!n.link) return;
       const [page, hash] = n.link.split("#");
       const here = location.pathname.split("/").pop() || "index.html";
+      if (page === "chat.html" && here !== "chat.html") { location.hash = "#/chat" + (hash ? "/" + hash : ""); return; }
       if (hash !== undefined && page === here) { location.hash = "#" + hash; return; }
       location.href = n.link;
     }

@@ -54,7 +54,9 @@
   const app = $("chat-app");
   const scroller = $("chat-messages-container");
 
-  function setView(v) { app.dataset.view = v; state.view = v; }
+  function setView(v) { app.dataset.view = v; state.view = v; tell({ ma: "chat-view", view: v }); }
+  // la page est intégrée au site (#/chat) : on prévient la page parente (vue affichée, prête, navigation)
+  function tell(m) { try { if (window.parent && window.parent !== window) window.parent.postMessage(m, location.origin); } catch (_) { /* hors cadre */ } }
 
   // ------------------------------------------------------------------ routage
   function parseHash() {
@@ -791,7 +793,7 @@
   }
   async function onUser(user) {
     state.user = user;
-    $("chat-loading").hidden = true;
+    $("chat-loading").hidden = true; tell({ ma: "chat-ready" });
     if (!user) {
       stopSub(); MA.unread.stop(); MA.notif.stop(); state.conv = null;
       if (state.unsubConvs) { state.unsubConvs(); state.unsubConvs = null; }
@@ -928,7 +930,7 @@
         case "delete-msg": deleteMessage(d.id); break;
         case "block-user": if (window.MABlocks && confirm("Bloquer " + (d.name || "ce pilote") + " ? Tu ne verras plus ses messages. Tu peux le débloquer depuis son profil.")) { window.MABlocks.toggle(d.uid).then(() => { MA.toast((d.name || "Pilote") + " est bloqué.", "ok"); }); } break;
         case "report-msg": openReport(d.id); document.querySelectorAll(".msg.show-actions").forEach((n) => n.classList.remove("show-actions")); break;
-        case "profile": location.href = "index.html?pilot=" + encodeURIComponent(d.uid); break;
+        case "profile": if (window.parent !== window) tell({ ma: "chat-nav", hash: "#/pilote/" + encodeURIComponent(d.uid) }); else location.href = "index.html?pilot=" + encodeURIComponent(d.uid); break;
         case "lightbox":
           $("lightbox-img-src").src = d.src; $("lightbox-download-btn").href = d.src; $("photo-lightbox-modal").hidden = false; break;
       }

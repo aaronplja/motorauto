@@ -19,7 +19,7 @@
   // toucher le nom en haut d'une conversation privée ouvre le profil du pilote
   const pill = document.getElementById("conv-pill");
   if (pill) {
-    const go = () => { const c = window.MAChatCtl && window.MAChatCtl.conv && window.MAChatCtl.conv(); if (c && c.type === "private") location.href = "index.html?pilot=" + encodeURIComponent(c.id); };
+    const go = () => { const c = window.MAChatCtl && window.MAChatCtl.conv && window.MAChatCtl.conv(); if (!c || c.type !== "private") return; if (window.parent !== window) window.parent.postMessage({ ma: "chat-nav", hash: "#/pilote/" + encodeURIComponent(c.id) }, location.origin); else location.href = "index.html?pilot=" + encodeURIComponent(c.id); };
     pill.addEventListener("click", go);
     pill.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && pill.dataset.kind === "private") { e.preventDefault(); go(); } });
     new MutationObserver(() => { const p = pill.dataset.kind === "private"; pill.setAttribute("role", p ? "button" : "group"); if (p) { pill.tabIndex = 0; pill.setAttribute("aria-label", "Voir le profil"); } else { pill.removeAttribute("tabindex"); pill.removeAttribute("aria-label"); } }).observe(pill, { attributes: true, attributeFilter: ["data-kind"] });

@@ -97,7 +97,7 @@
     const vice = club.viceUid ? `<p class="lap-meta">🛡 Modérateur : <b>${esc(club.viceName || "Pilote")}</b></p>` : "";
     const pres = ms.find((m) => m.uid === club.ownerUid);
     let h = `<div class="club-chatbox"><h3 class="panel-section-title">Canal de discussion</h3><p class="lap-meta">👑 Président : <b>${esc((pres && pres.name) || "Pilote")}</b></p>${vice}`;
-    if (club.chatEnabled) h += `<a class="cta-btn fill-btn compact-btn" href="chat.html#club/${encodeURIComponent(club.id)}">💬 ${mem || C.isAdmin ? "Ouvrir le canal" : "Réservé aux membres"}</a><p class="lap-meta">Visible par les membres du club et par les administrateurs (modération).</p>`;
+    if (club.chatEnabled) h += `<a class="cta-btn fill-btn compact-btn" href="#/chat/club/${encodeURIComponent(club.id)}">💬 ${mem || C.isAdmin ? "Ouvrir le canal" : "Réservé aux membres"}</a><p class="lap-meta">Visible par les membres du club et par les administrateurs (modération).</p>`;
     else if (owner) h += `<button type="button" class="cta-btn fill-btn compact-btn" data-club-chat-create="${esc(club.id)}">Créer le canal de discussion du club</button><p class="lap-meta">Un canal privé réservé aux membres, que tu modères.</p>`;
     else h += `<p class="lap-meta">Le président n'a pas encore créé de canal de discussion.</p>`;
     if (owner) h += `<div class="input-stack"><label for="club-vice">Modérateur du club</label><select id="club-vice" class="custom-select" data-club-vice="${esc(club.id)}"><option value="">Aucun</option>${ms.filter((m) => m.uid !== club.ownerUid).map((m) => `<option value="${esc(m.uid)}" ${club.viceUid === m.uid ? "selected" : ""}>${esc(m.name || "Pilote")}</option>`).join("")}</select></div>`;

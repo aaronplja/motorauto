@@ -10,7 +10,7 @@
       ${tile("#/communaute/pilotes", "👥", "Liste des pilotes", "Trouve un pilote, suis-le, découvre son profil", "hub-feature")}
       ${tile("#/communaute/voitures", "🚗", "Voitures des pilotes", "Les voitures partagées par la communauté")}
       ${tile("#/communaute/fil", "📰", "Fil d'actualité", "Ce que font les pilotes que tu suis")}
-      ${tile("chat.html", "💬", "Salon", "Discute en direct avec les pilotes")}
+      ${tile("#/chat", "💬", "Salon", "Discute en direct avec les pilotes")}
     </div>`,
     clubs: () => `<div class="hub-grid">
       ${tile("#/clubs", "🛡️", "Clubs", "Rejoins un club, son fil privé et le défi de clubs", "hub-feature")}

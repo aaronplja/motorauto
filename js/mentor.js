@@ -44,7 +44,7 @@
       await C.db.collection("mentor_requests").doc(mentorUid + "_" + me).set({ mentorUid, uid: me, name, status: "open", createdAt: C.FieldValue.serverTimestamp() });
       try { C.MA.notif.send(mentorUid, { type: "mentor", from: name, text: "te demande un mentorat", link: "index.html?pilot=" + encodeURIComponent(me) }, "mentor_" + me); } catch (_) { /* facultatif */ }
       C.toast("Demande envoyée. Tu peux aussi lui écrire en message privé.", "ok");
-      location.href = "chat.html#dm/" + encodeURIComponent(mentorUid);
+      location.hash = "#/chat/dm/" + encodeURIComponent(mentorUid);
     } catch (e) { C.toast(e.message, "err"); }
   }
   async function accept(id) {

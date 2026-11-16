@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" data-theme="studio-creme">
 <head>
+  <script>if(window.top===window){var h=location.hash;location.replace("index.html#/chat"+(h&&h.length>1?"/"+h.slice(1):""));}else{document.documentElement.classList.add("embed");var b=document.createElement("base");b.target="_top";document.head.appendChild(b);}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="referrer" content="no-referrer">
@@ -33,7 +34,6 @@
   <link rel="stylesheet" href="css/plus.css">
   <link rel="stylesheet" href="css/studio-b.css">
   <link rel="stylesheet" href="css/themes-studio.css">
-  <link rel="stylesheet" href="css/dock.css">
   <link rel="stylesheet" href="css/chat3.css">
 </head>
 <body class="chat-page">
@@ -171,14 +171,6 @@
     <section class="chat-loading" id="chat-loading" aria-live="polite"><span class="spinner"></span><span>Connexion au salon…</span></section>
   </div>
 
-  <nav class="mobile-touch-bar" id="mobile-touch-bar" aria-label="Navigation mobile">
-    <a class="touch-bar-item" href="index.html#/" data-touch="home" aria-label="Accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>Accueil</span></a>
-    <a class="touch-bar-item" href="index.html#/catalogue" data-touch="catalog" aria-label="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg><span>Catalogue</span></a>
-    <a class="touch-bar-item touch-bar-highlight" href="index.html#/jouer" data-touch="play" aria-label="Jouer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/><path d="m7.5 12.5 2 2 3.5-4"/></svg><span>Jouer</span></a>
-    <a class="touch-bar-item active" href="chat.html" data-touch="chat" aria-current="page" aria-label="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a>
-    <a class="touch-bar-item" href="index.html#/pilotes" data-touch="pilotes" aria-label="Pilotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 14.2V21M3.4 10.5l6.4 1M20.6 10.5l-6.4 1"/></svg><span>Pilotes</span></a>
-  </nav>
-
   <!-- ===== Création d'un canal (admin) ===== -->
   <div class="mini-modal" id="channel-modal" hidden role="dialog" aria-modal="true" aria-labelledby="channel-modal-title">
     <form class="mini-card" id="channel-form">
@@ -254,7 +246,6 @@
   <script defer src="js/native.js"></script>
   <script defer src="js/chat.js"></script>
   <script defer src="js/chat-plus.js"></script>
-  <script defer src="js/glassbar.js"></script>
   <script defer src="js/chatglass.js"></script>
 </body>
 </html>
