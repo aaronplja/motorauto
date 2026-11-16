@@ -238,3 +238,6 @@ body:has(#chat-app:not([data-view="list"])) #mobile-touch-bar { display: none !i
 .chat-app .conv-badge:has(img.avatar.cosm-f) { overflow: visible; background: none; }
 .chat-app .msg > img.avatar.cosm-f:hover { transform: none; }
 @media (prefers-reduced-motion: reduce) { .chat-app img.avatar.cosm-f { animation: none !important; } }
+
+/* iOS ne peut plus décaler ces conteneurs pour montrer la saisie : « clip » n'est jamais défilable, contrairement à « hidden » */
+@supports (overflow: clip) { html, body.chat-page, .chat-app { overflow: clip; } }

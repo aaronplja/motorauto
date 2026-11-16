@@ -246,7 +246,7 @@ ok("chat iPhone : recalcul de la hauteur après le clavier, salon sous la barre 
 // ---- série z11 : chat iPhone (décalage persistant, saisie sous le clavier, cadres débloqués)
 ok("chat iPhone : seule la saisie suit le clavier (--kb), cadre et liste immobiles, page du site défilable pour revenir à sa place", () => {
   const e = read("js/chat-embed.js"), r = read("css/refonte.css"), c = read("css/chat.css"), c3 = read("css/chat3.css");
-  assert.ok(/function layout\(now\)/.test(e) && /window\.innerHeight - vv\.offsetTop - vv\.height/.test(e) && /"--kb"/.test(e), "hauteur du clavier transmise au chat");
+  assert.ok(/function layout\(now\)/.test(e) && /window\.innerHeight - vv\.height/.test(e) && /"--kb"/.test(e), "hauteur du clavier transmise au chat");
   assert.ok(!/host\.style\.bottom = bottom/.test(e) && /host\.style\.top = topBase; host\.style\.bottom = "";/.test(e), "le cadre ne bouge pas");
   assert.ok(/translate3d\(0, calc\(-1 \* var\(--kb, 0px\)\), 0\)/.test(c3), "la saisie monte avec le clavier");
   assert.ok(/classList\.toggle\("chat-kb", open\)/.test(e) && /kbOpen \? 0 : px\(cs\.paddingBottom\)/.test(e), "marge basse nulle clavier ouvert, dock masqué");
@@ -269,4 +269,11 @@ ok("chat iPhone : hauteur de clavier stable (90 ms), valeurs absurdes ignorées,
   const e = read("js/chat-embed.js");
   assert.ok(/stabT = setTimeout\(\(\) => layout\(true\), 90\)/.test(e) && /window\.innerHeight \* 0\.7/.test(e), "stabilisation");
   assert.ok(/\(kbPx \+ 40\) \+ "px"/.test(e), "marge au-dessus de la barre d'accessoires");
+});
+ok("chat iPhone : saisie remontée dès le toucher (avant le clavier), zone visible suivie sans bouger l'en-tête, conteneurs non défilables", () => {
+  const e = read("js/chat-embed.js"), j = read("js/chat.js"), c = read("css/chat3.css");
+  assert.ok(/d\.ma === "chat-pre"\) pre\(\)/.test(e) && /function pre\(\)/.test(e) && /ma_kbh/.test(e), "pré-remontée avec la dernière hauteur connue");
+  assert.ok(/function pan\(\)/.test(e) && /translate3d\(0,/.test(e) && /vv\.offsetTop/.test(e), "cadre ramené sur la zone visible");
+  assert.ok(/tell\(\{ ma: "chat-pre" \}\)/.test(j) && /const still = \(\) =>/.test(j), "le chat annonce le toucher et remet les conteneurs à zéro");
+  assert.ok(/@supports \(overflow: clip\) \{ html, body\.chat-page, \.chat-app \{ overflow: clip; \} \}/.test(c), "overflow:clip");
 });

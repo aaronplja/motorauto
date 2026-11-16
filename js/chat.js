@@ -1056,6 +1056,12 @@
       window.addEventListener("resize", fit);
       window.addEventListener("orientationchange", () => setTimeout(fit, 300));
       input.addEventListener("focus", () => { setTimeout(() => { if (stickBottom && state.conv) toBottom(false); }, 320); });
+      // le doigt touche la saisie : le site remonte la barre avant même l'arrivée du clavier (iOS ne décale alors plus la page)
+      input.addEventListener("touchstart", () => tell({ ma: "chat-pre" }), { passive: true });
+      input.addEventListener("pointerdown", () => tell({ ma: "chat-pre" }), { passive: true });
+      // iOS fait défiler les conteneurs (même « overflow:hidden ») pour montrer le champ actif : on les remet aussitôt à zéro
+      const still = () => { [document.scrollingElement, document.body, document.querySelector(".chat-app"), document.querySelector(".chat-main"), document.querySelector(".conv-stage")].forEach((el) => { if (el && (el.scrollTop || el.scrollLeft)) { el.scrollTop = 0; el.scrollLeft = 0; } }); };
+      document.addEventListener("scroll", still, true); window.addEventListener("scroll", still, { passive: true });
       // le site doit savoir qu'une saisie est en cours (iOS décale alors la fenêtre pour montrer le champ)
       const isField = (el) => !!el && (/^(INPUT|TEXTAREA)$/.test(el.tagName) || el.isContentEditable);
       document.addEventListener("focusin", (e) => { if (isField(e.target)) tell({ ma: "chat-focus" }); });

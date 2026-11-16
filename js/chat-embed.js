@@ -48,24 +48,46 @@
   // clavier : le cadre du chat épouse exactement la zone visible (au-dessus du clavier). C'est le site qui le mesure : à l'intérieur
   // d'un cadre, iOS ne donne pas la hauteur du clavier, d'où la saisie qui restait cachée dessous.
   const vv = window.visualViewport;
-  // Seule la barre de saisie suit le clavier : le cadre du chat, l'en-tête et la liste ne bougent jamais.
-  // Le site mesure la hauteur du clavier et la donne à la page du chat (--kb) ; une valeur n'est retenue que si elle reste identique 90 ms.
-  let stabT = 0, kbPx = 0;
+  // Seule la barre de saisie suit le clavier : l'en-tête, la liste et le cadre du chat restent à leur place.
+  //  - le site mesure la hauteur du clavier (fenêtre − zone visible) et la donne au chat (--kb) ; une valeur n'est retenue que si elle reste identique 90 ms ;
+  //  - dès que le doigt touche la saisie (avant même le clavier), elle est remontée de la dernière hauteur connue : iOS la voit déjà au-dessus du clavier
+  //    et n'a donc aucune raison de faire défiler ou décaler la page (c'était ce décalage qui faisait bouger tout l'écran) ;
+  //  - si iOS décale quand même la zone visible, le cadre est ramené exactement dessus : l'en-tête ne bouge pas à l'écran.
+  let stabT = 0, kbPx = 0, preT = 0, preOn = false;
+  const KB_KEY = "ma_kbh";
+  const kbStored = () => { try { const v = parseInt(localStorage.getItem(KB_KEY), 10); return v > 150 && v < 600 ? v : 0; } catch (_) { return 0; } };
+  const kbSave = (v) => { try { localStorage.setItem(KB_KEY, String(v)); } catch (_) {} };
+  function pan() {
+    const host = $("chat-embed"); if (!host) return;
+    const t = onChat && vv && kbOpen && vv.offsetTop > 0 ? Math.round(vv.offsetTop) : 0;
+    const v = t ? "translate3d(0," + t + "px,0)" : "";
+    if (host.style.transform !== v) host.style.transform = v;
+  }
   function layout(now) {
     const host = $("chat-embed"); if (!host) return;
     host.style.top = topBase; host.style.bottom = "";
-    const raw = onChat && vv ? Math.max(0, Math.round(window.innerHeight - vv.offsetTop - vv.height)) : 0;
-    if (raw >= window.innerHeight * 0.7) return;           // valeur absurde annoncée par iOS pendant l'animation : ignorée
+    const raw = onChat && vv ? Math.max(0, Math.round(window.innerHeight - vv.height)) : 0;
+    if (raw >= window.innerHeight * 0.7) { pan(); return; }   // valeur absurde annoncée par iOS pendant l'animation : ignorée
     const open = raw > 80;
-    if (open) lastOpenAt = Date.now();
-    // pendant l'animation du clavier, iOS annonce brièvement une hauteur intermédiaire : on garde la dernière position plutôt que de redescendre la saisie
-    if (hold && !open && kbOpen && Date.now() - lastOpenAt < 1200) { setTimeout(fitKb, 1250); return; }
+    if (open) { lastOpenAt = Date.now(); preOn = false; clearTimeout(preT); }
+    // clavier pas encore annoncé (ou intermédiaire) : on garde la position déjà prise plutôt que de redescendre la saisie
+    if ((hold || preOn) && !open && kbOpen && Date.now() - lastOpenAt < 1200) { setTimeout(fitKb, 1250); pan(); return; }
     const k = open ? raw : 0;
-    if (!now && k !== kbPx && (open || kbOpen)) { clearTimeout(stabT); stabT = setTimeout(() => layout(true), 90); return; }
+    if (!now && k !== kbPx && (open || kbOpen)) { clearTimeout(stabT); stabT = setTimeout(() => layout(true), 90); pan(); return; }
     const changed = k !== kbPx || open !== kbOpen;
     kbPx = k;
     if (open !== kbOpen) { kbOpen = open; de.classList.toggle("chat-kb", open); }
+    if (open) kbSave(k);
     if (changed) { sync(); note("kb " + k); }
+    pan();
+  }
+  // le doigt touche la saisie : on la remonte tout de suite (hauteur connue, sinon une estimation), on annule si le clavier ne vient pas
+  function pre() {
+    if (!onChat || kbOpen) return;
+    const k = kbStored() || Math.round(window.innerHeight * 0.38);
+    preOn = true; lastOpenAt = Date.now(); kbPx = k; kbOpen = true; de.classList.add("chat-kb"); sync();
+    clearTimeout(preT);
+    preT = setTimeout(() => { if (!hold && preOn) { preOn = false; kbPx = 0; kbOpen = false; de.classList.remove("chat-kb"); sync(); } }, 900);
   }
   // mesure de mise au point (désactivée ; localStorage.ma_kbdbg = "1" pour l'afficher)
   let hud = null, hlog = [], ht0 = 0, hhide = 0;
@@ -93,7 +115,8 @@
     const d = e.data || {};
     if (d.ma === "chat-ready") { ready = true; const l = $("chat-embed-load"); if (l) l.hidden = true; sync(); if (pending) { go(pending); pending = ""; } }
     else if (d.ma === "chat-view") { view = d.view; flag(); }
-    else if (d.ma === "chat-focus") { hold = true; note("FOCUS"); fitKb(); }
+    else if (d.ma === "chat-pre") pre();
+    else if (d.ma === "chat-focus") { hold = true; clearTimeout(preT); note("FOCUS"); fitKb(); }
     else if (d.ma === "chat-blur") { hold = false; note("BLUR"); fitKb(); afterKeyboard(); }
     else if (d.ma === "chat-nav" && typeof d.hash === "string" && d.hash.indexOf("#/") === 0) location.hash = d.hash;
   });
