@@ -246,7 +246,7 @@ html.ma-garage .hero-cta{display:none}
 #boot-splash{position:fixed;inset:0;z-index:99990;display:grid;place-items:center;align-content:center;justify-items:center;gap:1.2rem;transition:opacity .45s ease,visibility .45s}
 #boot-splash.out{opacity:0;visibility:hidden}
 /* tracé terminé : le logo respire tant que le site charge */
-#boot-splash .sp-mark{animation:spBreathe 1.6s ease-in-out 1.4s infinite backwards}
+#boot-splash .sp-mark{animation:spBreathe 1.6s ease-in-out 1s infinite backwards}
 @keyframes spBreathe{0%,100%{transform:scale(.95);filter:drop-shadow(0 0 0 transparent)}50%{transform:scale(1.07);filter:drop-shadow(0 0 7px color-mix(in srgb,var(--sp-ac,#3fbf82) 55%,transparent))}}
 /* si l'animation de démarrage vient de se jouer, on reprend directement sur l'image finale (aucune coupure) */
 html.splash-ran #boot-splash .sp-bar1,html.splash-ran #boot-splash .sp-bar2,html.splash-ran #boot-splash .sp-word{animation:none}

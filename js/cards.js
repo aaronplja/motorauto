@@ -871,6 +871,7 @@
   // ----- collection : recherche, filtres, tri
   let sortBy = store.get("ma_cards_sort", "num"), view = store.get("ma_cards_view", "grid");
   const zeroKey = (c) => Number(c.stats.zero) || 99;
+  const COLL_FR = new Intl.Collator("fr");
   function sortList(list) {
     const byNum = (a, b) => (numberOf(a) || (a.circuit ? 9000 : 0)) - (numberOf(b) || (b.circuit ? 9000 : 0)) || String(a.id).localeCompare(String(b.id));
     const cmp = {
@@ -879,7 +880,7 @@
       power: (a, b) => b.stats.power - a.stats.power || byNum(a, b),
       speed: (a, b) => b.stats.speed - a.stats.speed || byNum(a, b),
       zero: (a, b) => zeroKey(a) - zeroKey(b) || byNum(a, b),
-      brand: (a, b) => a.brand.localeCompare(b.brand, "fr") || a.model.localeCompare(b.model, "fr") || byNum(a, b),
+      brand: (a, b) => COLL_FR.compare(a.brand, b.brand) || COLL_FR.compare(a.model, b.model) || byNum(a, b),
       owned: (a, b) => countOf(b.id) - countOf(a.id) || byNum(a, b),
       level: (a, b) => lvOf(b.id) - lvOf(a.id) || byNum(a, b),
       year: (a, b) => (G.yearOf(a) || 9999) - (G.yearOf(b) || 9999) || byNum(a, b),

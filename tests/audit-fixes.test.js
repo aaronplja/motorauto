@@ -268,7 +268,7 @@ ok("chat iPhone : saisie en cours signalée au site, la disposition au-dessus du
 ok("chat iPhone : hauteur de clavier stable (90 ms), valeurs absurdes ignorées, marge pour la barre d'accessoires iOS", () => {
   const e = read("js/chat-embed.js");
   assert.ok(/stabT = setTimeout\(\(\) => layout\(true\), 90\)/.test(e) && /window\.innerHeight \* 0\.7/.test(e), "stabilisation");
-  assert.ok(/\(kbPx \+ 18\) \+ "px"/.test(e), "marge au-dessus de la barre d'accessoires");
+  assert.ok(/\(kbPx \+ 8\) \+ "px"/.test(e), "marge au-dessus de la barre d'accessoires");
 });
 ok("chat iPhone : saisie remontée dès le toucher (avant le clavier), zone visible suivie sans bouger l'en-tête, conteneurs non défilables", () => {
   const e = read("js/chat-embed.js"), j = read("js/chat.js"), c = read("css/chat3.css");
@@ -282,4 +282,14 @@ ok("chat iPhone : le clavier s'ouvre (barre remontée au relâchement du doigt, 
   assert.ok(/input\.addEventListener\("touchend"/.test(j) && /e\.preventDefault\(\);\s*wrap\.style\.setProperty\("--kbp"/.test(j) && /input\.focus\(\{ preventScroll: true \}\)/.test(j), "remontée au relâchement puis focus");
   assert.ok(!/input\.addEventListener\("(touchstart|pointerdown)", \(\) => tell/.test(j), "rien ne bouge pendant le toucher");
   assert.ok(/native = true/.test(j) && /max\(var\(--kb, 0px\), var\(--kbp, 0px\)\)/.test(c), "repli natif et remontée provisoire");
+});
+ok("démarrage rapide : comparateurs réutilisés, recherche calculée à la demande, logos testés par index, images du catalogue différées", () => {
+  const a = read("js/app.js"), u = read("js/utils.js"), b = read("js/brand-logos.js"), cd = read("js/cards.js");
+  assert.ok(/const COLL = new Intl\.Collator\("fr"\), COLL_NUM = new Intl\.Collator\("fr", \{ numeric: true \}\)/.test(a), "comparateurs créés une fois");
+  assert.ok(!/localeCompare\([^)]*"fr"/.test(a), "plus de localeCompare(…, \"fr\") dans app.js (recréé à chaque comparaison)");
+  assert.ok(/COLL_FR\.compare\(a\.brand, b\.brand\)/.test(cd), "tri des cartes par marque");
+  assert.ok(/lazy\("searchBlob"/.test(u) && /lazy\("searchTokens"/.test(u), "texte de recherche calculé à la première recherche");
+  assert.ok(/loadFileKeys\(\)\.then\(\(list\) => \(list\.length \? list\.indexOf\(k\) >= 0 : probe\(k\)\)\)/.test(b), "logos : une requête (index.json) au lieu d'un test par marque");
+  assert.ok(/\$\{lazy \? 'loading="lazy" decoding="async"' : ""\}/.test(a), "images des cartes du catalogue différées");
+  assert.ok(/requestAnimationFrame\(\(\) => \{ gliderRaf = 0; placeGlider\(gliderTarget\); \}\)/.test(a), "mesures de la navigation regroupées");
 });

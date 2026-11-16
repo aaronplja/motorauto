@@ -10,6 +10,8 @@
  */
 (function () {
   "use strict";
+  // comparateurs de texte créés une seule fois (la comparaison native avec options en recrée un à chaque appel : très lent sur tout le catalogue)
+  const COLL = new Intl.Collator("fr"), COLL_NUM = new Intl.Collator("fr", { numeric: true });
 
   const {
     esc, safeUrl, normalize, parseLapTime, formatLapTime, trackKey, lapMs, sortLaps,
@@ -77,7 +79,14 @@
   }
 
   // pastille coulissante de la navigation (suit le survol, revient sur l'onglet actif)
+  // les mesures (offsetWidth / offsetLeft) forcent un calcul de mise en page : on les regroupe dans la prochaine image (un seul calcul même si plusieurs appels se suivent)
+  let gliderRaf = 0, gliderTarget = null;
   function moveGlider(target) {
+    gliderTarget = target || null;
+    if (gliderRaf) return;
+    gliderRaf = requestAnimationFrame(() => { gliderRaf = 0; placeGlider(gliderTarget); });
+  }
+  function placeGlider(target) {
     const nav = $("desktop-nav"), g = $("nav-glider");
     if (!nav || !g) return;
     const el = target || nav.querySelector(".nav-link.active");
@@ -145,7 +154,7 @@
     const select = $("brand-select");
     if (!select) return;
     const current = filters.brand;
-    const groups = Array.from(new Set(CATALOGUE.map((c) => c.group))).sort((a, b) => a.localeCompare(b, "fr"));
+    const groups = Array.from(new Set(CATALOGUE.map((c) => c.group))).sort((a, b) => COLL.compare(a, b));
     select.innerHTML = `<option value="all">Toutes les marques</option>` +
       groups.map((g) => `<option value="${esc(g)}">${esc(g)}</option>`).join("");
     select.value = groups.includes(current) ? current : "all";
@@ -221,17 +230,17 @@
     else if (filters.sort === "torque-desc") sorted.sort((a, b) => b.stats.torque - a.stats.torque);
     else if (filters.sort === "year-desc") sorted.sort((a, b) => (b.yearRange ? b.yearRange[0] : 0) - (a.yearRange ? a.yearRange[0] : 0));
     else if (filters.sort === "year-asc") sorted.sort((a, b) => (a.yearRange ? a.yearRange[0] : 9999) - (b.yearRange ? b.yearRange[0] : 9999));
-    else if (filters.sort === "likes-desc") sorted.sort((a, b) => socStat(b.id).likes - socStat(a.id).likes || a.model.localeCompare(b.model, "fr", { numeric: true }));
+    else if (filters.sort === "likes-desc") sorted.sort((a, b) => socStat(b.id).likes - socStat(a.id).likes || COLL_NUM.compare(a.model, b.model));
     else if (filters.sort === "rarity-desc") sorted.sort((a, b) => (RARK[carRarity(a)] ?? 9) - (RARK[carRarity(b)] ?? 9) || b.stats.power - a.stats.power);
     else if (filters.sort === "rating-desc") sorted.sort((a, b) => socStat(b.id).avg - socStat(a.id).avg || socStat(b.id).votes - socStat(a.id).votes);
-    else sorted.sort((a, b) => a.model.localeCompare(b.model, "fr", { numeric: true }));
+    else sorted.sort((a, b) => COLL_NUM.compare(a.model, b.model));
     return sorted;
   }
 
   // Carrousel : plusieurs photos défilables en glissant (scroll-snap) ou avec les flèches
   function slidesHtml(car, lazy) {
     const imgs = car.images && car.images.length ? car.images : [car.image];
-    const one = (u, i) => `<img src="${esc(safeUrl(u) || FALLBACK_CAR)}" alt="${esc(car.model)}${imgs.length > 1 ? " (" + (i + 1) + "/" + imgs.length + ")" : ""}" ${lazy && i ? 'loading="lazy"' : ""} draggable="false" data-fallback="car">`;
+    const one = (u, i) => `<img src="${esc(safeUrl(u) || FALLBACK_CAR)}" alt="${esc(car.model)}${imgs.length > 1 ? " (" + (i + 1) + "/" + imgs.length + ")" : ""}" ${lazy ? 'loading="lazy" decoding="async"' : ""} draggable="false" data-fallback="car">`;
     if (imgs.length < 2) return `<div class="car-slides single">${one(imgs[0], 0)}</div>`;
     return `<div class="car-slides" data-slides>${imgs.map(one).join("")}</div>
       <button type="button" class="slide-arrow prev" data-action="slide" data-dir="-1" aria-label="Photo précédente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
@@ -1057,7 +1066,7 @@
     });
     const m = MC();
     const withLaps = Array.from(counts.entries()).sort((a, b) => b[1].n - a[1].n);
-    const empty = m ? m.list.filter((c) => !counts.has(c.key)).sort((a, b) => a.name.localeCompare(b.name, "fr")) : [];
+    const empty = m ? m.list.filter((c) => !counts.has(c.key)).sort((a, b) => COLL.compare(a.name, b.name)) : [];
     const previous = select.value;
     const opt = (k, label, cls) => `<option value="${esc(k)}"${cls ? ` data-none="1"` : ""}>${esc(label)}</option>`;
     select.innerHTML = withLaps.length || empty.length
@@ -1134,7 +1143,7 @@
       const pilots = [];
       snapshot.forEach((doc) => pilots.push(Object.assign({ id: doc.id }, doc.data())));
       if (pilots.length === 0) { list.innerHTML = `<div class="empty-note">Aucun pilote enregistré.</div>`; return; }
-      pilots.sort((a, b) => String(a.username || "").localeCompare(String(b.username || ""), "fr"));
+      pilots.sort((a, b) => COLL.compare(String(a.username || ""), String(b.username || "")));
       pilotsCache = pilots;
       renderPilotsList();
     } catch (err) {
@@ -1545,7 +1554,7 @@
     if (hid) { list.innerHTML = `<div class="empty-note">🔒 Ce pilote garde cette liste privée.</div>`; return; }
     try {
       const snap = await db.collection("users").doc(uid).collection(kind).limit(200).get();
-      const rows = snap.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => String(a.username).localeCompare(String(b.username), "fr"));
+      const rows = snap.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => COLL.compare(String(a.username), String(b.username)));
       list.innerHTML = rows.length ? rows.map((p) => `
         <div class="telemetry-row clickable" data-action="open-profile-from-list" data-uid="${esc(p.id)}" role="button" tabindex="0">
           <div class="pilot-row-left">${avatarImg(p.avatar, "pilot-row-avatar")}<div class="pilot-row-text"><div class="pilot-row-name">${esc(p.username || "Pilote")}</div></div></div>
@@ -1659,7 +1668,7 @@
 
   // aide à la saisie : marques et phases déjà connues, identifiant automatique, doublons de moteurs
   function refreshAdminLists() {
-    const uniq = (a) => Array.from(new Set(a.filter(Boolean))).sort((x, y) => x.localeCompare(y, "fr"));
+    const uniq = (a) => Array.from(new Set(a.filter(Boolean))).sort((x, y) => COLL.compare(x, y));
     $("adm-brand-list").innerHTML = uniq(CATALOGUE.map((c) => c.brand)).map((b) => `<option value="${esc(b)}">`).join("");
     $("adm-phase-list").innerHTML = uniq(CATALOGUE.flatMap((c) => c.phases.map((p) => p.phaseName))).slice(0, 80).map((b) => `<option value="${esc(b)}">`).join("");
   }
@@ -2324,7 +2333,7 @@
       if (cat.empty) { list.innerHTML = `<div class="empty-note">Aucun véhicule en ligne pour l'instant. Utilise « Ajouter un véhicule ».</div>`; return; }
       const rows = [];
       cat.forEach((d) => rows.push(Object.assign({ id: d.id }, d.data())));
-      rows.sort((a, b) => String(a.brand || "").localeCompare(String(b.brand || ""), "fr"));
+      rows.sort((a, b) => COLL.compare(String(a.brand || ""), String(b.brand || "")));
       list.innerHTML = rows.map((c) => `
         <div class="telemetry-row">
           <div class="pilot-row-left">

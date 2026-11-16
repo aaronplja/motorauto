@@ -188,14 +188,19 @@
     };
     car.yearRange = yearRange(car.years);
 
-    // Texte de recherche précalculé (marque, modèle, années, moteurs, éditions…)
-    car.searchBlob = normalize([
+    // Texte de recherche : calculé à la première recherche (et non pour tout le catalogue au démarrage), puis mémorisé
+    const lazy = (key, make) => Object.defineProperty(car, key, {
+      configurable: true, enumerable: true,
+      get() { const v = make(); Object.defineProperty(car, key, { value: v, writable: true, configurable: true, enumerable: true }); return v; },
+      set(v) { Object.defineProperty(car, key, { value: v, writable: true, configurable: true, enumerable: true }); }
+    });
+    lazy("searchBlob", () => normalize([
       car.brand, car.model, car.years, car.description, car.category, car.drives.map((d) => ({ P: "propulsion", T: "traction", A: "4x4 quatre roues motrices", E: "4x4 enclenchable", X: "propulsion transaxle", M: "moteur central", R: "moteur arriere" }[d] || "")).join(" "),
       ...car.phases.flatMap((p) => [p.phaseName, p.details, ...p.notableEditions, ...p.engines.map((e) => e.name)]),
       ...car.records.map((r) => (r.type || "") + " " + (r.description || ""))
-    ].join(" "));
-    car.searchCompact = car.searchBlob.replace(/[^a-z0-9]+/g, "");
-    car.searchTokens = Array.from(new Set(car.searchBlob.split(/[^a-z0-9]+/).filter((t) => t.length >= 3)));
+    ].join(" ")));
+    lazy("searchCompact", () => car.searchBlob.replace(/[^a-z0-9]+/g, ""));
+    lazy("searchTokens", () => Array.from(new Set(car.searchBlob.split(/[^a-z0-9]+/).filter((t) => t.length >= 3))));
     return car;
   }
 

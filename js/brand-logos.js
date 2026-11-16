@@ -10,8 +10,10 @@
   const known = new Map();   // nom -> Promise<boolean>
   const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
   const url = (k) => new URL("assets/brands/" + k + ".svg", document.baseURI).href;
+  const probe = (k) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(true); i.onerror = () => ok(false); i.src = url(k); });
+  /** existence d'un logo : lue dans assets/brands/index.json (1 seule requête) au lieu d'un test image par marque (des dizaines de requêtes 404 au démarrage) ; sans liste, on retombe sur le test image */
   function exists(k) {
-    if (!known.has(k)) known.set(k, new Promise((ok) => { const i = new Image(); i.onload = () => ok(true); i.onerror = () => ok(false); i.src = url(k); }));
+    if (!known.has(k)) known.set(k, loadFileKeys().then((list) => (list.length ? list.indexOf(k) >= 0 : probe(k))));
     return known.get(k);
   }
   /** « Peugeot Sport » -> peugeotsport puis peugeot ; « Nissan / Datsun » -> nissan ; « Mercedes-Benz » -> mercedesbenz */
