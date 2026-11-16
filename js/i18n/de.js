@@ -1839,5 +1839,10 @@
 "Activation de ton abonnement en cours…": "Dein Abo wird aktiviert…",
 "Accès offert": "Zugang geschenkt",
 "L'équipe MOTORAUTO t'a offert l'accès à PRO jusqu'au": "Das MOTORAUTO-Team hat dir den PRO-Zugang geschenkt, bis zum",
-"En plus, l'équipe t'a offert l'accès jusqu'au": "Zusätzlich hat dir das Team den Zugang geschenkt, bis zum"
+"En plus, l'équipe t'a offert l'accès jusqu'au": "Zusätzlich hat dir das Team den Zugang geschenkt, bis zum",
+"Membres": "Mitglieder",
+"Chat": "Chat",
+"Mon compte": "Mein Konto",
+"Mon profil": "Mein Profil",
+"Jeux": "Spiele"
 }]);

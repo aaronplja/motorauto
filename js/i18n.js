@@ -38,7 +38,7 @@
 
   // ------------------------------------------------------------------ DOM
   const SKIP = "script,style,textarea,input,[data-no-i18n],[contenteditable=true],.bubble,.cmt-body,.profile-bio,#pub-profile-bio,.feed-text b,.msg-author,.nw-body,.nw-item h3,.car-mention,.mg-board a,.pm-car b,.pm-car small";
-  const ATTRS = ["placeholder", "title", "aria-label", "alt"];
+  const ATTRS = ["placeholder", "title", "aria-label", "alt", "data-s"];
   const origText = new WeakMap(), origAttr = new WeakMap();
   function doText(n) {
     const v = n.nodeValue; if (!v || !v.trim()) return;

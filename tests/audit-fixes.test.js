@@ -84,4 +84,31 @@ ok("PRO : entrée unique dans la barre du haut + route + onglet admin", () => {
   assert.strictEqual((h.match(/id="pro-btn"/g) || []).length, 1);
   assert(/name: "pro", re:/.test(rt) && /"jeu", "pro", "journal"/.test(rt) && /data-tab="pro"/.test(h));
 });
+ok("navigation : Chat remplace Communauté, « Moi » devient Pilotes (profil · garage · communauté · classement)", () => {
+  const h = read("index.src.html"), rt = read("js/router.js"), nv = read("js/nav.js");
+  assert(/data-touch="chat"/.test(h) && /data-touch="pilotes"/.test(h) && /data-nav="chat"/.test(h) && /data-nav="pilotes"/.test(h));
+  assert(!/data-touch="community"|data-touch="me"|id="touch-me-btn"|id="nav-me-btn"|id="open-chat-btn"/.test(h), "anciens boutons supprimés");
+  assert.strictEqual((h.match(/class="touch-bar-item/g) || []).length, 5, "5 entrées dans le dock");
+  assert(/name: "pilotes", re:/.test(rt) && /PILOT_GROUPS = \[\["profil"[\s\S]*?\["garage"[\s\S]*?\["communaute"[\s\S]*?\["classement"/.test(rt));
+  ["community", "leaderboard", "garage", "settings", "pilot", "clubs"].forEach((r) => assert(new RegExp(r + ': "pilotes"').test(rt.match(/const NAV_OF = \{[^\n]*/)[0]), r + " → Pilotes"));
+  ["hub-pilotes", "hub-clubs", "hub-classements"].forEach((x) => assert(rt.indexOf('"/communaute/' + x + '"') >= 0, "ancienne adresse " + x + " redirigée"));
+  assert(/id="pub-settings-btn"[^>]*href="#\/reglages\/profil"/.test(h) && /pub-settings-btn/.test(read("js/profile-edit.js")), "engrenage Réglages dans le profil");
+  assert(!/nav-me-btn|touch-me-btn/.test(nv));
+  assert(/"data-s"/.test(read("js/i18n.js")), "libellés courts des onglets traduits");
+});
+ok("Jouer : 4 univers (Cartes · Jeux · Échanges · Défis), chacun avec sa page d'accueil", () => {
+  const rt = read("js/router.js"), h = read("index.src.html"), pl = read("js/play.js");
+  assert(/PLAY_GROUPS = \[\["cartes", "Cartes"\], \["minijeux", "Jeux"\], \["troc", "Échanges"\], \["communaute", "Défis"\]\]/.test(rt));
+  assert(/"troc", "minijeux"|"echanges", "troc"/.test(rt) && /data-tab="troc"[^>]*><div id="play-hub-troc"/.test(h));
+  assert(/echanges: "troc"/.test(rt) && /cardmarket: "troc", wishfeed: "troc"/.test(rt) && /fusion: "cartes"/.test(rt));
+  assert(/group === "troc"/.test(pl) && /p\.tab === "troc"/.test(pl));
+});
+ok("PRO : une seule page adaptative (offre sans accès, bandeau + explorateur avec accès), anciennes adresses redirigées", () => {
+  const rt = read("js/router.js"), h = read("index.src.html"), pro = read("js/pro.js");
+  assert(/name: "pro", re: \/\^\\\/pro\\\/\?\$\/, keys: \[\]/.test(rt), "plus d'onglets sur /pro");
+  ["offre", "explorer", "abonnement"].forEach((x) => assert(rt.indexOf('"/pro/' + x + '": "/pro"') >= 0, "/pro/" + x + " redirigé"));
+  assert(!/data-section="pro"/.test(h) && /id="pro-offer"/.test(h) && /id="pro-account"/.test(h) && /id="pro-explorer"/.test(h));
+  assert(!/#\/pro\/(offre|explorer|abonnement)/.test(pro), "plus de lien vers les anciens onglets");
+  assert(/function paintAll\(\)[\s\S]*?access\(\)\.ok/.test(pro));
+});
 console.log(n + " vérifications audit OK");

@@ -118,8 +118,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <a class="nav-link active" href="#/" data-nav="home" title="Accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>Accueil</span></a>
         <a class="nav-link" href="#/catalogue" data-nav="catalog" title="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg><span>Catalogue</span></a>
         <a class="nav-link" href="#/jouer" data-nav="play" title="Jouer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/><path d="m7.5 12.5 2 2 3.5-4"/></svg><span>Jouer</span></a>
-        <a class="nav-link" href="#/communaute" data-nav="community" title="Communauté"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 19.5c0-3.3 2.8-5.5 6.2-5.5s6.2 2.2 6.2 5.5"/><path d="M16.4 4.9a3.2 3.2 0 0 1 0 6.2M18.6 14.4c1.7.7 2.8 2.3 2.8 5.1"/></svg><span>Communauté</span></a>
-        <button type="button" class="nav-link nav-me" id="nav-me-btn" data-nav="me" aria-haspopup="dialog" aria-expanded="false" title="Mon espace"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"/></svg><span>Moi</span></button>
+        <a class="nav-link" href="chat.html" data-nav="chat" title="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span><span id="header-chat-badge" class="unread-dot-indicator" style="display:none"></span></a>
+        <a class="nav-link" href="#/pilotes" data-nav="pilotes" title="Pilotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 14.2V21M3.4 10.5l6.4 1M20.6 10.5l-6.4 1"/></svg><span>Pilotes</span></a>
       </nav>
 
       <div class="header-actions">
@@ -133,10 +133,6 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
           <span class="notif-badge" hidden>0</span>
         </button>
-        <a class="icon-btn" id="open-chat-btn" href="chat.html" aria-label="Ouvrir le salon des pilotes" title="Salon des pilotes">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span id="header-chat-badge" class="unread-dot-indicator" style="display:none"></span>
-        </a>
         <button type="button" class="icon-btn" id="theme-btn" hidden aria-label="Changer d'ambiance visuelle" title="Ambiance">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1.5 12h3M19.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
         </button>
@@ -382,7 +378,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         </div>
         <div class="page-head-actions"><a class="cta-btn fill-btn compact-btn" href="chat.html">💬 Ouvrir le salon</a></div>
       </header>
-    <nav data-section="community"></nav>
+    <nav data-section="pilotes"></nav>
     <section class="tab-panel" data-tab="hub-pilotes" hidden><div id="comm-hub-pilotes"></div></section>
     <section class="tab-panel" data-tab="hub-clubs" hidden><div id="comm-hub-clubs"></div></section>
     <section class="tab-panel" data-tab="hub-classements" hidden><div id="comm-hub-classements"></div></section>
@@ -430,7 +426,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         </div>
         
       </header>
-    <nav data-section="leaderboard"></nav>
+    <nav data-section="pilotes"></nav>
     <section class="tab-panel" data-tab="chronos" hidden>
       <div class="lb-filters">
           <label class="lb-field"><span>Circuit</span><select id="leaderboard-track-select" class="custom-select" aria-label="Choisir un circuit"></select></label>
@@ -517,6 +513,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="public-profile-modal" data-page="pilot">
   <div class="stage-shell page-wrap">
+    <nav data-section="pilotes"></nav>
     <a class="back-link" href="#/communaute/pilotes" data-back="#/communaute/pilotes">← Tous les pilotes</a>
     <section class="pro-hero pv3" aria-labelledby="pub-profile-name">
       <div class="pv3-cover" id="pub-cover" aria-hidden="true"></div>
@@ -531,6 +528,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       </div>
       <div class="pv3-actions">
         <button type="button" class="cta-btn fill-btn compact-btn follow-btn" data-action="toggle-follow" hidden>Suivre</button>
+        <a class="icon-btn pub-gear" id="pub-settings-btn" href="#/reglages/profil" aria-label="Réglages" title="Réglages" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
         <button type="button" class="cta-btn fill-btn compact-btn" id="pub-edit-btn" hidden>✏️ Personnaliser le profil</button>
         <button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats">📊 Caractéristiques</button>
         <button type="button" class="cta-btn btn-ghost compact-btn" id="pub-block-btn" data-action="toggle-block" hidden>Bloquer</button>
@@ -588,7 +586,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       </div>
       <div class="page-head-actions"><button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats" data-self="1">📊 Caractéristiques</button><button type="button" class="secondary-destructive-btn" id="logout-btn">Se déconnecter</button></div>
     </header>
-    <nav data-section="garage"></nav>
+    <nav data-section="pilotes"></nav>
     <section class="tab-panel" data-tab="apercu" hidden>
       <div class="social-row" id="garage-social">
           <button type="button" class="social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b> abonnés</button>
@@ -685,6 +683,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <section class="tab-panel" data-tab="collection boutique" hidden><div id="cards-root"></div></section>
     <section class="tab-panel" data-tab="echanges" hidden><div id="trades-root"></div></section>
     <section class="tab-panel" data-tab="minijeux" hidden><div id="play-hub-minijeux"></div></section>
+    <section class="tab-panel" data-tab="troc" hidden><div id="play-hub-troc"></div></section>
     <section class="tab-panel" data-tab="communaute" hidden><div id="play-hub-communaute"></div></section>
     <section class="tab-panel" data-tab="defis" hidden><div id="challenges-root"></div></section>
     <section class="tab-panel" data-tab="concours" hidden><div id="contest-root"></div></section>
@@ -694,6 +693,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-settings" data-page="settings">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Mon espace</span><h1 class="page-title">Réglages</h1><p class="page-sub">Ton profil, l'ambiance du site, les notifications que tu veux recevoir et ta présence sur la carte.</p></div></header>
+    <nav data-section="pilotes"></nav>
     <nav data-section="settings"></nav>
     <section class="tab-panel" data-tab="profil" hidden>
       <div class="settings-box open">
@@ -829,7 +829,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-clubs" data-page="clubs">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Clubs & équipes</h1><p class="page-sub">Rejoins un club par marque ou par région : fil privé entre membres et classement.</p></div></header>
-    <nav data-section="community"></nav>
+    <nav data-section="pilotes"></nav>
     <div id="clubs-root"></div>
   </div>
   </div>
@@ -837,7 +837,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-club" data-page="club">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Club</h1><p class="page-sub"></p></div></header>
-    <nav data-section="community"></nav>
+    <nav data-section="pilotes"></nav>
     <a class="back-link" href="#/clubs" data-back="#/clubs">← Tous les clubs</a>
     <div id="club-root"></div>
   </div>
@@ -846,7 +846,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-market" data-page="market">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">Annonces entre pilotes</h1><p class="page-sub">Vends ou échange des pièces. Signale toute annonce douteuse.</p></div></header>
-    <nav data-section="community"></nav>
+    <nav data-section="pilotes"></nav>
     <div id="market-root"></div>
   </div>
   </div>
@@ -919,10 +919,9 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-pro" data-page="pro">
   <div class="stage-shell page-wrap">
     <header class="page-head"><div class="page-head-text"><h1 class="page-title">MOTORAUTO PRO</h1><p class="page-sub">Les modifications de ta voiture, rédigées et relues par l'équipe.</p></div></header>
-    <nav data-section="pro"></nav>
-    <section class="tab-panel" data-tab="offre" hidden><div id="pro-offer"></div></section>
-    <section class="tab-panel" data-tab="explorer" hidden><div id="pro-explorer"></div></section>
-    <section class="tab-panel" data-tab="abonnement" hidden><div id="pro-account"></div></section>
+    <div id="pro-offer"></div>
+    <div id="pro-account"></div>
+    <div id="pro-explorer"></div>
   </div>
   </div>
 
@@ -1015,8 +1014,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <a class="touch-bar-item active" href="#/" data-touch="home" aria-label="Accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>Accueil</span></a>
     <a class="touch-bar-item" href="#/catalogue" data-touch="catalog" aria-label="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg><span>Catalogue</span></a>
     <a class="touch-bar-item touch-bar-highlight" href="#/jouer" data-touch="play" aria-label="Jouer"><i class="touch-dot" id="touch-play-dot" hidden></i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/><path d="m7.5 12.5 2 2 3.5-4"/></svg><span>Jouer</span></a>
-    <a class="touch-bar-item" href="#/communaute" data-touch="community" aria-label="Communauté"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 19.5c0-3.3 2.8-5.5 6.2-5.5s6.2 2.2 6.2 5.5"/><path d="M16.4 4.9a3.2 3.2 0 0 1 0 6.2M18.6 14.4c1.7.7 2.9 2.3 2.9 5.1"/></svg><span>Communauté</span></a>
-    <button type="button" class="touch-bar-item" id="touch-me-btn" data-touch="me" aria-haspopup="dialog" aria-expanded="false" aria-label="Mon espace"><i class="touch-dot" id="touch-chat-dot" hidden></i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"/></svg><span>Moi</span></button>
+    <a class="touch-bar-item" href="chat.html" data-touch="chat" aria-label="Chat"><i class="touch-dot" id="touch-chat-dot" hidden></i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a>
+    <a class="touch-bar-item" href="#/pilotes" data-touch="pilotes" aria-label="Pilotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 14.2V21M3.4 10.5l6.4 1M20.6 10.5l-6.4 1"/></svg><span>Pilotes</span></a>
   </nav>
 
   <!-- ============ FENÊTRES ============ -->

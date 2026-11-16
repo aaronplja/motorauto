@@ -1,5 +1,5 @@
 /**
- * MOTORAUTO — navigation v2 : 4 pages principales + « Moi » (menu unique : espace pilote, classement, messages, ambiance, contact, légal).
+ * MOTORAUTO — navigation v3 : Accueil · Catalogue · Jouer · Chat · Pilotes. Ce fichier gère le menu « Mon compte » (bouton du compte, en haut à droite) : raccourcis, administration, réglages, contact, légal, déconnexion.
  * Sur mobile : feuille qui monte du bas ; sur ordinateur : panneau sous l'en-tête.
  */
 (function () {
@@ -35,15 +35,15 @@
       ? `<div class="me-card"><span class="me-avatar">${av ? `<img src="${esc(av)}" alt="" data-fallback="avatar">` : ico("user")}</span><div class="me-who"><b>${esc(p.username || user.displayName || "Pilote")}</b><small>${c.isAdmin ? "Administrateur" : "Pilote connecté"}</small></div></div>`
       : `<div class="me-card guest"><div class="me-who"><b>Bienvenue sur MOTORAUTO</b><small>Connecte-toi pour ton garage, tes cartes et le salon.</small></div><button type="button" class="cta-btn me-login" data-me="login">Connexion</button></div>`;
     const mine = user ? `
-      <div class="me-group"><h3>Mon espace</h3>
-        ${row("#/garage", "garage", "Mon garage")}
+      <div class="me-group"><h3>Mon compte</h3>
+        ${row("#/garage/apercu", "garage", "Mon garage")}
         ${row("#/jouer/collection", "cards", "Mes cartes")}
-        ${row("#/pilote/" + encodeURIComponent(user.uid), "user", "Mon profil public")}
+        ${row("#/pilotes", "user", "Mon profil")}
         ${row("chat.html", "chat", "Messages", unread ? `<span class="me-badge">${unread}</span>` : "")}
         ${c.isAdmin ? row("#/admin", "shield", "Administration", (window.MAAdminTodo && MAAdminTodo.count() ? `<span class="me-badge">${MAAdminTodo.count()}</span>` : "")) : ""}
       </div>` : "";
     return `
-      <div class="me-sheet" role="dialog" aria-modal="true" aria-label="Mon espace">
+      <div class="me-sheet" role="dialog" aria-modal="true" aria-label="Mon compte">
         <span class="me-grip" aria-hidden="true"></span>
         <button type="button" class="me-close" data-me="close" aria-label="Fermer">&times;</button>
         ${head}
@@ -59,7 +59,7 @@
   }
 
   function isOpen() { return !!layer && layer.classList.contains("on"); }
-  function setExpanded(v) { document.querySelectorAll("#nav-me-btn, #touch-me-btn").forEach((b) => b.setAttribute("aria-expanded", String(v))); }
+  function setExpanded(v) { const b = $("user-profile-btn"); if (b) b.setAttribute("aria-expanded", String(v)); }
 
   function open() {
     if (isOpen()) return close();
@@ -96,7 +96,7 @@
   }
 
   document.addEventListener("click", (e) => {
-    const trigger = e.target.closest("#nav-me-btn, #touch-me-btn, #user-profile-btn");
+    const trigger = e.target.closest("#user-profile-btn");
     if (!trigger) return;
     if (trigger.id === "user-profile-btn" && !ctx().user) return; // déconnecté : le bouton ouvre directement la connexion
     e.preventDefault(); e.stopImmediatePropagation();
@@ -115,11 +115,5 @@
   }, true);
   window.addEventListener("hashchange", () => { if (isOpen()) close(); });
   window.addEventListener("resize", () => { if (isOpen()) close(); });
-  // le bouton de compte (ordinateur) s'allume quand on est dans l'espace « Moi »
-  const meBtn = $("touch-me-btn"), chip = $("user-profile-btn");
-  if (meBtn && chip && window.MutationObserver) {
-    const sync = () => chip.classList.toggle("is-here", meBtn.classList.contains("active"));
-    new MutationObserver(sync).observe(meBtn, { attributes: true, attributeFilter: ["class"] }); sync();
-  }
   window.MANav = { open, close };
 })();

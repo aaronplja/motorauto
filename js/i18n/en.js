@@ -1839,5 +1839,10 @@
 "Activation de ton abonnement en cours…": "Activating your subscription…",
 "Accès offert": "Access granted",
 "L'équipe MOTORAUTO t'a offert l'accès à PRO jusqu'au": "The MOTORAUTO team has given you PRO access until",
-"En plus, l'équipe t'a offert l'accès jusqu'au": "In addition, the team has given you access until"
+"En plus, l'équipe t'a offert l'accès jusqu'au": "In addition, the team has given you access until",
+"Membres": "Members",
+"Chat": "Chat",
+"Mon compte": "My account",
+"Mon profil": "My profile",
+"Jeux": "Games"
 }]);

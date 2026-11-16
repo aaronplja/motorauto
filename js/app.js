@@ -2745,8 +2745,7 @@
   function updateChatBadges() {
     const on = MA.unread.count() > 0;
     const hb = $("header-chat-badge"); if (hb) hb.style.display = on ? "block" : "none";
-    let nn = 0; try { nn = MA.notif && MA.notif.unreadCount ? MA.notif.unreadCount() : 0; } catch (_) { nn = 0; }
-    const td = $("touch-chat-dot"); if (td) td.hidden = !(on || nn > 0);
+    const td = $("touch-chat-dot"); if (td) td.hidden = !on;
   }
 
   function handleDeepLinks() {
@@ -2777,6 +2776,8 @@
     });
     Router.register("leaderboard", { enter: (p) => { if (p.tab === "chronos") loadLeaderboardPage(); } });
     Router.register("community", { enter: (p) => { if (p.tab === "voitures") loadCommunity(); else if (p.tab === "pilotes") loadPilotsRegistry(); } });
+    // « Pilotes » : connecté → mon profil ; visiteur → la communauté (le profil et le garage demandent un compte)
+    Router.register("pilotes", { guard: async () => { await authReady; return currentUser ? "/pilote/" + encodeURIComponent(currentUser.uid) : "/communaute/fil"; } });
     Router.register("pilot", { enter: (p) => renderPublicProfile(p.uid) });
     Router.register("admin", { guard: needAdmin, enter: (p) => { loadAdminPage(p.tab); } });
     Router.register("contact", { enter: () => prefillContact() });

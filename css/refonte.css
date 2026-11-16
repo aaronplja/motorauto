@@ -39,7 +39,6 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .pilot-chip { border-radius: var(--r-sm); height: 40px; background: var(--surface-2); }
 .pilot-chip:hover { box-shadow: none; transform: none; border-color: var(--accent); }
 @media (max-width: 999px) {
-  .pilot-chip { display: none; }            /* le compte vit dans « Moi » (barre du bas) */
   .header-bar { min-height: 56px; }
 }
 /* navigation desktop : onglets plats */
@@ -290,8 +289,8 @@ body::before { position: absolute; inset: 0 0 auto 0; height: 70vh; max-height: 
 .settings-theme-body { padding: 0; }
 
 /* ===== Point rouge admin ===== */
-#nav-me-btn, #touch-me-btn { position: relative; }
-body:not([data-admin-todo="0"])[data-admin-todo] #nav-me-btn::after, body:not([data-admin-todo="0"])[data-admin-todo] #touch-me-btn::after { content: ""; position: absolute; top: 6px; right: 14px; width: 10px; height: 10px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 2px var(--bg-base, #0b0f19); }
+#user-profile-btn { position: relative; }
+body:not([data-admin-todo="0"])[data-admin-todo] #user-profile-btn::before { content: ""; position: absolute; top: 3px; right: 3px; z-index: 2; width: 10px; height: 10px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 2px var(--bg-base, #0b0f19); }
 body:not([data-admin-todo="0"])[data-admin-todo] .page-tab[data-tab="tableau"] { position: relative; }
 body:not([data-admin-todo="0"])[data-admin-todo] .page-tab[data-tab="tableau"]::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: .4rem; border-radius: 50%; background: #ef4444; vertical-align: middle; }
 
@@ -461,3 +460,11 @@ body:not([data-admin-todo="0"])[data-admin-todo] .page-tab[data-tab="tableau"]::
 .photo-card .photo-cap { position: static; background: none; color: var(--color-secondary); padding: 0 .9rem .7rem; font-size: .8rem; }
 .photo-meta { flex-wrap: wrap; }
 .photo-meta small { white-space: normal; }
+
+/* ===== Navigation v3 : Chat + Pilotes ===== */
+.nav-link { position: relative; }
+.nav-link .unread-dot-indicator { top: 7px; right: 5px; width: 9px; height: 9px; box-shadow: 0 0 0 2px var(--bg-surface); }
+.pub-gear { width: 40px; height: 40px; min-width: 40px; display: inline-grid; place-items: center; flex: none; border: 1px solid var(--stroke-line); background: var(--surface-2); color: var(--color-muted); border-radius: var(--r-sm); }
+.pub-gear svg { width: 20px; height: 20px; }
+.pub-gear:hover { color: var(--accent); border-color: var(--accent); background: var(--surface-2); }
+.pub-gear[hidden] { display: none; }

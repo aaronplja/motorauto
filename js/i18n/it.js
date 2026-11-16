@@ -1839,5 +1839,10 @@
 "Activation de ton abonnement en cours…": "Attivazione dell'abbonamento in corso…",
 "Accès offert": "Accesso offerto",
 "L'équipe MOTORAUTO t'a offert l'accès à PRO jusqu'au": "Il team MOTORAUTO ti ha offerto l'accesso a PRO fino al",
-"En plus, l'équipe t'a offert l'accès jusqu'au": "Inoltre, il team ti ha offerto l'accesso fino al"
+"En plus, l'équipe t'a offert l'accès jusqu'au": "Inoltre, il team ti ha offerto l'accesso fino al",
+"Membres": "Membri",
+"Chat": "Chat",
+"Mon compte": "Il mio account",
+"Mon profil": "Il mio profilo",
+"Jeux": "Giochi"
 }]);

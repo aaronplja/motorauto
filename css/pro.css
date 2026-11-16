@@ -173,3 +173,9 @@
   .mpa-item .mpa-row .cta-btn, .mpa-subgrp > header .cta-btn { flex: 1 1 auto; }
   .mpa-actions .cta-btn { flex: 1 1 100%; }
 }
+
+/* ---- page PRO unique : bandeau d'abonnement (avec accès) ---- */
+.mp-acct-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem .9rem; padding: .8rem 1rem; margin: 0 0 1.1rem; border-radius: 16px; border: 1px solid var(--stroke-line); background: var(--bg-surface); }
+.mp-acct-bar p { margin: 0; flex: 1 1 260px; min-width: 0; line-height: 1.45; font-size: .92rem; color: var(--color-secondary); }
+.mp-acct-bar .mp-acts { display: flex; flex-wrap: wrap; gap: .5rem; }
+@media (max-width: 520px) { .mp-acct-bar { padding: .75rem .85rem; } .mp-acct-bar .mp-acts { width: 100%; } .mp-acct-bar .mp-acts .cta-btn { flex: 1 1 auto; } }

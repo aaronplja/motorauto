@@ -1,5 +1,7 @@
 /**
- * MOTORAUTO PRO — extension payante (page #/pro) : présentation de l'offre, explorateur des modifications, gestion de l'abonnement.
+ * MOTORAUTO PRO — extension payante (page unique #/pro qui s'adapte au statut) :
+ *   sans accès  → l'offre (essai, prix, rubriques) et le bouton pour s'abonner ;
+ *   avec accès  → le bandeau d'abonnement (statut, gérer, résilier) puis l'explorateur des modifications.
  *
  *   pro_config/cats      { cats: [{ id, label, icon, pin?, subs: [{ id, label }] }] }   structure modifiable par les administrateurs
  *   pro_config/settings  { signups: bool, live: bool, priceEur: number, trialDays: number }   interrupteurs (administrateurs)
@@ -81,8 +83,6 @@
 
   function ctaHtml(a) {
     const closed = !cfg.signups && !C.isAdmin;
-    if (a.kind === "admin") return `<a class="cta-btn fill-btn" href="#/pro/explorer">${T("Explorer les modifications")}</a><p class="mp-note">${T("Accès administrateur : gratuit, sans abonnement.")}</p>`;
-    if (a.kind === "trial" || a.kind === "active" || a.kind === "gift") return `<a class="cta-btn fill-btn" href="#/pro/explorer">${T("Explorer les modifications")}</a><a class="cta-btn btn-ghost" href="#/pro/abonnement">${T("Mon abonnement")}</a>`;
     if (!C.user) return `<button type="button" class="cta-btn fill-btn" data-mp="login">${T("Se connecter pour essayer")}</button>`;
     if (closed) return `<button type="button" class="cta-btn fill-btn" disabled>${T("Ouverture prochaine")}</button><p class="mp-note">${T("Les inscriptions ne sont pas encore ouvertes. Reviens bientôt !")}</p>`;
     if (a.kind === "expired") return `<button type="button" class="cta-btn fill-btn" data-mp="subscribe">${T("S'abonner")} · ${price()} ${T("par mois")}</button>`;
@@ -91,7 +91,7 @@
   function renderOffer() {
     const root = $("pro-offer"); if (!root) return;
     const a = access(), esc = C.esc;
-    root.innerHTML = `${testBanner()}
+    root.innerHTML = `${pending ? `<p class="mp-test" role="status">${T("Activation de ton abonnement en cours…")}</p>` : ""}${testBanner()}${a.kind === "expired" && a.until ? `<p class="mp-test" role="note">${T("Ton accès PRO a pris fin le")} ${dateStr(a.until)}.</p>` : ""}
       <section class="mp-hero">
         <span class="mp-badge">PRO</span>
         <h2>${T("Les modifications, voiture par voiture")}</h2>
@@ -108,14 +108,8 @@
   // ---------------------------------------------------------------- explorateur
   const norm = (s) => (C.normalize ? C.normalize(s) : String(s).toLowerCase());
   const carName = (c) => (c.brand + " " + c.model).trim();
-  function lockHtml(a) {
-    const why = !C.user ? T("Connecte-toi pour accéder aux modifications PRO.") : a.kind === "expired" ? T("Ton abonnement PRO a expiré.") : T("Cette partie est réservée aux abonnés MOTORAUTO PRO.");
-    return `<div class="mp-lock"><span aria-hidden="true">🔒</span><h3>${why}</h3><div class="mp-cta">${ctaHtml(a)}</div><a class="link-more" href="#/pro/offre">${T("Découvrir l'offre")}</a></div>`;
-  }
   function renderExplorer() {
     const root = $("pro-explorer"); if (!root) return;
-    const a = access();
-    if (!a.ok) { root.innerHTML = lockHtml(a); return; }
     const car = selCar && C.carsById.get(selCar);
     root.innerHTML = `<div class="mp-pick"><label for="mp-q">${T("Choisis une voiture")}</label>
       <input id="mp-q" type="search" autocomplete="off" placeholder="${T("Marque ou modèle…")}" aria-label="${T("Rechercher une voiture")}" value="${car ? C.esc(carName(car)) : ""}"><div id="mp-res" class="mp-res" role="listbox"></div></div>
@@ -176,20 +170,17 @@
   }
 
   // ---------------------------------------------------------------- abonnement
+  /** bandeau d'abonnement (visible seulement avec un accès) : statut en une ligne + gérer / résilier */
   function renderAccount() {
     const root = $("pro-account"); if (!root) return;
-    const a = access(), esc = C.esc;
-    if (!C.user) { root.innerHTML = `<div class="mp-lock"><span aria-hidden="true">👤</span><h3>${T("Connecte-toi pour voir ton abonnement.")}</h3><div class="mp-cta"><button type="button" class="cta-btn fill-btn" data-mp="login">${T("Me connecter")}</button></div></div>`; return; }
+    const a = access();
+    if (!a.ok) { root.innerHTML = ""; return; }
     let badge, line = "", actions = "";
     if (a.kind === "admin") { badge = ["mp-ok", "Administrateur"]; line = T("Tu as un accès gratuit et permanent en tant qu'administrateur."); }
-    else if (a.kind === "trial") { badge = ["mp-ok", "Essai gratuit"]; line = `${T("Ton essai gratuit se termine le")} ${dateStr(a.trialEnd)}. ${T("Sans carte enregistrée, l'accès s'arrête simplement à cette date.")}`; actions = `<button type="button" class="cta-btn fill-btn" data-mp="portal">${T("Gérer mon abonnement")}</button>`; }
-    else if (a.kind === "active") { badge = [a.late ? "mp-warn-b" : "mp-ok", a.late ? "Paiement en retard" : "Abonnement actif"]; line = a.late ? T("Le dernier paiement a échoué : mets à jour ta carte pour garder l'accès.") : a.cancel ? `${T("Résilié : l'accès reste ouvert jusqu'au")} ${dateStr(a.until)}.` : `${T("Prochain renouvellement le")} ${dateStr(a.until)}.`; actions = `<button type="button" class="cta-btn fill-btn" data-mp="portal">${T("Gérer mon abonnement")}</button>${a.cancel ? "" : `<button type="button" class="cta-btn btn-ghost" data-mp="cancel">${T("Résilier")}</button>`}`; }
-    else if (a.kind === "gift") { badge = ["mp-ok", "Accès offert"]; line = `${T("L'équipe MOTORAUTO t'a offert l'accès à PRO jusqu'au")} ${dateStr(a.gift)}.`; actions = `<a class="cta-btn fill-btn" href="#/pro/explorer">${T("Explorer les modifications")}</a>`; }
-    else if (a.kind === "expired") { badge = ["mp-off", "Expiré"]; line = `${T("Ton accès PRO a pris fin le")} ${dateStr(a.until)}.`; actions = ctaHtml(a); }
-    else { badge = ["mp-off", "Aucun abonnement"]; line = T("Tu n'as pas encore d'abonnement MOTORAUTO PRO."); actions = ctaHtml(a); }
-    root.innerHTML = `${pending ? `<p class="mp-test" role="status">${T("Activation de ton abonnement en cours…")}</p>` : ""}${testBanner()}<section class="cg-block mp-acct"><header class="cg-bh"><h3>${T("Mon abonnement")}</h3><span class="mp-pill ${badge[0]}">${T(badge[1])}</span></header>
-      <p>${line}</p>${a.gift && a.kind !== "gift" ? `<p class="mp-fine">${T("En plus, l'équipe t'a offert l'accès jusqu'au")} ${dateStr(a.gift)}.</p>` : ""}<div class="mp-cta">${actions}</div>
-      <p class="mp-fine">${T("Résiliation en un clic, sans frais. L'accès est coupé à la fin de la période payée.")} <a href="#/legal">${T("Conditions et mentions légales")}</a></p></section>`;
+    else if (a.kind === "trial") { badge = ["mp-ok", "Essai gratuit"]; line = `${T("Ton essai gratuit se termine le")} ${dateStr(a.trialEnd)}. ${T("Sans carte enregistrée, l'accès s'arrête simplement à cette date.")}`; actions = `<button type="button" class="cta-btn btn-ghost compact-btn" data-mp="portal">${T("Gérer mon abonnement")}</button>`; }
+    else if (a.kind === "active") { badge = [a.late ? "mp-warn-b" : "mp-ok", a.late ? "Paiement en retard" : "Abonnement actif"]; line = a.late ? T("Le dernier paiement a échoué : mets à jour ta carte pour garder l'accès.") : a.cancel ? `${T("Résilié : l'accès reste ouvert jusqu'au")} ${dateStr(a.until)}.` : `${T("Prochain renouvellement le")} ${dateStr(a.until)}.`; actions = `<button type="button" class="cta-btn btn-ghost compact-btn" data-mp="portal">${T("Gérer mon abonnement")}</button>${a.cancel ? "" : `<button type="button" class="cta-btn btn-ghost compact-btn" data-mp="cancel">${T("Résilier")}</button>`}`; }
+    else { badge = ["mp-ok", "Accès offert"]; line = `${T("L'équipe MOTORAUTO t'a offert l'accès à PRO jusqu'au")} ${dateStr(a.gift)}.`; }
+    root.innerHTML = `<section class="mp-acct-bar" aria-label="${T("Mon abonnement")}"><span class="mp-pill ${badge[0]}">${T(badge[1])}</span><p>${line}${a.gift && a.kind !== "gift" && a.kind !== "admin" ? ` ${T("En plus, l'équipe t'a offert l'accès jusqu'au")} ${dateStr(a.gift)}.` : ""}</p>${actions ? `<div class="mp-acts">${actions}</div>` : ""}</section>`;
   }
 
   async function act(kind) {
@@ -209,7 +200,12 @@
     } finally { busy = false; }
   }
 
-  function paintAll() { renderOffer(); renderExplorer(); renderAccount(); paintChip(); }
+  function paintAll() {
+    const ok = C && access().ok;   // une seule page : l'offre sans accès, le bandeau + l'explorateur avec accès
+    if (ok) { const o = $("pro-offer"); if (o) o.innerHTML = ""; renderAccount(); renderExplorer(); }
+    else { renderOffer(); const x = $("pro-account"), e = $("pro-explorer"); if (x) x.innerHTML = ""; if (e) e.innerHTML = ""; }
+    paintChip();
+  }
   function paintChip() {
     const b = $("pro-btn"); if (!b) return;
     if (/^#\/pro(\/|$)/.test(location.hash)) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
