@@ -32,6 +32,7 @@
     const cs = getComputedStyle(probe), conv = de.classList.contains("chat-conv") && matchMedia("(max-width: 860px)").matches;
     r.style.setProperty("--safe-top", conv ? px(cs.paddingTop) + "px" : "0px");
     r.style.setProperty("--safe-bottom", (kbOpen ? 0 : px(cs.paddingBottom)) + "px");
+    r.style.setProperty("--kb-extra", kbOpen ? "40px" : "0px");   // barre d'accessoires d'iOS (flèches / ✓) au-dessus du clavier : la saisie reste au-dessus
   }
   new MutationObserver(() => requestAnimationFrame(sync)).observe(de, { attributes: true, attributeFilter: ["data-theme", "data-tone", "data-anim", "data-contrast", "style", "lang", "class"] });
 
@@ -46,22 +47,51 @@
   // clavier : le cadre du chat épouse exactement la zone visible (au-dessus du clavier). C'est le site qui le mesure : à l'intérieur
   // d'un cadre, iOS ne donne pas la hauteur du clavier, d'où la saisie qui restait cachée dessous.
   const vv = window.visualViewport;
-  function layout() {
+  function baseTop(host) {
+    const pt = host.style.top, pb = host.style.bottom;
+    host.style.top = topBase; host.style.bottom = "";
+    const t = host.getBoundingClientRect().top;
+    host.style.top = pt; host.style.bottom = pb;
+    return t;
+  }
+  let stabT = 0;
+  function layout(now) {
     const host = $("chat-embed"); if (!host) return;
     const open = !!(onChat && vv && (window.innerHeight - vv.height) > 80);
     if (open) lastOpenAt = Date.now();
     // pendant l'animation du clavier, iOS annonce brièvement une hauteur intermédiaire : on garde la dernière disposition plutôt que de redescendre la saisie
     if (hold && !open && kbOpen && Date.now() - lastOpenAt < 1200) { setTimeout(fitKb, 1250); return; }
-    host.style.top = topBase; host.style.bottom = "";
+    let top = topBase, bottom = "";
     if (open) {
-      const t = host.getBoundingClientRect().top;
-      host.style.top = Math.max(t, Math.round(vv.offsetTop)) + "px";
-      host.style.bottom = Math.max(0, Math.round(window.innerHeight - vv.offsetTop - vv.height)) + "px";
+      top = Math.max(Math.round(baseTop(host)), Math.round(vv.offsetTop));
+      const b = Math.max(0, Math.round(window.innerHeight - vv.offsetTop - vv.height));
+      // valeurs absurdes annoncées par iOS pendant l'animation (cadre quasi vide) : ignorées
+      if (!(window.innerHeight - top - b > window.innerHeight * 0.3)) return;
+      top += "px"; bottom = b + "px";
     }
+    // pendant le clavier, on n'applique qu'une disposition stable (même valeur 90 ms de suite) : plus de saut ni d'écran vide
+    if ((open || kbOpen) && !now && (top !== host.style.top || bottom !== host.style.bottom || open !== kbOpen)) {
+      clearTimeout(stabT); stabT = setTimeout(() => layout(true), 90); return;
+    }
+    const moved = top !== host.style.top || bottom !== host.style.bottom;
+    if (moved) { host.style.top = top; host.style.bottom = bottom; }
     if (open !== kbOpen) { kbOpen = open; de.classList.toggle("chat-kb", open); sync(); }
+    if (moved) note("→ " + (top || "-") + "/" + (bottom || "-"));
+  }
+  // mesure de mise au point (désactivée ; localStorage.ma_kbdbg = "1" pour l'afficher)
+  let hud = null, hlog = [], ht0 = 0, hhide = 0;
+  const dbgOn = () => { try { return localStorage.getItem("ma_kbdbg") === "1"; } catch (_) { return false; } };
+  function note(tag) {
+    if (!vv || !onChat || !dbgOn()) return;
+    const now = Date.now(); if (!ht0 || now - ht0 > 10000) { ht0 = now; hlog = []; }
+    hlog.push((now - ht0) + " " + tag + " ih" + Math.round(window.innerHeight) + " vh" + Math.round(vv.height) + " ot" + Math.round(vv.offsetTop) + " sy" + Math.round(window.scrollY) + (hold ? " H" : "") + (kbOpen ? " K" : ""));
+    if (hlog.length > 12) hlog.shift();
+    if (!hud) { hud = document.createElement("pre"); hud.setAttribute("aria-hidden", "true"); hud.style.cssText = "position:fixed;left:0;right:0;top:env(safe-area-inset-top,0);margin:0;padding:3px 6px;z-index:2147483647;pointer-events:none;font:10px/1.25 ui-monospace,monospace;color:#7CFC9A;background:rgba(0,0,0,.78);white-space:pre-wrap"; document.body.appendChild(hud); }
+    hud.hidden = false; hud.textContent = hlog.join("\n");
+    clearTimeout(hhide); hhide = setTimeout(() => { if (hud) hud.hidden = true; }, 7000);
   }
   let lraf = 0; const fitKb = () => { if (!lraf) lraf = requestAnimationFrame(() => { lraf = 0; layout(); }); };
-  if (vv) { vv.addEventListener("resize", fitKb); vv.addEventListener("scroll", fitKb); }
+  if (vv) { vv.addEventListener("resize", () => { note("vv.resize"); fitKb(); }); vv.addEventListener("scroll", () => { note("vv.scroll"); fitKb(); }); }
   window.addEventListener("resize", () => { fitTop(); fitKb(); }); window.addEventListener("orientationchange", () => setTimeout(fitTop, 300));
   function flag() {
     de.classList.toggle("on-chat", onChat);
@@ -74,8 +104,8 @@
     const d = e.data || {};
     if (d.ma === "chat-ready") { ready = true; const l = $("chat-embed-load"); if (l) l.hidden = true; sync(); if (pending) { go(pending); pending = ""; } }
     else if (d.ma === "chat-view") { view = d.view; flag(); }
-    else if (d.ma === "chat-focus") { hold = true; fitKb(); }
-    else if (d.ma === "chat-blur") { hold = false; fitKb(); afterKeyboard(); }
+    else if (d.ma === "chat-focus") { hold = true; note("FOCUS"); fitKb(); }
+    else if (d.ma === "chat-blur") { hold = false; note("BLUR"); fitKb(); afterKeyboard(); }
     else if (d.ma === "chat-nav" && typeof d.hash === "string" && d.hash.indexOf("#/") === 0) location.hash = d.hash;
   });
   // iOS fait défiler la page du site pour montrer le champ de saisie : une fois le clavier fermé, on la remet à sa place (barre de navigation et saisie tout en bas)
@@ -85,7 +115,7 @@
     if (vv && (window.innerHeight - vv.height) > 80) return;   // clavier encore ouvert
     if (hold && Date.now() - lastOpenAt < 1200) return;          // saisie en cours : ne pas annuler le décalage que fait iOS pour la montrer
     if (window.scrollY || window.scrollX || (vv && (vv.offsetTop || vv.offsetLeft))) {
-      window.scrollTo(0, 0); de.scrollTop = 0; document.body.scrollTop = 0;
+      note("settle→0"); window.scrollTo(0, 0); de.scrollTop = 0; document.body.scrollTop = 0;
     }
     layout();
   }

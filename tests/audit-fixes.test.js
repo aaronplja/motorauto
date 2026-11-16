@@ -246,7 +246,7 @@ ok("chat iPhone : recalcul de la hauteur après le clavier, salon sous la barre 
 // ---- série z11 : chat iPhone (décalage persistant, saisie sous le clavier, cadres débloqués)
 ok("chat iPhone : le cadre épouse la zone visible au-dessus du clavier, page du site défilable pour revenir à sa place", () => {
   const e = read("js/chat-embed.js"), r = read("css/refonte.css"), c = read("css/chat.css");
-  assert.ok(/function layout\(\)/.test(e) && /vv\.offsetTop - vv\.height/.test(e) && /host\.style\.bottom = Math\.max\(0/.test(e), "bas du cadre = bas de la zone visible");
+  assert.ok(/function layout\(now\)/.test(e) && /vv\.offsetTop - vv\.height/.test(e) && /host\.style\.bottom = bottom/.test(e), "bas du cadre = bas de la zone visible");
   assert.ok(/classList\.toggle\("chat-kb", open\)/.test(e) && /kbOpen \? 0 : px\(cs\.paddingBottom\)/.test(e), "marge basse nulle clavier ouvert, dock masqué");
   assert.ok(/html\.on-chat \{ overflow-x: hidden; overflow-y: auto;/.test(r) && /min-height: calc\(100dvh \+ 2px\)/.test(r) && !/html\.on-chat, html\.on-chat body \{ overflow: hidden; \}/.test(r), "plus d'overflow:hidden sur la page du site");
   assert.ok(/html\.chat-kb #mobile-touch-bar \{ display: none/.test(r), "dock masqué clavier ouvert");
@@ -262,4 +262,9 @@ ok("chat iPhone : saisie en cours signalée au site, la disposition au-dessus du
   const j = read("js/chat.js"), e = read("js/chat-embed.js");
   assert.ok(/tell\(\{ ma: "chat-focus" \}\)/.test(j) && /tell\(\{ ma: "chat-blur" \}\)/.test(j), "le chat signale focus et blur");
   assert.ok(/d\.ma === "chat-focus"\) \{ hold = true/.test(e) && /hold && Date\.now\(\) - lastOpenAt < 1200/.test(e), "pas de remise en place pendant la saisie");
+});
+ok("chat iPhone : disposition clavier stable (90 ms), valeurs absurdes ignorées, marge pour la barre d'accessoires iOS", () => {
+  const e = read("js/chat-embed.js"), c = read("css/chat3.css");
+  assert.ok(/stabT = setTimeout\(\(\) => layout\(true\), 90\)/.test(e) && /window\.innerHeight \* 0\.3/.test(e), "stabilisation");
+  assert.ok(/--kb-extra/.test(e) && /focus-within \.compose-wrap \{ padding-bottom: calc\(\.5rem \+ var\(--kb-extra/.test(c), "marge au-dessus de la barre d'accessoires");
 });

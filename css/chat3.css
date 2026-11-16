@@ -164,9 +164,9 @@ html, body.chat-page { background: var(--bg-core); }
 .chat-app .bubble:has(> .trade-card:only-child), .chat-app .bubble:has(> .car-share:only-child) { padding: 0; background: none; box-shadow: none; }
 
 /* ───────────────────────── saisie flottante ───────────────────────── */
-.compose-wrap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 0 max(.7rem, calc((100% - var(--chat-col)) / 2)) max(6px, calc(var(--safe-bottom, 0px) - 12px)); background: none !important; border: 0; pointer-events: none; display: flex; flex-direction: column; gap: .4rem; }
+.compose-wrap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 0 max(.7rem, calc((100% - var(--chat-col)) / 2)) calc(max(6px, calc(var(--safe-bottom, 0px) - 12px)) + var(--kb-extra, 0px)); background: none !important; border: 0; pointer-events: none; display: flex; flex-direction: column; gap: .4rem; }
 .compose-wrap > * { pointer-events: auto; }
-body.kb-open .compose-wrap, .chat-page:focus-within .compose-wrap { padding-bottom: .5rem; }
+body.kb-open .compose-wrap, .chat-page:focus-within .compose-wrap { padding-bottom: calc(.5rem + var(--kb-extra, 0px)); }
 .compose-bar { margin: 0; padding: .45rem .7rem; border-radius: 22px; gap: .7rem; }
 .compose-bar[hidden] { display: none; }
 .compose-bar img { border-radius: 10px; }
