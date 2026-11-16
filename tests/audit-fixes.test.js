@@ -293,3 +293,8 @@ ok("démarrage rapide : comparateurs réutilisés, recherche calculée à la dem
   assert.ok(/\$\{lazy \? 'loading="lazy" decoding="async"' : ""\}/.test(a), "images des cartes du catalogue différées");
   assert.ok(/requestAnimationFrame\(\(\) => \{ gliderRaf = 0; placeGlider\(gliderTarget\); \}\)/.test(a), "mesures de la navigation regroupées");
 });
+ok("pack ouvert sur mobile : les boutons de fin prennent la case libre de la grille (plus de chevauchement avec le récapitulatif)", () => {
+  const j = read("js/cards.js"), c = read("css/polish.css");
+  assert.ok(/endBox\.classList\.add\("in-grid"\); grid\.appendChild\(endBox\)/.test(j) && /results\.length % cols !== 0/.test(j), "déplacement dans la grille quand la dernière ligne n'est pas pleine");
+  assert.ok(/\.pk3 \.tcg-flips > #tcg-end\.in-grid \{ position: static;/.test(c), "boutons empilés, hors position collante");
+});

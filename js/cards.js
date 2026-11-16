@@ -468,6 +468,9 @@
         const sa = o.querySelector("#tcg-again-shop"); if (sa) sa.addEventListener("click", () => { closeOverlay(); setTimeout(() => openPack("shop", shopAgain), 220); });
         if (again) o.querySelector("#tcg-end").insertAdjacentHTML("afterbegin", `<button type="button" class="cta-btn btn-ghost" id="tcg-again">Ouvrir un autre pack</button>`);
         const ag = o.querySelector("#tcg-again"); if (ag) ag.addEventListener("click", () => { closeOverlay(); setTimeout(() => openPack(again), 220); });
+        // grille à plusieurs colonnes dont la dernière ligne n'est pas pleine (3 cartes sur 2 colonnes sur mobile) : les boutons prennent la case libre, au lieu de flotter par-dessus le récapitulatif
+        const grid = o.querySelector(".tcg-flips"), endBox = o.querySelector("#tcg-end"), cols = grid ? getComputedStyle(grid).gridTemplateColumns.split(" ").length : 0;
+        if (grid && endBox && cols > 1 && results.length % cols !== 0) { endBox.classList.add("in-grid"); grid.appendChild(endBox); }
         o.querySelector("#tcg-done").focus();
       };
       o.querySelectorAll(".flip").forEach((f) => { f.addEventListener("click", () => reveal(f)); f.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); reveal(f); } }); });

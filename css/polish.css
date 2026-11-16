@@ -182,5 +182,8 @@ img[class*="avatar"], img[data-fallback], .pro-id img { font-size: 0; color: tra
 .pk3 .tcg-actions, .pk3 #tcg-end { position: sticky; bottom: 0; z-index: 4; display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; padding: .8rem 0 calc(.2rem + var(--safe-bottom, 0px)); background: none; }
 .pk3 .tcg-actions[hidden], .pk3 #tcg-end[hidden], .pk3-sum[hidden] { display: none; }
 .pk3-sum { max-width: 100%; }
+/* boutons de fin de pack placés dans la case libre de la grille (mobile, 3 cartes sur 2 colonnes) */
+.pk3 .tcg-flips > #tcg-end.in-grid { position: static; display: flex; flex-direction: column; align-items: stretch; justify-content: center; align-self: center; gap: .6rem; padding: 0; margin: 0; min-width: 0; }
+.pk3 .tcg-flips > #tcg-end.in-grid .cta-btn { width: 100%; min-width: 0; white-space: normal; text-align: center; }
 @media (min-width: 700px) { .tcg-flips { grid-template-columns: repeat(auto-fit, minmax(140px, 170px)) !important; justify-content: center !important; } .tcg-flips .flip-front .tcg { font-size: .8em; } }
 @media (max-width: 330px) { .tcg-flips { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
