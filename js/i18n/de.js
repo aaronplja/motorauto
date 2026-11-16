@@ -1834,5 +1834,10 @@
 "Renfort de tringlerie": "Verstärkung der Schaltgestänge",
 "Sièges": "Sitze",
 "Habitacle": "Innenraum",
-"Batterie": "Batterie"
+"Batterie": "Batterie",
+"Tu es déjà abonné.": "Du bist bereits abonniert.",
+"Activation de ton abonnement en cours…": "Dein Abo wird aktiviert…",
+"Accès offert": "Zugang geschenkt",
+"L'équipe MOTORAUTO t'a offert l'accès à PRO jusqu'au": "Das MOTORAUTO-Team hat dir den PRO-Zugang geschenkt, bis zum",
+"En plus, l'équipe t'a offert l'accès jusqu'au": "Zusätzlich hat dir das Team den Zugang geschenkt, bis zum"
 }]);

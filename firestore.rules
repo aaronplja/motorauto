@@ -850,11 +850,18 @@ service cloud.firestore {
 
     // --- MOTORAUTO PRO : modifications techniques saisies par l'équipe, lisibles seulement par les abonnés actifs et les administrateurs.
     //     L'abonnement (pro_subs) n'est écrit que par les Cloud Functions (webhook de paiement) : jamais par le navigateur.
+    // abonnement payant en cours (écrit par le serveur) OU accès offert par un administrateur (pro_grants, sans limite de renouvellements)
+    function proSubOk(uid) {
+      return exists(/databases/$(database)/documents/pro_subs/$(uid))
+        && get(/databases/$(database)/documents/pro_subs/$(uid)).data.status in ['trialing', 'active', 'past_due']
+        && get(/databases/$(database)/documents/pro_subs/$(uid)).data.accessUntil > request.time;
+    }
+    function proGiftOk(uid) {
+      return exists(/databases/$(database)/documents/pro_grants/$(uid))
+        && get(/databases/$(database)/documents/pro_grants/$(uid)).data.until > request.time;
+    }
     function proActive() {
-      return signedIn()
-        && exists(/databases/$(database)/documents/pro_subs/$(request.auth.uid))
-        && get(/databases/$(database)/documents/pro_subs/$(request.auth.uid)).data.status in ['trialing', 'active', 'past_due']
-        && get(/databases/$(database)/documents/pro_subs/$(request.auth.uid)).data.accessUntil > request.time;
+      return signedIn() && (proSubOk(request.auth.uid) || proGiftOk(request.auth.uid));
     }
     function validProMod() {
       let d = request.resource.data;
@@ -886,6 +893,19 @@ service cloud.firestore {
     match /pro_subs/{uid} {
       allow read: if isOwner(uid) || isAdmin();
       allow write: if false;
+    }
+    // accès PRO offert à un pilote : un administrateur l'accorde, le prolonge ou le retire autant de fois qu'il le souhaite
+    match /pro_grants/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['until', 'note', 'by', 'byName', 'at', 'count', 'history', 'userName'])
+        && request.resource.data.until is timestamp
+        && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 200
+        && request.resource.data.get('userName', '') is string && request.resource.data.get('userName', '').size() <= 60
+        && request.resource.data.get('by', '') is string && request.resource.data.get('byName', '') is string && request.resource.data.get('byName', '').size() <= 60
+        && request.resource.data.get('count', 0) is number
+        && request.resource.data.get('history', []) is list && request.resource.data.get('history', []).size() <= 40;
+      allow delete: if isAdmin();
     }
     // structure (catégories) et interrupteurs de l'offre : aucun contenu technique, lisibles par tous ; écriture administrateurs seulement
     match /pro_config/{cid} {

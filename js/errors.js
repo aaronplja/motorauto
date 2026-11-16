@@ -12,7 +12,7 @@
   const IGNORE = /ResizeObserver loop|Script error\.?$|chrome-extension:|moz-extension:|safari-extension:|Non-Error promise rejection|Load failed$|NetworkError when attempting|The operation is insecure/i;
   const clip = (s, n) => String(s == null ? "" : s).replace(/\s+/g, " ").slice(0, n);
   function shape(kind, err, extra) {
-    const msg = clip(err && err.message ? err.message : err, 200), stack = String((err && err.stack) || ""), m = (extra && extra.src) || (stack.match(/(?:\/|\()([\w.\-]+\.js:\d+)(?::\d+)?\)?/) || [])[1] || "";
+    const msg = clip(err && err.message ? err.message : err, 200), stack = String((err && err.stack) || ""), m = (extra && extra.src) || ((stack.match(/(?:\/|\()([\w.\-]+\.js)(?:\?[^:\s)]*)?:(\d+)(?::\d+)?\)?/) || []).slice(1, 3).join(":") || "");
     if (!msg || IGNORE.test(msg) || IGNORE.test(stack.slice(0, 300))) return null;
     return { kind: clip(kind, 24), msg, src: clip(m, 80), page: clip((location.hash || "#/").slice(0, 60), 60), ua: clip((navigator.userAgent.match(/(Firefox|Edg|Chrome|Safari)\/[\d.]+/) || [""])[0] + " " + ((/Mobile|Android|iPhone/.test(navigator.userAgent)) ? "mobile" : "bureau"), 60) };
   }

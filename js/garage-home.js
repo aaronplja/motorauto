@@ -57,10 +57,11 @@
   let frFor = "";
   async function friends() {
     const box = document.getElementById("gh-friends"); if (!box || !C.user || !C.db) return;
-    if (frFor === C.user.uid && box.dataset.done === "1") return;
+    const me = C.user.uid;
+    if (frFor === me && box.dataset.done === "1") return;
     try {
-      const f = await C.db.collection("users").doc(C.user.uid).collection("following").limit(40).get();
-      const ids = f.docs.map((d) => d.id).slice(0, 24); if (!ids.length) { frFor = C.user.uid; box.dataset.done = "1"; return; }
+      const f = await C.db.collection("users").doc(me).collection("following").limit(40).get();
+      const ids = f.docs.map((d) => d.id).slice(0, 24); if (!ids.length) { frFor = me; box.dataset.done = "1"; return; }
       const rows = await Promise.all(ids.map(async (uid) => {
         let u = {}, pr = null;
         try { const d = await C.db.collection("users").doc(uid).get(); u = d.exists ? d.data() : {}; } catch (_) { /* ignoré */ }
@@ -68,7 +69,7 @@
         return { uid, name: u.username || u.pseudo || "", photo: u.photoURL || u.avatar || "", on: !!(pr && pr.online) };
       }));
       const on = rows.filter((r) => r.on && r.name).slice(0, 8);
-      frFor = C.user.uid; box.dataset.done = "1";
+      frFor = me; box.dataset.done = "1";
       if (!on.length) return;
       box.innerHTML = `<span class="gh-lab">${T("Amis en ligne")}</span><div class="gh-fr">${on.map((r) => `<a class="gh-av" href="#/pilote/${encodeURIComponent(r.uid)}" title="${C.esc(r.name)}">${r.photo ? `<img src="${C.esc(C.safeUrl(r.photo) || "")}" alt="" data-fallback="avatar">` : `<span>${C.esc(r.name.slice(0, 1).toUpperCase())}</span>`}<i class="gh-dot"></i></a>`).join("")}</div>`;
       box.hidden = false;
@@ -87,11 +88,14 @@
     let doc = window.MACards.mine();
     if (!doc) { try { doc = await window.MACards.load(false); } catch (_) { doc = null; } }
     if (!doc) doc = { dust: 0, count: 0, lastPack: "", bonus: 0 };
+    if (!C.user) return;   // déconnexion pendant le chargement : on ne dessine rien (sinon « n.user.uid » sur null)
+    const me = C.user.uid;
     let st = { xp: 0, days: 0 };
-    try { await window.MAGame.loadAll(); st = window.MAGame.statsOf(C.user.uid); } catch (_) { /* stats indisponibles */ }
+    try { await window.MAGame.loadAll(); st = window.MAGame.statsOf(me); } catch (_) { /* stats indisponibles */ }
+    if (!C.user) return;
     const lv = window.MAGame.levelOf(st.xp || 0), total = (C.cars ? C.cars.length : 0) + (G.CIRCUIT_CARDS ? G.CIRCUIT_CARDS.length : 0) + (G.LIVERIES ? G.LIVERIES.length : 0);
     const day = window.MAGame.day(), canDaily = doc.lastPack !== day, bonus = Number(doc.bonus) || 0;
-    const sig = [C.user.uid, st.xp, st.days, doc.dust, doc.count, doc.lastPack, bonus, total].join("|");
+    const sig = [me, st.xp, st.days, doc.dust, doc.count, doc.lastPack, bonus, total].join("|");
     if (box && sig === last && !box.classList.contains("gh-skel")) return; last = sig;
     if (box) { box.classList.remove("gh-skel"); box.removeAttribute("aria-busy"); }
     if (!box) { box = document.createElement("section"); box.id = "home-garage"; box.className = "stage-shell home-section gh"; box.setAttribute("aria-label", T("Mon garage")); host.insertAdjacentElement("afterbegin", box); }

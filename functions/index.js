@@ -142,3 +142,5 @@ exports.monthlyContest = onSchedule({ schedule: "10 0 1 * *", timeZone: "Europe/
 exports.weeklyBackup = require("./backup").createBackup({ region: REGION });
 
 if (process.env.MAIL_ENABLED === "true") Object.assign(exports, require("./mail-functions"));
+// paiement MOTORAUTO PRO (Stripe) : activé seulement si functions/.env contient PRO_ENABLED=true (voir pro-functions.js)
+if (process.env.PRO_ENABLED === "true") Object.assign(exports, require("./pro-functions"));

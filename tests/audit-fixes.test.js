@@ -62,6 +62,20 @@ ok("PRO : règles Firestore — abonnement écrit par le serveur seul, fiches pu
   assert(/allow create, update: if validProMod\(\);/.test(r) && /function validProMod\(\) \{[\s\S]*?isAdmin\(\)/.test(r));
   assert(/accessUntil > request\.time/.test(r));
 });
+ok("PRO : accès offert par un admin — règles, lecture client et écriture réservée aux admins", () => {
+  const r = read("firestore.rules"), pro = read("js/pro.js"), adm = read("js/pro-admin.js");
+  assert(/function proGiftOk\(uid\)[\s\S]*?pro_grants\/\$\(uid\)[\s\S]*?\.until > request\.time/.test(r));
+  assert(/function proActive\(\) \{\s*return signedIn\(\) && \(proSubOk\(request\.auth\.uid\) \|\| proGiftOk\(request\.auth\.uid\)\);/.test(r));
+  const g = r.match(/match \/pro_grants\/\{uid\} \{[\s\S]*?\n    \}/)[0];
+  assert(/allow read: if isOwner\(uid\) \|\| isAdmin\(\);/.test(g) && /allow create, update: if isAdmin\(\)/.test(g) && /allow delete: if isAdmin\(\);/.test(g));
+  assert(/pro_grants/.test(pro) && /kind: "gift"/.test(pro) && /pro_grants/.test(adm));
+  assert(/pro_grants/.test(read("functions/delete-account.js")));
+});
+ok("accueil : déconnexion pendant le chargement du garage sans erreur (n.user.uid sur null)", () => {
+  const g = read("js/garage-home.js");
+  assert(!/C\.user\.uid/.test(g.replace(/const me = C\.user\.uid;/g, "")), "C.user.uid ne doit être lu qu'une fois, juste après un contrôle");
+  assert(/if \(!C\.user\) return;\s*\/\/ déconnexion/.test(g));
+});
 ok("PRO : aucune clé secrète dans le code du site", () => {
   ["js/pro.js", "js/pro-admin.js", "js/pro-cats.js", "index.src.html"].forEach((f) => assert(!/sk_(live|test)_|whsec_|rk_(live|test)_/.test(read(f)), f));
 });

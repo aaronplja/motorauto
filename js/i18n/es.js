@@ -1834,5 +1834,10 @@
 "Renfort de tringlerie": "Refuerzo de varillaje",
 "Sièges": "Asientos",
 "Habitacle": "Habitáculo",
-"Batterie": "Batería"
+"Batterie": "Batería",
+"Tu es déjà abonné.": "Ya estás suscrito.",
+"Activation de ton abonnement en cours…": "Activando tu suscripción…",
+"Accès offert": "Acceso concedido",
+"L'équipe MOTORAUTO t'a offert l'accès à PRO jusqu'au": "El equipo de MOTORAUTO te ha regalado el acceso a PRO hasta el",
+"En plus, l'équipe t'a offert l'accès jusqu'au": "Además, el equipo te ha regalado el acceso hasta el"
 }]);

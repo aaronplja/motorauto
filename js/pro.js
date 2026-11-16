@@ -7,13 +7,14 @@
  *                         engineKey?, status: draft|reviewed|published, author, reviewedBy?, order, updatedAt }   écriture : administrateurs seulement
  *   pro_subs/{uid}       { status: trialing|active|past_due|canceled|expired, accessUntil, trialEnd?, cancelAtPeriodEnd, trialUsed, mode }
  *                         écrit UNIQUEMENT par les Cloud Functions (webhook Stripe) ; lisible par son propriétaire et les administrateurs
+ *   pro_grants/{uid}     { until, note, by, byName, count, history } accès OFFERT par un administrateur (renouvelable sans limite) ; écrit par les administrateurs
  * L'accès aux modifications est contrôlé par les règles Firestore (jamais seulement par cette interface) :
  * un abonné actif ne lit que les modifications « publiées » ; un administrateur lit et écrit tout, sans abonnement.
  * Aucun contenu technique n'est écrit dans le code : tout vient de la base remplie par l'équipe.
  */
 (function () {
   "use strict";
-  let C = null, sub = null, subUid = "", cats = null, cfg = { signups: false, live: false, priceEur: 5, trialDays: 90 }, loaded = false, selCar = "", busy = false;
+  let C = null, pending = false, sub = null, gift = null, subUid = "", cats = null, cfg = { signups: false, live: false, priceEur: 5, trialDays: 90 }, loaded = false, selCar = "", busy = false;
   const modsCache = new Map();
   const T = (s) => (window.MAI18n ? window.MAI18n.t(s) : s);
   const $ = (id) => document.getElementById(id);
@@ -33,16 +34,28 @@
   }
   async function loadSub(force) {
     const uid = C.user ? C.user.uid : "";
-    if (!uid) { sub = null; subUid = ""; return null; }
+    if (!uid) { sub = null; gift = null; subUid = ""; return null; }
     if (!force && subUid === uid) return sub;
-    subUid = uid; sub = null;
-    try { const d = await C.db.collection("pro_subs").doc(uid).get(); sub = d.exists ? d.data() : null; } catch (_) { sub = null; }
+    subUid = uid; sub = null; gift = null;
+    const [a, g] = await Promise.all([
+      C.db.collection("pro_subs").doc(uid).get().catch(() => null),
+      C.db.collection("pro_grants").doc(uid).get().catch(() => null)
+    ]);
+    if (subUid !== uid) return sub;   // changement de compte pendant la lecture
+    sub = a && a.exists ? a.data() : null; gift = g && g.exists ? g.data() : null;
     return sub;
   }
-  /** état d'accès : admin (gratuit) · trial · active · expired · none */
+  /** état d'accès : admin (gratuit) · gift (offert par l'équipe) · trial · active · expired · none ; `gift` = date de fin d'un accès offert encore valable */
   function access() {
     if (C.isAdmin) return { kind: "admin", ok: true };
     if (!C.user) return { kind: "out", ok: false };
+    const g = gift && ms(gift.until) > Date.now() ? ms(gift.until) : 0, b = subAccess();
+    if (b.ok) return g ? Object.assign(b, { gift: g }) : b;
+    if (g) return { kind: "gift", ok: true, until: g, gift: g, note: gift && gift.note ? String(gift.note) : "" };
+    if (b.kind === "none" && gift && ms(gift.until)) return { kind: "expired", ok: false, until: ms(gift.until) };   // ancien cadeau terminé
+    return b;
+  }
+  function subAccess() {
     if (!sub) return { kind: "none", ok: false };
     const until = ms(sub.accessUntil), live = until > Date.now();
     if (sub.status === "trialing" && live) return { kind: "trial", ok: true, until, trialEnd: ms(sub.trialEnd) || until };
@@ -69,7 +82,7 @@
   function ctaHtml(a) {
     const closed = !cfg.signups && !C.isAdmin;
     if (a.kind === "admin") return `<a class="cta-btn fill-btn" href="#/pro/explorer">${T("Explorer les modifications")}</a><p class="mp-note">${T("Accès administrateur : gratuit, sans abonnement.")}</p>`;
-    if (a.kind === "trial" || a.kind === "active") return `<a class="cta-btn fill-btn" href="#/pro/explorer">${T("Explorer les modifications")}</a><a class="cta-btn btn-ghost" href="#/pro/abonnement">${T("Mon abonnement")}</a>`;
+    if (a.kind === "trial" || a.kind === "active" || a.kind === "gift") return `<a class="cta-btn fill-btn" href="#/pro/explorer">${T("Explorer les modifications")}</a><a class="cta-btn btn-ghost" href="#/pro/abonnement">${T("Mon abonnement")}</a>`;
     if (!C.user) return `<button type="button" class="cta-btn fill-btn" data-mp="login">${T("Se connecter pour essayer")}</button>`;
     if (closed) return `<button type="button" class="cta-btn fill-btn" disabled>${T("Ouverture prochaine")}</button><p class="mp-note">${T("Les inscriptions ne sont pas encore ouvertes. Reviens bientôt !")}</p>`;
     if (a.kind === "expired") return `<button type="button" class="cta-btn fill-btn" data-mp="subscribe">${T("S'abonner")} · ${price()} ${T("par mois")}</button>`;
@@ -171,10 +184,11 @@
     if (a.kind === "admin") { badge = ["mp-ok", "Administrateur"]; line = T("Tu as un accès gratuit et permanent en tant qu'administrateur."); }
     else if (a.kind === "trial") { badge = ["mp-ok", "Essai gratuit"]; line = `${T("Ton essai gratuit se termine le")} ${dateStr(a.trialEnd)}. ${T("Sans carte enregistrée, l'accès s'arrête simplement à cette date.")}`; actions = `<button type="button" class="cta-btn fill-btn" data-mp="portal">${T("Gérer mon abonnement")}</button>`; }
     else if (a.kind === "active") { badge = [a.late ? "mp-warn-b" : "mp-ok", a.late ? "Paiement en retard" : "Abonnement actif"]; line = a.late ? T("Le dernier paiement a échoué : mets à jour ta carte pour garder l'accès.") : a.cancel ? `${T("Résilié : l'accès reste ouvert jusqu'au")} ${dateStr(a.until)}.` : `${T("Prochain renouvellement le")} ${dateStr(a.until)}.`; actions = `<button type="button" class="cta-btn fill-btn" data-mp="portal">${T("Gérer mon abonnement")}</button>${a.cancel ? "" : `<button type="button" class="cta-btn btn-ghost" data-mp="cancel">${T("Résilier")}</button>`}`; }
+    else if (a.kind === "gift") { badge = ["mp-ok", "Accès offert"]; line = `${T("L'équipe MOTORAUTO t'a offert l'accès à PRO jusqu'au")} ${dateStr(a.gift)}.`; actions = `<a class="cta-btn fill-btn" href="#/pro/explorer">${T("Explorer les modifications")}</a>`; }
     else if (a.kind === "expired") { badge = ["mp-off", "Expiré"]; line = `${T("Ton accès PRO a pris fin le")} ${dateStr(a.until)}.`; actions = ctaHtml(a); }
     else { badge = ["mp-off", "Aucun abonnement"]; line = T("Tu n'as pas encore d'abonnement MOTORAUTO PRO."); actions = ctaHtml(a); }
-    root.innerHTML = `${testBanner()}<section class="cg-block mp-acct"><header class="cg-bh"><h3>${T("Mon abonnement")}</h3><span class="mp-pill ${badge[0]}">${T(badge[1])}</span></header>
-      <p>${line}</p><div class="mp-cta">${actions}</div>
+    root.innerHTML = `${pending ? `<p class="mp-test" role="status">${T("Activation de ton abonnement en cours…")}</p>` : ""}${testBanner()}<section class="cg-block mp-acct"><header class="cg-bh"><h3>${T("Mon abonnement")}</h3><span class="mp-pill ${badge[0]}">${T(badge[1])}</span></header>
+      <p>${line}</p>${a.gift && a.kind !== "gift" ? `<p class="mp-fine">${T("En plus, l'équipe t'a offert l'accès jusqu'au")} ${dateStr(a.gift)}.</p>` : ""}<div class="mp-cta">${actions}</div>
       <p class="mp-fine">${T("Résiliation en un clic, sans frais. L'accès est coupé à la fin de la période payée.")} <a href="#/legal">${T("Conditions et mentions légales")}</a></p></section>`;
   }
 
@@ -185,12 +199,13 @@
       if (kind === "cancel" && !confirm(T("Résilier ton abonnement ? L'accès reste ouvert jusqu'à la fin de la période déjà payée."))) return;
       const fn = { subscribe: "proCheckout", portal: "proPortal", cancel: "proCancel" }[kind];
       const r = await callFn(fn, { origin: location.origin + location.pathname });
-      if (r && r.url) { location.href = r.url; return; }
+      if (r && r.url) { if (kind === "subscribe") { try { sessionStorage.setItem("ma_pro_pending", "1"); } catch (_) { /* ignoré */ } } location.href = r.url; return; }
       await loadSub(true); paintAll();
       C.toast(T("C'est fait."), "ok");
     } catch (e) {
       const m = String((e && e.message) || "");
-      C.toast(/closed|fermé|signups/i.test(m) ? T("Les inscriptions ne sont pas encore ouvertes.") : T("Le paiement n'est pas disponible pour le moment. Réessaie plus tard."), "err");
+      if (/already subscribed/i.test(m)) { await loadSub(true); paintAll(); C.toast(T("Tu es déjà abonné."), "ok"); return; }
+      C.toast(/signups closed/i.test(m) ? T("Les inscriptions ne sont pas encore ouvertes.") : T("Le paiement n'est pas disponible pour le moment. Réessaie plus tard."), "err");
     } finally { busy = false; }
   }
 
@@ -201,11 +216,19 @@
     const a = C && C.user ? access() : null;
     b.classList.toggle("mp-on", !!(a && a.ok));
   }
+  /** retour de la page de paiement : Stripe prévient le serveur (webhook) quelques secondes plus tard, on attend l'activation */
+  async function waitActivation() {
+    let wait = false; try { wait = sessionStorage.getItem("ma_pro_pending") === "1"; sessionStorage.removeItem("ma_pro_pending"); } catch (_) { /* ignoré */ }
+    if (!wait || pending) return;
+    pending = true; paintAll();
+    for (let i = 0; i < 10 && !access().ok; i++) { await new Promise((r) => setTimeout(r, 1500)); await loadSub(true); }
+    pending = false; paintAll();
+  }
   async function enter() {
-    await loadConfig(); await loadSub(true); paintAll();
+    await loadConfig(); await loadSub(true); paintAll(); waitActivation();
   }
 
-  window.MAPro = { access: () => (C ? access() : { kind: "out", ok: false }), cats: () => cats || defaults(), cfg: () => cfg, reload: async () => { await loadConfig(true); paintAll(); }, defaults, modsCache, fetchMods };
+  window.MAPro = { modHtml: (m, l) => modHtml(m, l), carName: (c) => carName(c), access: () => (C ? access() : { kind: "out", ok: false }), cats: () => cats || defaults(), cfg: () => cfg, reload: async () => { await loadConfig(true); paintAll(); }, defaults, modsCache, fetchMods };
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx;
