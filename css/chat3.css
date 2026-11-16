@@ -75,7 +75,8 @@ html, body.chat-page { background: var(--bg-core); }
 .chat-main > .conv-stage { position: absolute; inset: 0; }
 .conv-head { position: absolute; top: 0; left: 0; right: 0; z-index: 8; display: flex; align-items: center; gap: .5rem; padding: calc(.55rem + var(--safe-top)) max(.7rem, calc((100% - var(--chat-col)) / 2)) 0;
   background: none !important; border: 0 !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; pointer-events: none; }
-.conv-head::before { display: none !important; }
+/* voile en haut d'une conversation : les messages ne passent plus sous l'heure / l'encoche ni au-dessus de la pastille */
+.conv-head::before { display: block !important; content: ""; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--safe-top, 0px) + .55rem + 34px); pointer-events: none; z-index: 0; background: linear-gradient(to bottom, var(--bg-core) 0, var(--bg-core) calc(var(--safe-top, 0px) + .55rem + 10px), transparent 100%); }
 .conv-head > * { pointer-events: auto; }
 .fl-btn { flex: none; width: 50px; height: 50px; padding: 0; display: inline-grid !important; place-items: center; border-radius: 50%; color: var(--color-ink); cursor: pointer; margin: 0 !important; transition: transform .3s var(--dock-spring, ease), color .2s; }
 .fl-btn svg { width: 22px; height: 22px; display: block; }

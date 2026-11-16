@@ -233,3 +233,12 @@ ok("chat iPhone : page redimensionnée seulement clavier ouvert, saisie au nivea
   assert.ok(/max\(6px, calc\(var\(--safe-bottom, 0px\) - 12px\)\)/.test(c), "saisie au niveau du dock");
   assert.ok(/\.day-sep \{ position: static;/.test(c) && !/\.day-sep \{[^}]*position: sticky/.test(c), "date non collante");
 });
+
+// ---- série z10 : chat iPhone (hauteur réduite après le clavier, recouvrement en haut)
+ok("chat iPhone : recalcul de la hauteur après le clavier, salon sous la barre du haut, voile en haut de conversation", () => {
+  const e = read("js/chat-embed.js"), g = read("js/glassbar.js"), c = read("css/chat3.css");
+  assert.ok(/let peak = window\.innerHeight/.test(e) && /function remeasure\(\)/.test(e) && /sentinel\.style\.display = "none"/.test(e), "contournement du bug de hauteur iOS");
+  assert.ok(/function fitTop\(\)/.test(e) && /getBoundingClientRect\(\)\.bottom/.test(e), "le salon commence sous la barre réelle");
+  assert.ok(/box: "border-box"/.test(g) && /addEventListener\("resize", setH\)/.test(g), "hauteur de la barre du haut recalculée (encoche comprise)");
+  assert.ok(/\.conv-head::before \{ display: block !important;[^}]*linear-gradient/.test(c), "voile sous l'heure en conversation");
+});

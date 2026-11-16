@@ -93,7 +93,8 @@
   if (head) {
     head.addEventListener("focusin", () => setHead(false));
     const setH = () => de.style.setProperty("--hdr-h", head.offsetHeight + "px");
-    setH(); if (window.ResizeObserver) new ResizeObserver(setH).observe(head);
+    setH(); if (window.ResizeObserver) { try { new ResizeObserver(setH).observe(head, { box: "border-box" }); } catch (_) { new ResizeObserver(setH).observe(head); } }
+    window.addEventListener("resize", setH); window.addEventListener("orientationchange", () => setTimeout(setH, 300)); window.addEventListener("pageshow", setH); setTimeout(setH, 600);
   }
 
   // ---- un seul écouteur de défilement, avec hystérésis (distance cumulée dans un sens) pour que rien ne tremble

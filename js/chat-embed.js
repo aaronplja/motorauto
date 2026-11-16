@@ -35,10 +35,18 @@
   }
   new MutationObserver(() => requestAnimationFrame(sync)).observe(de, { attributes: true, attributeFilter: ["data-theme", "data-tone", "data-anim", "data-contrast", "style", "lang", "class"] });
 
+  // le salon commence exactement sous la barre du haut (hauteur réelle, encoche comprise) : plus de recouvrement de la recherche
+  function fitTop() {
+    const host = $("chat-embed"); if (!host) return;
+    const head = document.querySelector(".app-header");
+    if (!onChat || de.classList.contains("chat-conv") || !head || getComputedStyle(head).display === "none") { host.style.top = ""; return; }
+    host.style.top = Math.max(0, Math.round(head.getBoundingClientRect().bottom)) + "px";
+  }
+  window.addEventListener("resize", fitTop); window.addEventListener("orientationchange", () => setTimeout(fitTop, 300));
   function flag() {
     de.classList.toggle("on-chat", onChat);
     de.classList.toggle("chat-conv", onChat && view === "conv");
-    sync();
+    sync(); fitTop(); setTimeout(fitTop, 250); setTimeout(fitTop, 900);
   }
 
   window.addEventListener("message", (e) => {
@@ -46,7 +54,7 @@
     const d = e.data || {};
     if (d.ma === "chat-ready") { ready = true; const l = $("chat-embed-load"); if (l) l.hidden = true; sync(); if (pending) { go(pending); pending = ""; } }
     else if (d.ma === "chat-view") { view = d.view; flag(); }
-    else if (d.ma === "chat-blur") { [0, 120, 350, 800].forEach((t) => setTimeout(settle, t)); }
+    else if (d.ma === "chat-blur") afterKeyboard();
     else if (d.ma === "chat-nav" && typeof d.hash === "string" && d.hash.indexOf("#/") === 0) location.hash = d.hash;
   });
   // iOS fait défiler la page du site pour montrer le champ de saisie : une fois le clavier fermé, on la remet à sa place (barre de navigation et saisie tout en bas)
@@ -56,7 +64,22 @@
     if (vv && (window.innerHeight - vv.height) > 80) return;   // clavier encore ouvert
     if (window.scrollY || window.scrollX || (vv && (vv.offsetTop || vv.offsetLeft))) window.scrollTo(0, 0);
   }
-  const later = () => { clearTimeout(st); st = setTimeout(settle, 60); };
+  // bug iOS (PWA installée) : après la première ouverture du clavier, la hauteur de la fenêtre reste réduite d'environ 60 px
+  // (barre de navigation et saisie remontées, bande noire en bas). On mémorise la plus grande hauteur vue et, quand le clavier
+  // est fermé et que la hauteur reste trop courte, on force un nouveau calcul en masquant puis réaffichant un élément pleine hauteur.
+  let peak = window.innerHeight, sentinel = null;
+  const typing = () => { const a = document.activeElement; return !!a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable); };
+  window.addEventListener("resize", () => { peak = Math.max(peak, window.innerHeight); });
+  window.addEventListener("orientationchange", () => setTimeout(() => { peak = window.innerHeight; }, 600));
+  function remeasure() {
+    if (typing() || peak - window.innerHeight <= 4) return;
+    if (!sentinel) { sentinel = document.createElement("div"); sentinel.setAttribute("aria-hidden", "true"); sentinel.style.cssText = "position:fixed;left:0;top:0;width:1px;height:100%;pointer-events:none;visibility:hidden;z-index:-1"; document.body.appendChild(sentinel); }
+    sentinel.style.display = "none"; void sentinel.offsetHeight; sentinel.style.display = "";
+    void document.documentElement.offsetHeight;
+  }
+  const afterKeyboard = () => [0, 150, 400, 900].forEach((t) => setTimeout(() => { settle(); remeasure(); }, t));
+  document.addEventListener("focusout", () => { setTimeout(() => { if (!typing()) afterKeyboard(); }, 60); });
+  const later = () => { clearTimeout(st); st = setTimeout(() => { settle(); remeasure(); }, 60); };
   if (vv) { vv.addEventListener("resize", later); vv.addEventListener("scroll", later); }
   window.addEventListener("scroll", later, { passive: true });
   function go(sub) { const w = win(); if (w && sub && w.location.hash !== "#" + sub) w.location.hash = "#" + sub; }
