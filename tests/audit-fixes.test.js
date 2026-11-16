@@ -111,4 +111,21 @@ ok("PRO : une seule page adaptative (offre sans accès, bandeau + explorateur av
   assert(!/#\/pro\/(offre|explorer|abonnement)/.test(pro), "plus de lien vers les anciens onglets");
   assert(/function paintAll\(\)[\s\S]*?access\(\)\.ok/.test(pro));
 });
+ok("barre du haut : plus de bouton Nouveautés (elles sont dans les notifications), compte = roue crantée avec Administration · Réglages · Contact", () => {
+  const h = read("index.src.html"), nw = read("js/news.js"), nv = read("js/nav.js"), cm = read("js/common.js"), rt = read("js/router.js");
+  assert(!/id="news-btn"/.test(h), "bouton Nouveautés supprimé");
+  assert(/MA\.notif\.setExtra/.test(nw) && /function setExtra/.test(cm) && /notif-news/.test(cm + nw), "nouveautés injectées dans le panneau");
+  assert(/chip-gear/.test(h) && /is-gear/.test(nv), "roue crantée sur le bouton du compte");
+  ["#/admin", "#/reglages/profil", "#/contact"].forEach((x) => assert(nv.indexOf(x) >= 0, "entrée " + x));
+  assert(!/#\/pilote|#\/garage|#\/classement/.test(nv.slice(nv.indexOf("function build"), nv.indexOf("function build") + 1800)), "le reste du menu est ailleurs");
+  assert(/const inner = !!backTo && !landing/.test(rt), "pages internes de Jouer : retour au lieu de la barre des univers");
+});
+ok("chat : nouvelle interface (chat3.css) avec onglets Tout / Canaux / Privés, ids conservés", () => {
+  const h = read("chat.html"), c = read("css/chat3.css");
+  assert(/css\/chat3\.css/.test(h) && !/chat2\.css|chatglass\.css/.test(h), "chat3 remplace chat2 + chatglass");
+  assert(h.indexOf("chat3.css") > h.indexOf("themes-studio.css"), "chargé en dernier");
+  ["chat-channels-list", "chat-convs-list", "chat-send-form", "chat-input-message", "chat-messages-container", "dm-picker", "emoji-panel", "side-tabs"].forEach((id) => assert(h.indexOf('id="' + id + '"') >= 0, "#" + id));
+  assert(/data-tab="all"[\s\S]*data-tab="channels"[\s\S]*data-tab="dms"/.test(h) && /data-grp="dms"/.test(h));
+  assert(/\[data-grp="dms"\]/.test(c) && /@media \(max-width: 860px\)/.test(c));
+});
 console.log(n + " vérifications audit OK");

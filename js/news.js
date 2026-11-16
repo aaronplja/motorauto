@@ -83,12 +83,14 @@
     if (latest) seenSet(latest);
     document.dispatchEvent(new CustomEvent("ma:news-seen"));
   }
+  /** les nouveautés non lues s'affichent en tête du panneau de notifications (la cloche), plus de bouton dédié dans la barre du haut */
   async function paintDot() {
-    const dot = document.getElementById("news-dot"), btn = document.getElementById("news-btn"); if (!dot || !btn) return;
-    let n = 0; try { n = await unread(); } catch (_) { /* pastille facultative */ }
-    dot.hidden = !n; dot.textContent = n > 9 ? "9+" : String(n);
-    btn.setAttribute("aria-label", n ? `${T("Nouveautés")} (${n})` : T("Nouveautés"));
-    if (/^#\/nouveautes/.test(location.hash)) btn.setAttribute("aria-current", "page"); else btn.removeAttribute("aria-current");
+    if (!window.MA || !MA.notif || !MA.notif.setExtra) return;
+    let n = 0; try { n = await unread(); } catch (_) { /* facultatif */ }
+    if (!n) { MA.notif.setExtra({ count: 0, html: "" }); return; }
+    const seen = seenGet(), fresh = all().filter((x) => x.published !== false && String(x.date || "") > seen), top = pick(fresh[0]);
+    const line = n === 1 ? T("Nouvelle mise à jour") : `${n} ${T("nouvelles mises à jour")}`;
+    MA.notif.setExtra({ count: n, html: `<a class="notif-news" href="#/nouveautes"><span class="notif-av sys">M<i class="notif-badge-ico">🆕</i></span><span class="notif-body"><small class="notif-app">MOTORAUTO</small><span class="notif-line"><b>${line}</b></span><span class="notif-text" data-no-i18n>${C.esc(top.title)}</span></span></a>` });
   }
   window.MANews = { unread, paint: paintDot };
 

@@ -183,13 +183,17 @@
     groupBar(nav, route, "Pilotes", groups, PILOT_SUBS, g, g === "profil", (k) => PILOT_HREF[k]);
   }
 
-  function groupBar(nav, route, label, groups, subs, g, landing, hrefOf) {
+  function groupBar(nav, route, label, groups, subs, g, landing, hrefOf, backTo) {
     nav.removeAttribute("aria-label"); nav.removeAttribute("role"); nav.classList.add("play-bar"); nav.classList.remove("page-tabs", "fit");
-    nav.innerHTML = `<div class="page-tabs fit" role="tablist" aria-label="${label}" style="--n:${groups.length}">${groups.map(([k, l]) => `<a role="tab" class="page-tab${k === g ? " active" : ""}" href="${hrefOf(k)}" aria-selected="${k === g}"${k === g ? ' aria-current="page"' : ""}><span class="tl" data-s="${l}">${l}</span></a>`).join("")}</div>
+    // dans une sous-page : plus de barre des univers, seulement un lien de retour et les sous-onglets
+    const inner = !!backTo && !landing, gl = (groups.find((x) => x[0] === g) || [g, g])[1];
+    nav.innerHTML = inner ? `<a class="play-back" href="${hrefOf(g)}"><span aria-hidden="true">‹</span> <span>${gl}</span></a>
+      <div class="page-tabs fit play-subtabs" role="tablist" aria-label="${gl}" style="--n:${subs[g].length}">${subs[g].map((s) => { const on = !!s[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}><span class="tl" data-s="${s[4] || s[0]}">${s[0]}</span></a>`; }).join("")}</div>` :
+      `<div class="page-tabs fit" role="tablist" aria-label="${label}" style="--n:${groups.length}">${groups.map(([k, l]) => `<a role="tab" class="page-tab${k === g ? " active" : ""}" href="${hrefOf(k)}" aria-selected="${k === g}"${k === g ? ' aria-current="page"' : ""}><span class="tl" data-s="${l}">${l}</span></a>`).join("")}</div>
       ${landing ? "" : `<div class="page-tabs fit play-subtabs" role="tablist" aria-label="${groups.find((x) => x[0] === g)[1]}" style="--n:${subs[g].length}">${subs[g].map((s) => { const on = !!s[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}><span class="tl" data-s="${s[4] || s[0]}">${s[0]}</span></a>`; }).join("")}</div>`}`;
   }
   function renderPlayBar(nav, route) {
-    groupBar(nav, route, "Jouer", PLAY_GROUPS, PLAY_SUBS, playGroup(route), route.name === "play" && ["cartes", "minijeux", "troc", "communaute"].indexOf(route.params.tab) >= 0, (k) => "#/jouer/" + k);
+    groupBar(nav, route, "Jouer", PLAY_GROUPS, PLAY_SUBS, playGroup(route), route.name === "play" && ["cartes", "minijeux", "troc", "communaute"].indexOf(route.params.tab) >= 0, (k) => "#/jouer/" + k, true);
   }
   function renderSectionTabs(pageEl, route) {
     if (!pageEl) return;

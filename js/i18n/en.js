@@ -1844,5 +1844,14 @@
 "Chat": "Chat",
 "Mon compte": "My account",
 "Mon profil": "My profile",
-"Jeux": "Games"
+"Jeux": "Games",
+"Canaux": "Channels",
+"Privés": "Private",
+"Filtrer les conversations": "Filter conversations",
+"Nouvelle mise à jour": "New update",
+"nouvelles mises à jour": "new updates",
+"Toutes les nouveautés": "All updates",
+"Réglages et compte": "Settings and account",
+"Administration": "Administration",
+"Tout lire": "Mark all read"
 }]);

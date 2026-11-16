@@ -27,14 +27,13 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/chat.css">
   <link rel="stylesheet" href="css/season.css">
-  <link rel="stylesheet" href="css/chatglass.css">
   <link rel="stylesheet" href="css/studio.css">
   <link rel="stylesheet" href="css/homog.css">
-  <link rel="stylesheet" href="css/chat2.css">
   <link rel="stylesheet" href="css/presence.css">
   <link rel="stylesheet" href="css/plus.css">
   <link rel="stylesheet" href="css/studio-b.css">
   <link rel="stylesheet" href="css/themes-studio.css">
+  <link rel="stylesheet" href="css/chat3.css">
 </head>
 <body class="chat-page">
 
@@ -64,18 +63,24 @@
         <input type="search" id="side-filter" placeholder="Chercher un canal ou un pilote" autocomplete="off" aria-label="Filtrer les conversations">
       </div>
 
+      <div class="side-tabs" id="side-tabs" role="tablist" aria-label="Filtrer les conversations">
+        <button type="button" role="tab" data-tab="all" aria-selected="true">Tout</button>
+        <button type="button" role="tab" data-tab="channels" aria-selected="false">Canaux</button>
+        <button type="button" role="tab" data-tab="dms" aria-selected="false">Privés</button>
+      </div>
+
       <div class="side-scroll">
-        <div class="side-section">
+        <div class="side-section" data-grp="channels">
           <span>Canaux</span>
           <button type="button" class="mini-add" id="admin-add-channel-btn" title="Créer un canal" aria-label="Créer un canal" hidden>+</button>
         </div>
-        <div class="conv-list" id="chat-channels-list"></div>
+        <div class="conv-list" id="chat-channels-list" data-grp="channels"></div>
 
-        <div class="side-section"><span>Messages privés</span>
+        <div class="side-section" data-grp="dms"><span>Messages privés</span>
           <button type="button" class="new-dm-btn" id="new-dm-btn" aria-expanded="false" aria-label="Nouveau message"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Nouveau</span></button>
         </div>
-        <div class="conv-list dm-list" id="chat-convs-list"></div>
-        <div class="dm-picker" id="dm-picker" hidden>
+        <div class="conv-list dm-list" id="chat-convs-list" data-grp="dms"></div>
+        <div class="dm-picker" id="dm-picker" data-grp="dms" hidden>
           <div class="side-section sub"><span>Écrire à un pilote</span></div>
           <div class="conv-list" id="chat-private-pilots-list"></div>
         </div>

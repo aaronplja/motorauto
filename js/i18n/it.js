@@ -1844,5 +1844,14 @@
 "Chat": "Chat",
 "Mon compte": "Il mio account",
 "Mon profil": "Il mio profilo",
-"Jeux": "Giochi"
+"Jeux": "Giochi",
+"Canaux": "Canali",
+"Privés": "Privati",
+"Filtrer les conversations": "Filtra conversazioni",
+"Nouvelle mise à jour": "Nuovo aggiornamento",
+"nouvelles mises à jour": "nuovi aggiornamenti",
+"Toutes les nouveautés": "Tutte le novità",
+"Réglages et compte": "Impostazioni e account",
+"Administration": "Amministrazione",
+"Tout lire": "Segna tutto come letto"
 }]);

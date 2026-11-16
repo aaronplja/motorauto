@@ -19,6 +19,7 @@
     shield: '<path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6z"/>',
     out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
     cog: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+    news: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h7M9 8.5h3"/>',
     doc: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/>'
   };
   const ico = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
@@ -34,27 +35,18 @@
     const head = user
       ? `<div class="me-card"><span class="me-avatar">${av ? `<img src="${esc(av)}" alt="" data-fallback="avatar">` : ico("user")}</span><div class="me-who"><b>${esc(p.username || user.displayName || "Pilote")}</b><small>${c.isAdmin ? "Administrateur" : "Pilote connecté"}</small></div></div>`
       : `<div class="me-card guest"><div class="me-who"><b>Bienvenue sur MOTORAUTO</b><small>Connecte-toi pour ton garage, tes cartes et le salon.</small></div><button type="button" class="cta-btn me-login" data-me="login">Connexion</button></div>`;
-    const mine = user ? `
-      <div class="me-group"><h3>Mon compte</h3>
-        ${row("#/garage/apercu", "garage", "Mon garage")}
-        ${row("#/jouer/collection", "cards", "Mes cartes")}
-        ${row("#/pilotes", "user", "Mon profil")}
-        ${row("chat.html", "chat", "Messages", unread ? `<span class="me-badge">${unread}</span>` : "")}
-        ${c.isAdmin ? row("#/admin", "shield", "Administration", (window.MAAdminTodo && MAAdminTodo.count() ? `<span class="me-badge">${MAAdminTodo.count()}</span>` : "")) : ""}
-      </div>` : "";
+    const rows = [
+      c.isAdmin ? row("#/admin", "shield", "Administration", (window.MAAdminTodo && MAAdminTodo.count() ? `<span class="me-badge">${MAAdminTodo.count()}</span>` : "")) : "",
+      row("#/reglages/profil", "cog", "Réglages", "", 'data-me-link'),
+      row("#/nouveautes", "news", "Nouveautés"),
+      row("#/contact", "mail", "Contact")
+    ].join("");
     return `
-      <div class="me-sheet" role="dialog" aria-modal="true" aria-label="Mon compte">
+      <div class="me-sheet" role="dialog" aria-modal="true" aria-label="Réglages et compte">
         <span class="me-grip" aria-hidden="true"></span>
         <button type="button" class="me-close" data-me="close" aria-label="Fermer">&times;</button>
         ${head}
-        ${mine}
-        ${user ? "" : `<div class="me-group"><h3>Découvrir</h3>${row("chat.html", "chat", "Salon des pilotes")}</div>`}
-        <div class="me-group"><h3>Préférences &amp; aide</h3>
-          ${user ? row("#/reglages/profil", "cog", "Réglages", "", 'data-me-link') : ""}
-          ${row("#/contact", "mail", "Contact")}
-        </div>
-        <nav class="me-legal" aria-label="Informations légales"><a href="#/legal/mentions">Mentions légales</a><a href="#/legal/confidentialite">Confidentialité</a><a href="#/legal/cgu">Conditions</a></nav>
-        ${user ? `<div class="me-group"><button type="button" class="me-row danger" data-me="logout"><span class="me-ico">${ico("out")}</span><span class="me-label">Se déconnecter</span></button></div>` : ""}
+        <div class="me-group">${rows}</div>
       </div>`;
   }
 
@@ -115,5 +107,15 @@
   }, true);
   window.addEventListener("hashchange", () => { if (isOpen()) close(); });
   window.addEventListener("resize", () => { if (isOpen()) close(); });
+  // connecté : le bouton du compte devient une simple roue crantée ; visiteur : « Connexion »
+  function syncChip() {
+    const chip = $("user-profile-btn"); if (!chip) return;
+    const u = !!ctx().user;
+    chip.classList.toggle("is-gear", u);
+    chip.setAttribute("aria-label", u ? "Réglages et compte" : "Espace compte pilote");
+    chip.setAttribute("title", u ? "Réglages et compte" : "Connexion");
+  }
+  document.addEventListener("ma:auth", () => setTimeout(syncChip, 0));
+  setTimeout(syncChip, 300); setTimeout(syncChip, 1500);
   window.MANav = { open, close };
 })();

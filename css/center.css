@@ -1,8 +1,8 @@
 /* MOTORAUTO — recentrage : toutes les croix de fermeture sont dessinées (pas de caractère « × » décalé par la police) et les boutons centrent leur contenu. */
-.ac-x, .guide-x, .me-close, .lightbox-x, .spot-x, .adm-thumb-del, [data-sheet-close], .fz-x, .sx-close {
+.ac-x, .guide-x, .me-close, .lightbox-x, .spot-x, .adm-thumb-del, [data-sheet-close], .sx-close, .pe-x, .vt-x, .evalb-del, .fs-del {
   display: inline-grid !important; place-items: center; align-content: center; justify-content: center; padding: 0 !important; font-size: 0 !important; line-height: 0 !important; text-align: center;
 }
-.ac-x::before, .guide-x::before, .me-close::before, .lightbox-x::before, .spot-x::before, .adm-thumb-del::before, [data-sheet-close]::before {
+.ac-x::before, .guide-x::before, .me-close::before, .lightbox-x::before, .spot-x::before, .adm-thumb-del::before, [data-sheet-close]::before, .pe-x::before, .vt-x::before, .evalb-del::before, .fs-del::before {
   content: ""; display: block; width: 16px; height: 16px; background: currentColor;
   -webkit-mask: var(--x-mask) center / contain no-repeat; mask: var(--x-mask) center / contain no-repeat;
 }
@@ -16,3 +16,7 @@
 .tcg-actions, .pro-actions.pv2-actions { align-items: center; }
 .badge-tile, .stat-tile, .sx-kpi, .pro-stat { text-align: center; justify-items: center; }
 .empty-note { text-align: center; }
+
+.pe-x, .vt-x { width: 40px; height: 40px; border-radius: 50%; }
+.evalb-del::before, .fs-del::before { width: 12px; height: 12px; }
+.evalb-del, .fs-del { min-width: 22px; min-height: 22px; }

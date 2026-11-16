@@ -1844,5 +1844,14 @@
 "Chat": "Chat",
 "Mon compte": "Mein Konto",
 "Mon profil": "Mein Profil",
-"Jeux": "Spiele"
+"Jeux": "Spiele",
+"Canaux": "Kanäle",
+"Privés": "Privat",
+"Filtrer les conversations": "Unterhaltungen filtern",
+"Nouvelle mise à jour": "Neues Update",
+"nouvelles mises à jour": "neue Updates",
+"Toutes les nouveautés": "Alle Neuigkeiten",
+"Réglages et compte": "Einstellungen und Konto",
+"Administration": "Verwaltung",
+"Tout lire": "Alle als gelesen markieren"
 }]);
