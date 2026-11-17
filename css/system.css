@@ -54,3 +54,6 @@
   .hub-grid > .hub-tile.hub-feature, .hub-grid > .hub-tile.hub-wide { grid-column: 1 / -1; }
   .hub-tile small { font-size: .78rem; }
 }
+
+/* pas de ré-animation des tuiles quand une grille est simplement mise à jour (chiffres chargés après coup) */
+.hub-redraw .hub-grid > * { animation: none; }

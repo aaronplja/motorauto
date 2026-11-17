@@ -67,8 +67,8 @@
   // ------------------------------------------------------------------ défis
   function renderChallenges() {
     const root = document.getElementById("challenges-root"); if (!root) return;
-    if (!C.user) { root.innerHTML = `<div class="empty-note">Connecte-toi pour relever les défis de la semaine.<br><button type="button" class="cta-btn fill-btn mt" data-action="open-auth">Me connecter</button></div>`; return; }
-    if (!weekly) { root.innerHTML = weeklyErr ? `<div class="empty-note error">${C.esc(weeklyErr)}</div>` : `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
+    if (!C.user) { delete root.dataset.h; root.innerHTML = `<div class="empty-note">Connecte-toi pour relever les défis de la semaine.<br><button type="button" class="cta-btn fill-btn mt" data-action="open-auth">Me connecter</button></div>`; return; }
+    if (!weekly) { delete root.dataset.h; root.innerHTML = weeklyErr ? `<div class="empty-note error">${C.esc(weeklyErr)}</div>` : `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
     const esc = C.esc, done = weekly.items.filter((x) => x.claimed).length;
     const dl = weekly.daily, dpct = dl ? Math.round((dl.value / dl.goal) * 100) : 0;
     const dailyHtml = dl ? `<section class="chal-daily"><div class="chal-head"><div><h3 class="sec-title nomargin">Défi du jour</h3><p class="lap-meta">1 nouveau défi chaque jour, à minuit</p></div></div>
@@ -83,7 +83,7 @@
     const featHtml = ft && ft.car && ft.car.id ? `<section class="chal-feat"><div class="feat-head">${fImg ? `<img class="feat-img" src="${esc(fImg)}" alt="" loading="lazy" data-fallback="car">` : ""}<div><span class="status-tag-verified">Voiture de la semaine</span><h3 class="sec-title nomargin">${esc(ft.car.name)}</h3>
       <p class="lap-meta">3 défis sur cette voiture · ${ft.next && ft.next.name ? `la semaine prochaine : <b>${esc(ft.next.name)}</b>` : "nouvelle voiture chaque lundi"}</p></div></div>
       <div class="chal-list">${ft.items.map(chalRow).join("")}</div></section>` : "";
-    root.innerHTML = dailyHtml + featHtml + `<div class="chal-head chal-week-head"><div><h3 class="sec-title nomargin">Défis de la semaine</h3><p class="lap-meta">Nouveaux défis chaque lundi · <b id="chal-left">${remaining(weekly.endsAt - Date.now())}</b> restantes</p></div>
+    const html = dailyHtml + featHtml + `<div class="chal-head chal-week-head"><div><h3 class="sec-title nomargin">Défis de la semaine</h3><p class="lap-meta">Nouveaux défis chaque lundi · <b id="chal-left">${remaining(weekly.endsAt - Date.now())}</b> restantes</p></div>
         <div class="chal-score" aria-label="${done} défis sur ${weekly.items.length} récupérés"><b>${done}</b>/${weekly.items.length}</div></div>
       <div class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${weekly.items.length}" aria-valuenow="${done}"><i style="width:${(done / weekly.items.length) * 100}%"></i></div>
       <div class="chal-list">${weekly.items.map((x) => {
@@ -93,6 +93,8 @@
           ${x.claimed ? `<span class="chal-done">✓ Récupéré</span>` : x.done ? `<button type="button" class="cta-btn fill-btn compact-btn${busyId === x.id ? " ma-busy" : ""}" data-chal-claim="${esc(x.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="${hintOf(x.id)}">Y aller</a>`}</article>`;
       }).join("")}</div>
       <p class="sec-lead">🎁 Les ${weekly.items.length} défis validés dans la semaine rapportent <b>${weekly.perfectBonus} pack bonus</b> en plus.</p>` + cardChHtml();
+    if (root.dataset.h === html) return;   // contenu identique : on ne redessine pas (évite le clignotement)
+    root.dataset.h = html; root.innerHTML = html;
   }
   function hintOf(id) {
     id = String(id).replace(/^d-/, "").replace(/1$|3$/, (m) => m);
@@ -151,7 +153,7 @@
     const month = G.monthKey(), canDaily = (d) => d && d.lastPack !== G.dayKey();
     const tile = (href, ico, title, sub, badge, cls) => `<a class="hub-tile ${cls || ""}" href="${href}"><i class="hub-ico" aria-hidden="true">${ico}</i><b>${title}</b><small>${sub}</small>${badge ? `<span class="hub-badge">${badge}</span>` : ""}</a>`;
     const draw = (st) => {
-      root.innerHTML = group === "cartes" ? `<div class="hub-grid">
+      const html = group === "cartes" ? `<div class="hub-grid">
         ${tile("#/jouer/collection", "🎴", T("Collection"), st.cards, "", "hub-feature")}
         ${tile("#/jouer/boutique", HUBI.shop, T("Boutique"), st.shop, st.shopBadge)}
         ${tile("#/fusion", HUBI.fusion, T("Fusion"), T("5 doublons → 1 carte au-dessus"), "")}
@@ -169,6 +171,10 @@
         ${tile("#/jouer/concours", "📸", "Concours photo", st.contest, "")}
         ${tile("#/succes", HUBI.ach, T("Succès"), T("Tes badges et ta progression"), "")}
       </div>`;
+      // pas de re-dessin identique (sinon les tuiles rejouent leur animation d'entrée : effet de clignotement)
+      if (root.dataset.h === html) return;
+      const again = root.dataset.h !== undefined;
+      root.dataset.h = html; root.classList.toggle("hub-redraw", again); root.innerHTML = html;
     };
     const st = { chal: G.weekChallenges(G.weekKey(Date.now())).length + " défis chaque lundi et un défi du jour", chalBadge: "", contest: "Thème du mois, vote de la communauté", cards: "Tes cartes, albums et vitrine", shop: "Pack du jour, packs par pays", shopBadge: "", trade: "Échange tes doublons avec les pilotes", tradeBadge: "" };
     draw(st);
