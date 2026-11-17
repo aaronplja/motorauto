@@ -1,4 +1,6 @@
 {
+  "outputDirectory": ".",
+  "framework": null,
   "headers": [
     {
       "source": "/(js|css)/bundle(.*)\\.min\\.(js|css)",

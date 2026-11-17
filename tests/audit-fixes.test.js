@@ -493,3 +493,4 @@ ok("allègement : feuilles réunies, registre de modules figé, parcours navigat
   assert.ok(/Documentation : où trouver quoi/.test(read("README.md")), "README : index de la documentation");
   assert.ok(/document\.write\('<script src="js\/i18n\/' \+ lang/.test(read("js/i18n-boot.js")), "traductions : seule la langue active est chargée");
 });
+ok("Vercel : dossier de sortie « . » et aucun framework (le site est servi depuis la racine)", () => { const v = JSON.parse(read("vercel.json")); assert.strictEqual(v.outputDirectory, "."); assert.strictEqual(v.framework, null); });
