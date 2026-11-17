@@ -1,5 +1,28 @@
 /* MOTORAUTO — traduction de l'interface : en (généré). Clé = texte français ; {0},{1} = valeurs variables. */
 (window.__MA_DICT = window.__MA_DICT || []).push(["en", {
+"Compte": "Account",
+"Garages": "Garages",
+"Mot de passe oublié ?": "Forgot your password?",
+"Saisis d'abord ton adresse e-mail ci-dessus.": "First enter your email address above.",
+"Trop de tentatives. Réessaie dans quelques minutes.": "Too many attempts. Try again in a few minutes.",
+"Si un compte existe avec cette adresse, un e-mail pour choisir un nouveau mot de passe vient d'être envoyé. Pense à vérifier les courriers indésirables.": "If an account exists with this address, an email to choose a new password has just been sent. Check your spam folder too.",
+"Ton adresse e-mail n'est pas encore vérifiée. Ouvre le lien reçu par e-mail.": "Your email address is not verified yet. Open the link we emailed you.",
+"Renvoyer l'e-mail": "Resend the email",
+"J'ai vérifié": "I've verified",
+"E-mail de vérification envoyé.": "Verification email sent.",
+"Trop de demandes, réessaie dans quelques minutes.": "Too many requests, try again in a few minutes.",
+"Envoi impossible pour le moment.": "Can't send right now.",
+"Adresse pas encore vérifiée.": "Address not verified yet.",
+"Adresse vérifiée, merci !": "Address verified, thanks!",
+"Compte créé. Un e-mail de vérification t'a été envoyé.": "Account created. A verification email has been sent.",
+"Ce que les autres voient de toi": "What others see of you",
+"Présence": "Presence",
+"Communications": "Communications",
+"Erreur 404": "Error 404",
+"Cette page n'existe pas": "This page doesn't exist",
+"Le lien est peut-être ancien ou mal recopié. Reprends la route depuis l'un de ces points d'entrée.": "The link may be old or mistyped. Get back on track from one of these entry points.",
+"Retour à l'accueil": "Back to home",
+"Signaler un problème": "Report a problem",
 "Aller au contenu": "Skip to content",
 "Accueil": "Home",
 "Catalogue": "Catalogue",
@@ -1129,7 +1152,7 @@
 "Toi": "You",
 "Ta carte reste cachée de l'adversaire jusqu'au résultat.": "Your card stays hidden from your opponent until the result.",
 "Il ne joue plus : réclamer la victoire": "He stopped playing: claim the win",
-"Entraînement équitable : mains de force égale. Aucune récompense.": "Fair practice: hands of equal strength. No reward."
+"Entraînement équitable : mains de force égale. Aucune récompense.": "Fair practice: hands of equal strength. No reward.",
 }]);
 /* lot 3 */
 (window.__MA_DICT = window.__MA_DICT || []).push(["en", {
@@ -2141,5 +2164,8 @@
 "Télécharger": "Download",
 "Se connecter": "Sign in",
 "Messages": "Messages",
-"Message": "Message"
+"Message": "Message",
+"Nouvelle tentative…": "Retrying…",
+"Bloquer": "Block",
+"Connecte-toi pour retrouver ton garage, tes voitures et ton suivi.": "Sign in to find your garage, your cars and your tracking."
 }]);

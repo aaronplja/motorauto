@@ -20,5 +20,5 @@
   }
   const run = () => document.querySelectorAll(".page-title").forEach(decorate);
   run();
-  new MutationObserver(run).observe(document.body, { childList: true, subtree: true, characterData: true });
+  let qt = 0; new MutationObserver(() => { if (qt) return; qt = requestAnimationFrame(() => { qt = 0; run(); }); }).observe(document.body, { childList: true, subtree: true });
 })();

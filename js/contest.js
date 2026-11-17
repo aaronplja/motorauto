@@ -187,7 +187,7 @@
       const rb = t.closest("[data-report]");
       if (rb && rb.closest("#contest-root")) { reportEntry(rb.dataset.report); return; }
       const ph = t.closest("[data-photo]"); if (ph && ph.closest("#contest-root")) { lightbox(ph.dataset.photo, ph.dataset.cap); return; }
-      if (t.closest("[data-contest-del]") && mine && confirm("Retirer ta photo du concours ?")) { try { await C.db.collection("contest_entries").doc(mine.id).delete(); mine = null; await load(true); render(); } catch (ex) { C.toast("Suppression impossible : " + ex.message, "err"); } return; }
+      if (t.closest("[data-contest-del]") && mine && await window.MA.confirm("Retirer ta photo du concours ?", { ok: "Retirer" })) { try { await C.db.collection("contest_entries").doc(mine.id).delete(); mine = null; await load(true); render(); } catch (ex) { C.toast("Suppression impossible : " + ex.message, "err"); } return; }
       if (t.closest("[data-contest-open]")) { try { await window.MAGameAPI.call("adminContest", { action: "open" }); C.toast("Concours lancé.", "ok"); await load(true); render(); } catch (ex) { C.toast(ex.message, "err"); } }
     });
   });

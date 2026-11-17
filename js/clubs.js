@@ -27,7 +27,7 @@
   // ------------------------------------------------------------------ liste
   async function renderList() {
     const root = document.getElementById("clubs-root"); if (!root) return;
-    root.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    root.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try { await loadAll(); } catch (e) { root.innerHTML = `<div class="empty-note error">Clubs indisponibles (règles Firestore à publier ?).</div>`; return; }
     const xp = await xpMap();
     const rows = clubs.filter((c) => kindFilter === "all" || c.kind === kindFilter)
@@ -63,7 +63,7 @@
   async function renderClub(id) {
     const root = document.getElementById("club-root"), title = document.querySelector("#page-club .page-title"), sub = document.querySelector("#page-club .page-sub");
     if (!root) return;
-    root.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    root.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try { await loadAll(); } catch (e) { root.innerHTML = `<div class="empty-note error">Club indisponible.</div>`; return; }
     cur = id;
     const club = clubs.find((c) => c.id === id);
@@ -147,7 +147,7 @@
     } catch (ex) { C.toast("Publication impossible : " + ex.message, "err"); }
   }
   async function delClub(id) {
-    if (!confirm("Supprimer ce club ? (les messages restent en base mais ne sont plus affichés)")) return;
+    if (!await window.MA.confirm("Supprimer ce club ? (les messages restent en base mais ne sont plus affichés)", { ok: "Supprimer" })) return;
     try { await C.db.collection("clubs").doc(id).delete(); if (window.MALog && C.isAdmin) window.MALog.log("club-delete", { target: id, detail: "club supprimé" }); C.Router.go("/clubs"); } catch (e) { C.toast("Suppression impossible : " + e.message, "err"); }
   }
 
@@ -158,7 +158,7 @@
     ctx.Router.register("clubs", { enter: () => renderList() });
     ctx.Router.register("club", { enter: (p) => renderClub(p.id) });
     // lien « Clubs » dans l'onglet Communauté : bandeau d'accès
-    document.addEventListener("click", (e) => {
+    document.addEventListener("click", async (e) => {
       const k = e.target.closest("[data-club-kind]"); if (k) { kindFilter = k.dataset.clubKind; renderList(); return; }
       const j = e.target.closest("[data-club-join]"); if (j) { join(j.dataset.clubJoin); return; }
       const rl = e.target.closest("[data-club-rules]"); if (rl) { updateClub(rl.dataset.clubRules, { rules: String(document.getElementById("club-rules-text").value || "").trim().slice(0, 600) }); return; }
@@ -172,7 +172,7 @@
       }
       const idl = e.target.closest("[data-club-img-del]"); if (idl) { updateClub(idl.dataset.clubImgDel, { image: "" }); return; }
       const pd = e.target.closest("[data-club-post-del]");
-      if (pd && confirm("Supprimer ce message ?")) C.db.collection("club_posts").doc(pd.dataset.clubPostDel).delete().then(() => renderClub(cur)).catch((x) => C.toast("Suppression impossible : " + x.message, "err"));
+      if (pd && await window.MA.confirm("Supprimer ce message ?", { ok: "Supprimer" })) C.db.collection("club_posts").doc(pd.dataset.clubPostDel).delete().then(() => renderClub(cur)).catch((x) => C.toast("Suppression impossible : " + x.message, "err"));
     });
     document.addEventListener("change", (e) => { const im = e.target.closest && e.target.closest("[data-club-img]"); if (im) { uploadClubImg(im.dataset.clubImg, im.files && im.files[0]); im.value = ""; return; } const v = e.target.closest && e.target.closest("[data-club-vice]"); if (!v) return; const id = v.dataset.clubVice, m = members.find((x) => x.clubId === id && x.uid === v.value); updateClub(id, { viceUid: v.value, viceName: m ? String(m.name || "Pilote").slice(0, 40) : "" }); });
     document.addEventListener("ma:auth", () => { if (ctx.Router.is("clubs")) renderList(); else if (ctx.Router.current() && ctx.Router.current().name === "club") renderClub(cur); });

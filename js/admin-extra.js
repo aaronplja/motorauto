@@ -11,7 +11,7 @@
 
   async function inbox() {
     const box = document.getElementById("admin-inbox"); if (!box || !C.isAdmin) return;
-    box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     const get = (q) => q.get().then((s) => s.docs.map((d) => Object.assign({ id: d.id }, d.data()))).catch(() => []);
     const [sg, rp, lr, ct, cr, er] = await Promise.all([
       get(C.db.collection("suggestions").where("status", "==", "pending").limit(100)),

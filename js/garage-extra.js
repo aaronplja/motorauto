@@ -161,13 +161,13 @@
       if (!el) { const a = document.getElementById("pub-profile-cars"); if (!a) return; el = document.createElement("div"); el.id = "pub-gauge"; el.className = "game-zone"; a.insertAdjacentElement("afterend", el); }
       el.innerHTML = gaugeBlock(e.detail.list, "", false);
     });
-    document.addEventListener("click", (e) => {
+    document.addEventListener("click", async (e) => {
       const g = e.target.closest("[data-gauge-share]");
       if (g) { const c = gaugeCars.find((x) => x.id === g.dataset.gaugeShare); if (c && window.MAShare) window.MAShare.gaugeImage(c, c.name, c.pilot); return; }
       const cd = e.target.closest("[data-cost-del]");
-      if (cd && confirm("Supprimer cette dépense ?")) { sub("costs").doc(cd.dataset.costDel).delete().then(() => { costs = costs.filter((c) => c.id !== cd.dataset.costDel); renderCosts(); }).catch((x) => C.toast("Suppression impossible : " + x.message, "err")); return; }
+      if (cd && await window.MA.confirm("Supprimer cette dépense ?", { ok: "Supprimer" })) { sub("costs").doc(cd.dataset.costDel).delete().then(() => { costs = costs.filter((c) => c.id !== cd.dataset.costDel); renderCosts(); }).catch((x) => C.toast("Suppression impossible : " + x.message, "err")); return; }
       const jd = e.target.closest("[data-jr-del]");
-      if (jd && confirm("Supprimer cette photo du journal ?")) sub("journal").doc(jd.dataset.jrDel).delete().then(() => { journal = journal.filter((j) => j.id !== jd.dataset.jrDel); renderJournal(); }).catch((x) => C.toast("Suppression impossible : " + x.message, "err"));
+      if (jd && await window.MA.confirm("Supprimer cette photo du journal ?", { ok: "Supprimer" })) sub("journal").doc(jd.dataset.jrDel).delete().then(() => { journal = journal.filter((j) => j.id !== jd.dataset.jrDel); renderJournal(); }).catch((x) => C.toast("Suppression impossible : " + x.message, "err"));
     });
     document.addEventListener("input", (e) => { const r = e.target.closest("[data-ba-range]"); if (r) r.closest("[data-ba]").style.setProperty("--ba", r.value + "%"); });
   });

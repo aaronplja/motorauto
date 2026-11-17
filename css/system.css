@@ -1,0 +1,56 @@
+/* Système de design : en-tête de page unique, échelle de boutons, trois composants carte, bouton flottant, états vides, retour.
+   Chargé en dernier : il ne redéfinit que des valeurs (pas de !important). Barres du haut et du bas : jamais touchées. */
+:root {
+  --btn-h: 44px; --btn-h-sm: 36px;
+  --r-card: 24px; --r-tile: 18px; --r-row: 14px;
+  --pad-card: 1.1rem; --pad-tile: .85rem; --pad-row: .7rem .9rem;
+  --d-fast: .15s; --d-base: .2s; --d-slow: .3s;
+}
+
+/* ---- UI-01 : un seul gabarit d'en-tête de page (étiquette, titre, sous-titre, filet) */
+.page-head:not(:has(.garage-id)) { border-top: 1px solid var(--stroke-line); padding-top: .9rem; }
+.page-head .status-tag-verified { letter-spacing: .16em; }
+.page-head .page-title { font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.08; text-wrap: balance; }
+.page-head .page-sub { max-width: 60ch; }
+
+/* ---- UI-05 : deux hauteurs de bouton (44 px principal, 36 px compact) */
+.cta-btn { min-height: var(--btn-h); }
+.cta-btn.compact-btn, .compact-btn { min-height: var(--btn-h-sm); }
+.ssn-tab { min-height: var(--btn-h); }
+.link-btn, .secondary-destructive-btn { min-height: var(--btn-h-sm); }
+
+/* ---- UI-04 : trois composants carte (grande surface, tuile, ligne) au lieu de 31 variantes */
+.contact-card, .guide-card, .gh-card, .gate-card, .mini-card { border-radius: var(--r-card); }
+.mkt-card, .ac-card, .ssn-pick-card, .cc-card, .cod-card, .game-card, .quiz-card, .daily-card, .circ-card, .event-card, .trade-card, .anecdote-card, .engine-blueprint-card, .cg-pickcard, .dash-card { border-radius: var(--r-tile); }
+.stat-tile, .gh-tile, .theme-tile, .ph-tile, .badge-tile, .play-tile, .mk-card, .cost-card, .circuit-card, .ribbon-card { border-radius: var(--r-row); }
+
+/* ---- UI-08 : « Pack du jour » flottant : rond et compact sur téléphone, jamais sur un formulaire (voir fab-pack.js) */
+@media (max-width: 899px) {
+  .fab-pack { width: 48px; padding: 0; justify-content: center; right: 12px; }
+  .fab-pack span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
+/* ---- UI-14 : états vides lisibles (cadre pointillé) ; les messages d'erreur et de chargement restent discrets */
+.empty-note:not(.error):not(.small) { border: 1px dashed var(--stroke-line); background: color-mix(in srgb, var(--bg-surface) 60%, transparent); }
+.empty-note a { display: inline-flex; align-items: center; min-height: var(--btn-h-sm); padding: 0 .9rem; margin-top: .4rem; border-radius: 999px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--accent); font-weight: 700; text-decoration: none; }
+
+/* ---- UI-15 : fiche voiture, six essentiels (3 chiffres clés + production, catégorie, motorisations) */
+.sheet-kpis > div:nth-child(n+4) { border-top: 1px solid var(--stroke-line); }
+.sheet-kpis > div:nth-child(n+4) b { font-size: 1.2rem; line-height: 1.2; white-space: nowrap; }
+
+/* ---- UX-09 : un seul bouton retour (pilule), identique partout */
+.back-link, .play-back { display: inline-flex; align-items: center; gap: .4rem; min-height: var(--btn-h-sm); padding: .35rem 1rem; border-radius: 999px; font-weight: 700; font-size: .88rem; text-decoration: none; color: var(--accent); background: var(--bg-surface); border: 1px solid var(--stroke-line); width: fit-content; }
+
+/* ---- UX-12 : durées et courbes d'animation homogènes */
+@media (hover: hover) { .cta-btn, .chip, .back-link, .play-back { transition-duration: var(--d-base); transition-timing-function: var(--ease-out); } }
+
+/* ---- DEL-08 : sur téléphone, le sous-titre de page ne dépasse pas deux lignes (le détail est dans le bouton d'aide « ? ») */
+@media (max-width: 640px) { .page-head .page-sub { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } }
+
+/* ---- ORG-03 : tuiles de « Jouer » en deux colonnes sur téléphone (la tuile principale et une éventuelle dernière tuile seule prennent toute la largeur) */
+@media (max-width: 560px) {
+  .hub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+  .hub-grid > .hub-tile { padding: .95rem; }
+  .hub-grid > .hub-tile.hub-feature, .hub-grid > .hub-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .hub-tile small { font-size: .78rem; }
+}

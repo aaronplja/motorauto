@@ -14,7 +14,7 @@ html nav[data-section="pilotes"].play-bar:not(.inner) .page-tab { min-height: 44
 html nav[data-section="pilotes"].play-bar:not(.inner) .play-subtabs { margin-top: 2px; padding-top: 4px !important; border-top: 1px solid var(--stroke-line) !important; border-radius: 0 !important; }
 html nav[data-section="pilotes"].play-bar:not(.inner) .play-subtabs .page-tab { min-height: 40px; }
 @media (min-width: 481px) { html nav[data-section="pilotes"].play-bar:not(.inner) .play-subtabs .tl { font-size: .84rem; } }
-@media (max-width: 480px) { html nav[data-section="pilotes"].play-bar:not(.inner) .play-subtabs .tl::after { font-size: .7rem; } }
+@media (max-width: 480px) { html nav[data-section="pilotes"].play-bar:not(.inner) .play-subtabs .tl::after { font-size: .75rem; } }
 
 /* bouton « retour » à côté des sous-onglets (Jouer, Pilotes) : même hauteur et même axe que la barre */
 html .play-bar.inner { align-items: stretch; }

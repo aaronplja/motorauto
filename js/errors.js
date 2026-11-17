@@ -35,7 +35,7 @@
   const isOpen = (e) => !e.done || (e.n || 0) > (e.doneN || 0);
   async function render() {
     const root = document.getElementById("errors-root"); if (!root || !C.isAdmin) return;
-    root.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    root.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     let list = [];
     try { list = await load(); } catch (e) { root.innerHTML = `<div class="empty-note error">Journal illisible : ${C.esc(e.message)}. Publie le fichier firestore.rules complet.</div>`; return; }
     count = list.filter(isOpen).length;

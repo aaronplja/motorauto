@@ -11,7 +11,7 @@
   container-type: inline-size; isolation: isolate; color: #fff; text-align: left;
   background: linear-gradient(165deg, color-mix(in srgb, var(--rc) 28%, #0b0f19) 0%, #0a0d16 62%);
   box-shadow: 0 10px 22px -14px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.06) inset;
-  transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s; -webkit-tap-highlight-color: transparent;
+  transition: transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s; -webkit-tap-highlight-color: transparent;
 }
 .tcg::before {                       /* cadre dégradé */
   content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 2.5px; z-index: 4; pointer-events: none;
@@ -37,7 +37,7 @@
 .tcg .tcg-foil { animation: none; }
 .tcg-big .tcg-foil, .tcg-grid .tcg:hover .tcg-foil, .flip.on .tcg .tcg-foil { animation: shine 3.4s cubic-bezier(.4,0,.2,1) infinite; }
 @keyframes shine { 0% { transform: translateX(-110%); } 55%, 100% { transform: translateX(110%); } }
-.tcg-holo { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; mix-blend-mode: color-dodge; transition: opacity .25s;
+.tcg-holo { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; mix-blend-mode: color-dodge; transition: opacity .3s;
   background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgba(255,255,255,.7), transparent 38%), conic-gradient(from 210deg at var(--mx, 50%) var(--my, 30%), #ff7ad9, #ffd36b, #7bffb2, #6bd3ff, #b58bff, #ff7ad9); }
 .tcg-epic .tcg-holo, .tcg-legendary .tcg-holo, .tcg-special .tcg-holo { opacity: .16; }
 .tcg-tilting .tcg-holo { opacity: .38; }
@@ -110,7 +110,7 @@
 .pk3-pack.test { background: linear-gradient(150deg, #8b5cf6, #1e1b4b 72%); box-shadow: 0 30px 60px -20px #8b5cf6, 0 0 0 2px rgba(255,255,255,.2) inset; }
 .pk3-pack::before { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.35) 50%, transparent 65%); transform: translateX(-120%); animation: shine 2.8s ease-in-out infinite; }
 .pk3-pack b { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; font-size: 1.4rem; font-weight: 900; letter-spacing: .12em; text-shadow: 0 2px 14px rgba(0,0,0,.5); }
-.pk3-pack b span { display: block; font-size: .7rem; font-weight: 700; letter-spacing: .3em; opacity: .85; margin-top: .4rem; }
+.pk3-pack b span { display: block; font-size: .75rem; font-weight: 700; letter-spacing: .3em; opacity: .85; margin-top: .4rem; }
 .pk3-pack::after { content: ""; position: absolute; left: 0; right: 0; top: 14%; height: 3px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.55) 0 6px, transparent 6px 12px); }
 .pk3-pack.shake { animation: pkshake .55s linear; }
 .pk3-pack.gone { animation: pkgone .45s cubic-bezier(.5,0,.8,.4) forwards; pointer-events: none; }
@@ -135,7 +135,7 @@
 @keyframes ring { 0% { opacity: .95; transform: scale(.85); } 100% { opacity: 0; transform: scale(1.35); } }
 .spark { position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; margin: -3.5px; border-radius: 50%; background: var(--ring, #fff); pointer-events: none; animation: spark .9s cubic-bezier(.1,.7,.3,1) forwards; }
 @keyframes spark { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
-.tcg-tag { position: absolute; bottom: -1.6rem; left: 0; right: 0; font-size: .72rem; font-weight: 800; letter-spacing: .06em; opacity: 0; transition: opacity .3s .5s; }
+.tcg-tag { position: absolute; bottom: -1.6rem; left: 0; right: 0; font-size: .75rem; font-weight: 800; letter-spacing: .06em; opacity: 0; transition: opacity .3s .5s; }
 .flip.on .tcg-tag { opacity: 1; }
 .pk3-sum { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-top: .2rem; }
 .pk3-sum span { padding: .3rem .8rem; border-radius: 99px; background: rgba(255,255,255,.1); font-size: .82rem; font-weight: 700; }
@@ -143,8 +143,8 @@
 
 /* ---- détail : carte 3D, retournable ---- */
 .tcg-solo { display: grid; justify-items: center; perspective: 1000px; }
-.tcg-3d { width: min(260px, 66vw); aspect-ratio: 5 / 7; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .12s linear; will-change: transform; }
-.tcg-3d.rest { transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+.tcg-3d { width: min(260px, 66vw); aspect-ratio: 5 / 7; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .15s linear; will-change: transform; }
+.tcg-3d.rest { transition: transform .45s cubic-bezier(.2,.8,.2,1); }
 .tcg-3d-in { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2,.8,.2,1); }
 .tcg-3d.back .tcg-3d-in { transform: rotateY(180deg); }
 .tcg-3d-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; }
@@ -200,7 +200,7 @@ button.tcg-dust b { display: inline-flex; align-items: center; gap: .3rem; }
 .dustlog-bal { margin: 0 0 1rem; color: var(--color-muted); } .dustlog-bal b { color: var(--color-ink); font-size: 1.6rem; }
 .dustlog ul { list-style: none; margin: 0 0 1rem; padding: 0; }
 .dustlog li { display: flex; justify-content: space-between; align-items: center; gap: .8rem; padding: .6rem 0; border-bottom: 1px solid var(--stroke-line); }
-.dustlog li small { display: block; color: var(--color-muted); font-size: .72rem; }
+.dustlog li small { display: block; color: var(--color-muted); font-size: .75rem; }
 .dustlog li.gain b { color: #16a34a; } .dustlog li.spend b { color: #dc2626; }
 .dustlog li b { display: inline-flex; align-items: center; gap: .25rem; }
 @media (prefers-reduced-motion: reduce) { .pk3-wait { animation: none; } }
@@ -247,7 +247,7 @@ button.tcg-dust b { display: inline-flex; align-items: center; gap: .3rem; }
   background:
     radial-gradient(circle at var(--px) var(--py), rgba(255,255,255,.75), transparent 34%),
     linear-gradient(115deg, #ff5f6d 0%, #ffc371 18%, #7bffb2 36%, #5ac8fa 54%, #a78bfa 72%, #ff5f6d 90%);
-  background-size: 100% 100%, 240% 240%; background-position: 0 0, var(--px) var(--py); transition: opacity .25s; }
+  background-size: 100% 100%, 240% 240%; background-position: 0 0, var(--px) var(--py); transition: opacity .3s; }
 .has-tilt .tcg .tcg-holo { --px: var(--tilt-x, 50%); --py: var(--tilt-y, 30%); }
 .tcg-legendary .tcg-holo { opacity: .28; } .tcg-special .tcg-holo { opacity: .3; filter: saturate(.7); } .tcg-mythic .tcg-holo { opacity: .46; } .tcg-shiny .tcg-holo { opacity: .5; }
 .tcg:hover .tcg-holo, .tcg-big .tcg-holo { opacity: .62; }

@@ -1,18 +1,43 @@
+/* Centrage et albums : anciennes feuilles center/albums3 réunies, même ordre. */
+/* ===== center.css (fusionné) ===== */
+/* MOTORAUTO — recentrage : toutes les croix de fermeture sont dessinées (pas de caractère « × » décalé par la police) et les boutons centrent leur contenu. */
+.ac-x, .guide-x, .me-close, .lightbox-x, .spot-x, .adm-thumb-del, [data-sheet-close], .sx-close, .pe-x, .vt-x, .evalb-del, .fs-del {
+  display: inline-grid !important; place-items: center; align-content: center; justify-content: center; padding: 0 !important; font-size: 0 !important; line-height: 0 !important; text-align: center;
+}
+.ac-x::before, .guide-x::before, .me-close::before, .lightbox-x::before, .spot-x::before, .adm-thumb-del::before, [data-sheet-close]::before, .pe-x::before, .vt-x::before, .evalb-del::before, .fs-del::before {
+  content: ""; display: block; width: 16px; height: 16px; background: currentColor;
+  -webkit-mask: var(--x-mask) center / contain no-repeat; mask: var(--x-mask) center / contain no-repeat;
+}
+.adm-thumb-del::before { width: 12px; height: 12px; } .lightbox-x::before { width: 20px; height: 20px; }
+.ac-x, .guide-x, .me-close, .spot-x { width: 38px; height: 38px; border-radius: 50%; }
+/* contenu centré partout où un bouton ou une pastille porte du texte court */
+.cta-btn, .chip, .seg-btn, .filter-pill, .quick-chip, .pro-tab, .page-tab, .touch-bar-item, .icon-btn { text-align: center; }
+.cta-btn:not(.compact-btn):not([class*="block"]) { align-items: center; justify-content: center; }
+.dialog-close-btn, .conv-del, .bar-close, .lightbox-close, .compare-clear { align-self: center; flex: none; }
+.dialog-header { align-items: center; }
+.tcg-actions, .pro-actions.pv2-actions { align-items: center; }
+.badge-tile, .stat-tile, .sx-kpi, .pro-stat { text-align: center; justify-items: center; }
+.empty-note { text-align: center; }
+
+.pe-x, .vt-x { width: 40px; height: 40px; border-radius: 50%; }
+.evalb-del::before, .fs-del::before { width: 12px; height: 12px; }
+.evalb-del, .fs-del { min-width: 22px; min-height: 22px; }
+/* ===== albums3.css (fusionné) ===== */
 /* MOTORAUTO — intérieur d'un album (refonte) : défilement de page unique, cartes en grande taille, filtres par rareté. */
 .tcg-overlay[data-kind="album"]{place-items:start center}
 .ab3{width:min(960px,100%);display:grid;gap:14px;padding-bottom:calc(88px + var(--safe-bottom,0px));text-align:left}
 .ab3-bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:8px 2px;background:linear-gradient(180deg,rgba(8,10,20,.96) 70%,transparent)}
-.ab3-bar h2{margin:0;font-size:1.25rem;line-height:1.1}.ab3-bar small{display:block;opacity:.6;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
+.ab3-bar h2{margin:0;font-size:1.25rem;line-height:1.1}.ab3-bar small{display:block;opacity:.6;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
 .ab3-back{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font-size:1.6rem;line-height:1;cursor:pointer;transition:background .2s,transform .2s}
 .ab3-back:hover{background:rgba(255,255,255,.14);transform:translateX(-2px)}
 .ab3-hero{display:flex;gap:18px;align-items:center;padding:16px;border-radius:22px;background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.1)}
 .ab3-ring{--p:0%;flex:none;width:104px;height:104px;border-radius:50%;display:grid;place-content:center;text-align:center;position:relative;background:conic-gradient(#3fd68a var(--p),rgba(255,255,255,.12) 0)}
 .ab3-ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:#0b0e1a}
-.ab3-ring b,.ab3-ring span{position:relative}.ab3-ring b{font-size:1.7rem;line-height:1}.ab3-ring b small{font-size:.5em;opacity:.7}.ab3-ring span{font-size:.7rem;opacity:.7}
+.ab3-ring b,.ab3-ring span{position:relative}.ab3-ring b{font-size:1.7rem;line-height:1}.ab3-ring b small{font-size:.5em;opacity:.7}.ab3-ring span{font-size:.75rem;opacity:.7}
 .ab3-info{flex:1;min-width:0;display:grid;gap:10px}
 .ab3-state{font-weight:800;font-size:.95rem}.ab3-state.ok{color:#3fd68a}.ab3-state.ready{color:#ffb300}
 .ab3-meter{position:relative;display:block;height:10px;border-radius:99px;background:rgba(255,255,255,.12)}
-.ab3-meter u{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3b9dff,#3fd68a);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.ab3-meter u{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3b9dff,#3fd68a);transition:width .45s cubic-bezier(.2,.8,.2,1)}
 .ab3-meter i{position:absolute;top:-2px;bottom:-2px;width:2px;background:rgba(255,255,255,.25)}.ab3-meter i.on{background:#fff}
 .ab3-rewards{display:flex;flex-wrap:wrap;gap:6px}
 .ab3-rw{padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.08);font-size:.78rem;font-weight:700}

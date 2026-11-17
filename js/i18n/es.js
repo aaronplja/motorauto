@@ -1,5 +1,28 @@
 /* MOTORAUTO — traduction de l'interface : es (généré). Clé = texte français ; {0},{1} = valeurs variables. */
 (window.__MA_DICT = window.__MA_DICT || []).push(["es", {
+"Compte": "Cuenta",
+"Garages": "Garajes",
+"Mot de passe oublié ?": "¿Olvidaste tu contraseña?",
+"Saisis d'abord ton adresse e-mail ci-dessus.": "Primero escribe tu correo arriba.",
+"Trop de tentatives. Réessaie dans quelques minutes.": "Demasiados intentos. Inténtalo de nuevo en unos minutos.",
+"Si un compte existe avec cette adresse, un e-mail pour choisir un nouveau mot de passe vient d'être envoyé. Pense à vérifier les courriers indésirables.": "Si existe una cuenta con este correo, se ha enviado un mensaje para elegir una nueva contraseña. Revisa también el correo no deseado.",
+"Ton adresse e-mail n'est pas encore vérifiée. Ouvre le lien reçu par e-mail.": "Tu correo aún no está verificado. Abre el enlace que recibiste.",
+"Renvoyer l'e-mail": "Reenviar el correo",
+"J'ai vérifié": "Ya lo verifiqué",
+"E-mail de vérification envoyé.": "Correo de verificación enviado.",
+"Trop de demandes, réessaie dans quelques minutes.": "Demasiadas solicitudes, inténtalo en unos minutos.",
+"Envoi impossible pour le moment.": "No se puede enviar ahora.",
+"Adresse pas encore vérifiée.": "Dirección aún no verificada.",
+"Adresse vérifiée, merci !": "¡Dirección verificada, gracias!",
+"Compte créé. Un e-mail de vérification t'a été envoyé.": "Cuenta creada. Te hemos enviado un correo de verificación.",
+"Ce que les autres voient de toi": "Lo que ven los demás de ti",
+"Présence": "Presencia",
+"Communications": "Comunicaciones",
+"Erreur 404": "Error 404",
+"Cette page n'existe pas": "Esta página no existe",
+"Le lien est peut-être ancien ou mal recopié. Reprends la route depuis l'un de ces points d'entrée.": "Puede que el enlace sea antiguo o esté mal copiado. Retoma el camino desde una de estas entradas.",
+"Retour à l'accueil": "Volver al inicio",
+"Signaler un problème": "Informar de un problema",
 "Aller au contenu": "Ir al contenido",
 "Accueil": "Inicio",
 "Catalogue": "Catálogo",
@@ -1129,7 +1152,7 @@
 "Toi": "Tú",
 "Ta carte reste cachée de l'adversaire jusqu'au résultat.": "Tu carta queda oculta para el rival hasta el resultado.",
 "Il ne joue plus : réclamer la victoire": "Ya no juega: reclamar la victoria",
-"Entraînement équitable : mains de force égale. Aucune récompense.": "Entrenamiento justo: manos de igual fuerza. Sin recompensa."
+"Entraînement équitable : mains de force égale. Aucune récompense.": "Entrenamiento justo: manos de igual fuerza. Sin recompensa.",
 }]);
 /* lot 3 */
 (window.__MA_DICT = window.__MA_DICT || []).push(["es", {
@@ -2141,5 +2164,8 @@
 "Télécharger": "Descargar",
 "Se connecter": "Iniciar sesión",
 "Messages": "Mensajes",
-"Message": "Mensaje"
+"Message": "Mensaje",
+"Nouvelle tentative…": "Reintentando…",
+"Bloquer": "Bloquear",
+"Connecte-toi pour retrouver ton garage, tes voitures et ton suivi.": "Inicia sesión para encontrar tu garaje, tus coches y tu seguimiento."
 }]);

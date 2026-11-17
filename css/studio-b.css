@@ -188,7 +188,7 @@ html:not(.ma-garage) #page-home .hero-copy { order: 1 !important; }
   .cat-side .era-chips { flex-wrap: wrap; overflow: visible; }
   .cat-side .selectors-cluster { display: grid; gap: .8rem; margin-top: 1.3rem; }
   .cat-side .sort-cluster { display: grid; gap: .45rem; }
-  .cat-side .sort-title { font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
+  .cat-side .sort-title { font-size: .75rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
   .cat-side .custom-select, .cat-side select { width: 100%; }
   .cat-side .adv-toggle { justify-self: start; }
   .cat-side .adv-panel { margin-top: 1rem; }
@@ -265,7 +265,7 @@ html:not(.ma-garage) #home-feed-sec{display:none}
 .sh-recs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
 .sh-rec{display:flex;flex-direction:column;gap:.2rem;padding:1.3rem;border-radius:24px;background:var(--bg-surface);border:1px solid var(--stroke-line);text-decoration:none;color:inherit;transition:transform .2s,border-color .2s}
 .sh-rec:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 50%,var(--stroke-line))}
-.sh-rec-i{font-size:1.4rem}.sh-rec small{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--color-muted)}
+.sh-rec-i{font-size:1.4rem}.sh-rec small{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--color-muted)}
 .sh-rec b{font:400 2.4rem/1.05 'Instrument Serif',Georgia,serif;color:var(--accent-ink,var(--accent))}.sh-rec em{font-style:normal;font-size:.9rem;color:var(--color-secondary)}
 @media(max-width:720px){.sh-steps,.sh-recs{grid-template-columns:1fr}.sh-slide{flex-basis:86%}}
 .sh-confetti{position:fixed;inset:0;pointer-events:none;z-index:99999;overflow:hidden}
@@ -295,7 +295,7 @@ html:not(.ma-garage) #home-feed-sec{display:none}
 :where(#page-main,.modal-layer) :where(.cta-btn,.filter-pill,.pro-tabs button,.pro-tabs a){border-radius:var(--r-pill)}
 #page-main :where(.section-title,.section-title.small){font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:var(--t-section);line-height:1.05;letter-spacing:-.01em}
 /* survol / clic cohérents */
-#page-main :where(.car-box,.gh-tile,.gh-card,.sh-rec,.sh-slide,.pro-stat,.badge-tile,.cod-card,.feed-item,.com-car){transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+#page-main :where(.car-box,.gh-tile,.gh-card,.sh-rec,.sh-slide,.pro-stat,.badge-tile,.cod-card,.feed-item,.com-car){transition:transform .2s var(--ease-out),box-shadow .2s var(--ease-out),border-color .2s var(--ease-out)}
 @media(hover:hover){#page-main :where(.car-box,.gh-tile,.gh-card,.sh-rec,.badge-tile,.cod-card,.feed-item):hover{transform:translateY(-3px);box-shadow:var(--lift)}}
 #page-main :where(.car-box,.gh-tile,.gh-card,.sh-rec,.badge-tile,.cod-card,.cta-btn,.filter-pill):active{transform:scale(.985);box-shadow:none}
 :where(a,button,input,select,textarea):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -330,19 +330,6 @@ html:not(.ma-garage) #home-feed-sec{display:none}
 :where(.sheet-blurb, .page-sub, .profile-bio, .legal-text p, .prose p) { max-width: 65ch; }
 .sheet-blurb:where(:not(.app-header *, [class*="dock"] *))::first-letter { float: left; font: 400 3.6em/.82 'Instrument Serif', Georgia, serif; padding: .08em .1em 0 0; color: var(--accent-ink, var(--accent)); }
 blockquote:where(:not(.app-header *, [class*="dock"] *)), .quote-big { margin: 1.4rem 0; padding: .2rem 0 .2rem 1.2rem; border-left: 3px solid var(--accent); font: italic 400 clamp(1.4rem, 3.4vw, 2rem)/1.25 'Instrument Serif', Georgia, serif; color: var(--color-ink); max-width: 36ch; }
-/* numéros de section, comme un livre d'archive */
-:where(#page-catalog, #page-play, #page-fusion, #page-community, #page-news, #page-timeline, #page-achievements, #page-clubs, #page-market, #page-contact, #page-legal) .page-head { border-top: 1px solid var(--stroke-line); padding-top: .9rem; }
-:where(#page-catalog, #page-play, #page-fusion, #page-community, #page-news, #page-timeline, #page-achievements, #page-clubs, #page-market, #page-contact, #page-legal) .page-head .status-tag-verified { letter-spacing: .16em; }
-#page-catalog .page-head .status-tag-verified::before { content: "01 — "; }
-#page-play .page-head .status-tag-verified::before, #page-fusion .page-head .status-tag-verified::before { content: "02 — "; }
-#page-community .page-head .status-tag-verified::before { content: "03 — "; }
-#page-news .page-head .status-tag-verified::before { content: "04 — "; }
-#page-timeline .page-head .status-tag-verified::before { content: "05 — "; }
-#page-achievements .page-head .status-tag-verified::before { content: "06 — "; }
-#page-clubs .page-head .status-tag-verified::before { content: "07 — "; }
-#page-market .page-head .status-tag-verified::before { content: "08 — "; }
-#page-contact .page-head .status-tag-verified::before { content: "09 — "; }
-#page-legal .page-head .status-tag-verified::before { content: "10 — "; }
 /* cartes de voitures */
 .car-box:where(:not(.app-header *, [class*="dock"] *)) { position: relative; overflow: hidden; }
 .car-box:where(:not(.app-header *, [class*="dock"] *))::before { display: block; opacity: 1; width: auto; content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; z-index: 4; background: var(--rc, transparent); pointer-events: none; }
@@ -351,7 +338,7 @@ blockquote:where(:not(.app-header *, [class*="dock"] *)), .quote-big { margin: 1
 .car-box:has(.cx-own.r-epic) { --rc: var(--r-epic); }
 .car-box:has(.cx-own.r-legendary) { --rc: var(--r-legendary); }
 .car-box:has(.cx-own.r-mythic) { --rc: var(--r-mythic); }
-.car-thumb-wrap img { transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
+.car-thumb-wrap img { transition: transform .45s cubic-bezier(.2, .7, .2, 1); }
 @media (hover: hover) { .car-box:hover .car-thumb-wrap img { transform: scale(1.04); } }
 .car-gauge { display: block; position: relative; height: 4px; margin: .15rem 0 .8rem; border-radius: 4px; background: color-mix(in srgb, var(--color-ink) 10%, transparent); overflow: hidden; }
 .car-gauge::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--gold, var(--accent))); }

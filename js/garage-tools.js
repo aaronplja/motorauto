@@ -101,7 +101,7 @@
     catch (ex) { err.textContent = "Enregistrement impossible : " + ex.message; }
   }
   async function del(id) {
-    if (!confirm("Supprimer cette ligne du carnet ?")) return;
+    if (!await window.MA.confirm("Supprimer cette ligne du carnet ?", { ok: "Supprimer" })) return;
     try { await col().doc(id).delete(); items = items.filter((i) => i.id !== id); render(); renderOverview(); } catch (e) { C.toast("Suppression impossible : " + e.message, "err"); }
   }
   function renderOverview() { const b = document.getElementById("garage-reminders"); if (b) b.innerHTML = reminderHtml(); }

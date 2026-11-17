@@ -6,5 +6,5 @@
 
 /* 16 fenêtres (modales) restent en permanence dans la page, invisibles mais avec flou d'arrière-plan et couche GPU chacune :
    on les masque vraiment tant qu'elles ne sont pas ouvertes. L'ouverture reste instantanée ; à la fermeture on attend la fin du fondu. */
-.modal-layer[aria-hidden="true"]:not(.active) { visibility: hidden; transition: opacity .25s linear, visibility 0s linear .4s !important; }
-.modal-layer.active { visibility: visible; transition: opacity .25s linear, visibility 0s !important; }
+.modal-layer[aria-hidden="true"]:not(.active) { visibility: hidden; transition: opacity .3s linear, visibility 0s linear .4s !important; }
+.modal-layer.active { visibility: visible; transition: opacity .3s linear, visibility 0s !important; }

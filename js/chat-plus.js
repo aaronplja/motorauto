@@ -128,8 +128,10 @@
   }
   function boot() {
     css();
-    new MutationObserver(() => sync()).observe(document.body, { childList: true, subtree: true });
-    setInterval(sync, 1500); window.addEventListener("hashchange", () => setTimeout(sync, 100)); sync();
+    // on ne travaille que dans le salon (ou une dernière fois en le quittant, pour tout nettoyer) ; un seul passage par image
+    let qs = 0; const run = () => { if (qs) return; qs = requestAnimationFrame(() => { qs = 0; if (document.body.dataset.page === "chat" || curKey || searchBar) sync(); }); };
+    new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
+    setInterval(run, 1500); window.addEventListener("hashchange", () => setTimeout(sync, 100)); sync();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();

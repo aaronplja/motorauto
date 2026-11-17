@@ -106,6 +106,38 @@
   };
 
   // ------------------------------------------------------------------ toasts
+  /** Confirmation unique du site : MA.confirm("Supprimer ?", { ok: "Supprimer", danger: true }) -> Promise<boolean> (Échap ou clic hors de la carte = non) */
+  MA.confirm = function (message, opts) {
+    opts = opts || {};
+    return new Promise((resolve) => {
+      const prev = document.activeElement, lines = String(message || "").split("\n");
+      const ov = document.createElement("div"); ov.className = "ma-confirm"; ov.setAttribute("role", "alertdialog"); ov.setAttribute("aria-modal", "true");
+      const box = document.createElement("div"); box.className = "ma-confirm-box";
+      const h = document.createElement("h2"); h.textContent = opts.title || lines[0]; box.appendChild(h);
+      const rest = opts.title ? lines : lines.slice(1);
+      if (rest.length) { const p = document.createElement("p"); p.textContent = rest.join("\n"); box.appendChild(p); }
+      const row = document.createElement("div"); row.className = "ma-confirm-actions";
+      const no = document.createElement("button"); no.type = "button"; no.className = "cta-btn btn-ghost"; no.textContent = opts.cancel || "Annuler";
+      const yes = document.createElement("button"); yes.type = "button"; yes.className = "cta-btn fill-btn" + (opts.danger === false ? "" : " is-danger"); yes.textContent = opts.ok || "Confirmer";
+      row.appendChild(no); row.appendChild(yes); box.appendChild(row); ov.appendChild(box); document.body.appendChild(ov);
+      const done = (v) => { document.removeEventListener("keydown", key, true); ov.remove(); try { prev && prev.focus && prev.focus(); } catch (_) { /* ignoré */ } resolve(v); };
+      const key = (e) => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); done(false); } else if (e.key === "Tab") { const f = [no, yes], i = f.indexOf(document.activeElement); e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + 2) % 2].focus(); } };
+      document.addEventListener("keydown", key, true);
+      no.addEventListener("click", () => done(false)); yes.addEventListener("click", () => done(true));
+      ov.addEventListener("click", (e) => { if (e.target === ov) done(false); });
+      no.focus();
+    });
+  };
+
+  // Registre unique des modules : MA.register("Cards", api) les range sous MA.mods.Cards (et garde l'alias window.MACards pour l'existant).
+  // Les 85 modules historiques restent accessibles par leur nom global ; MA.mods les liste tous. Les nouveaux modules passent par MA.register.
+  const REG = Object.create(null);
+  MA.register = function (name, api) { REG[name] = api; try { window["MA" + name] = api; } catch (_) { /* ignoré */ } return api; };
+  Object.defineProperty(MA, "mods", { get() {
+    const o = Object.assign(Object.create(null), REG);
+    Object.keys(window).forEach((k) => { if (/^MA[A-Z][A-Za-z0-9]*$/.test(k) && k !== "MA" && o[k.slice(2)] === undefined) { try { o[k.slice(2)] = window[k]; } catch (_) { /* ignoré */ } } });
+    return o;
+  } });
   MA.toast = function (message, type) {
     let region = document.getElementById("toast-region");
     if (!region) {
@@ -333,6 +365,14 @@
       const gone = items.splice(i, 1); armUndo(gone); emit();
       db.collection("users").doc(user.uid).collection("notifications").doc(id).delete().catch(() => {});
     }
+    function removeMany(ids) {
+      if (!db || !user) return;
+      const set = new Set(ids), gone = items.filter((x) => set.has(x.id)); if (!gone.length) return;
+      const batch = db.batch(), uid = user.uid;
+      gone.forEach((n) => batch.delete(db.collection("users").doc(uid).collection("notifications").doc(n.id)));
+      items = items.filter((x) => !set.has(x.id)); armUndo(gone); emit();
+      batch.commit().catch(() => {});
+    }
     function removeAll() {
       if (!items.length || !db || !user) return;
       const batch = db.batch(), uid = user.uid, gone = items.slice();
@@ -385,19 +425,39 @@
       if (diff === 1) return "Hier";
       return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
     }
+    // regroupe les notifications de même nature le même jour (« A, B et 3 autres aiment ta voiture »)
+    const GROUPABLE = { like: 1, follow: 1, event: 1 };
+    const msOf = (n) => (n.createdAt && n.createdAt.toMillis ? n.createdAt.toMillis() : Date.now());
+    function grouped() {
+      const out = [], idx = {};
+      items.forEach((n) => {
+        if (!GROUPABLE[n.type]) { out.push(Object.assign({}, n, { _ids: [n.id], _froms: [n.from] })); return; }
+        const key = n.type + "|" + (n.type === "follow" ? "" : (n.link || "")) + "|" + dayLabel(msOf(n));
+        if (idx[key] === undefined) { idx[key] = out.length; out.push(Object.assign({}, n, { _ids: [n.id], _froms: [n.from] })); return; }
+        const g = out[idx[key]]; g._ids.push(n.id); if (n.from && !g._froms.includes(n.from)) g._froms.push(n.from); if (!n.read) g.read = false;
+      });
+      return out;
+    }
+    function groupHead(n) {
+      const f = (n._froms || []).filter(Boolean);
+      if (!n._ids || n._ids.length < 2 || !VERB[n.type]) return null;
+      const verb = { like: "aiment ta voiture", follow: "se sont abonnés à toi", event: "participent à ta sortie" }[n.type];
+      const names = f.slice(0, 2).map((x) => "<b>" + MA.esc(x) + "</b>"), rest = n._ids.length - names.length;
+      return names.join(", ") + (rest > 0 ? " et " + rest + " autre" + (rest > 1 ? "s" : "") : "") + " " + verb;
+    }
     function renderPanel() {
       const trash = window.MAIcons ? window.MAIcons.svg("trash", 17) : "×";
       let lastDay = "";
-      const list = items.length ? items.map((n) => {
+      const list = items.length ? grouped().map((n) => {
         const ms = n.createdAt && n.createdAt.toMillis ? n.createdAt.toMillis() : Date.now();
         const day = dayLabel(ms), head = day !== lastDay ? `<div class="notif-day">${MA.esc(day)}</div>` : ""; lastDay = day;
         return `${head}<div class="notif-row ${n.read ? "" : "unread"}">
-          <button type="button" class="notif-item ${n.read ? "" : "unread"}" data-nid="${MA.esc(n.id)}">
+          <button type="button" class="notif-item ${n.read ? "" : "unread"}" data-nid="${MA.esc(n.id)}" data-ids="${n._ids.map(MA.esc).join(",")}">
             ${avatarOf(n)}
-            <span class="notif-body"><small class="notif-app">MOTORAUTO</small><span class="notif-line">${headline(n)}</span>${n.text ? `<span class="notif-text">« ${MA.esc(n.text)} »</span>` : ""}
+            <span class="notif-body"><small class="notif-app">MOTORAUTO</small><span class="notif-line">${groupHead(n) || headline(n)}</span>${n.text && n._ids.length < 2 ? `<span class="notif-text">« ${MA.esc(n.text)} »</span>` : ""}
               <time>${n.createdAt && n.createdAt.toMillis ? ago(ms) : ""}</time></span>
           </button>
-          <button type="button" class="notif-del" data-del="${MA.esc(n.id)}" aria-label="Supprimer cette notification" title="Supprimer">${trash}</button>
+          <button type="button" class="notif-del" data-del="${MA.esc(n.id)}" data-ids="${n._ids.map(MA.esc).join(",")}" aria-label="Supprimer cette notification" title="Supprimer">${trash}</button>
         </div>`;
       }).join("") : (extra.html ? "" : `<div class="notif-empty">Rien pour l'instant.<br><small>Tu seras prévenu ici quand quelqu'un te répond, te mentionne ou t'écrit.</small></div>`);
       panel.innerHTML = `<div class="notif-head"><b>Notifications</b><span class="notif-actions"><button type="button" class="notif-all" ${unreadCount() ? "" : "disabled"}>Tout lire</button><button type="button" class="notif-clear" ${items.length ? "" : "disabled"} aria-label="Tout effacer" title="Tout effacer">${trash}</button></span></div>${extra.html}<div class="notif-list">${list}</div><a class="notif-foot" href="${/(^|\/)(index\.html)?$/.test(location.pathname) ? "" : "index.html"}#/nouveautes">Toutes les nouveautés</a>${undoBuf ? `<div class="notif-undo" role="status"><span>${undoBuf.length > 1 ? undoBuf.length + " notifications supprimées" : "Notification supprimée"}</span><button type="button" class="notif-undo-btn">Annuler</button></div>` : ""}`;
@@ -425,10 +485,10 @@
         if (e.target.closest(".notif-all")) { markAllRead(); return; }
         if (e.target.closest(".notif-clear")) { removeAll(); return; }
         if (e.target.closest(".notif-undo-btn")) { undo(); return; }
-        const del = e.target.closest(".notif-del"); if (del) { remove(del.dataset.del); return; }
+        const del = e.target.closest(".notif-del"); if (del) { removeMany((del.dataset.ids || del.dataset.del).split(",")); return; }
         if (e.target.closest("a[href]")) { closePanel(); return; }
         const it = e.target.closest(".notif-item");
-        if (it) { const n = items.find((x) => x.id === it.dataset.nid); if (n) go(n); }
+        if (it) { const ids = (it.dataset.ids || it.dataset.nid).split(","); ids.slice(1).forEach(markRead); const n = items.find((x) => x.id === it.dataset.nid); if (n) go(n); }
       });
       // tactile : glisser une notification vers la gauche pour la supprimer
       let sw = null;
@@ -448,7 +508,7 @@
         s.row.style.transition = "transform .2s, opacity .2s";
         if (s.lock === "x" && s.dx < -90) {
           s.row.style.transform = "translateX(-110%)"; s.row.style.opacity = "0";
-          const id = s.row.querySelector(".notif-del").dataset.del; setTimeout(() => remove(id), 180);
+          const dl = s.row.querySelector(".notif-del"), ids = (dl.dataset.ids || dl.dataset.del).split(","); setTimeout(() => removeMany(ids), 180);
         } else { s.row.style.transform = ""; s.row.style.opacity = ""; }
       };
       panel.addEventListener("touchend", endSwipe); panel.addEventListener("touchcancel", endSwipe);

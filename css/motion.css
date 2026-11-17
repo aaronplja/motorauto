@@ -9,18 +9,18 @@ html.nav-back .page.page-on { animation: none; }
 @keyframes pageIn { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
 
 /* fenêtres : fond qui s'efface, boîte qui monte avec un ressort ; en bas d'écran sur mobile */
-.modal-layer { transition: opacity .25s linear !important; }
-.modal-layer .modal-dialog { transform: translate3d(0, 22px, 0) scale(.97); transition: transform .5s var(--m-spring), opacity .25s linear !important; opacity: 0; will-change: transform; }
+.modal-layer { transition: opacity .3s linear !important; }
+.modal-layer .modal-dialog { transform: translate3d(0, 22px, 0) scale(.97); transition: transform .45s var(--m-spring), opacity .3s linear !important; opacity: 0; will-change: transform; }
 .modal-layer.active .modal-dialog { transform: none; opacity: 1; }
-@media (max-width: 720px) { .modal-layer .modal-dialog { transform: translate3d(0, 100%, 0); opacity: 1; transition: transform .5s var(--m-smooth) !important; } .modal-layer.active .modal-dialog { transform: none; } }
+@media (max-width: 720px) { .modal-layer .modal-dialog { transform: translate3d(0, 100%, 0); opacity: 1; transition: transform .45s var(--m-smooth) !important; } .modal-layer.active .modal-dialog { transform: none; } }
 
 /* menu « Moi », notifications, recherche : même ressort */
-.me-sheet { transition: transform .28s cubic-bezier(.22, .8, .3, 1), opacity .2s linear !important; }
+.me-sheet { transition: transform .3s cubic-bezier(.22, .8, .3, 1), opacity .2s linear !important; }
 .notif-panel:not([hidden]) { animation: popIn .35s var(--m-spring) both; transform-origin: top right; }
 @keyframes popIn { from { opacity: 0; transform: translate3d(0, -8px, 0) scale(.96); } to { opacity: 1; transform: none; } }
 
 /* retour tactile : tout ce qui se touche réagit */
-.cta-btn, .filter-pill, .page-tab, .seg-btn, .quick-chip, .theme-tile, .hub-tile, .play-tile, .icon-btn { transition: transform .25s var(--m-spring), background-color .2s linear, color .2s linear, border-color .2s linear, box-shadow .25s linear, opacity .2s linear; }
+.cta-btn, .filter-pill, .page-tab, .seg-btn, .quick-chip, .theme-tile, .hub-tile, .play-tile, .icon-btn { transition: transform .3s var(--m-spring), background-color .2s linear, color .2s linear, border-color .2s linear, box-shadow .3s linear, opacity .2s linear; }
 .cta-btn:active, .filter-pill:active, .page-tab:active, .seg-btn:active, .quick-chip:active, .icon-btn:active, .hub-tile:active, .play-tile:active { transform: scale(.96); }
 @media (hover: hover) { .cta-btn:hover, .hub-tile:hover, .play-tile:hover { transform: translate3d(0, -1px, 0); } }
 
@@ -39,7 +39,7 @@ html.nav-back .page.page-on { animation: none; }
 .toast { animation: popIn .4s var(--m-spring) both; }
 
 /* images : fondu à l'arrivée au lieu d'un saut */
-img[loading="lazy"] { transition: opacity .35s linear; }
+img[loading="lazy"] { transition: opacity .3s linear; }
 
 /* sécurité : ni animation ni mouvement si demandé */
 html[data-anim="reduced"] *, html[data-anim="reduced"] *::before, html[data-anim="reduced"] *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }

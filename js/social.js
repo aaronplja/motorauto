@@ -218,7 +218,7 @@
   }
 
   async function deleteComment(kind, target, id) {
-    if (!confirm("Supprimer ce commentaire ?")) return;
+    if (!await window.MA.confirm("Supprimer ce commentaire ?", { ok: "Supprimer" })) return;
     try {
       await C.db.collection("comments").doc(id).delete();
       const k = key(kind, target);
@@ -392,7 +392,7 @@
   async function renderCommCar(id) {
     const root = document.getElementById("commcar-content");
     const esc = C.esc;
-    root.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    root.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     let car = (window.MAApp.getCommunityCars() || []).find((c) => c.id === id);
     try {
       if (!car) { const d = await C.db.collection("community_cars").doc(id).get(); if (d.exists) car = Object.assign({ id: d.id }, d.data()); }

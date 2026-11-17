@@ -71,7 +71,7 @@ html.on-chat .app-header.hide-up .brand-link, html.on-chat .app-header.hide-up .
 /* ---------- 2. boutons : secondaires en verre, principaux en verre teinté ---------- */
 .cta-btn.btn-ghost, .btn-ghost, .btn-outline, .btn-compare-action, .btn-bookmark-action, .google-auth-btn, .ui-more-btn, .related-chip, .react-btn, .like-btn,
 .chip, .filter-pill, .quick-chip, .mkt-chip, .bs-chip, .page-btn, .seg-btn, .phase-pill-btn, .dialog-tab-btn, .pro-tab, .guide-help, .secondary-destructive-btn {
-  background: var(--fl-bg-soft) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); transition: transform .25s var(--dock-spring, ease), box-shadow .25s, background .25s, color .2s, border-color .2s; }
+  background: var(--fl-bg-soft) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); transition: transform .3s var(--dock-spring, var(--ease-out)), box-shadow .3s, background .3s, color .2s, border-color .2s; }
 .icon-btn:not(.app-header .icon-btn), .dialog-close-btn, .back-link, .play-back, .link-more, a.mp-chip:not(.app-header .mp-chip) {
   background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow-sm); -webkit-backdrop-filter: var(--fl-blur); backdrop-filter: var(--fl-blur); }
 .back-link, .play-back { border-radius: 999px; padding: .45rem 1rem; display: inline-flex; align-items: center; gap: .4rem; text-decoration: none; }
@@ -132,7 +132,7 @@ html.on-chat .chat-embed { top: var(--hdr-h, 66px); }
   html .desktop-navigation { padding: 4px; gap: 2px; }
   html .nav-link { flex-direction: column; justify-content: center; gap: 1px; width: 66px; height: calc(var(--hb) - 10px); padding: 0; }
   html .nav-link svg { display: block !important; width: 18px; height: 18px; }
-  html .nav-link span { position: static !important; width: auto !important; height: auto !important; clip: auto !important; overflow: visible !important; font-size: .6rem; line-height: 1; font-weight: 700; letter-spacing: .01em; }
+  html .nav-link span { position: static !important; width: auto !important; height: auto !important; clip: auto !important; overflow: visible !important; font-size: .75rem; line-height: 1; font-weight: 700; letter-spacing: .01em; }
   html .nav-link.active { background: var(--fl-pill); }
   html .nav-link .unread-dot-indicator { top: 4px; right: 12px; }
 }

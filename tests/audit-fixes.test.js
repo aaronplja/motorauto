@@ -89,7 +89,7 @@ ok("navigation : Chat remplace Communauté, « Moi » devient Pilotes (profil ·
   assert(/data-touch="chat"/.test(h) && /data-touch="pilotes"/.test(h) && /data-nav="chat"/.test(h) && /data-nav="pilotes"/.test(h));
   assert(!/data-touch="community"|data-touch="me"|id="touch-me-btn"|id="nav-me-btn"|id="open-chat-btn"/.test(h), "anciens boutons supprimés");
   assert.strictEqual((h.match(/class="touch-bar-item/g) || []).length, 5, "5 entrées dans le dock");
-  assert(/name: "pilotes", re:/.test(rt) && /PILOT_GROUPS = \[\["profil"[\s\S]*?\["garage"[\s\S]*?\["communaute"[\s\S]*?\["classement"/.test(rt));
+  assert(/name: "pilotes", re:/.test(rt) && /PILOT_GROUPS = \[\["espace"[\s\S]*?\["communaute"[\s\S]*?\["classement"/.test(rt));
   ["community", "leaderboard", "garage", "settings", "pilot", "clubs"].forEach((r) => assert(new RegExp(r + ': "pilotes"').test(rt.match(/const NAV_OF = \{[^\n]*/)[0]), r + " → Pilotes"));
   ["hub-pilotes", "hub-clubs", "hub-classements"].forEach((x) => assert(rt.indexOf('"/communaute/' + x + '"') >= 0, "ancienne adresse " + x + " redirigée"));
   assert(/id="pub-settings-btn"[^>]*href="#\/reglages\/profil"/.test(h) && /pub-settings-btn/.test(read("js/profile-edit.js")), "engrenage Réglages dans le profil");
@@ -399,4 +399,97 @@ ok("apparition des pages sans clignotement, espace Pilotes harmonisé, croix uni
   ["dialog-close-btn", "ov-x", "ac-x", "guide-x", "me-close", "pe-x", "vt-x", "lightbox-x", "lightbox-close"].forEach((c) => assert.ok(cb.indexOf("." + c) >= 0, "croix : " + c));
   assert.ok(/display: inline-flex !important; align-items: center; justify-content: center/.test(cb) && /mask: var\(--x-mask\)/.test(cb), "croix dessinée au centre exact");
   assert.ok(/const catalogShown = /.test(read("js/app.js")) && /if \(!catalogShown\(\) && !\(opts && opts\.force\)\) return;/.test(read("js/app.js")), "catalogue dessiné seulement quand on l'ouvre");
+});
+ok("sécurité : règles anti-triche, en-têtes Vercel, échappement des listes d'options", () => {
+  const rules = read("firestore.rules");
+  const blk = (n) => { const i = rules.indexOf("match /" + n + "/{"); return rules.slice(i, rules.indexOf("\n    }\n", i)); };
+  ["streaks", "gstats", "weekly"].forEach((n) => assert.ok(/allow create, update: if isAdmin\(\);/.test(blk(n)) && !/isOwner/.test(blk(n).replace(/allow read: if isOwner\(wid\) \|\| isAdmin\(\);/, "")), n + " : écriture réservée au serveur"));
+  assert.ok(/allow read: if signedIn\(\);/.test(blk("pilot_locations")), "carte des pilotes réservée aux connectés");
+  assert.ok(!/validGStats/.test(rules), "ancienne règle de compteurs supprimée");
+  assert.ok(!/'email'/.test(blk("users")), "aucun champ e-mail dans les profils publics");
+  const v = JSON.parse(read("vercel.json")), h = {}; v.headers.forEach((x) => x.headers.forEach((y) => { h[y.key] = y.value; }));
+  ["X-Frame-Options", "Strict-Transport-Security", "Permissions-Policy", "Content-Security-Policy-Report-Only", "X-Content-Type-Options", "Referrer-Policy"].forEach((k) => assert.ok(h[k], "en-tête " + k));
+  assert.ok(/frame-ancestors 'self'/.test(h["Content-Security-Policy-Report-Only"]) && /object-src 'none'/.test(h["Content-Security-Policy-Report-Only"]) && /gstatic\.com/.test(h["Content-Security-Policy-Report-Only"]), "politique couvrant Firebase");
+  assert.ok(/<option value="\$\{esc\(c\.text\)\}">\$\{esc\(c\.title\)\}<\/option>/.test(read("js/chat.js")), "réponses rapides échappées");
+  // aucune donnée de pilote injectée sans échappement dans un innerHTML (contrôle strict, sur une même ligne)
+  const fs = require("fs"), path = require("path"), bad = [];
+  fs.readdirSync(path.join(__dirname, "../js")).filter((f) => /\.js$/.test(f) && !/bundle|lazy|^data-|^game-|car-index|car-variants/.test(f)).forEach((f) => {
+    fs.readFileSync(path.join(__dirname, "../js", f), "utf8").split("\n").forEach((l, i) => { if (/innerHTML|insertAdjacentHTML/.test(l) && /\$\{[^}]*\.(username|bio|pilot|message|currentCar|city)\b[^}]*\}/.test(l) && !/esc\(|T\(|\.length/.test(l)) bad.push(f + ":" + (i + 1)); });
+  });
+  assert.deepStrictEqual(bad, [], "données de pilote sans échappement : " + bad.join(", "));
+  assert.ok(fs.existsSync(path.join(__dirname, "../SECURITE.md")), "guide des réglages de console");
+});
+ok("fiabilité : minuteries en pause en arrière-plan, observateurs limités, confirmation unique, bouton Réessayer, raison de la connexion", () => {
+  const idx = read("index.src.html"), t = read("js/timers.js");
+  assert.ok(/js\/timers\.js/.test(idx) && idx.indexOf("js/timers.js") < idx.indexOf("js/firebase-init.js"), "minuteries chargées en premier");
+  assert.ok(/ms <= 5000/.test(t) && /document\.hidden/.test(t), "pause des répétitions rapides en arrière-plan");
+  assert.ok(/document\.body\.dataset\.page === "chat" \|\| curKey \|\| searchBar/.test(read("js/chat-plus.js")) && /requestAnimationFrame/.test(read("js/chat-plus.js")), "salon : un seul passage par image, seulement dans le salon");
+  assert.ok(/\(catalog\|compare\)/.test(read("js/catalog-ui.js")) && /\^clubs\?\$/.test(read("js/clubs-plus.js")), "interrogations limitées à leur page");
+  assert.ok(/watching/.test(read("js/seasonal.js")), "un seul écouteur des saisons");
+  const c = read("js/common.js");
+  assert.ok(/MA\.confirm = function/.test(c) && /role", "alertdialog"/.test(c) && /e\.key === "Escape"/.test(c), "confirmation accessible (Échap, focus)");
+  const fs = require("fs"), path = require("path"); let native = [];
+  ["app", "cards", "chat", "clubs", "clubs-plus", "community", "contest", "event-albums", "garage-extra", "garage-tools", "market", "news", "pro", "social"].forEach((f) => {
+    fs.readFileSync(path.join(__dirname, "../js", f + ".js"), "utf8").split("\n").forEach((l, i) => { if (/(^|[^.\w])confirm\(/.test(l.replace(/MA\.confirm\(/g, ""))) native.push(f + ":" + (i + 1)); });
+  });
+  assert.deepStrictEqual(native, [], "plus aucune fenêtre native confirm() côté pilote : " + native.join(", "));
+  assert.ok(/reload\(\) \{ return dispatch\(\); \}/.test(read("js/router.js")) && /empty-note\.error/.test(read("js/retry.js")) && /js\/retry\.js/.test(idx), "bouton Réessayer");
+  const a = read("js/app.js");
+  assert.ok(/function askLogin\(reason, path\)/.test(a) && /id="auth-reason"/.test(idx) && /Connecte-toi pour retrouver ton garage/.test(a), "fenêtre de connexion avec la raison et retour à la page voulue");
+  ["en", "es", "de", "it"].forEach((l) => { const d = dict(l); ["Réessayer", "Annuler", "Confirmer", "Connecte-toi pour retrouver ton garage, tes voitures et ton suivi."].forEach((k) => assert.ok(d[k], l + " : manque " + k)); });
+});
+ok("compte : mot de passe oublié, vérification d'e-mail, suppression, page 404, confidentialité groupée, notifications groupées", () => {
+  const idx = read("index.src.html"), acc = read("js/account.js"), rt = read("js/router.js"), cm = read("js/common.js"), app = read("js/app.js");
+  assert.ok(/id="forgot-password-btn"/.test(idx) && /sendPasswordResetEmail/.test(acc) && /Si un compte existe avec cette adresse/.test(acc), "mot de passe oublié, réponse neutre");
+  assert.ok(/sendEmailVerification/.test(app) && /sendEmailVerification/.test(acc) && /id="verify-banner"/.test(idx) && /providerId === "password"/.test(acc), "vérification d'e-mail non bloquante, comptes Google exclus");
+  assert.ok(/deleteAccount/.test(acc) && /exports\.deleteAccount/.test(read("functions/index.js")), "suppression de compte côté serveur");
+  assert.ok(/name: "notfound"/.test(rt) && /id="page-notfound"/.test(idx) && /\^#\\\/\./.test(rt), "page 404 pour les adresses inconnues, ancres simples épargnées");
+  assert.ok(/class="priv-sub"/.test(idx) && !/🔐/.test(idx.slice(idx.indexOf("priv-group"), idx.indexOf("priv-group") + 400)), "confidentialité en groupes, sans emoji");
+  ["settings-public-garage", "settings-hide-following", "settings-hide-followers", "settings-show-presence", "settings-email-notifs"].forEach((id) => assert.ok(idx.includes('id="' + id + '"'), "réglage conservé : " + id));
+  assert.ok(/function grouped\(\)/.test(cm) && /function removeMany/.test(cm) && /GROUPABLE/.test(cm), "notifications groupées (like, abonnement, sortie)");
+  assert.ok(/css\/account\.css/.test(idx), "feuille de style du compte");
+  ["en", "es", "de", "it"].forEach((l) => { const d = dict(l); ["Mot de passe oublié ?", "Renvoyer l'e-mail", "Cette page n'existe pas", "Présence"].forEach((k) => assert.ok(d[k], l + " : manque " + k)); });
+});
+ok("design system : en-tête unique, échelle de texte ≥ 12 px, cartes et boutons homogènes, émojis → icônes, onglet mémorisé, bouton flottant discret", () => {
+  const fs = require("fs"), path = require("path"), idx = read("index.src.html"), sys = read("css/system.css");
+  assert.ok(/css\/system\.css/.test(idx) && idx.indexOf("css/system.css") > idx.indexOf("css/themefix.css"), "feuille du système chargée en dernier");
+  assert.ok(!/content: "\d\d — "/.test(read("css/studio-b.css")), "plus de numéros de section décoratifs");
+  const small = [];
+  fs.readdirSync(path.join(__dirname, "../css")).filter((f) => /\.css$/.test(f) && !/bundle/.test(f)).forEach((f) => {
+    fs.readFileSync(path.join(__dirname, "../css", f), "utf8").replace(/([^{}]+)\{([^{}]*)\}/g, (m, sel, body) => {
+      if (/dock|app-header|\.hdr|glassbar|topbar|top-bar|nav-pill|bottom-nav|notif-badge|badge-dot|\.dot\b|\.cnt\b|-count\b/.test(sel)) return m;
+      (body.match(/font-size:\s*[\d.]+(rem|px)/g) || []).forEach((d) => { const v = parseFloat(d.split(":")[1]), px = /rem/.test(d) ? v * 16 : v; if (px < 12) small.push(f + " " + sel.trim().slice(0, 40) + " " + d); });
+      return m;
+    });
+  });
+  assert.deepStrictEqual(small, [], "texte plus petit que 12 px : " + small.slice(0, 5).join(" | "));
+  assert.ok(/--btn-h: 44px/.test(sys) && /--btn-h-sm: 36px/.test(sys) && /--r-card/.test(sys) && /--r-tile/.test(sys) && /--r-row/.test(sys), "échelle de boutons et trois rayons de carte");
+  assert.ok(/status-tag-verified">Jouer<\/span><h1 class="page-title">Mode duel/.test(idx), "étiquette de section sur chaque page");
+  assert.ok(/ma\.tab\./.test(read("js/router.js")), "dernier onglet de chaque section mémorisé");
+  assert.ok(/typing/.test(read("js/fab-pack.js")) && /reglages\|contact\|admin/.test(read("js/fab-pack.js")), "bouton flottant masqué sur les formulaires");
+  assert.ok(/nEng/.test(read("js/app.js")) && /catégorie<\/small>/.test(read("js/app.js")), "fiche voiture : deuxième rangée d'essentiels");
+  assert.ok(/"🚧":"warn"/.test(read("js/emoji-icons.js")), "émojis restants reliés aux icônes");
+});
+ok("structure : Pilotes = Mon espace / Communauté / Classement, libellés uniques, accueil réordonné, tuiles de Jouer, squelettes, profil hiérarchisé", () => {
+  const rt = read("js/router.js"), idx = read("index.src.html");
+  assert.ok(/PILOT_GROUPS = \[\["espace", "Mon espace"\], \["communaute", "Communauté"\], \["classement", "Classement"\]\]/.test(rt), "trois univers dans Pilotes");
+  const sub = rt.slice(rt.indexOf("espace: [[\"Profil\""), rt.indexOf("communaute: [[\"Fil\""));
+  ["Profil", "Aperçu", "Mes voitures", "Suivi", "Réglages"].forEach((l) => assert.ok(sub.includes('["' + l + '"'), "Mon espace contient " + l));
+  assert.ok(/\["Garages", "#\/communaute\/voitures"/.test(rt) && /\["Modèles", "#\/classement\/voitures"/.test(rt) && /\["profil", "Compte"\]/.test(rt), "libellés en double renommés");
+  assert.ok(idx.indexOf('id="home-contest"') < idx.indexOf('id="home-feed-sec"') && idx.indexOf('id="home-feed-sec"') < idx.indexOf('id="home-community"'), "accueil : défi et sorties avant le fil, puis les garages");
+  assert.ok(/hub-grid \{ grid-template-columns: repeat\(2/.test(read("css/system.css")), "tuiles de Jouer en deux colonnes");
+  assert.ok(!/<div class="empty-note">Chargement/.test(read("js/app.js")) && /skel-wrap/.test(read("js/app.js")), "squelettes à la place des « Chargement… »");
+  assert.ok(idx.indexOf('id="pub-social"') < idx.indexOf('class="pv3-actions"'), "profil : chiffres clés avant les actions");
+});
+ok("allègement : feuilles réunies, registre de modules figé, parcours navigateur, documentation", () => {
+  const fs = require("fs"), path = require("path"), idx = read("index.src.html");
+  ["cards3.css", "cards4.css", "cards5.css", "center.css", "albums3.css"].forEach((f) => assert.ok(!fs.existsSync(path.join(__dirname, "../css", f)) && !idx.includes("css/" + f), f + " fusionné"));
+  assert.ok(fs.existsSync(path.join(__dirname, "../css/cards.css")) && fs.existsSync(path.join(__dirname, "../css/albums.css")), "feuilles réunies présentes");
+  assert.ok(/MA\.register = function/.test(read("js/common.js")) && /defineProperty\(MA, "mods"/.test(read("js/common.js")), "registre MA.mods");
+  const names = new Set();
+  fs.readdirSync(path.join(__dirname, "../js")).filter((f) => /\.js$/.test(f) && !/bundle|lazy-/.test(f)).forEach((f) => { (fs.readFileSync(path.join(__dirname, "../js", f), "utf8").match(/window\.(MA[A-Za-z0-9_]*)\s*=[^=]/g) || []).forEach((m) => names.add(m.replace(/window\.|\s*=.*/g, ""))); });
+  assert.ok(names.size <= 85, "pas de nouveau global window.MA… (" + names.size + " > 85) : utiliser MA.register");
+  assert.ok(fs.existsSync(path.join(__dirname, "journeys.test.js")) && /test:journeys/.test(read("package.json")), "parcours de bout en bout disponibles");
+  assert.ok(/Documentation : où trouver quoi/.test(read("README.md")), "README : index de la documentation");
+  assert.ok(/document\.write\('<script src="js\/i18n\/' \+ lang/.test(read("js/i18n-boot.js")), "traductions : seule la langue active est chargée");
 });

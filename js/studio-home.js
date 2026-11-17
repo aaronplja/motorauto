@@ -69,9 +69,14 @@
   }
   function watchPack() {
     let was = false;
+    let qp = 0;
     new MutationObserver(() => {
-      const pk = document.getElementById("pk3"), ready = !!pk && !pk.classList.contains("pk3-loading");
-      if (ready && !was) confetti(); was = ready;
+      if (qp) return;
+      qp = requestAnimationFrame(() => {
+        qp = 0;
+        const pk = document.getElementById("pk3"), ready = !!pk && !pk.classList.contains("pk3-loading");
+        if (ready && !was) confetti(); was = ready;
+      });
     }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
   }
   (window.MAModules = window.MAModules || []).push(function (ctx) {

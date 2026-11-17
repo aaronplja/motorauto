@@ -96,11 +96,19 @@
     g.style.transform = `translateX(${el.offsetLeft}px)`;
   }
 
-  function requireLogin() {
-    if (currentUser) return true;
+  // fenêtre de connexion : dit pourquoi elle s'ouvre et ramène le pilote là où il voulait aller une fois connecté
+  let authWanted = null;
+  function askLogin(reason, path) {
+    authWanted = path || null;
+    const r = $("auth-reason"); if (r) { r.textContent = reason || ""; r.hidden = !reason; }
     openModal($("auth-modal"));
+  }
+  function requireLogin(reason) {
+    if (currentUser) return true;
+    askLogin(reason || "");
     return false;
   }
+  document.addEventListener("ma:auth", () => { if (currentUser && authWanted) { const p = authWanted; authWanted = null; Router.go(p); } });
 
   function pilotName() {
     return profile.username || (currentUser && (currentUser.displayName || currentUser.email.split("@")[0])) || "Pilote";
@@ -529,7 +537,7 @@
     const car = carsById.get(carId);
     if (!car) { MA.toast("Cette fiche n'existe pas (ou plus).", "err"); Router.go("/catalogue", { replace: true }); return; }
     setSeo(car);
-    const s = car.stats;
+    const s = car.stats, nEng = car.phases.reduce((n, p) => n + (p.engines ? p.engines.length : 0), 0);
     $("vehicle-detail-content").innerHTML = `
       <div class="sheet-hero-banner${(car.images && car.images.length > 1) ? " multi" : ""}">
         ${slidesHtml(car, false)}
@@ -555,6 +563,9 @@
           <div><b>${s.power || "—"}</b><small>ch (maximum)</small></div>
           <div><b>${s.speed || "—"}</b><small>km/h en pointe</small></div>
           <div><b>${s.zero || "—"}</b><small>secondes de 0 à 100</small></div>
+          <div><b>${esc(String(car.years || "—").replace(/\s*-\s*/, "–"))}</b><small>production</small></div>
+          <div><b>${esc(car.category || "—")}</b><small>catégorie</small></div>
+          <div><b>${nEng || "—"}</b><small>${nEng > 1 ? "motorisations" : "motorisation"}</small></div>
         </div>
 
         ${car.approx ? `<p class="sheet-approx">Chiffres de référence arrondis (indicatifs) : ils varient selon l'année, le marché et le règlement.</p>` : ""}
@@ -574,7 +585,7 @@
 
         ${car.anecdotes.length ? `<div class="sheet-section-head">Anecdotes</div><div class="anecdote-list">${car.anecdotes.map((a) => `<div class="anecdote-card">${a.title ? `<b>${esc(a.title)}</b>` : ""}<p>${esc(a.text)}</p></div>`).join("")}</div>` : ""}
         <div class="sheet-section-head">Photos de la communauté</div>
-        <div class="community-gallery" id="community-gallery"><div class="empty-note">Chargement…</div></div>
+        <div class="community-gallery" id="community-gallery"><div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div></div>
 
         <div class="sheet-section-head">Enregistrer un chrono</div>
         <div class="telemetry-input-matrix">
@@ -816,7 +827,7 @@
       if (newUsername !== profile.username) {
         const last = profile.usernameAt && profile.usernameAt.toMillis ? profile.usernameAt.toMillis() : 0, left = last + 30 * 86400000 - Date.now();
         if (left > 0) { MA.toast("Tu pourras changer de pseudo dans " + Math.ceil(left / 86400000) + " jour(s) (un changement tous les 30 jours).", "err"); return; }
-        if (!confirm("Changer ton pseudo en @" + newUsername + " ?\nTu ne pourras plus le modifier pendant 30 jours.")) return;
+        if (!await window.MA.confirm("Changer ton pseudo en @" + newUsername + " ?\nTu ne pourras plus le modifier pendant 30 jours.", { ok: "Confirmer", danger: false })) return;
         profile.usernameAt = FieldValue.serverTimestamp();
       }
       profile.username = newUsername;
@@ -891,7 +902,7 @@
   async function removeTelemetry(idx) {
     const lap = garage.telemetry[idx];
     if (!lap) return;
-    if (!confirm("Supprimer ce chrono de votre journal (et du classement mondial) ?")) return;
+    if (!await window.MA.confirm("Supprimer ce chrono de votre journal (et du classement mondial) ?", { ok: "Supprimer" })) return;
     garage.telemetry.splice(idx, 1);
     renderGarage();
     try {
@@ -1020,7 +1031,7 @@
   function openLeaderboard() { Router.go("/classement/chronos"); }
   async function loadLeaderboardPage() {
     const list = $("global-leaderboard-list");
-    list.innerHTML = `<div class="empty-note">Chargement des chronos mondiaux...</div>`;
+    list.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       await fetchAllLaps(true);
       refreshLeaderboard();
@@ -1122,7 +1133,7 @@
 
   const logAdmin = (action, o) => { if (window.MALog) window.MALog.log(action, o || {}); };
   async function deleteGlobalLap(docId) {
-    if (!isAdmin || !confirm("Supprimer ce chrono du classement mondial pour tout le monde ?")) return;
+    if (!isAdmin || !await window.MA.confirm("Supprimer ce chrono du classement mondial pour tout le monde ?", { ok: "Supprimer" })) return;
     try {
       const gone = allLaps.find((l) => l.docId === docId);
       await db.collection("global_laps").doc(docId).delete();
@@ -1140,7 +1151,7 @@
   let pilotsCache = [];
   async function loadPilotsRegistry() {
     const list = $("pilots-registry-list");
-    list.innerHTML = `<div class="empty-note">Chargement du registre...</div>`;
+    list.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       await MA.admins.load(db);
       const snapshot = await db.collection("users").limit(200).get();
@@ -1188,7 +1199,7 @@
   async function toggleAdminGrade(uid, name) {
     if (!isSuper || !uid || (currentUser && uid === currentUser.uid)) return;
     const has = MA.admins.has(uid);
-    if (!confirm(has ? `Retirer le grade d'administrateur à ${name} ?` : `Donner le grade d'administrateur à ${name} ?\nIl pourra modifier le catalogue, traiter les messages signalés et les propositions.`)) return;
+    if (!await window.MA.confirm(has ? `Retirer le grade d'administrateur à ${name} ?` : `Donner le grade d'administrateur à ${name} ?\nIl pourra modifier le catalogue, traiter les messages signalés et les propositions.`)) return;
     try {
       const ref = db.collection("admins").doc(uid);
       logAdmin(has ? "admin-revoke" : "admin-grant", { target: uid, targetName: name, detail: has ? "grade retiré" : "grade accordé" });
@@ -1217,7 +1228,7 @@
   }
 
   async function deleteUserProfile(uid) {
-    if (!isAdmin || !confirm("Supprimer ce profil pilote de la communauté pour tout le monde ?\n(Le compte de connexion reste actif : suppression complète depuis la console Firebase > Authentication.)")) return;
+    if (!isAdmin || !await window.MA.confirm("Supprimer ce profil pilote de la communauté pour tout le monde ?\n(Le compte de connexion reste actif : suppression complète depuis la console Firebase > Authentication.)", { ok: "Supprimer" })) return;
     try {
       await db.collection("users").doc(uid).collection("garage").doc("data").delete().catch(() => {});
       const gone = pilotsCache.find((p) => p.id === uid);
@@ -1449,7 +1460,7 @@
   }
 
   async function deleteMyCar(id) {
-    if (!confirm("Supprimer cette voiture de ton profil ?")) return;
+    if (!await window.MA.confirm("Supprimer cette voiture de ton profil ?", { ok: "Supprimer" })) return;
     try { await db.collection("community_cars").doc(id).delete(); communityCache.at = 0; await loadMyCars(); }
     catch (e) { MA.toast("Suppression impossible : " + e.message, "err"); }
   }
@@ -1466,7 +1477,7 @@
   }
   async function loadCommunity() {
     const grid = $("community-grid");
-    grid.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    grid.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       await loadCommunityOnce();
       renderCommunity();
@@ -1552,7 +1563,7 @@
     $("follow-title").textContent = kind === "followers" ? "Abonnés" : "Abonnements";
     $("follow-sub").textContent = kind === "followers" ? "Les pilotes qui suivent ce profil" : "Les pilotes que ce profil suit";
     const list = $("follow-list");
-    list.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    list.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     openModal($("follow-modal"));
     const hid = socialHide[uid] && socialHide[uid][kind] && !(currentUser && currentUser.uid === uid);
     if (hid) { list.innerHTML = `<div class="empty-note">🔒 Ce pilote garde cette liste privée.</div>`; return; }
@@ -1881,7 +1892,7 @@
       userRecords: (editingCar && editingCar.userRecords) || []
     };
 
-    if (!editingCar && carsById.has(id) && !confirm(`Un véhicule « ${id} » existe déjà. Le remplacer ?`)) return;
+    if (!editingCar && carsById.has(id) && !await window.MA.confirm(`Un véhicule « ${id} » existe déjà. Le remplacer ?`, { ok: "Confirmer", danger: false })) return;
 
     try {
       if (window.MAOutbox) await MAOutbox.set(db, "motorauto_catalog/" + id, carData); else await db.collection("motorauto_catalog").doc(id).set(carData);
@@ -1945,7 +1956,7 @@
     const msg = isLocal
       ? "Supprimer la version modifiée de ce véhicule ? La version d'origine (data.js) sera réaffichée."
       : "Supprimer ce véhicule du catalogue public ?";
-    if (!confirm(msg)) return;
+    if (!await window.MA.confirm(msg)) return;
     try {
       await db.collection("motorauto_catalog").doc(carId).delete();
       if (window.MAAdminCache) window.MAAdminCache.clear();
@@ -2202,7 +2213,7 @@
   // -- côté administration
   async function loadAdminSuggestions() {
     const box = $("admin-sg-list");
-    box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       const snap = await db.collection("suggestions").where("status", "==", "pending").limit(60).get();
       const rows = [];
@@ -2249,7 +2260,7 @@
   const TYPE_LABEL = { vehicle: "Ajout véhicule", bug: "Bug", data: "Erreur fiche", idea: "Suggestion", other: "Autre" };
   async function loadAdminMessages() {
     const box = $("admin-msg-list");
-    box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       const snap = await db.collection("contact_messages").orderBy("createdAt", "desc").limit(100).get();
       $("adm-stat-msgs").textContent = snap.size;
@@ -2279,7 +2290,7 @@
   const REPORT_REASONS = { insulte: "Insultes / harcèlement", spam: "Spam / publicité", illegal: "Contenu choquant ou illégal", perso: "Informations personnelles", autre: "Autre" };
   async function loadAdminReports() {
     const box = $("admin-rp-list");
-    box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       const snap = await db.collection("reports").where("status", "==", "open").limit(100).get();
       $("adm-stat-rp").textContent = snap.size;
@@ -2318,7 +2329,7 @@
   async function loadAdminPage() {
     if (!isAdmin) return;
     const list = $("admin-car-list");
-    list.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    list.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     ["adm-stat-cars", "adm-stat-users", "adm-stat-laps", "adm-stat-msgs", "adm-stat-sg", "adm-stat-rp"].forEach((id) => { $(id).textContent = "…"; });
     $("adm-stat-cars").textContent = carsById.size;
     try {
@@ -2458,7 +2469,7 @@
     if (err) { setContactStatus(err, "err"); return; }
     if (!currentUser) {
       setContactStatus("Connecte-toi pour envoyer ta demande : elle arrive dans la messagerie de l'administrateur. (Sans compte : « Ouvrir dans ma messagerie ».)", "err");
-      openModal($("auth-modal"));
+      askLogin("");
       return;
     }
     if (Date.now() - contactLastSent < 30000) { setContactStatus("Patiente quelques secondes avant d'envoyer une nouvelle demande.", "err"); return; }
@@ -2588,7 +2599,7 @@
   }
 
   // ----------------------------------------------------- actions (délégation)
-  function scrollToCatalog() {
+  async function scrollToCatalog() {
     const t = $("catalog-results-top") || $("main-catalog-view");
     if (!t) return;
     const y = t.getBoundingClientRect().top + window.scrollY - 90;
@@ -2620,7 +2631,7 @@
     "quick-photo-url": (d) => { const u = prompt("Adresse (https://…) de la photo à ajouter :"); if (u) quickAddPhoto(d.id, u.trim()); },
     "toggle-compare": (d) => toggleCompare(d.id),
     "toggle-admin": (d) => toggleAdminGrade(d.uid, d.name),
-    "toggle-block": async (d, node) => { if (!window.MABlocks || !d.uid) return; const was = window.MABlocks.has(d.uid); if (!was && !confirm("Bloquer ce pilote ? Tu ne verras plus ses messages ni ses commentaires.")) return; const on = await window.MABlocks.toggle(d.uid); if (node) node.textContent = on ? "Débloquer" : "Bloquer"; MA.toast(on ? "Pilote bloqué." : "Pilote débloqué.", "ok"); },
+    "toggle-block": async (d, node) => { if (!window.MABlocks || !d.uid) return; const was = window.MABlocks.has(d.uid); if (!was && !await window.MA.confirm("Bloquer ce pilote ? Tu ne verras plus ses messages ni ses commentaires.", { ok: "Bloquer" })) return; const on = await window.MABlocks.toggle(d.uid); if (node) node.textContent = on ? "Débloquer" : "Bloquer"; MA.toast(on ? "Pilote bloqué." : "Pilote débloqué.", "ok"); },
     "mycar-new": () => openMyCarEditor(null),
     "mycar-edit": (d) => openMyCarEditor(d.id),
     "mycar-delete": (d) => deleteMyCar(d.id),
@@ -2641,10 +2652,10 @@
     "import-template": () => importTemplate(),
     "import-export": () => importExport(),
     "import-run": () => runImport(),
-    "rp-delete": (d) => { if (confirm("Supprimer définitivement ce message ?")) resolveReport(d.id, d.path); },
+    "rp-delete": async (d) => { if (await window.MA.confirm("Supprimer définitivement ce message ?", { ok: "Supprimer" })) resolveReport(d.id, d.path); },
     "rp-dismiss": (d) => resolveReport(d.id, ""),
     "admin-delete-msg": async (d) => {
-      if (!isAdmin || !confirm("Supprimer ce message ?")) return;
+      if (!isAdmin || !await window.MA.confirm("Supprimer ce message ?", { ok: "Supprimer" })) return;
       try { await db.collection("contact_messages").doc(d.id).delete(); logAdmin("contact-delete", { target: d.id, detail: "message de contact supprimé" }); loadAdminMessages(); }
       catch (e) { MA.toast("Erreur : " + e.message, "err"); }
     },
@@ -2671,7 +2682,7 @@
     "delete-lap": (d) => deleteGlobalLap(d.id),
     "remove-engine": (d, node) => node.closest(".admin-engine-block").remove(),
     "dup-engine": (d, node) => { const b = node.closest(".admin-engine-block"); if (b) addEngineBlock(engineBlockValues(b)); },
-    "open-auth": () => { $("tab-register-btn").click(); openModal($("auth-modal")); },
+    "open-auth": () => { $("tab-register-btn").click(); askLogin(""); },
     "quick-search": (d) => {
       filters.query = d.q; filters.page = 1;
       const hs = $("global-search-input"); if (hs) hs.value = d.q;
@@ -2769,7 +2780,7 @@
     if (search) { filters.query = search.slice(0, 80); const ci = $("catalog-search-input"); if (ci) ci.value = filters.query; renderCatalog(); Router.go("/catalogue"); }
     if (car && carsById.has(car)) openVehicleSheet(car);
     else if (pilot) openPublicProfile(pilot);
-    else if (login) setTimeout(() => { if (!currentUser) openModal($("auth-modal")); }, 600);
+    else if (login) setTimeout(() => { if (!currentUser) askLogin(""); }, 600);
   }
 
   let catReadyResolve = () => {};
@@ -2784,7 +2795,7 @@
     Router.register("home", { enter: () => { loadCommunityOnce().then(renderHomeCommunity).catch(() => {}); } });
     Router.register("catalog", { enter: () => { const c = $("catalog-search-input"); if (c && c.value !== filters.query) c.value = filters.query; renderCatalog({ animate: false }); } });
     Router.register("garage", {
-      guard: async () => { if (!(await authReady, currentUser)) { openModal($("auth-modal")); return "/"; } },
+      guard: async () => { if (!(await authReady, currentUser)) { askLogin("Connecte-toi pour retrouver ton garage, tes voitures et ton suivi.", location.hash.replace(/^#/, "") || "/garage"); return "/"; } },
       enter: () => renderGarage()
     });
     Router.register("leaderboard", { enter: (p) => { if (p.tab === "chronos") loadLeaderboardPage(); } });
@@ -3012,10 +3023,11 @@
       try {
         if (await isUsernameTaken(username, null)) { errBox.textContent = "Ce pseudo est déjà utilisé par un autre pilote."; return; }
         pendingRegistration = { username, car };
-        await auth.createUserWithEmailAndPassword($("register-email").value.trim(), $("register-password").value);
+        const cred = await auth.createUserWithEmailAndPassword($("register-email").value.trim(), $("register-password").value);
+        try { if (cred && cred.user) await cred.user.sendEmailVerification(); } catch (_) { /* non bloquant : renvoi possible depuis Réglages */ }
         $("register-form").reset();
         closeModal($("auth-modal"));
-        MA.toast("Compte créé. Bienvenue dans l'écurie !", "ok");
+        MA.toast("Compte créé. Un e-mail de vérification t'a été envoyé.", "ok");
       } catch (err) {
         pendingRegistration = null;
         errBox.textContent = authErrorMessage(err);

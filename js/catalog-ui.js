@@ -68,7 +68,7 @@
     brandStrip(); sheet(); badges();
     const g = $("vehicles-grid"); if (g) new MutationObserver(later).observe(g, { childList: true });
     const sel = $("brand-select"); if (sel) { new MutationObserver(later).observe(sel, { childList: true }); sel.addEventListener("change", later); }
-    setInterval(later, 3000);
+    setInterval(() => { if (/^(catalog|compare)$/.test(document.body.dataset.page || "")) later(); }, 3000);
   }
   (window.MAModules = window.MAModules || []).push(function () { setTimeout(start, 600); });
 })();

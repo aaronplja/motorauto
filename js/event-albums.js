@@ -49,14 +49,14 @@
     if (!ev) { C.toast("Sortie introuvable.", "err"); return; }
     cur = ev;
     if (!layer) { layer = document.createElement("div"); layer.className = "evalb-layer"; document.body.appendChild(layer); layer.addEventListener("click", onClick); }
-    layer.hidden = false; layer.innerHTML = `<div class="evalb-box"><div class="empty-note">Chargement…</div></div>`; draw();
+    layer.hidden = false; layer.innerHTML = `<div class="evalb-box"><div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div></div>`; draw();
   }
   async function onClick(e) {
     const b = e.target.closest("[data-ea]"), C = ctx();
     if (e.target === layer || (b && b.dataset.ea === "close")) { layer.hidden = true; return; }
     if (!b) return;
     if (b.dataset.ea === "send") send();
-    else if (b.dataset.ea === "del" && confirm("Supprimer cette photo de l'album ?")) { try { await C.db.collection("event_photos").doc(b.dataset.id).delete(); draw(); } catch (ex) { C.toast(ex.message, "err"); } }
+    else if (b.dataset.ea === "del" && await window.MA.confirm("Supprimer cette photo de l'album ?", { ok: "Supprimer" })) { try { await C.db.collection("event_photos").doc(b.dataset.id).delete(); draw(); } catch (ex) { C.toast(ex.message, "err"); } }
   }
   document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-ev=album]"); if (b) { e.preventDefault(); open(b.dataset.id); } });
 })();

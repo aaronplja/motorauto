@@ -26,10 +26,10 @@
 .pv2-level[hidden] { display: none; }
 .pv2-lv-main h3 { margin: 0 0 .35rem; font-size: 1.05rem; } .pv2-lv-main small { color: var(--color-muted); }
 .pv2-facts { grid-column: 1 / -1; list-style: none; margin: 0; padding: .7rem 0 0; border-top: 1px solid var(--stroke-line); display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; text-align: center; }
-.pv2-facts b { display: block; font-size: 1.1rem; font-variant-numeric: tabular-nums; } .pv2-facts span { font-size: .72rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; }
+.pv2-facts b { display: block; font-size: 1.1rem; font-variant-numeric: tabular-nums; } .pv2-facts span { font-size: .75rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; }
 
 /* onglets */
-#public-profile-modal .pro-tabs { position: sticky; top: calc(var(--hdr-h, 64px) + 6px); transition: top .38s cubic-bezier(.22,.9,.3,1); z-index: 20; backdrop-filter: blur(10px); background: color-mix(in srgb, var(--bg-surface) 88%, transparent); }
+#public-profile-modal .pro-tabs { position: sticky; top: calc(var(--hdr-h, 64px) + 6px); transition: top .3s cubic-bezier(.22,.9,.3,1); z-index: 20; backdrop-filter: blur(10px); background: color-mix(in srgb, var(--bg-surface) 88%, transparent); }
 html.hdr-hidden #public-profile-modal .pro-tabs { top: calc(var(--safe-top, 0px) + 8px); }
 #public-profile-modal .pro-tab { transition: background .2s, color .2s; }
 
@@ -37,7 +37,7 @@ html.hdr-hidden #public-profile-modal .pro-tabs { top: calc(var(--safe-top, 0px)
 .pv2-coll { display: flex; gap: 1.1rem; align-items: center; padding: 1rem; margin-bottom: 1.1rem; border-radius: 18px; background: var(--bg-surface); border: 1px solid var(--stroke-line); }
 .pv2-ring { --p: 0%; flex: none; width: 92px; height: 92px; border-radius: 50%; display: grid; place-content: center; text-align: center; position: relative; background: conic-gradient(var(--accent) var(--p), color-mix(in srgb, var(--color-muted) 24%, transparent) 0); }
 .pv2-ring::before { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--bg-surface); }
-.pv2-ring b, .pv2-ring small { position: relative; line-height: 1.1; } .pv2-ring b { font-size: 1.25rem; } .pv2-ring small { font-size: .64rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .06em; }
+.pv2-ring b, .pv2-ring small { position: relative; line-height: 1.1; } .pv2-ring b { font-size: 1.25rem; } .pv2-ring small { font-size: .75rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .06em; }
 .pv2-rar { flex: 1; min-width: 0; }
 .pv2-rar-bar { display: flex; height: 12px; border-radius: 99px; overflow: hidden; gap: 2px; background: var(--bg-elevated); }
 .pv2-rar-bar i { background: var(--c); min-width: 6px; }
@@ -50,10 +50,10 @@ html.hdr-hidden #public-profile-modal .pro-tabs { top: calc(var(--safe-top, 0px)
 #stats-body { display: grid; gap: .3rem; }
 .sx-hero { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; padding: 1rem; border-radius: 18px; background: radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--bg-elevated); border: 1px solid var(--stroke-line); }
 .sx-rank { text-align: center; padding: .55rem .9rem; border-radius: 14px; background: var(--bg-surface); border: 1px solid var(--stroke-line); }
-.sx-rank b { display: block; font-size: 1.3rem; color: var(--accent); } .sx-rank span { font-size: .72rem; color: var(--color-muted); }
+.sx-rank b { display: block; font-size: 1.3rem; color: var(--accent); } .sx-rank span { font-size: .75rem; color: var(--color-muted); }
 .sx-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .6rem; }
 .sx-kpi { display: grid; justify-items: center; gap: .15rem; padding: .85rem .3rem; border-radius: 14px; background: var(--bg-elevated); border: 1px solid var(--stroke-line); }
-.sx-kpi b { font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; } .sx-kpi span { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted); }
+.sx-kpi b { font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; } .sx-kpi span { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted); }
 .stats-sec { padding: .2rem 0 .6rem; }
 .stats-sec h3 { display: flex; align-items: center; gap: .5rem; }
 .stats-sec h3 i { display: inline-grid; place-items: center; width: 22px; height: 22px; color: var(--accent); }
@@ -70,8 +70,8 @@ html.hdr-hidden #public-profile-modal .pro-tabs { top: calc(var(--safe-top, 0px)
 .sx-b i { font-style: normal; } .sx-b em { font-style: normal; font-weight: 700; } .sx-b.gold { border-color: #f59e0b; } .sx-b.silver { border-color: #94a3b8; }
 .stat-tile { border-radius: 14px; } .stat-tile.wide { grid-column: span 2; }
 @media (max-width: 520px) { .sx-kpis { grid-template-columns: repeat(2, 1fr); } .sx-coll { flex-direction: column; align-items: stretch; } .sx-coll .pv2-ring { align-self: center; } .sx-rar { grid-template-columns: 96px 1fr 48px; } }
-.pv2-ring small { font-size: .56rem; letter-spacing: .02em; max-width: 64px; }
-.pv2-facts span { font-size: .66rem; letter-spacing: 0; }
+.pv2-ring small { font-size: .75rem; letter-spacing: .02em; max-width: 64px; }
+.pv2-facts span { font-size: .75rem; letter-spacing: 0; }
 @media (max-width: 460px) { .pv2-facts { grid-template-columns: repeat(2, 1fr); row-gap: .6rem; } .pv2-level { grid-template-columns: auto 1fr; } }
 
 /* bandeau plus bas : le pseudo ne passe plus sur le dégradé */
@@ -79,6 +79,6 @@ html.hdr-hidden #public-profile-modal .pro-tabs { top: calc(var(--safe-top, 0px)
 #public-profile-modal .pv2-id { margin-top: -34px; align-items: flex-start; gap: .9rem; }
 #public-profile-modal .pv2 .pro-avatar { width: 84px; height: 84px; border-radius: 24px; border-width: 3px; }
 #public-profile-modal .pv2 .pro-id-text { padding: 38px 0 0; }
-#public-profile-modal .pv2 .status-tag-verified { margin-bottom: .15rem; font-size: .66rem; }
+#public-profile-modal .pv2 .status-tag-verified { margin-bottom: .15rem; font-size: .75rem; }
 #public-profile-modal .pv2 .page-title { font-size: clamp(1.4rem, 5vw, 2rem); line-height: 1.1; }
 @media (max-width: 420px) { #public-profile-modal .pv2 .pro-avatar { width: 72px; height: 72px; } }

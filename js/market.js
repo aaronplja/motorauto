@@ -30,7 +30,7 @@
   }
   async function render() {
     const root = document.getElementById("market-root"); if (!root) return;
-    root.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    root.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try { await load(); mineCache = await loadMine(); } catch (e) { root.innerHTML = `<div class="empty-note error">Annonces indisponibles (règles Firestore à publier ?).</div>`; return; }
     draw();
   }
@@ -80,7 +80,7 @@
     const l = list.find((x) => x.id === id) || {};
     try {
       if (a === "sold") await C.db.collection("listings").doc(id).update({ status: "sold" });
-      else if (a === "del") { if (!confirm("Supprimer cette annonce ?")) return; await C.db.collection("listings").doc(id).delete(); if (C.isAdmin && l.uid !== (C.user && C.user.uid) && window.MALog) window.MALog.log("listing-delete", { target: id, detail: "annonce retirée : " + String(l.title || "").slice(0, 60) }); }
+      else if (a === "del") { if (!await window.MA.confirm("Supprimer cette annonce ?", { ok: "Supprimer" })) return; await C.db.collection("listings").doc(id).delete(); if (C.isAdmin && l.uid !== (C.user && C.user.uid) && window.MALog) window.MALog.log("listing-delete", { target: id, detail: "annonce retirée : " + String(l.title || "").slice(0, 60) }); }
       else if (a === "report") {
         if (!C.requireLogin()) return;
         const reason = window.MAReport ? await window.MAReport.ask("cette annonce") : "other";

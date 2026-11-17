@@ -178,7 +178,7 @@ img[class*="avatar"], img[data-fallback], .pro-id img { font-size: 0; color: tra
 .tcg-flips .flip { width: 100% !important; min-width: 0 !important; }
 .tcg-flips .flip-front .tcg { font-size: .62em; }
 .tcg-flips .flip-front .tcg .tcg-stats { gap: .1rem; }
-.tcg-tag { bottom: -1.5rem !important; text-align: center; font-size: .66rem !important; white-space: nowrap; }
+.tcg-tag { bottom: -1.5rem !important; text-align: center; font-size: .75rem !important; white-space: nowrap; }
 .pk3 .tcg-actions, .pk3 #tcg-end { position: sticky; bottom: 0; z-index: 4; display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; padding: .8rem 0 calc(.2rem + var(--safe-bottom, 0px)); background: none; }
 .pk3 .tcg-actions[hidden], .pk3 #tcg-end[hidden], .pk3-sum[hidden] { display: none; }
 .pk3-sum { max-width: 100%; }

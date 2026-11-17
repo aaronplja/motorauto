@@ -187,7 +187,7 @@
     if (busy) return; busy = true;
     try {
       if (!C.user) { C.requireLogin(); return; }
-      if (kind === "cancel" && !confirm(T("Résilier ton abonnement ? L'accès reste ouvert jusqu'à la fin de la période déjà payée."))) return;
+      if (kind === "cancel" && !await window.MA.confirm(T("Résilier ton abonnement ? L'accès reste ouvert jusqu'à la fin de la période déjà payée."), { ok: "Résilier" })) return;
       const fn = { subscribe: "proCheckout", portal: "proPortal", cancel: "proCancel" }[kind];
       const r = await callFn(fn, { origin: location.origin + location.pathname });
       if (r && r.url) { if (kind === "subscribe") { try { sessionStorage.setItem("ma_pro_pending", "1"); } catch (_) { /* ignoré */ } } location.href = r.url; return; }

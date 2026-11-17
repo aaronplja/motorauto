@@ -577,7 +577,7 @@
         });
       }
       sel.hidden = false;
-      sel.innerHTML = `<option value="">⚡ Réponse rapide</option>` + list.map((c) => `<option value="${String(c.text).replace(/"/g, "&quot;")}">${String(c.title).replace(/</g, "&lt;")}</option>`).join("");
+      sel.innerHTML = `<option value="">⚡ Réponse rapide</option>` + list.map((c) => `<option value="${esc(c.text)}">${esc(c.title)}</option>`).join("");
     } catch (_) { /* collection absente ou règles non publiées : le menu reste caché */ }
   }
 
@@ -714,7 +714,7 @@
     const m = state.msgs.get(id);
     const kc2 = state.conv && state.conv.type === "club" ? clubOf(state.conv.id) : null;
     if (!m || !(state.isAdmin || m.uid === state.user.uid || (kc2 && (kc2.ownerUid === state.user.uid || kc2.viceUid === state.user.uid)))) return;
-    if (!confirm("Supprimer ce message pour tout le monde ?")) return;
+    if (!await window.MA.confirm("Supprimer ce message pour tout le monde ?", { ok: "Supprimer" })) return;
     try {
       const remaining = [...state.msgs.values()].filter((x) => x.id !== id && x.timestamp).sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
       const wasLast = !remaining.length || (state.msgs.get(id).timestamp && state.msgs.get(id).timestamp.toMillis() >= remaining[remaining.length - 1].timestamp.toMillis());
@@ -767,7 +767,7 @@
     return id;
   }
   async function deleteChannel(id) {
-    if (!state.isAdmin || !confirm(`Supprimer définitivement le canal « ${id} » et tous ses messages ?`)) return;
+    if (!state.isAdmin || !await window.MA.confirm(`Supprimer définitivement le canal « ${id} » et tous ses messages ?`, { ok: "Supprimer" })) return;
     try {
       const msgs = db.collection("custom_channels").doc(id).collection("messages");
       for (;;) {
@@ -903,7 +903,7 @@
     });
 
     // clics délégués
-    document.addEventListener("click", (e) => {
+    document.addEventListener("click", async (e) => {
       const t = e.target.closest("[data-action]");
       if (!t) {
         if (!e.target.closest(".emoji-panel, #emoji-toggle")) hideEmoji();
@@ -928,7 +928,7 @@
         case "react": react(d.id, d.emoji); document.querySelectorAll(".msg.show-actions").forEach((n) => n.classList.remove("show-actions")); break;
         case "reply": setReply(d.id); document.querySelectorAll(".msg.show-actions").forEach((n) => n.classList.remove("show-actions")); break;
         case "delete-msg": deleteMessage(d.id); break;
-        case "block-user": if (window.MABlocks && confirm("Bloquer " + (d.name || "ce pilote") + " ? Tu ne verras plus ses messages. Tu peux le débloquer depuis son profil.")) { window.MABlocks.toggle(d.uid).then(() => { MA.toast((d.name || "Pilote") + " est bloqué.", "ok"); }); } break;
+        case "block-user": if (window.MABlocks && await window.MA.confirm("Bloquer " + (d.name || "ce pilote") + " ? Tu ne verras plus ses messages. Tu peux le débloquer depuis son profil.", { ok: "Bloquer" })) { window.MABlocks.toggle(d.uid).then(() => { MA.toast((d.name || "Pilote") + " est bloqué.", "ok"); }); } break;
         case "report-msg": openReport(d.id); document.querySelectorAll(".msg.show-actions").forEach((n) => n.classList.remove("show-actions")); break;
         case "profile": if (window.parent !== window) tell({ ma: "chat-nav", hash: "#/pilote/" + encodeURIComponent(d.uid) }); else location.href = "index.html?pilot=" + encodeURIComponent(d.uid); break;
         case "lightbox":

@@ -29,7 +29,7 @@
     if (lc) { lc.hidden = true; lc.innerHTML = ""; }
     if (sc) sc.querySelector("b").textContent = "–";
     if (sl) sl.querySelector("b").textContent = "–";
-    if (vit) vit.innerHTML = `<div class="empty-note">Chargement de la vitrine…</div>`;
+    if (vit) vit.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     const C = ctx(); if (!C || !window.MACards) { if (vit) vit.innerHTML = ""; return; }
     let col = null;
     try {

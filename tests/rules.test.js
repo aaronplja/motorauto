@@ -100,6 +100,13 @@ const check = async (label, p, expectOk) => { n++; try { await (expectOk ? asser
   await check("PRO : l'admin modifie la structure", setDoc(doc(adm, "pro_config/cats"), { cats: [{ id: "a", label: "A", subs: [] }], updatedAt: serverTimestamp() }), true);
   await check("PRO : un pilote ne touche pas aux interrupteurs", setDoc(doc(alice, "pro_config/settings"), { signups: true }), false);
   await check("PRO : l'admin règle les interrupteurs", setDoc(doc(adm, "pro_config/settings"), { signups: false, live: false, priceEur: 5, trialDays: 90 }), true);
+  // Anti-triche : séries, compteurs de jeu et défis de la semaine ne s'écrivent que depuis le serveur
+  await check("TRICHE : un pilote ne crée pas sa série", setDoc(doc(alice, "streaks/alice"), { days: 1, best: 1, last: "2026-11-17", updatedAt: serverTimestamp() }), false);
+  await check("TRICHE : un pilote n'écrit pas ses compteurs de jeu", setDoc(doc(alice, "gstats/alice"), { quizPts: 100, quizDone: 1, updatedAt: serverTimestamp() }), false);
+  await check("TRICHE : un pilote ne vide pas ses récompenses de la semaine", setDoc(doc(alice, "weekly/alice"), { week: "2026-W47", claimed: [], updatedAt: serverTimestamp() }), false);
+  await check("TRICHE : l'admin peut corriger les compteurs", setDoc(doc(adm, "gstats/alice"), { quizPts: 10, updatedAt: serverTimestamp() }), true);
+  await check("CONFIDENTIALITÉ : un visiteur ne lit pas la carte des pilotes", getDoc(doc(anon, "pilot_locations/alice")), false);
+  await check("CONFIDENTIALITÉ : un pilote connecté la lit", getDoc(doc(alice, "pilot_locations/alice")), true);
   await env.cleanup();
   console.log(fails ? "\n" + fails + " ÉCHEC(S) sur " + n : "\nTOUT OK (" + n + " vérifications)");
   process.exit(fails ? 1 : 0);

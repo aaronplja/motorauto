@@ -30,7 +30,7 @@
   async function render() {
     const root = document.getElementById("club-root"), id = window.MAClubs && window.MAClubs.current(); if (!root || !id || document.getElementById("club-plus")) return;
     const club = window.MAClubs.club(id); if (!club) return;
-    const box = document.createElement("section"); box.id = "club-plus"; box.className = "club-plus"; box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    const box = document.createElement("section"); box.id = "club-plus"; box.className = "club-plus"; box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     const head = root.querySelector(".club-head"); head ? head.insertAdjacentElement("afterend", box) : root.prepend(box);
     const esc = C.esc, mem = window.MAClubs.isMemberOf(id);
     let events = [], rsvp = [];
@@ -54,7 +54,7 @@
     C = ctx;
     const obs = new MutationObserver(() => { clearTimeout(timer); timer = setTimeout(render, 150); });
     const watch = () => { const r = document.getElementById("club-root"); if (r && !r._plusObs) { r._plusObs = true; obs.observe(r, { childList: true }); } };
-    watch(); window.addEventListener("hashchange", () => setTimeout(watch, 200)); setInterval(watch, 2000);
+    watch(); window.addEventListener("hashchange", () => setTimeout(watch, 200)); setInterval(() => { if (/^clubs?$/.test(document.body.dataset.page || "")) watch(); }, 2000);
     document.addEventListener("click", async (e) => {
       const cr = e.target.closest("[data-cr]"); if (cr) { tab = cr.dataset.cr; refresh(); return; }
       const go = e.target.closest("[data-cev-go]");
@@ -68,7 +68,7 @@
         busy = false; return;
       }
       const del = e.target.closest("[data-cev-del]");
-      if (del && confirm("Supprimer cette sortie ?")) { try { await C.db.collection("club_events").doc(del.dataset.cevDel).delete(); refresh(); } catch (x) { C.toast("Suppression impossible : " + x.message, "err"); } }
+      if (del && await window.MA.confirm("Supprimer cette sortie ?", { ok: "Supprimer" })) { try { await C.db.collection("club_events").doc(del.dataset.cevDel).delete(); refresh(); } catch (x) { C.toast("Suppression impossible : " + x.message, "err"); } }
     });
     document.addEventListener("submit", async (e) => {
       if (e.target.id !== "cev-form") return; e.preventDefault();

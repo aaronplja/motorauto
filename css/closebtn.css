@@ -9,7 +9,7 @@
   background: color-mix(in srgb, var(--bg-surface) 94%, transparent) !important; color: var(--color-ink, currentColor) !important;
   font-size: 0 !important; line-height: 0 !important; text-align: center; cursor: pointer; text-decoration: none;
   box-shadow: 0 6px 16px -10px rgba(0, 0, 0, .5);
-  transition: transform .18s var(--m-smooth, ease), border-color .18s, background .18s, color .18s;
+  transition: transform .2s var(--m-smooth, var(--ease-out)), border-color .2s, background .2s, color .2s;
   -webkit-tap-highlight-color: transparent;
 }
 .dialog-close-btn::before, .ov-x::before, .ac-x::before, .guide-x::before, .me-close::before, .pe-x::before, .vt-x::before, .lightbox-x::before, .lightbox-close::before {

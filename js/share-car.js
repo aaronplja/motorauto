@@ -36,7 +36,7 @@
     car = cardMode ? cardMode.card : C.carsById.get(carId); if (!car) return;
     dests = new Map(); $("sharecar-q").value = ""; $("sharecar-err").textContent = "";
     $("sharecar-sub").innerHTML = `<span class="sharecar-prev"><img src="${C.esc(C.safeUrl(car.image) || "")}" alt="" data-fallback="car"><b>${C.esc(car.brand + " " + car.model)}</b><small>${car.stats && car.stats.power ? car.stats.power + " ch" : ""}${car.years ? " · " + C.esc(car.years) : ""}</small></span>`; $("sharecar-note").value = "";
-    $("sharecar-list").innerHTML = `<div class="empty-note">Chargement…</div>`;
+    $("sharecar-list").innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     C.openModal($("sharecar-modal"));
     await loadDest(); draw();
   }

@@ -110,7 +110,7 @@
     });
     document.addEventListener("click", async (e) => {
       let b = e.target.closest("[data-nw-del]");
-      if (b) { if (!confirm(T("Supprimer cette annonce ?"))) return; try { await C.db.collection("news").doc(b.dataset.nwDel).delete(); render(); } catch (_) { C.toast(T("Suppression impossible."), "err"); } return; }
+      if (b) { if (!await window.MA.confirm(T("Supprimer cette annonce ?"), { ok: "Supprimer" })) return; try { await C.db.collection("news").doc(b.dataset.nwDel).delete(); render(); } catch (_) { C.toast(T("Suppression impossible."), "err"); } return; }
       b = e.target.closest("[data-nw-toggle]");
       if (b) { const n = remote.find((x) => x.id === b.dataset.nwToggle); if (!n) return; try { await C.db.collection("news").doc(n.id).update({ published: n.published === false, notified: false }); render(); } catch (_) { C.toast(T("Action impossible."), "err"); } return; }
       b = e.target.closest("[data-nw-unfollow]");

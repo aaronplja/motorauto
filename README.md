@@ -2,6 +2,24 @@
 
 Site statique (HTML/CSS/JS) + Firebase (Auth, Firestore, Storage, Functions), hébergé sur Vercel (motorauto.fr).
 
+## Documentation : où trouver quoi
+| Besoin | Fichier |
+|---|---|
+| Modifier, construire, tester, publier | ce README (sections ci-dessous) |
+| Réglages de sécurité de la console, règles, en-têtes | `SECURITE.md` |
+| Mise en ligne complète, domaine, premières vérifications | `GO-LIVE.md` |
+| Abonnement PRO (Stripe) | `PRO-STRIPE.md` |
+| Liste des fonctionnalités | `FEATURES.md` |
+
+Commandes utiles : `node scripts/build.js` (construire) · `npm test` (tests rapides, sans navigateur) · `npm run test:journeys` (parcours dans un vrai navigateur, optionnel : `npm i -D playwright && npx playwright install chromium`).
+
+## Conventions de code (audit d'avril 2026)
+- **Modules** : un nouveau module s'enregistre avec `MA.register("Nom", api)` et se lit via `MA.mods.Nom` ; ne plus créer de nouvelle variable globale `window.MA…` (un test fige la liste actuelle).
+- **Confirmation** : `await MA.confirm(message, { ok, danger })`, jamais `confirm()`.
+- **Feuilles de style** : `css/system.css` est chargé en dernier et porte les échelles (boutons 44/36 px, trois rayons de carte, textes ≥ 12 px). Pas de nouveau `!important` ; on ajoute les règles dans la feuille de la page concernée.
+- **Chargements** : un squelette (`.skel-wrap`) plutôt qu'un texte « Chargement… ».
+- **Barres du haut et du bas** : jamais modifiées sans demande explicite.
+
 ## Comment modifier le site (important)
 - **`index.src.html` est la source** de la page principale. `index.html`, `css/bundle.min.css` et `js/bundle*.min.js` sont **générés** : ne jamais les modifier à la main.
 - Après toute modification de `index.src.html`, d'un fichier `js/*.js` ou `css/*.css` : `node scripts/build.js` (regroupe et minifie ; `node scripts/build.js --check` vérifie que tout est à jour).

@@ -641,7 +641,7 @@ service cloud.firestore {
 
     // --- Position approximative d'un pilote sur la carte : opt-in, ville seulement (coordonnées arrondies et décalées par le site)
     match /pilot_locations/{uid} {
-      allow read: if true;
+      allow read: if signedIn();
       allow create, update: if signedIn() && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['uid', 'name', 'avatar', 'city', 'lat', 'lng', 'updatedAt'])
         && request.resource.data.uid == uid
@@ -747,20 +747,10 @@ service cloud.firestore {
     // =====================================================================================
 
     // --- Série de visites : lecture publique (profil, classement), +1 jour maximum par écriture
+    // Série de visites : écrite uniquement par la fonction touchStreak (serveur). Un pilote ne peut plus gonfler sa série depuis le navigateur.
     match /streaks/{sid} {
       allow read: if true;
-      allow create: if isOwner(sid)
-        && request.resource.data.keys().hasOnly(['days', 'best', 'last', 'updatedAt'])
-        && request.resource.data.days == 1 && request.resource.data.best == 1
-        && request.resource.data.last is string && request.resource.data.last.size() == 10
-        && request.resource.data.updatedAt == request.time;
-      allow update: if isOwner(sid)
-        && request.resource.data.keys().hasOnly(['days', 'best', 'last', 'updatedAt'])
-        && request.resource.data.days is number && request.resource.data.days >= 1 && request.resource.data.days <= resource.data.days + 1
-        && request.resource.data.best is number && request.resource.data.best >= request.resource.data.days
-        && request.resource.data.best <= resource.data.best + 1
-        && request.resource.data.last is string && request.resource.data.last.size() == 10
-        && request.resource.data.updatedAt == request.time;
+      allow create, update: if isAdmin();
       allow delete: if false;
     }
 
@@ -772,20 +762,6 @@ service cloud.firestore {
       allow create, update: if isAdmin() && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
-    function validCollection() {
-      return request.resource.data.keys().hasOnly(['owned', 'count', 'specials', 'dust', 'lastPack', 'bonus', 'claimed', 'opened', 'trades', 'chal', 'dustLog', 'pics', 'picClaims', 'lv', 'mis', 'offers', 'updatedAt'])
-        && request.resource.data.get('lv', {}) is map && request.resource.data.get('mis', {}) is map && request.resource.data.get('offers', {}) is map
-        && request.resource.data.get('dustLog', []) is list && request.resource.data.get('dustLog', []).size() <= 40
-        && request.resource.data.owned is map
-        && request.resource.data.count is number && request.resource.data.count >= 0 && request.resource.data.count <= 1000
-        && request.resource.data.dust is number && request.resource.data.dust >= 0 && request.resource.data.dust <= 1000000
-        && request.resource.data.lastPack is string && request.resource.data.lastPack.size() <= 10
-        && request.resource.data.bonus is number && request.resource.data.bonus >= 0 && request.resource.data.bonus <= 1000
-        && request.resource.data.claimed is list && request.resource.data.claimed.size() <= 200
-        && request.resource.data.opened is number && request.resource.data.opened >= 0
-        && request.resource.data.updatedAt == request.time;
-    }
-
     // --- Wishlist : les cartes que je cherche (visible sur mon profil, prépare les échanges)
     match /wishlists/{wid} {
       allow read: if true;
@@ -800,31 +776,10 @@ service cloud.firestore {
     // Les Cloud Functions les écrivent ; en mode navigateur, le pilote n'écrit que les siens et ne progresse que d'un cran à la fois.
     match /gstats/{gid} {
       allow read: if true;
-      allow create: if isOwner(gid) && validGStats() && request.resource.data.get('fuse', 0) <= 1 && request.resource.data.get('quizDone', 0) <= 1
-        && request.resource.data.get('pmBest', 0) <= 1 && request.resource.data.get('sold', 0) == 0 && request.resource.data.get('bought', 0) == 0;
-      allow update: if isOwner(gid) && validGStats()
-        && request.resource.data.get('fuse', 0) <= resource.data.get('fuse', 0) + 1
-        && request.resource.data.get('quizDone', 0) <= resource.data.get('quizDone', 0) + 1
-        && request.resource.data.get('quizPerfect', 0) <= resource.data.get('quizPerfect', 0) + 1
-        && request.resource.data.get('quizL3', 0) <= resource.data.get('quizL3', 0) + 1
-        && request.resource.data.get('pmBest', 0) <= resource.data.get('pmBest', 0) + 1
-        && request.resource.data.get('sold', 0) == resource.data.get('sold', 0)
-        && request.resource.data.get('bought', 0) == resource.data.get('bought', 0)
-        || isAdmin();
+      // Compteurs de jeu (quiz, plus ou moins, fusion, marché) : écrits uniquement par les fonctions serveur.
+      allow create, update: if isAdmin();
       allow delete: if false;
     }
-    function validGStats() {
-      return request.resource.data.keys().hasOnly(['fuse', 'sold', 'bought', 'pmBest', 'pmStreak', 'pmPair', 'pmDay', 'quizDone', 'quizPerfect', 'quizL3', 'quizBest', 'quizPts', 'quizDay', 'wishAt', 'updatedAt'])
-        && request.resource.data.get('fuse', 0) is number && request.resource.data.get('fuse', 0) >= 0 && request.resource.data.get('fuse', 0) <= 1000000
-        && request.resource.data.get('quizDone', 0) is number && request.resource.data.get('quizDone', 0) >= 0 && request.resource.data.get('quizDone', 0) <= 1000000
-        && request.resource.data.get('quizPerfect', 0) is number && request.resource.data.get('quizL3', 0) is number
-        && request.resource.data.get('pmBest', 0) is number && request.resource.data.get('pmBest', 0) >= 0 && request.resource.data.get('pmBest', 0) <= 5000
-        && request.resource.data.get('pmStreak', 0) is number && request.resource.data.get('pmStreak', 0) <= 5000
-        && request.resource.data.get('quizPts', 0) is number && request.resource.data.get('quizPts', 0) >= 0 && request.resource.data.get('quizPts', 0) <= 120
-        && request.resource.data.get('quizBest', {}) is map && request.resource.data.get('pmDay', {}) is map && request.resource.data.get('quizDay', {}) is map
-        && request.resource.data.updatedAt == request.time;
-    }
-
     // --- Marché de cartes : annonces écrites par le serveur (la carte est mise sous séquestre pendant la vente)
     match /card_listings/{lid} {
       allow read: if true;
@@ -969,11 +924,8 @@ service cloud.firestore {
     // --- Défis de la semaine : progression de chaque pilote (lecture par lui seul)
     match /weekly/{wid} {
       allow read: if isOwner(wid) || isAdmin();
-      allow create, update: if isOwner(wid)
-        && request.resource.data.keys().hasOnly(['week', 'packs', 'dailyDays', 'trades', 'logs', 'logDay', 'claimed', 'updatedAt'])
-        && request.resource.data.week is string && request.resource.data.week.size() <= 10
-        && request.resource.data.claimed is list && request.resource.data.claimed.size() <= 10
-        && request.resource.data.updatedAt == request.time;
+      // Écrit uniquement par le serveur : un pilote ne peut plus vider « claimed » pour récupérer deux fois une récompense.
+      allow create, update: if isAdmin();
       allow delete: if false;
     }
 

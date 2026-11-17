@@ -73,9 +73,11 @@
   document.addEventListener("visibilitychange", () => { if (document.hidden) stopParticles(); else apply(); });
 
   // réglage global (admin) lu en direct
+  let watching = false;
   function watch() {
     const fb = window.MAFB;
-    if (!fb || !fb.db) return;
+    if (!fb || !fb.db || watching) return;
+    watching = true;
     try {
       fb.db.collection("site_settings").doc("seasons").onSnapshot((d) => {
         if (d.exists) Object.assign(state.flags, d.data());

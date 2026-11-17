@@ -151,7 +151,7 @@
   // ---------------------------------------------------------------- journal (affichage)
   async function renderLog() {
     const box = document.getElementById("admin-log-list"), esc = C.esc;
-    box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       const s = await C.db.collection("admin_log").orderBy("createdAt", "desc").limit(100).get();
       box.innerHTML = s.empty ? `<div class="empty-note">Aucune action enregistrée pour l'instant.</div>` : s.docs.map((d) => {
@@ -197,7 +197,7 @@
   async function renderMutes() {
     const box = document.getElementById("admin-mute-list"), esc = C.esc;
     if (!box) return;
-    box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       const [ms, us] = await Promise.all([C.db.collection("mutes").limit(100).get(), C.db.collection("users").limit(500).get()]);
       const names = new Map(); us.forEach((d) => names.set(d.id, (d.data() || {}).username || "Pilote"));

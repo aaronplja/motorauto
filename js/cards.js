@@ -347,7 +347,7 @@
     if (busy || !C.requireLogin()) return;
     const car = cardObj(id); if (!car) return;
     const cost = RAR[rarityOf(car)].craft; if (!cost) { C.toast("Une carte Légende se gagne en complétant un album.", "err"); return; }
-    if (!confirm(`Fabriquer « ${car.brand} ${car.model} » pour ${cost} cristaux ?`)) return;
+    if (!await window.MA.confirm(`Fabriquer « ${car.brand} ${car.model} » pour ${cost} cristaux ?`, { ok: "Confirmer", danger: false })) return;
     busy = true;
     try {
       const r = await API("craftCard", { id });

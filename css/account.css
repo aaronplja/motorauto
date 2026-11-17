@@ -1,0 +1,12 @@
+/* Compte : mot de passe oublié, bandeau de vérification d'e-mail, confidentialité groupée, page 404 */
+.link-btn { background: none; border: 0; padding: .35rem 0; min-height: 36px; color: var(--accent); font: inherit; font-size: .85rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.auth-forgot { display: block; margin: -.2rem 0 .2rem auto; }
+.ok-txt { color: var(--ok, #22a06b); }
+.verify-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem .9rem; margin: 0 0 1rem; padding: .7rem 1rem; border: 1px solid var(--stroke-line); border-radius: 16px; background: var(--bg-surface); font-size: .88rem; }
+.verify-banner[hidden] { display: none; }
+.verify-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.priv-sub { margin: 1rem 0 .1rem; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-secondary); }
+.priv-group .priv-sub:first-of-type { margin-top: .3rem; }
+.nf-text { max-width: 52ch; margin: 0 0 1.2rem; color: var(--color-secondary); }
+.nf-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
+.nf-actions .cta-btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding-inline: 1.2rem; }

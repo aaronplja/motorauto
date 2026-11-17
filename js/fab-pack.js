@@ -14,7 +14,9 @@
   }
   function tick() {
     const h = location.hash;
-    const skip = !C || !C.user || h === "" || h === "#" || h === "#/" || /^#\/jouer\/(boutique|cartes)/.test(h) || document.body.classList.contains("modal-open");
+    const ae = document.activeElement, typing = ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable);
+    // jamais par-dessus un formulaire : pages de saisie (réglages, contact, admin), champ en cours d'édition ou fenêtre ouverte
+    const skip = !C || !C.user || h === "" || h === "#" || h === "#/" || /^#\/(jouer|reglages|contact|admin|chat|garage\/voitures)/.test(h) || typing || document.body.classList.contains("modal-open");
     if (skip || !window.MACards || !window.MAGame) return show(false);
     const doc = window.MACards.mine(); if (!doc) return show(false);
     show(doc.lastPack !== window.MAGame.day());

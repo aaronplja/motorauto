@@ -163,7 +163,7 @@
   async function adminPanel(host, ctx) {
     C = C || ctx; if (!host) return;
     let box = host.querySelector(".fp-admin"); if (!box) { box = document.createElement("div"); box.className = "fp-admin"; host.appendChild(box); }
-    box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     const snap = async (q) => { try { return (await q.get()).docs.map((d) => Object.assign({ id: d.id }, d.data())); } catch (_) { return null; } };
     const [reports, misses, errs] = await Promise.all([snap(C.db.collection("car_reports").where("status", "==", "open").limit(60)), snap(C.db.collection("search_misses").orderBy("n", "desc").limit(15)), snap(C.db.collection("client_errors").limit(200))]);
     const pages = {}; (errs || []).filter((e) => !e.done).forEach((e) => { const p = String(e.page || "?").slice(0, 40); pages[p] = (pages[p] || 0) + (e.n || 1); });

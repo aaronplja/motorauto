@@ -58,9 +58,7 @@
   <link rel="stylesheet" href="css/motion.css">
   <link rel="stylesheet" href="css/admin-dash.css">
   <link rel="stylesheet" href="css/packs.css">
-  <link rel="stylesheet" href="css/cards3.css">
-  <link rel="stylesheet" href="css/cards4.css">
-  <link rel="stylesheet" href="css/cards5.css">
+  <link rel="stylesheet" href="css/cards.css">
   <link rel="stylesheet" href="css/studio.css">
   <link rel="stylesheet" href="css/homog.css">
   <link rel="stylesheet" href="css/trades.css">
@@ -69,8 +67,7 @@
   <link rel="stylesheet" href="css/plus.css">
   <link rel="stylesheet" href="css/profile-v2.css">
   <link rel="stylesheet" href="css/season.css">
-  <link rel="stylesheet" href="css/center.css">
-  <link rel="stylesheet" href="css/albums3.css">
+  <link rel="stylesheet" href="css/albums.css">
   <link rel="stylesheet" href="css/profile-v3.css">
   <link rel="stylesheet" href="css/final.css">
   <link rel="stylesheet" href="css/themefix.css">
@@ -86,6 +83,9 @@
   <link rel="stylesheet" href="css/reveal.css">
   <link rel="stylesheet" href="css/pilotspace.css">
   <link rel="stylesheet" href="css/closebtn.css">
+  <link rel="stylesheet" href="css/confirm.css">
+  <link rel="stylesheet" href="css/account.css">
+  <link rel="stylesheet" href="css/system.css">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -233,14 +233,6 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
 
 
-  <section class="stage-shell home-section" id="home-feed-sec">
-    <div class="section-head">
-      <div><h2 class="section-title">Fil d'actualité</h2><p class="count-stream">Nouveaux pilotes, nouvelles voitures et nouveaux records</p></div>
-      <a class="link-more" href="#/communaute/fil">Tout voir&nbsp;➔</a>
-    </div>
-    <div class="feed-list" id="home-feed" aria-live="polite"></div>
-  </section>
-
   <section class="stage-shell home-section home-contest" id="home-contest" hidden></section>
 
 
@@ -256,6 +248,14 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <div class="top-mini" id="home-top-cars"></div>
       </div>
     </div>
+  </section>
+
+  <section class="stage-shell home-section" id="home-feed-sec">
+    <div class="section-head">
+      <div><h2 class="section-title">Fil d'actualité</h2><p class="count-stream">Nouveaux pilotes, nouvelles voitures et nouveaux records</p></div>
+      <a class="link-more" href="#/communaute/fil">Tout voir&nbsp;➔</a>
+    </div>
+    <div class="feed-list" id="home-feed" aria-live="polite"></div>
   </section>
 
   <section class="stage-shell home-section">
@@ -528,6 +528,12 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <p class="presence-line" id="pub-presence" hidden></p>
         </div>
       </div>
+      <div class="pro-stats pv3-stats" id="pub-social">
+        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b><span>abonnés</span></button>
+        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="following"><b data-sc="following">–</b><span>abonnements</span></button>
+        <div class="pro-stat" id="pub-stat-cards"><b>–</b><span>cartes</span></div>
+        <div class="pro-stat" id="pub-stat-level"><b>–</b><span>niveau</span></div>
+      </div>
       <div class="pv3-actions">
         <button type="button" class="cta-btn fill-btn compact-btn follow-btn" data-action="toggle-follow" hidden>Suivre</button>
         <a class="icon-btn pub-gear" id="pub-settings-btn" href="#/reglages/profil" aria-label="Réglages" title="Réglages" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
@@ -539,12 +545,6 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       <p id="pub-profile-bio" class="profile-bio pv3-bio">Aucune bio renseignée.</p>
       <div id="pub-socials"></div>
       <div class="badge-row" id="pub-profile-badges"></div>
-      <div class="pro-stats pv3-stats" id="pub-social">
-        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b><span>abonnés</span></button>
-        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="following"><b data-sc="following">–</b><span>abonnements</span></button>
-        <div class="pro-stat" id="pub-stat-cards"><b>–</b><span>cartes</span></div>
-        <div class="pro-stat" id="pub-stat-level"><b>–</b><span>niveau</span></div>
-      </div>
       <div class="pv2-level pv3-level" id="pub-level-card" hidden></div>
     </section>
     <div id="pub-profile-private-warning" class="private-warning" style="display:none">🔒 Ce pilote garde son garage privé.</div>
@@ -699,6 +699,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <nav data-section="settings"></nav>
     <section class="tab-panel" data-tab="profil" hidden>
       <div class="settings-box open">
+          <div class="verify-banner" id="verify-banner" hidden role="status"><span>Ton adresse e-mail n'est pas encore vérifiée. Ouvre le lien reçu par e-mail.</span><span class="verify-actions"><button type="button" class="cta-btn btn-ghost compact-btn" id="verify-resend">Renvoyer l'e-mail</button><button type="button" class="cta-btn btn-ghost compact-btn" id="verify-check">J'ai vérifié</button></span></div>
           <div class="form-grid">
             <div class="input-stack"><label for="settings-username">Pseudo</label><input type="text" id="settings-username" placeholder="Ton pseudo" maxlength="24"><small class="tcg-hint">Unique · modifiable une fois tous les 30 jours · les autres pilotes te mentionnent avec @pseudo.</small></div>
             <div class="input-stack"><label for="settings-avatar">Avatar (URL)</label><input type="text" id="settings-avatar" placeholder="https://…"></div>
@@ -733,12 +734,15 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
             <div class="input-stack"><label for="settings-tiktok">TikTok</label><input type="text" id="settings-tiktok" maxlength="120" placeholder="@pseudo ou tiktok.com/@pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
             <div class="input-stack"><label for="settings-snapchat">Snapchat</label><input type="text" id="settings-snapchat" maxlength="120" placeholder="pseudo ou snapchat.com/add/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
           </div>
-          <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
-          <fieldset class="priv-group"><legend>🔐 Confidentialité</legend>
+          <fieldset class="priv-group"><legend>Confidentialité</legend>
+            <p class="priv-sub">Ce que les autres voient de toi</p>
             <label class="check-row"><input type="checkbox" id="settings-public-garage"><span>Garage public : les autres pilotes voient mes favoris et mes chronos</span></label>
             <label class="check-row"><input type="checkbox" id="settings-hide-following"><span>Masquer mes abonnements (les pilotes que je suis)</span></label>
-            <label class="check-row"><input type="checkbox" id="settings-show-presence" checked><span>Afficher quand je suis en ligne et ma dernière connexion (sur mon profil et dans le chat)</span></label>
             <label class="check-row"><input type="checkbox" id="settings-hide-followers"><span>Masquer mes abonnés (ceux qui me suivent)</span></label>
+            <p class="priv-sub">Présence</p>
+            <label class="check-row"><input type="checkbox" id="settings-show-presence" checked><span>Afficher quand je suis en ligne et ma dernière connexion (sur mon profil et dans le chat)</span></label>
+            <p class="priv-sub">Communications</p>
+            <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
           </fieldset>
           <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
           <div class="danger-zone mt">
@@ -757,7 +761,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div class="page page-layer" id="page-duel" data-page="duel">
   <div class="stage-shell page-wrap">
     <nav data-section="play"></nav>
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Mode duel</h1><p class="page-sub">Choisis n'importe quelles deux voitures (catalogue, communauté, les tiennes) : 0-100, 0-200, 400 m ou 1000 m, sol sec ou mouillé. Le calcul tient compte de la boîte, de l'adhérence, de l'aérodynamique et du poids.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Jouer</span><h1 class="page-title">Mode duel</h1><p class="page-sub">Choisis n'importe quelles deux voitures (catalogue, communauté, les tiennes) : 0-100, 0-200, 400 m ou 1000 m, sol sec ou mouillé. Le calcul tient compte de la boîte, de l'adhérence, de l'aérodynamique et du poids.</p></div></header>
     <div id="duel-root"></div>
   </div>
   </div>
@@ -819,6 +823,14 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   </div>
   </div>
 
+  <div class="page page-layer" id="page-notfound" data-page="notfound">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Erreur 404</span><h1 class="page-title">Cette page n'existe pas</h1><p class="lap-meta" id="nf-path"></p></div></header>
+    <p class="nf-text">Le lien est peut-être ancien ou mal recopié. Reprends la route depuis l'un de ces points d'entrée.</p>
+    <div class="nf-actions"><a class="cta-btn fill-btn" href="#/">Retour à l'accueil</a><a class="cta-btn btn-ghost" href="#/catalogue">Parcourir le catalogue</a><a class="cta-btn btn-ghost" href="#/contact">Signaler un problème</a></div>
+  </div>
+  </div>
+
   <div class="page page-layer" id="page-legal" data-page="legal">
   <div class="stage-shell page-wrap">
     <a class="back-link" href="#/" data-back="#/">← Accueil</a>
@@ -830,7 +842,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-clubs" data-page="clubs">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Clubs & équipes</h1><p class="page-sub">Rejoins un club par marque ou par région : fil privé entre membres et classement.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Communauté</span><h1 class="page-title">Clubs & équipes</h1><p class="page-sub">Rejoins un club par marque ou par région : fil privé entre membres et classement.</p></div></header>
     <nav data-section="pilotes"></nav>
     <div id="clubs-root"></div>
   </div>
@@ -838,7 +850,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-club" data-page="club">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Club</h1><p class="page-sub"></p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Communauté</span><h1 class="page-title">Club</h1><p class="page-sub"></p></div></header>
     <nav data-section="pilotes"></nav>
     <a class="back-link" href="#/clubs" data-back="#/clubs">← Tous les clubs</a>
     <div id="club-root"></div>
@@ -847,7 +859,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-market" data-page="market">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Annonces entre pilotes</h1><p class="page-sub">Vends ou échange des pièces. Signale toute annonce douteuse.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Communauté</span><h1 class="page-title">Annonces entre pilotes</h1><p class="page-sub">Vends ou échange des pièces. Signale toute annonce douteuse.</p></div></header>
     <nav data-section="pilotes"></nav>
     <div id="market-root"></div>
   </div>
@@ -872,7 +884,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-cardmarket" data-page="cardmarket">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Marché de cartes</h1><p class="page-sub">Vends tes doublons ou achète les cartes qui te manquent, en cristaux.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Jouer</span><h1 class="page-title">Marché de cartes</h1><p class="page-sub">Vends tes doublons ou achète les cartes qui te manquent, en cristaux.</p></div></header>
     <nav data-section="play"></nav>
     <div id="cardmarket-root"></div>
   </div>
@@ -880,7 +892,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-wishfeed" data-page="wishfeed">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Souhaits et échanges</h1><p class="page-sub">Qui cherche quoi, qui propose quoi : trouve ton prochain échange.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Jouer</span><h1 class="page-title">Souhaits et échanges</h1><p class="page-sub">Qui cherche quoi, qui propose quoi : trouve ton prochain échange.</p></div></header>
     <nav data-section="play"></nav>
     <div id="wishfeed-root"></div>
   </div>
@@ -888,7 +900,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-plusmoins" data-page="plusmoins">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Plus ou moins</h1><p class="page-sub">Deux voitures, une seule bonne réponse. Jusqu'où iras-tu sans faute ?</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Jouer</span><h1 class="page-title">Plus ou moins</h1><p class="page-sub">Deux voitures, une seule bonne réponse. Jusqu'où iras-tu sans faute ?</p></div></header>
     <nav data-section="play"></nav>
     <div id="plusmoins-root"></div>
   </div>
@@ -896,7 +908,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-quizgame" data-page="quizgame">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Quiz</h1><p class="page-sub">Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Jouer</span><h1 class="page-title">Quiz</h1><p class="page-sub">Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.</p></div></header>
     <nav data-section="play"></nav>
     <div id="quizgame-root"></div>
   </div>
@@ -912,7 +924,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-achievements" data-page="achievements">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Succès</h1><p class="page-sub">Tous tes badges et ta progression.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Jouer</span><h1 class="page-title">Succès</h1><p class="page-sub">Tous tes badges et ta progression.</p></div></header>
     <nav data-section="play"></nav>
     <div id="achievements-root"></div>
   </div>
@@ -920,7 +932,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-timeline" data-page="timeline">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Frise chronologique</h1><p class="page-sub">Toute l'histoire de l'automobile sur une ligne.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Catalogue</span><h1 class="page-title">Frise chronologique</h1><p class="page-sub">Toute l'histoire de l'automobile sur une ligne.</p></div></header>
     <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
     <div id="timeline-root"></div>
   </div>
@@ -928,7 +940,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-pro" data-page="pro">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">MOTORAUTO PRO</h1><p class="page-sub">Les modifications de ta voiture, rédigées et relues par l'équipe.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">PRO</span><h1 class="page-title">MOTORAUTO PRO</h1><p class="page-sub">Les modifications de ta voiture, rédigées et relues par l'équipe.</p></div></header>
     <div id="pro-offer"></div>
     <div id="pro-account"></div>
     <div id="pro-explorer"></div>
@@ -937,7 +949,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-news" data-page="news">
   <div class="stage-shell page-wrap">
-    <header class="page-head"><div class="page-head-text"><h1 class="page-title">Nouveautés</h1><p class="page-sub">Le journal des mises à jour de MOTORAUTO.</p></div></header>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Accueil</span><h1 class="page-title">Nouveautés</h1><p class="page-sub">Le journal des mises à jour de MOTORAUTO.</p></div></header>
     <a class="back-link" href="#/" data-back="#/">← Accueil</a>
     <div id="news-root"></div>
   </div>
@@ -1051,6 +1063,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <svg class="auth-mark" viewBox="-2 -2 55.5 64" aria-hidden="true"><polygon class="am1" points="0,60 12,60 31.5,0 19.5,0"/><polygon class="am2" points="20,60 32,60 51.5,0 39.5,0"/></svg>
           <h2 class="dialog-title" id="auth-title">Cockpit pilote</h2>
           <p class="dialog-sub">Synchronise tes chronos et ton écurie sur tous tes appareils</p>
+          <p class="auth-reason" id="auth-reason" role="status" hidden></p>
         </div>
         <button type="button" class="dialog-close-btn" id="close-auth-modal" aria-label="Fermer">&times;</button>
       </div>
@@ -1068,6 +1081,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <form class="auth-form active" id="login-form">
           <div class="input-stack"><label for="login-email">Adresse e-mail</label><input type="email" id="login-email" placeholder="pilote@motorauto.com" autocomplete="email" required></div>
           <div class="input-stack"><label for="login-password">Mot de passe</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required></div>
+          <button type="button" class="link-btn auth-forgot" id="forgot-password-btn">Mot de passe oublié ?</button>
+          <div class="form-feedback ok-txt" id="forgot-info" role="status"></div>
           <div class="form-feedback error-txt" id="login-error" role="alert"></div>
           <button type="submit" class="cta-btn fill-btn w-100" id="login-submit-btn"><span class="btn-text">Se connecter</span></button>
         </form>
@@ -1430,6 +1445,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     </div>
   </div>
 
+  <script defer src="js/timers.js"></script>
   <script defer src="js/firebase-init.js"></script>
   <script defer src="js/utils.js"></script>
   <script defer src="js/themes.js"></script>
@@ -1612,5 +1628,6 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <script defer src="js/studio-motion.js"></script>
   <script defer src="js/update-check.js"></script>
   <script defer src="js/page-reveal.js"></script>
+  <script defer src="js/retry.js"></script>
 </body>
 </html>

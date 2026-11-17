@@ -62,7 +62,7 @@
   async function renderFeed() {
     const box = document.getElementById("feed-list");
     if (!box) return;
-    box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       document.querySelectorAll("[data-feed-mode]").forEach((b) => { b.classList.toggle("active", b.dataset.feedMode === feedMode); b.setAttribute("aria-selected", String(b.dataset.feedMode === feedMode)); });
       let list = await loadFeed(true);
@@ -135,7 +135,7 @@
   async function renderEvents() {
     const up = document.getElementById("events-list"), past = document.getElementById("events-past");
     if (!up) return;
-    up.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    up.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try {
       const list = await loadEvents(true), now = Date.now() - 6 * 3600 * 1000;
       const next = list.filter((e) => e.dateMs >= now), old = list.filter((e) => e.dateMs < now).reverse();
@@ -224,7 +224,7 @@
     } catch (ex) { err.textContent = "Publication impossible : " + ex.message; }
   }
   async function deleteEvent(id) {
-    if (!confirm("Supprimer cette sortie ?")) return;
+    if (!await window.MA.confirm("Supprimer cette sortie ?", { ok: "Supprimer" })) return;
     try {
       await C.db.collection("events").doc(id).delete();
       if (C.isAdmin && window.MALog) window.MALog.log("event-delete", { target: id, detail: "sortie supprimée" });

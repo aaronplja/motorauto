@@ -29,7 +29,7 @@
   async function renderList() {
     const box = document.getElementById("circuits-list");
     if (!box) return;
-    box.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     try { tracksCache = groupTracks(await laps()); } catch (e) { box.innerHTML = `<div class="empty-note error">Circuits indisponibles.</div>`; return; }
     drawList();
   }
@@ -118,7 +118,7 @@
   // ---------- page circuit
   async function renderCircuit(key) {
     const body = document.getElementById("circuit-body"), esc = C.esc;
-    body.innerHTML = `<div class="empty-note">Chargement…</div>`;
+    body.innerHTML = `<div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     let t;
     try { t = groupTracks(await laps()).find((x) => x.key === key); } catch (e) { body.innerHTML = `<div class="empty-note error">Circuit indisponible.</div>`; return; }
     if (!t) { document.getElementById("circuit-title").textContent = "Circuit introuvable"; document.getElementById("circuit-sub").textContent = ""; body.innerHTML = `<div class="empty-note">Aucun chrono pour ce circuit. <a href="#/classement/circuits">Voir tous les circuits</a></div>`; return; }

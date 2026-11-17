@@ -10,9 +10,9 @@
 .pkart-flag[data-f="world"] { background: radial-gradient(120% 90% at 20% 10%, var(--p3) 0, transparent 55%), radial-gradient(120% 90% at 90% 100%, var(--p2) 0, transparent 60%), linear-gradient(150deg, var(--p1), #0f172a); }
 .pkart-flag::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.05) 0, rgba(0,0,0,.28) 100%); z-index: 1; }
 .pkart-plate { position: absolute; left: 8%; right: 8%; top: 50%; transform: translateY(-50%); z-index: 2; display: grid; gap: .15rem; justify-items: center; text-align: center; padding: .6rem .4rem; border-radius: 12px; background: rgba(8,10,18,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.28); color: #fff; box-shadow: 0 8px 22px rgba(0,0,0,.4); }
-.pkart-plate small { font-size: .52rem; font-weight: 800; letter-spacing: .26em; opacity: .85; }
+.pkart-plate small { font-size: .75rem; font-weight: 800; letter-spacing: .26em; opacity: .85; }
 .pkart-plate b { font-size: clamp(.82rem, 3.8vw, 1.15rem); font-weight: 900; letter-spacing: .04em; line-height: 1.1; text-transform: uppercase; overflow-wrap: normal; hyphens: manual; position: static; display: block; text-shadow: none; inset: auto; place-content: unset; }
-.pkart-plate em { font-style: normal; font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+.pkart-plate em { font-style: normal; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
 
 /* pack en cours d'ouverture (version pays) */
 .pk3-pack.country { background: var(--p1); box-shadow: 0 28px 56px -22px rgba(0,0,0,.7), 0 0 0 2px rgba(255,255,255,.22) inset; }
@@ -40,6 +40,6 @@
 .shop-meta { display: flex; align-items: center; justify-content: space-between; gap: .4rem; min-width: 0; }
 .shop-meta b { font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .shop-price { display: inline-flex; align-items: center; gap: .25rem; flex: 0 0 auto; font-size: .82rem; font-weight: 800; padding: .15rem .5rem; border-radius: 999px; background: color-mix(in srgb, var(--accent) 18%, transparent); }
-.shop-pack small { font-size: .72rem; color: var(--color-muted); line-height: 1.3; }
+.shop-pack small { font-size: .75rem; color: var(--color-muted); line-height: 1.3; }
 @media (prefers-reduced-motion: reduce) { .shop-pack, .shop-art::after { transition: none; animation: none !important; } }
 .pk3-pack.country { container-type: inline-size; }

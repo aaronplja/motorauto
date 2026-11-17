@@ -27,7 +27,7 @@
     const host = document.getElementById("admin-inbox"); if (!host) return;
     let box = document.getElementById("admin-stats");
     if (!box) { box = document.createElement("section"); box.id = "admin-stats"; box.className = "admin-stats"; host.insertAdjacentElement("afterend", box); }
-    box.innerHTML = `<h3 class="admin-h3">📊 Statistiques (14 derniers jours)</h3><div class="empty-note">Chargement…</div>`;
+    box.innerHTML = `<h3 class="admin-h3">📊 Statistiques (14 derniers jours)</h3><div class="skel-wrap" aria-busy="true"><i class="skel" style="height:64px"></i><i class="skel" style="height:64px"></i><i class="skel" style="height:64px;width:70%"></i></div>`;
     const days = []; for (let i = 13; i >= 0; i--) days.push(day(new Date(Date.now() - i * 86400000)));
     const docs = await Promise.all(days.map((d) => C.db.collection("site_stats").doc(d).get().then((s) => (s.exists ? s.data() : {})).catch(() => ({}))));
     const views = docs.map((d) => d.views || 0), vis = docs.map((d) => d.visitors || 0), max = Math.max(1, ...views);

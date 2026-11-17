@@ -35,7 +35,7 @@
 @media (prefers-reduced-motion:reduce){.tr-send-cards i,.tr-send-dots u{animation:none}}
 
 /* ---- transitions communes (boutons, cartes, onglets, tuiles, feuilles) ---- */
-.cta-btn,.chip,.seg-btn,.page-tab,.pro-tab,.hub-tile,.play-tile,.cg-album,.badge-tile,.ssn-tier,.mk-card,.comm-card,.club-card,.event-card{transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .2s,border-color .2s,box-shadow .2s,color .2s,opacity .2s}
+.cta-btn,.chip,.seg-btn,.page-tab,.pro-tab,.hub-tile,.play-tile,.cg-album,.badge-tile,.ssn-tier,.mk-card,.comm-card,.club-card,.event-card{transition:transform .2s cubic-bezier(.2,.8,.2,1),background-color .2s,border-color .2s,box-shadow .2s,color .2s,opacity .2s}
 .cta-btn:active,.chip:active,.hub-tile:active,.play-tile:active,.cg-album:active,.page-tab:active{transform:scale(.97)}
 @media (hover:hover){.hub-tile:hover,.play-tile:hover,.cg-album:hover{transform:translateY(-2px)}}
 .tab-panel:not([hidden]){animation:panelIn .28s cubic-bezier(.2,.8,.2,1) both}
