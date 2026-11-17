@@ -51,6 +51,6 @@
 @media (max-width: 560px) {
   .hub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
   .hub-grid > .hub-tile { padding: .95rem; }
-  .hub-grid > .hub-tile.hub-feature, .hub-grid > .hub-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .hub-grid > .hub-tile.hub-feature, .hub-grid > .hub-tile.hub-wide { grid-column: 1 / -1; }
   .hub-tile small { font-size: .78rem; }
 }

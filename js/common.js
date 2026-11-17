@@ -561,6 +561,27 @@
     t.src = fb;
   }, true);
 
+
+  // ------------------------------------------------ grilles de tuiles (2 colonnes sur téléphone)
+  // Une tuile qui se retrouve seule sur sa ligne prend toute la largeur : jamais de trou à côté d'une tuile.
+  let hubQueued = false;
+  function fixHubGrids() {
+    hubQueued = false;
+    document.querySelectorAll(".hub-grid").forEach((g) => {
+      let col = 0, prev = null;
+      [...g.children].forEach((t) => {
+        t.classList.remove("hub-wide");
+        if (t.classList.contains("hub-feature")) { if (col === 1 && prev) prev.classList.add("hub-wide"); col = 0; prev = null; return; }
+        col ^= 1; prev = t;
+        if (col === 0) prev = null;
+      });
+      if (col === 1 && prev) prev.classList.add("hub-wide");
+    });
+  }
+  new MutationObserver(() => { if (!hubQueued) { hubQueued = true; requestAnimationFrame(fixHubGrids); } })
+    .observe(document.documentElement, { childList: true, subtree: true });
+  fixHubGrids();
+
   // ----------------------------------------------------- hauteur d'écran mobile
   // 100dvh couvre la plupart des cas ; cette variable sert de repli pour les anciens navigateurs.
   function setVh() { document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px"); }
