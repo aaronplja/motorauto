@@ -171,7 +171,7 @@
   const PILOT_HREF = { profil: "#/pilotes", garage: "#/garage", communaute: "#/communaute/fil", classement: "#/classement/chronos" };
   const PILOT_SUBS = {
     garage: [["Aperçu", "#/garage/apercu", (r) => r.name === "garage" && r.params.tab === "apercu"], ["Mes voitures", "#/garage/voitures", (r) => r.name === "garage" && r.params.tab === "voitures", "", "Voitures"], ["Suivi", "#/garage/suivi", (r) => r.name === "garage" && r.params.tab === "suivi"]],
-    communaute: [["Fil", "#/communaute/fil", (r) => r.name === "community" && r.params.tab === "fil"], ["Membres", "#/communaute/pilotes", (r) => r.name === "community" && r.params.tab === "pilotes"], ["Voitures", "#/communaute/voitures", (r) => r.name === "community" && r.params.tab === "voitures" || r.name === "commcar"], ["Clubs", "#/clubs", (r) => r.name === "clubs" || r.name === "club"], ["Sorties", "#/communaute/evenements", (r) => r.name === "community" && r.params.tab === "evenements"], ["Carte", "#/communaute/carte", (r) => r.name === "community" && r.params.tab === "carte"]],
+    communaute: [["Fil", "#/communaute/fil", (r) => r.name === "community" && r.params.tab === "fil"], ["Membres", "#/communaute/pilotes", (r) => r.name === "community" && r.params.tab === "pilotes"], ["Voitures", "#/communaute/voitures", (r) => r.name === "community" && r.params.tab === "voitures" || r.name === "commcar"], ["Clubs", "#/clubs", (r) => r.name === "clubs" || r.name === "club"], ["Sorties", "#/communaute/evenements", (r) => r.name === "community" && (r.params.tab === "evenements" || r.params.tab === "carte")]],
     classement: [["Chronos", "#/classement/chronos", (r) => r.name === "leaderboard" && r.params.tab === "chronos"], ["Circuits", "#/classement/circuits", (r) => r.name === "leaderboard" && r.params.tab === "circuits" || r.name === "circuit"], ["Voitures", "#/classement/voitures", (r) => r.name === "leaderboard" && r.params.tab === "voitures"], ["Pilotes", "#/classement/pilotes", (r) => r.name === "leaderboard" && r.params.tab === "pilotes"], ["Cartes", "#/classement/collection", (r) => r.name === "leaderboard" && r.params.tab === "collection"]]
   };
   const me = () => { try { const c = window.MAApp && window.MAApp.ctx ? window.MAApp.ctx() : null; return c && c.user ? c.user.uid : ""; } catch (_) { return ""; } };
@@ -202,7 +202,10 @@
     pageEl.querySelectorAll("nav[data-section]").forEach((nav) => {
       const sec = SECTIONS[nav.dataset.section]; if (!sec) return;
       if (nav.dataset.section === "play") { renderPlayBar(nav, route); return; }
-      if (nav.dataset.section === "pilotes") { renderPilotBar(nav, route); return; }
+      if (nav.dataset.section === "pilotes") {
+        const wrap = nav.parentElement; if (wrap && wrap.firstElementChild !== nav) wrap.insertBefore(nav, wrap.firstElementChild);   // même place sur chaque page de l'espace
+        renderPilotBar(nav, route); return;
+      }
       nav.setAttribute("role", "tablist"); nav.classList.add("page-tabs", "fit"); nav.style.setProperty("--n", sec.items.length); nav.setAttribute("aria-label", "Sections");
       nav.innerHTML = sec.items.map((it) => {
         const custom = !!it[2], href = "#" + (custom ? it[2] : PREFIX[nav.dataset.section] + "/" + it[0]);

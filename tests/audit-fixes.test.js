@@ -382,6 +382,21 @@ ok("points de quiz comptés dans l'XP (site et serveur), barre du profil public 
   assert.ok(/\.cod-notif input\[type="checkbox"\] \{ appearance: none;/.test(t) && /\.cod-notif input\[type="checkbox"\]:checked::after/.test(t), "case de rappel quotidien stylée");
   const r = read("css/reveal.css"), s = read("index.src.html");
   assert.ok(/<link rel="stylesheet" href="css\/reveal\.css">/.test(s) && s.indexOf("css/reveal.css") > s.indexOf("css/pro.css"), "feuille chargée en dernier");
-  assert.ok(/@keyframes rvUp/.test(r) && /:not\(#page-chat\)/.test(r) && /prefers-reduced-motion: no-preference/.test(r) && /data-anim="reduced"/.test(r), "apparition échelonnée, hors salon, coupée en mouvement réduit");
-  assert.ok(!/(^|[^-])(width|height|top|left|margin)\s*:/.test(r.replace(/@keyframes[\s\S]*?\}\s*\}/g, "").replace(/animation-delay[^;]*;/g, "")), "opacité et translation uniquement : aucun décalage de mise en page");
+  assert.ok(/@keyframes rvUp/.test(r) && /\.rv1/.test(r) && /\.rv2/.test(r) && /prefers-reduced-motion: no-preference/.test(r) && /data-anim="reduced"/.test(r), "apparition échelonnée, coupée en mouvement réduit");
+  assert.ok(!/(^|[^-])(width|height|top|left|margin)\s*:/.test(r.replace(/@keyframes[\s\S]*?\}\s*\}/g, "")), "opacité et translation uniquement : aucun décalage de mise en page");
+});
+ok("apparition des pages sans clignotement, espace Pilotes harmonisé, croix uniformes, catalogue dessiné à l'ouverture", () => {
+  const rv = read("js/page-reveal.js"), idx = read("index.src.html");
+  assert.ok(/<script defer src="js\/page-reveal\.js"><\/script>/.test(idx), "script chargé par la page");
+  assert.ok(/classList\.add\(cls\)/.test(rv) && /page-chat/.test(rv) && /"ma:route"/.test(rv), "seuls les blocs présents au changement de page sont étiquetés, jamais le salon");
+  const rt = read("js/router.js");
+  assert.ok(!/\["Carte", "#\/communaute\/carte"/.test(rt) && /tab === "evenements" \|\| r\.params\.tab === "carte"/.test(rt), "Sorties et Carte réunies dans la barre de la communauté");
+  assert.ok(/wrap\.insertBefore\(nav, wrap\.firstElementChild\)/.test(rt), "barre de l'espace Pilotes toujours en tête de page");
+  const ps = read("css/pilotspace.css");
+  assert.ok(/nav\[data-section="pilotes"\]\.play-bar:not\(\.inner\)/.test(ps) && /html \.play-bar\.inner \.play-back \{ align-self: stretch/.test(ps), "carte de navigation unique et bouton retour aligné");
+  assert.ok(/css\/pilotspace\.css/.test(idx) && /css\/closebtn\.css/.test(idx), "feuilles chargées");
+  const cb = read("css/closebtn.css");
+  ["dialog-close-btn", "ov-x", "ac-x", "guide-x", "me-close", "pe-x", "vt-x", "lightbox-x", "lightbox-close"].forEach((c) => assert.ok(cb.indexOf("." + c) >= 0, "croix : " + c));
+  assert.ok(/display: inline-flex !important; align-items: center; justify-content: center/.test(cb) && /mask: var\(--x-mask\)/.test(cb), "croix dessinée au centre exact");
+  assert.ok(/const catalogShown = /.test(read("js/app.js")) && /if \(!catalogShown\(\) && !\(opts && opts\.force\)\) return;/.test(read("js/app.js")), "catalogue dessiné seulement quand on l'ouvre");
 });

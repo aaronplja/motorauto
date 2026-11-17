@@ -376,9 +376,12 @@
     gaugeRaf = requestAnimationFrame(tick);
   }
 
+  // le catalogue (près de 1 200 éléments) n'est dessiné que lorsqu'on l'ouvre : la route « catalogue » le redessine à l'entrée
+  const catalogShown = () => /^#?\/?(catalogue|comparer)(\/|\?|$)/.test(location.hash) || /^(catalog|compare)$/.test(document.body.dataset.page || "");
   function renderCatalog(opts) {
     const grid = $("vehicles-grid");
     if (!grid) return;
+    if (!catalogShown() && !(opts && opts.force)) return;
     const result = getFilteredCars();
     $("results-count").textContent = `${result.length} véhicule(s) répertorié(s) dans l'archive mondiale`;
 

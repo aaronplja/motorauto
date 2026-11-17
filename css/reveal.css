@@ -1,6 +1,7 @@
-/* Apparition du contenu à chaque changement de page : le fond se fond en douceur, puis les blocs montent
-   l'un après l'autre (titre, onglets, cartes, listes). Opacité + translation uniquement : aucun décalage de mise en page.
-   Sélecteurs à spécificité nulle (:where) : toute animation propre à un composant garde la priorité. */
+/* Apparition du contenu à chaque changement de page : le fond se fond en douceur, puis les blocs déjà présents montent
+   l'un après l'autre. Seuls les blocs étiquetés par js/page-reveal.js au moment du changement de page s'animent : un contenu
+   qui arrive plus tard (chargement réseau) apparaît sans animation, donc sans clignotement.
+   Opacité + translation uniquement : aucun décalage de mise en page. */
 @keyframes pageFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rvUp { from { opacity: 0; transform: translate3d(0, 18px, 0); } to { opacity: 1; transform: none; } }
 @keyframes rvPop { from { opacity: 0; transform: translate3d(0, 12px, 0) scale(.975); } to { opacity: 1; transform: none; } }
@@ -8,26 +9,7 @@
 @media (prefers-reduced-motion: no-preference) {
   .page.page-on { animation: pageFade .22s ease-out both; }
   html.nav-back .page.page-on { animation: pageFade .16s ease-out both; }
-
-  :where(.page.page-on:not(#page-chat)) > :where(*:not(script, style, template, [hidden], [class*="overlay"], [class*="sheet"], [class*="modal"], .skip-link)) {
-    animation: rvUp .52s var(--m-smooth, cubic-bezier(.22, .9, .3, 1)) backwards;
-    animation-delay: .04s;
-  }
-  :where(.page.page-on:not(#page-chat)) > :where(:nth-child(2):not([hidden])) { animation-delay: .1s; }
-  :where(.page.page-on:not(#page-chat)) > :where(:nth-child(3):not([hidden])) { animation-delay: .16s; }
-  :where(.page.page-on:not(#page-chat)) > :where(:nth-child(4):not([hidden])) { animation-delay: .22s; }
-  :where(.page.page-on:not(#page-chat)) > :where(:nth-child(5):not([hidden])) { animation-delay: .28s; }
-  :where(.page.page-on:not(#page-chat)) > :where(:nth-child(n+6):not([hidden])) { animation-delay: .34s; }
-
-  /* second niveau : cartes, rangées, panneaux (les huit premiers, pour rester léger) */
-  :where(.page.page-on:not(#page-chat)) > :where(*) > :where(*:nth-child(-n+8):not(script, style, template, [hidden], [class*="overlay"], [class*="sheet"], [class*="modal"])) {
-    animation: rvPop .5s var(--m-smooth, cubic-bezier(.22, .9, .3, 1)) backwards;
-    animation-delay: .12s;
-  }
-  :where(.page.page-on:not(#page-chat)) > :where(*) > :where(:nth-child(2):not([hidden])) { animation-delay: .17s; }
-  :where(.page.page-on:not(#page-chat)) > :where(*) > :where(:nth-child(3):not([hidden])) { animation-delay: .22s; }
-  :where(.page.page-on:not(#page-chat)) > :where(*) > :where(:nth-child(4):not([hidden])) { animation-delay: .27s; }
-  :where(.page.page-on:not(#page-chat)) > :where(*) > :where(:nth-child(5):not([hidden])) { animation-delay: .32s; }
-  :where(.page.page-on:not(#page-chat)) > :where(*) > :where(:nth-child(n+6):not([hidden])) { animation-delay: .37s; }
+  :where(.page.page-on) > :where(.rv1) { animation: rvUp .52s var(--m-smooth, cubic-bezier(.22, .9, .3, 1)) var(--rvd, .05s) backwards; }
+  :where(.page.page-on) > * > :where(.rv2) { animation: rvPop .5s var(--m-smooth, cubic-bezier(.22, .9, .3, 1)) var(--rvd, .12s) backwards; }
 }
 html[data-anim="reduced"] .page.page-on, html[data-anim="reduced"] .page.page-on * { animation: none !important; }

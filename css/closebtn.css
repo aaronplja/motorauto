@@ -1,0 +1,33 @@
+/* Boutons de fermeture (croix) : un seul style sur tout le site.
+   Rond, croix dessinée au centre exact (plus de caractère « × » décalé selon la police), taille de 44 px (zone de toucher),
+   même marge au bord partout (fenêtres, feuilles, plein écran : packs, roue, visionneuse photo). */
+:root { --xb-size: 44px; --xb-gap: .8rem; }
+.dialog-close-btn, .ov-x, .ac-x, .guide-x, .me-close, .pe-x, .vt-x, .lightbox-x, .lightbox-close {
+  display: inline-flex !important; align-items: center; justify-content: center; box-sizing: border-box; flex: none;
+  width: var(--xb-size); height: var(--xb-size); min-width: var(--xb-size); min-height: var(--xb-size); margin: 0; padding: 0 !important;
+  border-radius: 50% !important; border: 1px solid var(--stroke-line) !important;
+  background: color-mix(in srgb, var(--bg-surface) 94%, transparent) !important; color: var(--color-ink, currentColor) !important;
+  font-size: 0 !important; line-height: 0 !important; text-align: center; cursor: pointer; text-decoration: none;
+  box-shadow: 0 6px 16px -10px rgba(0, 0, 0, .5);
+  transition: transform .18s var(--m-smooth, ease), border-color .18s, background .18s, color .18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.dialog-close-btn::before, .ov-x::before, .ac-x::before, .guide-x::before, .me-close::before, .pe-x::before, .vt-x::before, .lightbox-x::before, .lightbox-close::before {
+  content: ""; display: block; width: 16px; height: 16px; background: currentColor;
+  -webkit-mask: var(--x-mask) center / contain no-repeat; mask: var(--x-mask) center / contain no-repeat;
+}
+.dialog-close-btn:hover, .ov-x:hover, .ac-x:hover, .guide-x:hover, .me-close:hover, .pe-x:hover, .vt-x:hover, .lightbox-x:hover, .lightbox-close:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+.dialog-close-btn:active, .ov-x:active, .ac-x:active, .guide-x:active, .me-close:active, .pe-x:active, .vt-x:active, .lightbox-x:active, .lightbox-close:active { transform: scale(.92); }
+.dialog-close-btn:focus-visible, .ov-x:focus-visible, .ac-x:focus-visible, .guide-x:focus-visible, .me-close:focus-visible, .pe-x:focus-visible, .vt-x:focus-visible, .lightbox-x:focus-visible, .lightbox-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* dans une fenêtre ou une carte : coin haut droit, même retrait partout */
+.ac-x, .guide-x, .me-close { position: absolute !important; top: var(--xb-gap) !important; right: var(--xb-gap) !important; left: auto !important; bottom: auto !important; }
+#auth-modal .dialog-close-btn { top: var(--xb-gap); right: var(--xb-gap); width: var(--xb-size); height: var(--xb-size); }
+
+/* plein écran sombre (packs, roue, cartes, visionneuse) : rond sombre, croix claire, collé au coin sûr de l'écran */
+.ov-x, .lightbox-x, .lightbox-close {
+  position: fixed !important; top: calc(var(--xb-gap) + var(--safe-top, 0px)) !important; right: calc(var(--xb-gap) + env(safe-area-inset-right, 0px)) !important; left: auto !important; bottom: auto !important;
+  z-index: 3200;
+  background: rgba(20, 22, 26, .62) !important; color: #fff !important; border-color: rgba(255, 255, 255, .22) !important;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 8px 22px -12px rgba(0, 0, 0, .7);
+}
+.ov-x:hover, .lightbox-x:hover, .lightbox-close:hover { background: rgba(20, 22, 26, .8) !important; color: #fff !important; border-color: rgba(255, 255, 255, .6) !important; }
