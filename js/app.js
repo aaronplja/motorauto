@@ -389,7 +389,7 @@
   function renderCatalog(opts) {
     const grid = $("vehicles-grid");
     if (!grid) return;
-    if (!catalogShown() && !(opts && opts.force)) return;
+    if (!catalogShown() && !(opts && opts.force)) { updateGauge(heroMatches()); return; }   // la grille n'est dessinée que sur le catalogue, mais le compteur de l'accueil se met toujours à jour
     const result = getFilteredCars();
     $("results-count").textContent = `${result.length} véhicule(s) répertorié(s) dans l'archive mondiale`;
 

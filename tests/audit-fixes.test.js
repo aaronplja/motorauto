@@ -398,7 +398,7 @@ ok("apparition des pages sans clignotement, espace Pilotes harmonisé, croix uni
   const cb = read("css/closebtn.css");
   ["dialog-close-btn", "ov-x", "ac-x", "guide-x", "me-close", "pe-x", "vt-x", "lightbox-x", "lightbox-close"].forEach((c) => assert.ok(cb.indexOf("." + c) >= 0, "croix : " + c));
   assert.ok(/display: inline-flex !important; align-items: center; justify-content: center/.test(cb) && /mask: var\(--x-mask\)/.test(cb), "croix dessinée au centre exact");
-  assert.ok(/const catalogShown = /.test(read("js/app.js")) && /if \(!catalogShown\(\) && !\(opts && opts\.force\)\) return;/.test(read("js/app.js")), "catalogue dessiné seulement quand on l'ouvre");
+  assert.ok(/const catalogShown = /.test(read("js/app.js")) && /if \(!catalogShown\(\) && !\(opts && opts\.force\)\) \{ updateGauge\(heroMatches\(\)\); return; \}/.test(read("js/app.js")), "catalogue dessiné seulement quand on l'ouvre");
 });
 ok("sécurité : règles anti-triche, en-têtes Vercel, échappement des listes d'options", () => {
   const rules = read("firestore.rules");
@@ -494,3 +494,4 @@ ok("allègement : feuilles réunies, registre de modules figé, parcours navigat
   assert.ok(/document\.write\('<script src="js\/i18n\/' \+ lang/.test(read("js/i18n-boot.js")), "traductions : seule la langue active est chargée");
 });
 ok("Vercel : dossier de sortie « . » et aucun framework (le site est servi depuis la racine)", () => { const v = JSON.parse(read("vercel.json")); assert.strictEqual(v.outputDirectory, "."); assert.strictEqual(v.framework, null); });
+ok("accueil : le compteur (puissance max, V-Max, 0-100) se met à jour même quand le catalogue n'est pas affiché", () => { const a = read("js/app.js"); assert.ok(/if \(!catalogShown\(\) && !\(opts && opts\.force\)\) \{ updateGauge\(heroMatches\(\)\); return; \}/.test(a)); });
