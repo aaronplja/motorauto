@@ -477,3 +477,12 @@ html[data-chal-ready] .gh-chal-link::after,html[data-chal-ready] .play-subtabs a
 @container (max-width:318px){.qz-cat .qz-levels{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 /* salon : le bandeau « Comparer » ne recouvre plus les messages ni la zone de saisie (la sélection est gardée, il revient sur les autres pages) */
 html.on-chat #compare-tray{display:none!important}
+
+/* case « Me rappeler chaque jour » : même style que les autres cases du site (plus la case native du navigateur) */
+.cod-notif { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; min-height: 44px; font-weight: 600; }
+.cod-notif input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: none; width: 22px; height: 22px; margin: 0; border-radius: 7px; border: 2px solid var(--stroke-line, rgba(128,128,128,.55)); background: var(--bg-elevated, transparent); display: inline-grid; place-content: center; cursor: pointer; transition: background .18s, border-color .18s, box-shadow .18s, transform .18s; }
+.cod-notif input[type="checkbox"]::after { content: ""; width: 11px; height: 6px; border-left: 2.5px solid #fff; border-bottom: 2.5px solid #fff; transform: rotate(-45deg) scale(0) translate(1px, -1px); transition: transform .18s cubic-bezier(.34, 1.45, .56, 1); }
+.cod-notif input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+.cod-notif input[type="checkbox"]:checked::after { transform: rotate(-45deg) scale(1) translate(1px, -1px); }
+.cod-notif input[type="checkbox"]:active { transform: scale(.9); }
+.cod-notif input[type="checkbox"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }

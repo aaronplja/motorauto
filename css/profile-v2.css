@@ -29,7 +29,8 @@
 .pv2-facts b { display: block; font-size: 1.1rem; font-variant-numeric: tabular-nums; } .pv2-facts span { font-size: .72rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; }
 
 /* onglets */
-#public-profile-modal .pro-tabs { position: sticky; top: calc(var(--header-h, 64px) + 6px); z-index: 20; backdrop-filter: blur(10px); background: color-mix(in srgb, var(--bg-surface) 88%, transparent); }
+#public-profile-modal .pro-tabs { position: sticky; top: calc(var(--hdr-h, 64px) + 6px); transition: top .38s cubic-bezier(.22,.9,.3,1); z-index: 20; backdrop-filter: blur(10px); background: color-mix(in srgb, var(--bg-surface) 88%, transparent); }
+html.hdr-hidden #public-profile-modal .pro-tabs { top: calc(var(--safe-top, 0px) + 8px); }
 #public-profile-modal .pro-tab { transition: background .2s, color .2s; }
 
 /* vitrine : anneau de collection + raretés */

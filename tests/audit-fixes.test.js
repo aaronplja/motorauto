@@ -367,3 +367,21 @@ ok("traductions : salon entièrement traduit et questions de quiz écrites dispo
   assert.strictEqual(B.filter((b) => b[4] === b[2]).length, 0, "plus aucune question écrite restée en français dans la version anglaise");
   assert.ok(B.every((b) => b[5].length === b[3].length && new Set(b[5]).size === b[5].length), "mêmes réponses, dans le même ordre, sans doublon");
 });
+ok("points de quiz comptés dans l'XP (site et serveur), barre du profil public calée sur la vraie barre du haut, case de rappel stylée, animation d'apparition des pages", () => {
+  const core = require("../js/game-core.js"), fcore = require("../functions/game-core.js");
+  [core, fcore].forEach((c) => {
+    const a = c.finish(Object.assign(c.BLANK_STATS(), { quizPts: 0 }), 100), b = c.finish(Object.assign(c.BLANK_STATS(), { quizPts: 40 }), 100);
+    assert.ok(b.xp >= a.xp + 120, "chaque point de quiz rapporte 3 XP");
+  });
+  assert.ok(/s\.quizPts = Number\(x\.quizPts\) \|\| 0/.test(read("js/gamify.js")), "le site lit les points de quiz");
+  const g = read("functions/game.js");
+  assert.ok(/col\("gstats"\)\.doc\(uid\)\.get\(\)/.test(g) && /s\.quizPts = Number\(x\.quizPts\) \|\| 0/.test(g), "le serveur lit aussi les compteurs de jeu pour l'XP");
+  const v = read("css/profile-v2.css");
+  assert.ok(/#public-profile-modal \.pro-tabs \{ position: sticky; top: calc\(var\(--hdr-h, 64px\) \+ 6px\)/.test(v) && /html\.hdr-hidden #public-profile-modal \.pro-tabs \{ top: calc\(var\(--safe-top, 0px\) \+ 8px\); \}/.test(v), "onglets du profil sous la barre du haut, remontent quand elle se cache");
+  const t = read("css/themefix.css");
+  assert.ok(/\.cod-notif input\[type="checkbox"\] \{ appearance: none;/.test(t) && /\.cod-notif input\[type="checkbox"\]:checked::after/.test(t), "case de rappel quotidien stylée");
+  const r = read("css/reveal.css"), s = read("index.src.html");
+  assert.ok(/<link rel="stylesheet" href="css\/reveal\.css">/.test(s) && s.indexOf("css/reveal.css") > s.indexOf("css/pro.css"), "feuille chargée en dernier");
+  assert.ok(/@keyframes rvUp/.test(r) && /:not\(#page-chat\)/.test(r) && /prefers-reduced-motion: no-preference/.test(r) && /data-anim="reduced"/.test(r), "apparition échelonnée, hors salon, coupée en mouvement réduit");
+  assert.ok(!/(^|[^-])(width|height|top|left|margin)\s*:/.test(r.replace(/@keyframes[\s\S]*?\}\s*\}/g, "").replace(/animation-delay[^;]*;/g, "")), "opacité et translation uniquement : aucun décalage de mise en page");
+});

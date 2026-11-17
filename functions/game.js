@@ -91,9 +91,9 @@
     async function gatherStats(uid, c, total) {
       const s = core.BLANK_STATS();
       const q = (name, field) => col(name).where(field, "==", uid).limit(2000).get().then((r) => r.docs).catch(() => []);
-      const [laps, comments, likes, cars, events, rsvps, streak, entries, wins] = await Promise.all([
+      const [laps, comments, likes, cars, events, rsvps, streak, entries, wins, gst] = await Promise.all([
         col("global_laps").limit(3000).get().then((r) => r.docs).catch(() => []), q("comments", "uid"), q("likes", "uid"), q("community_cars", "uid"),
-        q("events", "uid"), q("rsvps", "uid"), col("streaks").doc(uid).get().catch(() => null), q("contest_entries", "uid"), q("contests", "winnerUid")
+        q("events", "uid"), q("rsvps", "uid"), col("streaks").doc(uid).get().catch(() => null), q("contest_entries", "uid"), q("contests", "winnerUid"), col("gstats").doc(uid).get().catch(() => null)
       ]);
       const byTrack = new Map(), tracks = new Set();
       laps.forEach((d) => {
@@ -113,6 +113,7 @@
       if (streak && streak.exists) { const x = streak.data(); s.days = x.days || 0; s.best = Math.max(x.best || 0, x.days || 0); s.last = x.last || ""; }
       s.cards = c.count || 0; s.specials = c.specials || 0; s.trades = c.trades || 0; s.chal = c.chal || 0;
       s.entries = entries.filter((d) => d.data().status === "approved").length; s.wins = wins.length;
+      if (gst && gst.exists) { const x = gst.data(); s.fuse = Number(x.fuse) || 0; s.sold = Number(x.sold) || 0; s.bought = Number(x.bought) || 0; s.pm = Number(x.pmBest) || 0; s.quizDone = Number(x.quizDone) || 0; s.quizPerfect = Number(x.quizPerfect) || 0; s.quizL3 = Number(x.quizL3) || 0; s.quizPts = Number(x.quizPts) || 0; }
       return core.finish(s, total);
     }
 

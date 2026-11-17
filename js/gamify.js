@@ -79,7 +79,7 @@
         const lv = x.lv || {}; Object.keys(lv).forEach((id) => { if (lv[id] > 1) s.upgraded++; if (lv[id] > s.maxlv) s.maxlv = lv[id]; });
         if (s.cards > 0) s.sets = allSets.filter((st) => st.ids.every((id) => owned[id] > 0)).length;
       });
-      if (gsSnap) gsSnap.forEach((d) => { const x = d.data(), s = get(d.id); s.fuse = Number(x.fuse) || 0; s.sold = Number(x.sold) || 0; s.bought = Number(x.bought) || 0; s.pm = Number(x.pmBest) || 0; s.quizDone = Number(x.quizDone) || 0; s.quizPerfect = Number(x.quizPerfect) || 0; s.quizL3 = Number(x.quizL3) || 0; });
+      if (gsSnap) gsSnap.forEach((d) => { const x = d.data(), s = get(d.id); s.fuse = Number(x.fuse) || 0; s.sold = Number(x.sold) || 0; s.bought = Number(x.bought) || 0; s.pm = Number(x.pmBest) || 0; s.quizDone = Number(x.quizDone) || 0; s.quizPerfect = Number(x.quizPerfect) || 0; s.quizL3 = Number(x.quizL3) || 0; s.quizPts = Number(x.quizPts) || 0; });
       if (wlSnap) wlSnap.forEach((d) => { get(d.id).wish = ((d.data().ids) || []).length; });
       if (mentSnap) mentSnap.forEach((d) => { const x = d.data(); if (x.mentorUid) get(x.mentorUid).mentored++; });
       if (flSnap) flSnap.forEach((d) => { const x = d.data(); get(d.id).follows = ((x.cars) || []).length + ((x.brands) || []).length; });
