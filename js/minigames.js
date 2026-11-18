@@ -308,7 +308,7 @@
     C = Object.create(ctx);
     ctx.Router.register("plusmoins", { enter: () => pmEnter() });
     ctx.Router.register("quizgame", { enter: () => qzEnter() });
-    ctx.Router.register("achievements", { enter: () => acEnter() });
+    ctx.Router.register("achievements", { enter: () => acEnter(), leave: () => { const r = rootOf("achievements"); if (r) r.innerHTML = ""; } });
     document.addEventListener("click", (e) => {
       const t = e.target; let b;
       if ((b = t.closest("[data-pm-start]"))) { pmStart(); return; }

@@ -67,3 +67,15 @@ ok("écouteur de clic central : ordre, retrait, stopImmediatePropagation, erreur
   } finally { global.document = g; global.setTimeout = st; }
   assert(/click-hub\.js/.test(read("index.src.html")));
 });
+
+// ---------- Lot 5 : poids et CSS
+ok("!important : le nombre ne dépasse pas le plafond actuel (DEL-101)", () => {
+  const dir = path.join(__dirname, "../css");
+  const n = fs.readdirSync(dir).filter((f) => f.endsWith(".css") && !/bundle/.test(f)).reduce((t, f) => t + (fs.readFileSync(path.join(dir, f), "utf8").match(/!important/g) || []).length, 0);
+  assert(n <= 546, n + " !important (plafond 546) : ajoute la règle dans la feuille de la page sans !important");
+});
+ok("démontage des pages lourdes quittées : frise et succès libèrent leur DOM (DEL-104)", () => {
+  const r = read("js/router.js");
+  assert(/h\.leave/.test(r) && /PAGE_ID\[previous\.name\] !== PAGE_ID\[route\.name\]/.test(r), "routeur : leave() jamais sur un bloc réutilisé");
+  assert(/leave: \(\) =>/.test(read("js/frise.js")) && /leave: \(\) =>/.test(read("js/minigames.js")));
+});

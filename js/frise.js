@@ -61,7 +61,7 @@
   }
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
-    ctx.Router.register("timeline", { enter: async () => { try { await ctx.catReady; } catch (_) { /* catalogue partiel */ } shell(); } });
+    ctx.Router.register("timeline", { enter: async () => { try { await ctx.catReady; } catch (_) { /* catalogue partiel */ } shell(); }, leave: () => { clearTimeout(timer); const r = document.getElementById("timeline-root"); if (r) r.innerHTML = ""; } });
     bind();
   });
 })();

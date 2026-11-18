@@ -268,6 +268,10 @@
     }
     if (route.redirected) history.replaceState(null, "", "#" + route.path);
     showPage(route.name);
+    // démontage des pages lourdes quittées (DEL-104) : le contenu est reconstruit à la prochaine entrée ; jamais si la nouvelle route réutilise le même bloc
+    if (previous && previous.name !== route.name && PAGE_ID[previous.name] !== PAGE_ID[route.name]) {
+      (handlers[previous.name] || []).forEach((h) => { if (h.leave) { try { h.leave(); } catch (e) { console.error("Route " + previous.name + " (sortie) :", e); } } });
+    }
     renderSectionTabs(pageEl, route);
     if (route.params.tab !== undefined) showTab(pageEl, route.params.tab);
     if (route.params.tab !== undefined) { try { localStorage.setItem("ma.tab." + route.name, route.params.tab); } catch (_) { /* ignoré */ } }
@@ -284,7 +288,7 @@
   document.addEventListener("ma:auth", () => { if (current) { const el = document.getElementById(PAGE_ID[current.name]); if (el) renderSectionTabs(el, current); } });
 
   const api = {
-    /** enregistre le comportement d'une page : { guard(params) -> chemin|undefined, enter(params, info) } */
+    /** enregistre le comportement d'une page : { guard(params) -> chemin|undefined, enter(params, info), leave() } ; leave() libère le DOM d'une page lourde */
     register(name, def) { (handlers[name] = handlers[name] || []).push(def); },
     parse, pathOf,
     current: () => current,
