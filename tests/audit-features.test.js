@@ -83,4 +83,5 @@ ok("démontage des pages lourdes quittées : frise et succès libèrent leur DOM
 ok("Vercel : aucun build en ligne (le site est déjà construit ; scripts/ n'y est pas déployé)", () => {
   const v = JSON.parse(read("vercel.json"));
   assert(v.buildCommand === null && v.installCommand === null);
+  assert(!("build" in (JSON.parse(read("package.json")).scripts || {})), "pas de script « build » : Vercel le lancerait");
 });
