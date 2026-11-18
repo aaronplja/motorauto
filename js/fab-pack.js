@@ -21,5 +21,5 @@
     const doc = window.MACards.mine(); if (!doc) return show(false);
     show(doc.lastPack !== window.MAGame.day());
   }
-  (window.MAModules = window.MAModules || []).push(function (ctx) { C = ctx; setInterval(tick, 1500); window.addEventListener("hashchange", () => setTimeout(tick, 50)); });
+  (window.MAModules = window.MAModules || []).push(function (ctx) { C = ctx; setInterval(tick, 4000); window.addEventListener("hashchange", () => setTimeout(tick, 50)); });
 })();

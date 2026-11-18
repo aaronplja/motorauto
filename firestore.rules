@@ -10,8 +10,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-    // Admin principal : claim { admin: true } ou compte admin@motorauto.fr. Seul lui nomme / retire les autres admins.
-    function isSuper()  { return signedIn() && (request.auth.token.admin == true || request.auth.token.email == 'admin@motorauto.fr'); }
+    // Admin principal : claim { admin: true } ou compte admin@motorauto.fr (adresse VÉRIFIÉE exigée). Seul lui nomme / retire les autres admins.
+    function isSuper()  { return signedIn() && (request.auth.token.admin == true || (request.auth.token.email == 'admin@motorauto.fr' && request.auth.token.email_verified == true)); }
     // Admin = admin principal OU pilote promu (document admins/{uid} créé par l'admin principal).
     function isAdmin()  { return isSuper() || (signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); }
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
@@ -75,6 +75,14 @@ service cloud.firestore {
         && validSocials();
 
       allow delete: if isOwner(uid) || isAdmin();
+
+      // --- Réglages privés (ex. e-mails de notification) : jamais visibles par les autres pilotes
+      match /private/{docId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['emailNotifs'])
+          && request.resource.data.get('emailNotifs', true) is bool;
+      }
 
       // --- Garage (favoris + chronos perso) : visible seulement si le garage est public
       match /garage/{docId} {

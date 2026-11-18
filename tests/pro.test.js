@@ -129,7 +129,7 @@ const sub = (over) => Object.assign({ id: "sub_1", status: "trialing", customer:
   });
   await ok("administrateurs : reconnus par jeton, compte principal ou document admins", async () => {
     const t = setup(); t.db.seed("admins", "vic", {});
-    assert(await t.pro.isAdmin({ uid: "x", token: { admin: true } })); assert(await t.pro.isAdmin({ uid: "x", token: { email: "admin@motorauto.fr" } })); assert(await t.pro.isAdmin({ uid: "vic", token: {} }));
+    assert(await t.pro.isAdmin({ uid: "x", token: { admin: true } })); assert(await t.pro.isAdmin({ uid: "x", token: { email: "admin@motorauto.fr", email_verified: true } })); assert(!(await t.pro.isAdmin({ uid: "x", token: { email: "admin@motorauto.fr", email_verified: false } }))); assert(await t.pro.isAdmin({ uid: "vic", token: {} }));
     assert(!(await t.pro.isAdmin({ uid: "x", token: { email: "x@x.fr" } })));
   });
   await ok("aucune clé ni secret dans le code des fonctions", () => {

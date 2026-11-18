@@ -12,7 +12,7 @@ service firebase.storage {
     // Admin principal OU pilote promu (document Firestore admins/{uid}).
     function isAdmin() {
       return request.auth != null
-        && (request.auth.token.admin == true || request.auth.token.email == 'admin@motorauto.fr'
+        && (request.auth.token.admin == true || (request.auth.token.email == 'admin@motorauto.fr' && request.auth.token.email_verified == true)
             || firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid)));
     }
 

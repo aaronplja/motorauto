@@ -20,6 +20,8 @@ const { eraseUser } = require("./delete-account");
 // Doit correspondre à la région de ta base Firestore (ex. "europe-west1", "us-central1"…) — et à js/firebase-init.js.
 const REGION = "europe-west1";
 const ADMIN_MAIL = "admin@motorauto.fr";
+// App Check : passe à "true" (variable ENFORCE_APPCHECK) seulement après avoir activé la clé côté site (js/firebase-init.js)
+const APPCHECK_ENFORCED = process.env.ENFORCE_APPCHECK === "true";
 let VARIANTS = [];
 try { VARIANTS = require("./catalog-variants.json"); } catch (_) { /* absent : plus ou moins sur les fiches entières */ }
 
@@ -47,7 +49,7 @@ async function loadPool() {
   return Array.from(map.values());
 }
 async function isAdmin(caller) {
-  if (caller.token && (caller.token.admin === true || caller.token.email === ADMIN_MAIL)) return true;
+  if (caller.token && (caller.token.admin === true || (caller.token.email === ADMIN_MAIL && caller.token.email_verified === true))) return true;
   return (await db.collection("admins").doc(caller.uid).get()).exists;
 }
 const game = createGame({
@@ -59,7 +61,7 @@ const game = createGame({
 
 /** transforme un gestionnaire du jeu en fonction appelable depuis le site (connexion obligatoire) */
 function callable(name) {
-  return onCall({ region: REGION, maxInstances: 20 }, async (req) => {
+  return onCall({ region: REGION, maxInstances: 20, enforceAppCheck: APPCHECK_ENFORCED }, async (req) => {
     if (!req.auth) throw new HttpsError("unauthenticated", "Connecte-toi pour jouer.");
     const caller = { uid: req.auth.uid, name: req.auth.token.name || "", token: req.auth.token };
     try { return await game[name](caller, req.data || {}); }
@@ -116,7 +118,7 @@ exports.newsPublished = onDocumentWritten({ document: "news/{id}", region: REGIO
 });
 
 // suppression de compte demandée par le pilote (Mon garage → Réglages) : efface ses données puis son compte de connexion
-exports.deleteAccount = onCall({ region: REGION, maxInstances: 5, timeoutSeconds: 300 }, async (req) => {
+exports.deleteAccount = onCall({ region: REGION, maxInstances: 5, timeoutSeconds: 300, enforceAppCheck: APPCHECK_ENFORCED }, async (req) => {
   if (!req.auth) throw new HttpsError("unauthenticated", "Connecte-toi pour supprimer ton compte.");
   if (!req.data || req.data.confirm !== "SUPPRIMER") throw new HttpsError("failed-precondition", "Confirmation manquante.");
   if (req.auth.token.email === ADMIN_MAIL) throw new HttpsError("permission-denied", "Le compte administrateur principal ne peut pas être supprimé ici.");

@@ -37,15 +37,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=f3360d4b77","quiz":"js/lazy-quiz.min.js?v=28aabbf116"};</script>
-  <script defer src="js/bundle1.min.js?v=1b01b3d5eb"></script>
+  <script defer src="js/bundle1.min.js?v=03a2422732"></script>
   <script defer src="js/bundle2.min.js?v=a1a1dc0d07"></script>
-  <script defer src="js/bundle3.min.js?v=1c37f7d1ca"></script>
+  <script defer src="js/bundle3.min.js?v=19ed2fd586"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
@@ -204,11 +205,11 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <section class="stage-shell home-section">
     <div class="home-cols">
       <div class="home-col">
-        <div class="section-head compact"><h2 class="section-title small">Prochains événements</h2><a class="link-more" href="#/communaute/evenements">Voir tout&nbsp;➔</a></div>
+        <div class="section-head compact"><h2 class="section-title small">Prochains événements</h2><a class="link-more" href="#/communaute/evenements"><span class="mi-w">Voir tout&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a></div>
         <div class="events-mini" id="home-events"></div>
       </div>
       <div class="home-col">
-        <div class="section-head compact"><h2 class="section-title small">Les plus aimées</h2><a class="link-more" href="#/classement/voitures">Classement&nbsp;➔</a></div>
+        <div class="section-head compact"><h2 class="section-title small">Les plus aimées</h2><a class="link-more" href="#/classement/voitures"><span class="mi-w">Classement&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a></div>
         <div class="top-mini" id="home-top-cars"></div>
       </div>
     </div>
@@ -217,7 +218,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <section class="stage-shell home-section" id="home-feed-sec">
     <div class="section-head">
       <div><h2 class="section-title">Fil d'actualité</h2><p class="count-stream">Nouveaux pilotes, nouvelles voitures et nouveaux records</p></div>
-      <a class="link-more" href="#/communaute/fil">Tout voir&nbsp;➔</a>
+      <a class="link-more" href="#/communaute/fil"><span class="mi-w">Tout voir&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a>
     </div>
     <div class="feed-list" id="home-feed" aria-live="polite"></div>
   </section>
@@ -225,7 +226,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <section class="stage-shell home-section">
     <div class="section-head">
       <div><h2 class="section-title">Dans les garages</h2><p class="count-stream">Les dernières voitures publiées par les pilotes</p></div>
-      <a class="link-more" href="#/communaute/voitures">Toutes les voitures&nbsp;➔</a>
+      <a class="link-more" href="#/communaute/voitures"><span class="mi-w">Toutes les voitures&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a>
     </div>
     <div class="comm-grid" id="home-community"></div>
   </section>
@@ -342,7 +343,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <h1 class="page-title">La communauté</h1>
           <p class="page-sub">Les pilotes, leurs voitures, les sorties et l'actualité du site.</p>
         </div>
-        <div class="page-head-actions"><a class="cta-btn fill-btn compact-btn" href="#/chat">💬 Ouvrir le salon</a></div>
+        <div class="page-head-actions"><a class="cta-btn fill-btn compact-btn" href="#/chat"><span class="mi-w"><i class="mi mi-chat" data-e="💬" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 5.5h16v11H11l-4.5 3.5v-3.5H4z" fill="currentColor" fill-opacity=".16"/></svg><b class="mi-t">💬</b></i> Ouvrir le salon</span></a></div>
       </header>
     <nav data-section="pilotes"></nav>
     <section class="tab-panel" data-tab="hub-pilotes" hidden><div id="comm-hub-pilotes"></div></section>
@@ -373,7 +374,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <span class="lap-meta" id="events-count" aria-live="polite"></span>
         <button type="button" class="cta-btn fill-btn compact-btn" data-action="event-new">+ Proposer une sortie</button>
       </div>
-      <div class="seg-switch" role="tablist" aria-label="Affichage des sorties"><button type="button" role="tab" class="seg-btn active" data-ev-view="list">☰ Liste</button><button type="button" role="tab" class="seg-btn" data-ev-view="map">🗺 Carte</button></div>
+      <div class="seg-switch" role="tablist" aria-label="Affichage des sorties"><button type="button" role="tab" class="seg-btn active" data-ev-view="list">☰ Liste</button><button type="button" role="tab" class="seg-btn" data-ev-view="map"><span class="mi-w"><i class="mi mi-map" data-e="🗺" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.5 6.5l5.5-2 6 2 5.5-2v13l-5.5 2-6-2-5.5 2z" fill="currentColor" fill-opacity=".16"/><path d="M9 4.5v13M15 6.5v13"/></svg><b class="mi-t">🗺</b></i> Carte</span></button></div>
       <div id="events-map-wrap" hidden><div id="events-map" class="events-map"></div><p class="lap-meta" id="events-map-status" aria-live="polite"></p></div>
       <div class="seg-switch ev-when" role="tablist" aria-label="Sorties à venir ou passées"><button type="button" role="tab" class="seg-btn active" data-ev-when="up" aria-selected="true">À venir <span class="seg-n" id="ev-n-up"></span></button><button type="button" role="tab" class="seg-btn" data-ev-when="past" aria-selected="false">Passés <span class="seg-n" id="ev-n-past"></span></button></div>
       <div class="events-list" id="events-list"></div>
@@ -434,9 +435,9 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     </section>
     <section class="tab-panel" data-tab="voitures" hidden>
       <div class="seg-switch" role="tablist" aria-label="Critère">
-        <button type="button" role="tab" class="seg-btn active" data-top-mode="likes">♥ Les plus aimées</button>
-        <button type="button" role="tab" class="seg-btn" data-top-mode="rating">★ Les mieux notées</button>
-        <button type="button" role="tab" class="seg-btn" data-top-mode="community">🚗 Voitures de pilotes</button>
+        <button type="button" role="tab" class="seg-btn active" data-top-mode="likes"><span class="mi-w"><i class="mi mi-heart_c" data-e="♥" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20.5s-8-4.8-8-10.6A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8 2.6c0 5.8-8 10.6-8 10.6z" fill="currentColor" fill-opacity=".16"/></svg><b class="mi-t">♥</b></i> Les plus aimées</span></button>
+        <button type="button" role="tab" class="seg-btn" data-top-mode="rating"><span class="mi-w"><i class="mi mi-star_c" data-e="★" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9l-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z" fill="currentColor" fill-opacity=".16"/></svg><b class="mi-t">★</b></i> Les mieux notées</span></button>
+        <button type="button" role="tab" class="seg-btn" data-top-mode="community"><span class="mi-w"><i class="mi mi-car" data-e="🚗" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.5 16v-3.2c0-.8.5-1.4 1.2-1.7L7 7.5c.3-.5.9-.8 1.5-.8h6.4c.6 0 1.2.3 1.5.8l1.8 3.3 1.8.7c.8.3 1.3 1 1.3 1.8V16"/><path d="M3.5 16h2M9.5 16h5M18.5 16h2"/><path d="M7.5 14.6a2 2 0 1 0 .01 0zM16.5 14.6a2 2 0 1 0 .01 0z" fill="currentColor" fill-opacity=".16"/></svg><b class="mi-t">🚗</b></i> Voitures de pilotes</span></button>
       </div>
       <ol class="top-list" id="top-cars-list"></ol>
     </section>
@@ -501,8 +502,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       <div class="pv3-actions">
         <button type="button" class="cta-btn fill-btn compact-btn follow-btn" data-action="toggle-follow" hidden>Suivre</button>
         <a class="icon-btn pub-gear" id="pub-settings-btn" href="#/reglages/profil" aria-label="Réglages" title="Réglages" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
-        <button type="button" class="cta-btn fill-btn compact-btn" id="pub-edit-btn" hidden>✏️ Personnaliser le profil</button>
-        <button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats">📊 Caractéristiques</button>
+        <button type="button" class="cta-btn fill-btn compact-btn" id="pub-edit-btn" hidden><span class="mi-w"><i class="mi mi-pencil" data-e="✏" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20l1-4.5L16.5 4a2.1 2.1 0 0 1 3 3L8 18.5z"/><path d="M14.5 6l3.5 3.5"/></svg><b class="mi-t">✏</b></i> Personnaliser le profil</span></button>
+        <button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats"><span class="mi-w"><i class="mi mi-chart" data-e="📊" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 4v16h16"/><path d="M7.5 12h2.5v5H7.5zM12 8h2.5v9H12zM16.5 10.5H19V17h-2.5z" fill="currentColor" stroke="none"/></svg><b class="mi-t">📊</b></i> Caractéristiques</span></button>
         <button type="button" class="cta-btn btn-ghost compact-btn" id="pub-block-btn" data-action="toggle-block" hidden>Bloquer</button>
         <button type="button" class="cta-btn btn-ghost compact-btn grade-btn" id="pub-admin-btn" data-action="toggle-admin" hidden>Nommer admin</button>
       </div>
@@ -511,7 +512,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       <div class="badge-row" id="pub-profile-badges"></div>
       <div class="pv2-level pv3-level" id="pub-level-card" hidden></div>
     </section>
-    <div id="pub-profile-private-warning" class="private-warning" style="display:none">🔒 Ce pilote garde son garage privé.</div>
+    <div id="pub-profile-private-warning" class="private-warning" style="display:none"><span class="mi-w"><i class="mi mi-lock" data-e="🔒" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 11h12v9H6z" fill="currentColor" fill-opacity=".16"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/><path d="M12 14.5a1.3 1.3 0 1 0 .01 0z" fill="currentColor" stroke="none"/></svg><b class="mi-t">🔒</b></i> Ce pilote garde son garage privé.</span></div>
     <nav class="pro-tabs" id="pub-tabs" role="tablist" aria-label="Sections du profil">
       <button type="button" role="tab" class="pro-tab active" data-pt="vitrine" aria-selected="true">Vitrine</button>
       <button type="button" role="tab" class="pro-tab" data-pt="badges" aria-selected="false">Badges</button>
@@ -550,7 +551,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <div class="badge-row" id="garage-badges"></div>
         </div>
       </div>
-      <div class="page-head-actions"><button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats" data-self="1">📊 Caractéristiques</button><button type="button" class="secondary-destructive-btn" id="logout-btn">Se déconnecter</button></div>
+      <div class="page-head-actions"><button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats" data-self="1"><span class="mi-w"><i class="mi mi-chart" data-e="📊" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 4v16h16"/><path d="M7.5 12h2.5v5H7.5zM12 8h2.5v9H12zM16.5 10.5H19V17h-2.5z" fill="currentColor" stroke="none"/></svg><b class="mi-t">📊</b></i> Caractéristiques</span></button><button type="button" class="secondary-destructive-btn" id="logout-btn">Se déconnecter</button></div>
     </header>
     <nav data-section="pilotes"></nav>
     <section class="tab-panel" data-tab="apercu" hidden>
@@ -615,7 +616,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <button type="button" class="cta-btn btn-ghost" data-action="admin-open-import">⇪ Importer (CSV / lien)</button>
       </div>
       <details class="adm-sec" open><summary><span class="adm-t">Véhicules ajoutés ou modifiés</span></summary><div class="adm-body"><div class="admin-list" id="admin-car-list"></div></div></details>
-      <p class="admin-note">Astuce : en tant qu'administrateur, les boutons « Modifier » et « Supprimer » apparaissent aussi sur chaque carte du catalogue, et la corbeille 🗑 sur chaque message du salon.</p>
+      <p class="admin-note"><span class="mi-w">Astuce : en tant qu'administrateur, les boutons « Modifier » et « Supprimer » apparaissent aussi sur chaque carte du catalogue, et la corbeille <i class="mi mi-trash" data-e="🗑" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10.5 11v6M13.5 11v6"/></svg><b class="mi-t">🗑</b></i> sur chaque message du salon.</span></p>
     </section>
     <section class="tab-panel" data-tab="jeu" hidden>
       <div id="admin-game"><div class="empty-note">Chargement…</div></div>
@@ -671,7 +672,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <div class="avatar-upload">
             <img id="settings-avatar-preview" class="avatar-preview" alt="Aperçu de l'avatar" data-fallback="avatar">
             <div class="avatar-upload-body">
-              <button type="button" class="cta-btn btn-ghost compact-btn" id="avatar-upload-btn">📷 Téléverser une photo</button>
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="avatar-upload-btn"><span class="mi-w"><i class="mi mi-camera" data-e="📷" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z" fill="currentColor" fill-opacity=".16"/><path d="M12 10.2a3.3 3.3 0 1 0 .01 0"/></svg><b class="mi-t">📷</b></i> Téléverser une photo</span></button>
               <input type="file" id="avatar-file-input" accept="image/*" hidden>
               <small id="avatar-upload-status">Depuis ta galerie ou tes fichiers (n'importe quelle taille, jusqu'à 25 Mo), ou colle une URL ci-dessus.</small>
             </div>
@@ -684,7 +685,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <div class="avatar-upload">
             <img id="settings-car-preview" class="car-preview" alt="Aperçu de la voiture" data-fallback="car">
             <div class="avatar-upload-body">
-              <button type="button" class="cta-btn btn-ghost compact-btn" id="car-upload-btn">📷 Téléverser une photo</button>
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="car-upload-btn"><span class="mi-w"><i class="mi mi-camera" data-e="📷" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z" fill="currentColor" fill-opacity=".16"/><path d="M12 10.2a3.3 3.3 0 1 0 .01 0"/></svg><b class="mi-t">📷</b></i> Téléverser une photo</span></button>
               <input type="file" id="car-file-input" accept="image/*" hidden>
               <small id="car-upload-status">Depuis ta galerie ou tes fichiers, ou colle une URL ci-dessus.</small>
             </div>
@@ -1092,7 +1093,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       <div class="dialog-body">
         <!-- MON THEME -->
         <section class="ct-box" id="ct-box" aria-labelledby="ct-title">
-          <div class="theme-family-title" id="ct-title">🎨 Mon thème</div>
+          <div class="theme-family-title" id="ct-title"><span class="mi-w"><i class="mi mi-palette" data-e="🎨" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.5 0 2-1 1.5-2-.5-1 0-2.5 1.5-2.5h2.5A3.5 3.5 0 0 0 21 13.5C21 8 17 3.5 12 3.5z" fill="currentColor" fill-opacity=".16"/><path d="M7.8 11a1 1 0 1 0 .01 0zM11 7.6a1 1 0 1 0 .01 0zM15.3 8.6a1 1 0 1 0 .01 0z" fill="currentColor" stroke="none"/></svg><b class="mi-t">🎨</b></i> Mon thème</span></div>
           <div class="ct-row">
             <label class="ct-field"><span>Fond</span><input type="color" id="ct-bg" value="#0f172a"></label>
             <label class="ct-field"><span>Accent</span><input type="color" id="ct-accent" value="#38bdf8"></label>
@@ -1107,12 +1108,12 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           </div>
         </section>
         <!-- COCKPITS NOCTURNES -->
-        <div class="theme-family-title">✨ Studio (nouvelle ambiance par défaut)</div>
+        <div class="theme-family-title"><span class="mi-w"><i class="mi mi-sparkle" data-e="✨" role="img" style="color:#f5b301"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7z" fill="currentColor" fill-opacity=".16"/><path d="M19 2.5v3M17.5 4h3"/></svg><b class="mi-t">✨</b></i> Studio (nouvelle ambiance par défaut)</span></div>
         <div class="theme-palette-grid">
           <button class="theme-tile active" data-set-theme="studio-creme"><span class="swatch-circle" style="background:#f6f3ec; border:2px solid #1f6b45;"></span><span class="tile-meta"><span class="tile-title">Studio Crème</span><span class="tile-sub">Crème chaud &amp; vert profond</span></span></button>
           <button class="theme-tile" data-set-theme="garage-nuit"><span class="swatch-circle" style="background:#0b140f; border:2px solid #6fcf97;"></span><span class="tile-meta"><span class="tile-title">Garage de nuit</span><span class="tile-sub">Vert très sombre &amp; crème</span></span></button>
         </div>
-        <div class="theme-family-title">🌙 Cockpits Nocturnes (8 Univers Sombres)</div>
+        <div class="theme-family-title"><span class="mi-w"><i class="mi mi-moon" data-e="🌙" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" fill="currentColor" fill-opacity=".16"/></svg><b class="mi-t">🌙</b></i> Cockpits Nocturnes (8 Univers Sombres)</span></div>
         <div class="theme-palette-grid">
           <button class="theme-tile" data-set-theme="onyx-carbon"><span class="swatch-circle" style="background:#09090b; border:2px solid #ef4444;"></span><span class="tile-meta"><span class="tile-title">Onyx Carbon</span><span class="tile-sub">Noir pur & rouge racing</span></span></button>
           <button class="theme-tile" data-set-theme="midnight-blue"><span class="swatch-circle" style="background:#060913; border:2px solid #3b82f6;"></span><span class="tile-meta"><span class="tile-title">Midnight Blue</span><span class="tile-sub">Bleu nuit métallisé profond</span></span></button>
@@ -1125,7 +1126,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         </div>
 
         <!-- SHOWROOMS LUMINEUX -->
-        <div class="theme-family-title" style="margin-top: 2rem;">☀️ Showrooms Lumineux (8 Univers Clairs)</div>
+        <div class="theme-family-title" style="margin-top: 2rem;"><span class="mi-w"><i class="mi mi-sun" data-e="☀" role="img" style="color:#f59e0b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 8a4 4 0 1 0 .01 0z"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8"/></svg><b class="mi-t">☀</b></i> Showrooms Lumineux (8 Univers Clairs)</span></div>
         <div class="theme-palette-grid">
           <button class="theme-tile" data-set-theme="carrara-white"><span class="swatch-circle" style="background:#f8fafc; border:2px solid #dc2626;"></span><span class="tile-meta"><span class="tile-title">Carrara White</span><span class="tile-sub">Blanc atelier haute précision</span></span></button>
           <button class="theme-tile" data-set-theme="silver-arrow"><span class="swatch-circle" style="background:#f1f5f9; border:2px solid #0284c7;"></span><span class="tile-meta"><span class="tile-title">Silver Arrow</span><span class="tile-sub">Aluminium brossé épuré</span></span></button>
@@ -1151,8 +1152,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
       </div>
       <form class="dialog-body" id="suggest-form" novalidate>
         <div class="seg-switch" role="tablist" aria-label="Type de proposition">
-          <button type="button" role="tab" class="seg-btn active" data-sg-kind="correction">✎ Corriger une info</button>
-          <button type="button" role="tab" class="seg-btn" data-sg-kind="photo">📷 Ajouter une photo</button>
+          <button type="button" role="tab" class="seg-btn active" data-sg-kind="correction"><span class="mi-w"><i class="mi mi-pencil" data-e="✎" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20l1-4.5L16.5 4a2.1 2.1 0 0 1 3 3L8 18.5z"/><path d="M14.5 6l3.5 3.5"/></svg><b class="mi-t">✎</b></i> Corriger une info</span></button>
+          <button type="button" role="tab" class="seg-btn" data-sg-kind="photo"><span class="mi-w"><i class="mi mi-camera" data-e="📷" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z" fill="currentColor" fill-opacity=".16"/><path d="M12 10.2a3.3 3.3 0 1 0 .01 0"/></svg><b class="mi-t">📷</b></i> Ajouter une photo</span></button>
         </div>
 
         <div id="sg-correction-fields" class="sg-block">
@@ -1170,7 +1171,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <div class="avatar-upload">
             <img id="sg-photo-preview" class="car-preview" alt="Aperçu" data-fallback="car">
             <div class="avatar-upload-body">
-              <button type="button" class="cta-btn btn-ghost compact-btn" id="sg-photo-btn">📷 Choisir une photo</button>
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="sg-photo-btn"><span class="mi-w"><i class="mi mi-camera" data-e="📷" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z" fill="currentColor" fill-opacity=".16"/><path d="M12 10.2a3.3 3.3 0 1 0 .01 0"/></svg><b class="mi-t">📷</b></i> Choisir une photo</span></button>
               <input type="file" id="sg-photo-file" accept="image/*" hidden>
               <small id="sg-photo-status">Depuis ta galerie ou tes fichiers (jusqu'à 25 Mo), ou colle une URL ci-dessous.</small>
             </div>
@@ -1234,8 +1235,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <div id="import-pane-csv" class="import-pane">
           <p class="admin-note">Une ligne = un moteur. Les lignes qui partagent le même <b>id</b> forment un seul véhicule (puis des phases). Séparateur « ; » ou « , » (Excel FR : « ; »). Plusieurs records dans une cellule : <code>Type|Description || Type|Description</code>.</p>
           <div class="admin-quick">
-            <button type="button" class="cta-btn btn-ghost" data-action="import-template">⬇ Modèle CSV</button>
-            <button type="button" class="cta-btn btn-ghost" data-action="import-export">⬇ Exporter le catalogue actuel</button>
+            <button type="button" class="cta-btn btn-ghost" data-action="import-template"><span class="mi-w"><i class="mi mi-arrow_d" data-e="⬇" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v15M6 13l6 6 6-6"/></svg><b class="mi-t">⬇</b></i> Modèle CSV</span></button>
+            <button type="button" class="cta-btn btn-ghost" data-action="import-export"><span class="mi-w"><i class="mi mi-arrow_d" data-e="⬇" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v15M6 13l6 6 6-6"/></svg><b class="mi-t">⬇</b></i> Exporter le catalogue actuel</span></button>
             <label class="cta-btn fill-btn file-pick">Choisir un fichier…<input type="file" id="import-file" accept=".csv,text/csv,text/plain" hidden></label>
           </div>
           <details class="paste-import"><summary>Ou coller depuis Excel / Google Sheets</summary>

@@ -645,7 +645,7 @@
     const uref = db.collection("users").doc(currentUser.uid);
     const gref = uref.collection("garage").doc("data");
     try {
-      const [uSnap, gSnap] = await Promise.all([uref.get(), gref.get()]);
+      const [uSnap, gSnap, pSnap] = await Promise.all([uref.get(), gref.get(), uref.collection("private").doc("prefs").get().catch(() => null)]);
 
       if (uSnap.exists) {
         const d = uSnap.data();
@@ -659,7 +659,7 @@
           hideFollowers: d.hideFollowers === true,
           carPhoto: d.carPhoto || "",
           mods: d.mods || "",
-          emailNotifs: d.emailNotifs !== false,
+          emailNotifs: (pSnap && pSnap.exists ? pSnap.data().emailNotifs : d.emailNotifs) !== false,
           instagram: d.instagram || "", snapchat: d.snapchat || "", tiktok: d.tiktok || ""
         };
 
@@ -692,7 +692,8 @@
           instagram: "", snapchat: "", tiktok: ""
         };
         garage = { favorites: [], telemetry: [] };
-        await uref.set(profile);
+        await uref.set(publicProfile(profile));
+        await uref.collection("private").doc("prefs").set({ emailNotifs: true }).catch(() => {});
         await gref.set(garage);
         document.dispatchEvent(new CustomEvent("ma:feed", { detail: { type: "member", text: "a rejoint l'écurie MOTORAUTO", link: "#/pilote/" + currentUser.uid } }));
       }
@@ -728,16 +729,21 @@
     }));
   }
 
+  // le document public ne porte plus les réglages privés
+  function publicProfile(p) { const o = Object.assign({}, p); delete o.emailNotifs; return o; }
+
   async function saveProfile() {
     const data = {
       username: profile.username, currentCar: profile.currentCar,
       avatar: profile.avatar, bio: profile.bio, isPublicGarage: profile.isPublicGarage,
       hideFollowing: profile.hideFollowing === true, hideFollowers: profile.hideFollowers === true,
-      carPhoto: profile.carPhoto || "", mods: profile.mods || "", emailNotifs: profile.emailNotifs !== false,
+      carPhoto: profile.carPhoto || "", mods: profile.mods || "",
       instagram: profile.instagram || "", snapchat: profile.snapchat || "", tiktok: profile.tiktok || ""
     };
     if (profile.usernameAt) data.usernameAt = profile.usernameAt;
     await db.collection("users").doc(currentUser.uid).set(data);
+    // préférence privée (TECH-105) : hors du profil public, lisible seulement par son propriétaire
+    await db.collection("users").doc(currentUser.uid).collection("private").doc("prefs").set({ emailNotifs: profile.emailNotifs !== false });
   }
 
   async function saveGarage() {

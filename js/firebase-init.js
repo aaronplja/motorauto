@@ -10,7 +10,11 @@
     appId: "1:163440700630:web:83bc46e3cf474bd490ad77",
     measurementId: "G-L0DB7Q786G"
   };
+  // App Check (TECH-101) : colle ici la clé de site reCAPTCHA v3 créée dans la console Firebase > App Check.
+  // Tant qu'elle est vide, App Check reste désactivé et le site fonctionne comme avant.
+  const APPCHECK_SITE_KEY = "";
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  try { if (APPCHECK_SITE_KEY && firebase.appCheck) firebase.appCheck().activate(APPCHECK_SITE_KEY, true); } catch (_) { /* facultatif */ }
   window.MAFB = {
     auth: firebase.auth(),
     db: firebase.firestore(),

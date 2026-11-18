@@ -16,7 +16,7 @@ function createRoles({ db, admin, onCall, HttpsError, region, adminMail }) {
     if (!req.auth) throw new HttpsError("unauthenticated", "Connecte-toi d'abord.");
     return fn(req);
   });
-  const isSuperToken = (t) => !!t && (t.admin === true || (t.email === adminMail && t.email_verified !== false));
+  const isSuperToken = (t) => !!t && (t.admin === true || (t.email === adminMail && t.email_verified === true));
 
   /** Les droits réels d'un compte, d'après les sources de vérité (jeton, documents admins / moderators). */
   async function computeRoles(uid, token) {

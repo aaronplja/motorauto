@@ -19,6 +19,11 @@ const root = path.join(__dirname, "..");
 const rd = (f) => fs.readFileSync(path.join(root, f), "utf8");
 let es = null;
 for (const p of ["esbuild", path.join(root, "node_modules/esbuild"), "/opt/npm-tools/node_modules/esbuild"]) { try { es = require(p); break; } catch (_) { /* suivant */ } }
+// version d'esbuild épinglée dans package.json : une autre version donne des fichiers minifiés différents (TECH-110)
+const PIN = (require(path.join(root, "package.json")).devDependencies || {}).esbuild;
+const ESV = es && es.version;
+const SAME_ESBUILD = !!es && ESV === PIN;
+if (es && !SAME_ESBUILD) console.warn("⚠ esbuild " + ESV + " installé, " + PIN + " attendu : lance « npm install » pour obtenir les mêmes fichiers que la CI.");
 if (!es) console.warn("⚠ esbuild introuvable : regroupement sans minification (npm i -D esbuild pour minifier).");
 
 const src = rd("index.src.html");
@@ -59,6 +64,27 @@ const outputs = groups.map((g, i) => { const name = groups.length === 1 ? "bundl
 
 const lazyOut = Object.keys(LAZY).map((k) => { const body = LAZY[k].filter((f) => jsFiles.includes(f)).map((f) => minJs(rd(f), f)).join("\n;\n") + "\n"; return { key: k, name: `lazy-${k}.min.js`, body, h: hash(body) }; });
 
+// --- icônes à la source (TECH-107) : les emojis du HTML statique deviennent des SVG dès le build, sans clignotement au chargement
+function iconifyStatic(h) {
+  const code = rd("js/emoji-icons.js");
+  const ICONS = eval("(" + code.match(/var ICONS=(\{.*?\});\s*var MAP=/s)[1] + ")");
+  const MAP = eval("(" + code.match(/var MAP=(\{.*?\});/s)[1] + ")");
+  const keys = Object.keys(MAP).sort((a, b) => b.length - a.length).map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const RE = new RegExp("(" + keys.join("|") + ")[\\uFE0F\\uFE0E]?", "g");
+  const icon = (e) => { const ic = ICONS[MAP[e]]; if (!ic) return null; return '<i class="mi mi-' + MAP[e] + '" data-e="' + e + '" role="img"' + (ic.c ? ' style="color:' + ic.c + '"' : "") + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ic.s + '</svg><b class="mi-t">' + e + "</b></i>"; };
+  let n = 0;
+  const out = h.replace(/(<(script|style|textarea|option|title|noscript|pre|code|svg)\b[\s\S]*?<\/\2>)|>([^<]+)</g, (m, blk, tag, txt) => {
+    if (blk || !txt) return m;
+    RE.lastIndex = 0; if (!RE.test(txt)) return m;
+    let res = "", last = 0, x; RE.lastIndex = 0;
+    while ((x = RE.exec(txt))) { const i = icon(x[1]); if (!i) return m; res += txt.slice(last, x.index) + i; last = x.index + x[0].length; n++; }
+    res += txt.slice(last);
+    return '><span class="mi-w">' + res + "</span><";
+  });
+  console.log("Icônes : " + n + " emojis du HTML remplacés par des SVG au build.");
+  return out;
+}
+
 // --- index.html
 let html = src, firstCss = true, jsIdx = new Map();
 // regroupe : on remplace le 1er fichier de chaque groupe par la balise du bundle, on supprime les autres
@@ -75,12 +101,14 @@ const at = lastFb.index + lastFb[0].length;
 html = html.slice(0, at) + headTags + html.slice(at);
 html = html.replace(/<head>/, "<head>\n<!-- FICHIER GÉNÉRÉ par scripts/build.js — ne pas modifier : éditer index.src.html puis relancer « node scripts/build.js » -->");
 
+html = iconifyStatic(html);
 const files = { "index.html": html, "css/bundle.min.css": cssOut };
 fs.readdirSync(path.join(root, "js")).filter((n) => /^(bundle\d*|lazy-[a-z]+)\.min\.js$/.test(n)).forEach((n) => { if (!outputs.find((o) => o.name === n) && !lazyOut.find((o) => o.name === n)) files["js/" + n] = null; });
 outputs.forEach((o) => { files["js/" + o.name] = o.body; });
 lazyOut.forEach((o) => { files["js/" + o.name] = o.body; });
 
 if (process.argv.includes("--check")) {
+  if (!SAME_ESBUILD) { console.warn("Vérification ignorée : version d'esbuild différente de celle épinglée (la CI, elle, vérifie)."); process.exit(0); }
   const bad = Object.keys(files).filter((f) => { const p = path.join(root, f); return files[f] === null ? fs.existsSync(p) : !fs.existsSync(p) || fs.readFileSync(p, "utf8") !== files[f]; });
   if (bad.length) { console.error("Pas à jour : " + bad.join(", ") + "\n→ lance : node scripts/build.js"); process.exit(1); }
   console.log("OK : index.html et les bundles sont à jour."); process.exit(0);

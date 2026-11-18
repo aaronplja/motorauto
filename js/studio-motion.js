@@ -24,7 +24,7 @@
       requestAnimationFrame(step);
     });
   }
-  setInterval(() => { if (!document.hidden) countUp(); }, 1200);
+  setInterval(() => { if (!document.hidden) countUp(); }, 2500);
 
   // ---------- barre de lecture
   let bar = null;

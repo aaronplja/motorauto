@@ -42,13 +42,14 @@ async function send(to, content) {
 }
 
 async function recipient(uid) {
-  const [authUser, profile] = await Promise.all([
+  const [authUser, profile, prefs] = await Promise.all([
     admin.auth().getUser(uid).catch(() => null),
-    db.collection("users").doc(uid).get()
+    db.collection("users").doc(uid).get(),
+    db.collection("users").doc(uid).collection("private").doc("prefs").get().catch(() => null)
   ]);
   if (!authUser || !authUser.email) return null;
   const p = profile.exists ? profile.data() : {};
-  return { email: authUser.email, name: p.username || authUser.displayName || "", optOut: p.emailNotifs === false };
+  return { email: authUser.email, name: p.username || authUser.displayName || "", optOut: (prefs && prefs.exists ? prefs.data().emailNotifs : p.emailNotifs) === false };
 }
 
 // ---- 1. connexion : bienvenue / bon retour --------------------------------------------------
