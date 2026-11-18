@@ -26,5 +26,34 @@ self.addEventListener("notificationclick", (event) => {
     return self.clients.openWindow ? self.clients.openWindow(link) : null;
   }));
 });
-self.addEventListener("install", () => self.skipWaiting());
-self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+// ---- Mode hors-ligne (ADD-103) : coquille de l'app + pages déjà vues, mises en cache à la volée.
+const CACHE = "ma-offline-v1";
+const SHELL = ["/", "/index.html", "/css/bundle.min.css", "/manifest.webmanifest"];
+self.addEventListener("install", (e) => {
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((u) => c.add(u).catch(() => {})))));
+});
+self.addEventListener("activate", (e) => e.waitUntil(
+  caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith("ma-offline-") && k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())
+));
+self.addEventListener("fetch", (e) => {
+  const req = e.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;                 // Firebase, polices, API : jamais interceptés
+  if (/^\/(__|api\/)/.test(url.pathname) || url.pathname === "/firebase-messaging-sw.js") return;
+  const nav = req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html");
+  if (nav) {
+    // réseau d'abord ; hors-ligne : la page déjà vue, sinon la coquille de l'app (le routeur lit l'adresse)
+    e.respondWith(fetch(req).then((r) => {
+      if (r && r.ok) { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); }
+      return r;
+    }).catch(() => caches.match(req).then((m) => m || caches.match("/index.html") || caches.match("/"))));
+    return;
+  }
+  // fichiers statiques : on sert le cache tout de suite et on le rafraîchit en arrière-plan
+  e.respondWith(caches.open(CACHE).then((c) => c.match(req).then((hit) => {
+    const net = fetch(req).then((r) => { if (r && r.ok && r.type === "basic") c.put(req, r.clone()); return r; }).catch(() => hit);
+    return hit || net;
+  })));
+});

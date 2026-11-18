@@ -904,6 +904,7 @@
           <div class="lap-title">${esc(t.carName)} — <span class="lap-time">${esc(t.chrono)}</span></div>
           <div class="lap-meta">${esc(t.track)} (${esc(t.note || "Stock")})</div>
         </div>
+        <button type="button" class="telemetry-trash-btn lap-share-btn" data-share-lap data-car="${esc(t.carName)}" data-chrono="${esc(t.chrono)}" data-track="${esc(t.track)}" title="Partager ce chrono" aria-label="Partager ce chrono"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg></button>
         ${removable ? `<button type="button" class="telemetry-trash-btn" data-action="remove-telemetry" data-idx="${idx}" title="Supprimer" aria-label="Supprimer ce chrono">🗑️</button>` : ""}
       </div>`;
   }
@@ -1150,6 +1151,7 @@
           </div>
           <div class="lap-right">
             <span class="lap-time big">${esc(lap.chronoMs != null ? formatLapTime(lap.chronoMs) : lap.chrono)}</span>
+            <button type="button" class="telemetry-trash-btn lap-share-btn" data-share-lap data-car="${esc(lap.carName)}" data-chrono="${esc(lap.chronoMs != null ? formatLapTime(lap.chronoMs) : lap.chrono)}" data-track="${esc(lap.track)}" data-pilot="${esc(lap.pilot || "")}" title="Partager ce chrono" aria-label="Partager ce chrono"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg></button>
             ${canDelete ? `<button type="button" class="telemetry-trash-btn" data-action="delete-lap" data-id="${esc(lap.docId)}" title="Supprimer (admin)" aria-label="Supprimer ce chrono">🗑️</button>` : ""}
           </div>
         </div>`;

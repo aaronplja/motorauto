@@ -44,13 +44,13 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=69a160359a","quiz":"js/lazy-quiz.min.js?v=28aabbf116"};</script>
-  <script defer src="js/bundle1.min.js?v=7f4b168b1c"></script>
+  <script defer src="js/bundle1.min.js?v=c9c8fe6ffd"></script>
   <script defer src="js/bundle2.min.js?v=a1a1dc0d07"></script>
-  <script defer src="js/bundle3.min.js?v=09e1bf5840"></script>
+  <script defer src="js/bundle3.min.js?v=a1439fe3c5"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
-  <link rel="stylesheet" href="css/bundle.min.css?v=dfa38e1196">
+  <link rel="stylesheet" href="css/bundle.min.css?v=ccc11a2d31">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -710,6 +710,28 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
             <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
           </fieldset>
           <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
+          <div class="panel-section-title mt" id="security-title">Sécurité du compte</div>
+          <div id="security-box" class="sec-box">
+            <p class="lap-meta" id="security-google" hidden>Ton compte est connecté avec Google : le mot de passe et l'adresse e-mail se gèrent depuis ton compte Google.</p>
+            <form id="security-pw" class="sec-form" autocomplete="off" novalidate>
+              <p class="priv-sub">Changer le mot de passe</p>
+              <div class="input-stack"><label>Mot de passe actuel</label><input type="password" id="sec-cur" autocomplete="current-password"></div>
+              <div class="input-stack"><label>Nouveau mot de passe</label><input type="password" id="sec-new" autocomplete="new-password" minlength="8"></div>
+              <div class="input-stack"><label>Confirmer le nouveau mot de passe</label><input type="password" id="sec-new2" autocomplete="new-password" minlength="8"></div>
+              <div class="form-feedback error-txt" id="sec-pw-msg" role="alert"></div>
+              <button type="submit" class="cta-btn fill-btn w-100" id="sec-pw-btn">Changer le mot de passe</button>
+            </form>
+            <form id="security-mail" class="sec-form" autocomplete="off" novalidate>
+              <p class="priv-sub">Changer l'adresse e-mail</p>
+              <div class="input-stack"><label>Nouvelle adresse e-mail</label><input type="email" id="sec-mail" autocomplete="email"></div>
+              <div class="input-stack"><label>Mot de passe actuel</label><input type="password" id="sec-mail-pw" autocomplete="current-password"></div>
+              <div class="form-feedback error-txt" id="sec-mail-msg" role="alert"></div>
+              <button type="submit" class="cta-btn fill-btn w-100" id="sec-mail-btn">Envoyer le lien de confirmation</button>
+            </form>
+          </div>
+          <div class="panel-section-title mt">Mes données</div>
+          <p class="lap-meta">Télécharge une copie de tes données (profil, garage, entretiens, coûts, journal, abonnements, notifications) dans un fichier JSON.</p>
+          <button type="button" class="cta-btn w-100" id="export-data-btn">Télécharger mes données</button>
           <div class="danger-zone mt">
             <div class="panel-section-title">Zone sensible</div>
             <p class="lap-meta">Tu peux supprimer ton compte à tout moment. Ton profil, tes voitures, tes chronos, tes publications, ta collection de cartes et tes photos sont effacés définitivement.</p>
@@ -793,6 +815,36 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Erreur 404</span><h1 class="page-title">Cette page n'existe pas</h1><p class="lap-meta" id="nf-path"></p></div></header>
     <p class="nf-text">Le lien est peut-être ancien ou mal recopié. Reprends la route depuis l'un de ces points d'entrée.</p>
     <div class="nf-actions"><a class="cta-btn fill-btn" href="#/">Retour à l'accueil</a><a class="cta-btn btn-ghost" href="#/catalogue">Parcourir le catalogue</a><a class="cta-btn btn-ghost" href="#/contact">Signaler un problème</a></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-about" data-page="about">
+  <div class="stage-shell page-wrap">
+    <a class="back-link" href="#/" data-back="#/">← Accueil</a>
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">À propos</span><h1 class="page-title">MOTORAUTO</h1><p class="page-sub">L'archive des sportives de route, écrite par ceux qui les conduisent.</p></div></header>
+    <dl class="about-stats" aria-label="Le site en chiffres">
+      <div><dt>Véhicules</dt><dd id="about-cars">–</dd></div>
+      <div><dt>Motorisations</dt><dd id="about-engines">–</dd></div>
+      <div><dt>Marques</dt><dd id="about-brands">–</dd></div>
+    </dl>
+    <section class="about-sec" aria-labelledby="about-what"><h2 id="about-what" class="section-title small">Ce que tu trouves ici</h2>
+      <div class="about-cards">
+        <a class="about-card" href="#/catalogue"><b>L'archive</b><span>Chaque version, chaque chiffre : phases, motorisations, records.</span></a>
+        <a class="about-card" href="#/jouer"><b>Le jeu</b><span>Cartes à collectionner, mini-jeux, défis de la semaine.</span></a>
+        <a class="about-card" href="#/communaute"><b>La communauté</b><span>Pilotes, garages, clubs et sorties.</span></a>
+        <a class="about-card" href="#/classement"><b>Les classements</b><span>Chronos, circuits, modèles et collections.</span></a>
+      </div>
+    </section>
+    <section class="about-sec" aria-labelledby="about-map"><h2 id="about-map" class="section-title small">Plan du site</h2>
+      <nav class="about-map" aria-label="Plan du site">
+        <div><h3>Archive</h3><a href="#/catalogue">Catalogue</a><a href="#/classement/circuits">Circuits</a><a href="#/frise">Frise chronologique</a><a href="#/nouveautes">Nouveautés</a></div>
+        <div><h3>Jeu</h3><a href="#/jouer/cartes">Cartes</a><a href="#/jouer/boutique">Boutique</a><a href="#/jouer/defis">Défis</a><a href="#/succes">Succès</a><a href="#/pass">Pass de saison</a></div>
+        <div><h3>Communauté</h3><a href="#/communaute">Fil</a><a href="#/communaute/pilotes">Pilotes</a><a href="#/clubs">Clubs</a><a href="#/chat">Salon</a></div>
+        <div><h3>Mon espace</h3><a href="#/garage">Mon garage</a><a href="#/reglages">Réglages</a><a href="#/pro">PRO</a></div>
+        <div><h3>Infos</h3><a href="#/contact">Contact</a><a href="#/legal/mentions">Mentions légales</a><a href="#/legal/confidentialite">Confidentialité</a><a href="#/legal/cgu">Conditions</a></div>
+      </nav>
+    </section>
+    <p class="about-foot">Une erreur, une voiture manquante, une idée ? <a href="#/contact">Écris-nous</a>.</p>
   </div>
   </div>
 
@@ -984,6 +1036,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <a href="#/classement">Classement</a>
           <a href="#/chat">Salon</a>
           <a href="#/contact">Contact</a>
+          <a href="#/a-propos">À propos</a>
           <a href="#/nouveautes">Nouveautés</a>
           <a href="#/legal/mentions">Mentions légales</a>
           <a href="#/legal/confidentialite">Confidentialité</a>

@@ -562,3 +562,28 @@ ok("plus de confirm() natif dans l'administration : tout passe par MA.confirm (U
 });
 ok("changement de page annoncé aux lecteurs d'écran (UX-109)", () => { assert(/id = "ma-live"/.test(read("js/ux-polish.js")) && /ux-polish\.js/.test(read("index.src.html"))); });
 ok("traductions : les 4 fichiers restent valides", () => { for (const l of ["en", "es", "de", "it"]) { new Function("window", read("js/i18n/" + l + ".js"))({}); } });
+
+// ---------- Lot 3 : fonctionnalités
+ok("sécurité du compte : mot de passe / e-mail avec ré-authentification (ADD-101)", () => {
+  const j = read("js/account-security.js"), h = read("index.src.html");
+  assert(/reauthenticateWithCredential/.test(j) && /updatePassword/.test(j) && /verifyBeforeUpdateEmail/.test(j));
+  assert(/id="security-pw"/.test(h) && /id="security-mail"/.test(h) && /account-security\.js/.test(h));
+  assert(h.indexOf('id="security-pw"') < h.indexOf('class="danger-zone'), "placé avant la zone sensible");
+});
+ok("export RGPD « Télécharger mes données » (ADD-102)", () => {
+  assert(/id="export-data-btn"/.test(read("index.src.html")) && /motorauto-mes-donnees\.json/.test(read("js/account-security.js")));
+});
+ok("mode hors-ligne : service worker avec cache, sans intercepter Firebase (ADD-103)", () => {
+  const s = read("firebase-messaging-sw.js");
+  assert(/addEventListener\("fetch"/.test(s) && /url\.origin !== self\.location\.origin/.test(s) && /req\.method !== "GET"/.test(s));
+  new Function(s.replace(/importScripts\([^)]*\);?/g, "")) ;
+});
+ok("données structurées Car + BreadcrumbList sur les fiches (ADD-105)", () => {
+  assert(/BreadcrumbList/.test(read("js/seo-live.js")) && /seo-live\.js/.test(read("index.src.html")) && /BreadcrumbList/.test(read("scripts/build-seo.js")));
+});
+ok("partage d'un chrono (garage et classement) (ADD-106)", () => {
+  assert((read("js/app.js").match(/data-share-lap/g) || []).length >= 2 && /\[data-share-lap\]/.test(read("js/share.js")));
+});
+ok("page À propos / Plan du site + redirections (ADD-110)", () => {
+  assert(/id="page-about"/.test(read("index.src.html")) && /\/a-propos/.test(read("js/router.js")));
+});

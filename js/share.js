@@ -116,6 +116,12 @@
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
+    // chronos : bouton partager (garage, classement) → partage natif ou lien copié
+    document.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-share-lap]"); if (!b) return;
+      const d = b.dataset, who = d.pilot ? d.pilot + " a fait " : "J'ai fait ";
+      shareLink("Chrono MOTORAUTO", `${who}${d.chrono} sur ${d.track} avec ${d.car} — MOTORAUTO`, origin() + "/#/classement/chronos");
+    });
     // bouton « Partager » sur la fiche voiture (lien vers la page statique avec aperçu)
     document.addEventListener("ma:car-rendered", (e) => {
       const car = e.detail.car, anchor = document.getElementById("sheet-compare-btn");
