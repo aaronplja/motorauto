@@ -1,0 +1,24 @@
+  <div class="modal-layer" id="event-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ev-title-h">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div><span class="status-tag-verified">Sorties</span><h2 class="dialog-title" id="ev-title-h">Proposer une sortie</h2></div>
+        <button type="button" class="dialog-close-btn" id="close-event-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <form class="dialog-body" id="event-form" novalidate>
+        <div class="input-stack"><label for="ev-title">Titre</label><input type="text" id="ev-title" maxlength="80" required placeholder="Ex. Journée roulage au Mans Bugatti"></div>
+        <div class="form-grid">
+          <div class="input-stack"><label for="ev-kind">Type</label>
+            <select id="ev-kind" class="custom-select"><option value="circuit">Journée circuit</option><option value="rassemblement">Rassemblement</option><option value="balade">Balade / road trip</option><option value="salon">Salon, course ou événement officiel</option><option value="autre">Autre</option></select></div>
+          <div class="input-stack"><label for="ev-date">Date et heure</label><input type="datetime-local" id="ev-date" required></div>
+        </div>
+        <div class="form-grid">
+          <div class="input-stack"><label for="ev-city">Ville</label><input type="text" id="ev-city" maxlength="80" placeholder="Ex. Le Mans"></div>
+          <div class="input-stack"><label for="ev-address">Adresse (facultatif, pour la carte)</label><input type="text" id="ev-address" maxlength="160" placeholder="Ex. 12 rue des Pilotes"></div>
+        </div>
+        <div class="input-stack"><label for="ev-place">Lieu (circuit, nom de l'endroit)</label><input type="text" id="ev-place" maxlength="120" required placeholder="Ex. Circuit de Folembray (02)"></div>
+        <div class="input-stack"><label for="ev-desc">Détails</label><textarea id="ev-desc" rows="3" maxlength="600" placeholder="Programme, tarif, niveau, ce qu'il faut apporter…"></textarea></div>
+        <div class="form-feedback error-txt" id="ev-error" role="alert"></div>
+        <button type="submit" class="cta-btn fill-btn w-100">Publier la sortie</button>
+      </form>
+    </div>
+  </div>

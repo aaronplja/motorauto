@@ -1,0 +1,48 @@
+  <div class="page" id="page-contact" data-page="contact">
+  <section class="stage-shell page-wrap contact-section" id="contact">
+    <div class="contact-card">
+      <div class="contact-intro">
+        <span class="contact-kicker">Contact</span>
+        <h2>Une idée, un bug, une voiture manquante&nbsp;?</h2>
+        <p>Écris-nous : ta demande arrive directement dans la messagerie privée de l'administrateur, dans le salon. Il te répond là-bas, tu es prévenu par la cloche.</p>
+        <ul class="contact-points">
+          <li><b>Ajout de véhicule</b> : indique la version, le moteur et une source.</li>
+          <li><b>Bug</b> : dis-nous ce que tu faisais et sur quel appareil.</li>
+          <li><b>Suggestion</b> : toutes les idées sont lues.</li>
+        </ul>
+      </div>
+      <form class="contact-form" id="contact-form" novalidate>
+        <div class="form-grid">
+          <div class="input-stack"><label for="ct-type">Type de demande</label>
+            <select id="ct-type" class="custom-select" name="type">
+              <option value="vehicle">Ajout d'un véhicule</option>
+              <option value="bug">Signaler un bug</option>
+              <option value="data">Erreur dans une fiche</option>
+              <option value="idea">Suggestion</option>
+              <option value="other">Autre demande</option>
+            </select>
+          </div>
+          <div class="input-stack"><label for="ct-pilot">Ton pseudo</label><input type="text" id="ct-pilot" maxlength="40" placeholder="Pseudo de pilote" autocomplete="nickname"></div>
+        </div>
+        <div class="input-stack"><label for="ct-email">E-mail <small>(facultatif — seulement pour l'envoi par messagerie)</small></label><input type="email" id="ct-email" maxlength="120" placeholder="toi@exemple.fr" autocomplete="email"></div>
+        <div class="contact-vehicle" id="ct-vehicle-fields">
+          <div class="form-grid">
+            <div class="input-stack"><label for="ct-brand">Marque</label><input type="text" id="ct-brand" maxlength="60" placeholder="Ex. Peugeot"></div>
+            <div class="input-stack"><label for="ct-model">Modèle / version</label><input type="text" id="ct-model" maxlength="80" placeholder="Ex. 106 S16 phase 2"></div>
+            <div class="input-stack"><label for="ct-years">Années</label><input type="text" id="ct-years" maxlength="30" placeholder="Ex. 1996 - 2003"></div>
+            <div class="input-stack"><label for="ct-engine">Moteur &amp; puissance</label><input type="text" id="ct-engine" maxlength="80" placeholder="Ex. 1.6 16V, 120 ch"></div>
+          </div>
+        </div>
+        <div class="input-stack"><label for="ct-message">Ton message</label><textarea id="ct-message" rows="5" maxlength="2000" placeholder="Décris ta demande…" required></textarea><small class="char-count" id="ct-count">0 / 2000</small></div>
+        <input type="text" id="ct-honey" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="honeypot">
+        <div class="contact-actions">
+          <button type="submit" class="cta-btn fill-btn" id="ct-submit">Envoyer ma demande</button>
+          <button type="button" class="cta-btn btn-ghost" id="ct-mailto">Ouvrir dans ma messagerie</button>
+        </div>
+        <p class="contact-status" id="ct-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  
+  </section>
+</div>
+  </div>

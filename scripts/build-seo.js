@@ -20,9 +20,9 @@ const opt = (name, def) => { const i = args.indexOf("--" + name); return i >= 0 
 const SITE = opt("url", "https://motorauto.fr").replace(/\/+$/, "");
 const csvFile = opt("csv", "");
 
-const src = fs.readFileSync(path.join(root, "js/data.js"), "utf8").replace(/^const MOTORAUTO_DATABASE/m, "var MOTORAUTO_DATABASE")
-  + "\n" + fs.readFileSync(path.join(root, "js/data2.js"), "utf8")
-  + "\n" + fs.readdirSync(path.join(root, "js")).filter((f) => /^data-(alfa|audi|lemans|bmw.*|mercedes.*|renault.*|alpine.*|rally.*|split|enrich.*)\.js$/.test(f)).map((f) => f.replace(/\.js$/, "")).sort((a, b) => (/enrich/.test(a) - /enrich/.test(b)) || (a < b ? -1 : 1)).concat([]).reduce((a, f) => a.concat(f), ["data-kit"]).map((f) => fs.readFileSync(path.join(root, "js/" + f + ".js"), "utf8")).join("\n");
+const src = fs.readFileSync(path.join(root, "js/data/data.js"), "utf8").replace(/^const MOTORAUTO_DATABASE/m, "var MOTORAUTO_DATABASE")
+  + "\n" + fs.readFileSync(path.join(root, "js/data/data2.js"), "utf8")
+  + "\n" + fs.readdirSync(path.join(root, "js/data")).filter((f) => /^data-(alfa|audi|lemans|bmw.*|mercedes.*|renault.*|alpine.*|rally.*|split|enrich.*)\.js$/.test(f)).map((f) => f.replace(/\.js$/, "")).sort((a, b) => (/enrich/.test(a) - /enrich/.test(b)) || (a < b ? -1 : 1)).concat([]).reduce((a, f) => a.concat(f), ["data-kit"]).map((f) => fs.readFileSync(path.join(root, "js/data/" + f + ".js"), "utf8")).join("\n");
 const byId = new Map();
 new Function(src + ";return MOTORAUTO_DATABASE;")().forEach((c) => byId.set(c.id, c));
 if (csvFile) {
@@ -37,8 +37,8 @@ const outDir = path.join(root, "voiture");
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 
-// poids / transmission / budget indicatifs (js/data-extra.js, chargé hors navigateur)
-const EX = (() => { try { const w = {}; new Function("window", fs.readFileSync(path.join(root, "js/data-extra.js"), "utf8"))(w); return w.MAExtra; } catch (_) { return null; } })();
+// poids / transmission / budget indicatifs (js/data/data-extra.js, chargé hors navigateur)
+const EX = (() => { try { const w = {}; new Function("window", fs.readFileSync(path.join(root, "js/data/data-extra.js"), "utf8"))(w); return w.MAExtra; } catch (_) { return null; } })();
 const slug = (s) => String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const nfr = (n, d) => Number(n).toLocaleString("fr-FR", { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
 const imgOf = (car) => (/^https?:\/\//.test(car.image) ? car.image : (car.image ? `${SITE}/${car.image}` : `${SITE}/assets/icon-512.png`));
@@ -162,7 +162,7 @@ ${head({ title, desc, url, img, type: "website", ld })}
 });
 
 const today = new Date().toISOString().slice(0, 10);
-const urls = [`${SITE}/`, `${SITE}/chat.html`].concat(Array.from(byBrand.keys()).map(brandUrl), cars.map((c) => `${SITE}/voiture/${c.id}.html`));
+const urls = [`${SITE}/`].concat(Array.from(byBrand.keys()).map(brandUrl), cars.map((c) => `${SITE}/voiture/${c.id}.html`));
 fs.writeFileSync(path.join(root, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
   urls.map((u, i) => `  <url><loc>${u}</loc><lastmod>${today}</lastmod><priority>${i === 0 ? "1.0" : u.endsWith("chat.html") ? "0.3" : "0.7"}</priority></url>`).join("\n") + `\n</urlset>\n`);

@@ -1,0 +1,86 @@
+  <div class="page page-layer" id="page-settings" data-page="settings">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Mon espace</span><h1 class="page-title">Réglages</h1><p class="page-sub">Ton profil, l'ambiance du site, les notifications que tu veux recevoir et ta présence sur la carte.</p></div></header>
+    <nav data-section="pilotes"></nav>
+    <nav data-section="settings"></nav>
+    <section class="tab-panel" data-tab="profil" hidden>
+      <div class="settings-box open">
+          <div class="verify-banner" id="verify-banner" hidden role="status"><span>Ton adresse e-mail n'est pas encore vérifiée. Ouvre le lien reçu par e-mail.</span><span class="verify-actions"><button type="button" class="cta-btn btn-ghost compact-btn" id="verify-resend">Renvoyer l'e-mail</button><button type="button" class="cta-btn btn-ghost compact-btn" id="verify-check">J'ai vérifié</button></span></div>
+          <div class="form-grid">
+            <div class="input-stack"><label for="settings-username">Pseudo</label><input type="text" id="settings-username" placeholder="Ton pseudo" maxlength="24"><small class="tcg-hint">Unique · modifiable une fois tous les 30 jours · les autres pilotes te mentionnent avec @pseudo.</small></div>
+            <div class="input-stack"><label for="settings-avatar">Avatar (URL)</label><input type="text" id="settings-avatar" placeholder="https://…"></div>
+          </div>
+          <div class="avatar-upload">
+            <img id="settings-avatar-preview" class="avatar-preview" alt="Aperçu de l'avatar" data-fallback="avatar">
+            <div class="avatar-upload-body">
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="avatar-upload-btn">📷 Téléverser une photo</button>
+              <input type="file" id="avatar-file-input" accept="image/*" hidden>
+              <small id="avatar-upload-status">Depuis ta galerie ou tes fichiers (n'importe quelle taille, jusqu'à 25 Mo), ou colle une URL ci-dessus.</small>
+            </div>
+          </div>
+          <div class="settings-sep">Ma voiture</div>
+          <div class="form-grid">
+            <div class="input-stack"><label for="settings-car">Voiture actuelle</label><input type="text" id="settings-car" maxlength="80" placeholder="Ex. Peugeot 106 S16 phase 2"></div>
+            <div class="input-stack"><label for="settings-car-photo">Photo de la voiture (URL)</label><input type="text" id="settings-car-photo" placeholder="https://…"></div>
+          </div>
+          <div class="avatar-upload">
+            <img id="settings-car-preview" class="car-preview" alt="Aperçu de la voiture" data-fallback="car">
+            <div class="avatar-upload-body">
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="car-upload-btn">📷 Téléverser une photo</button>
+              <input type="file" id="car-file-input" accept="image/*" hidden>
+              <small id="car-upload-status">Depuis ta galerie ou tes fichiers, ou colle une URL ci-dessus.</small>
+            </div>
+          </div>
+          <div class="input-stack mt"><label for="settings-mods">Modifications</label><textarea id="settings-mods" rows="3" maxlength="500" placeholder="Une par ligne : ligne d'échappement, combinés filetés, jantes 16&quot;…"></textarea></div>
+          <div class="input-stack mt"><label for="settings-bio">Biographie</label><textarea id="settings-bio" rows="2" maxlength="300" placeholder="Quelques mots sur toi…"></textarea></div>
+          <div class="social-fields mt">
+            <div class="panel-section-title">Réseaux sociaux</div>
+            <p class="lap-meta">Colle le lien de ton profil ou juste ton pseudo. Ils s'affichent sur ton profil public.</p>
+            <div class="input-stack"><label for="settings-instagram">Instagram</label><input type="text" id="settings-instagram" maxlength="120" placeholder="@pseudo ou instagram.com/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+            <div class="input-stack"><label for="settings-tiktok">TikTok</label><input type="text" id="settings-tiktok" maxlength="120" placeholder="@pseudo ou tiktok.com/@pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+            <div class="input-stack"><label for="settings-snapchat">Snapchat</label><input type="text" id="settings-snapchat" maxlength="120" placeholder="pseudo ou snapchat.com/add/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+          </div>
+          <fieldset class="priv-group"><legend>Confidentialité</legend>
+            <p class="priv-sub">Ce que les autres voient de toi</p>
+            <label class="check-row"><input type="checkbox" id="settings-public-garage"><span>Garage public : les autres pilotes voient mes favoris et mes chronos</span></label>
+            <label class="check-row"><input type="checkbox" id="settings-hide-following"><span>Masquer mes abonnements (les pilotes que je suis)</span></label>
+            <label class="check-row"><input type="checkbox" id="settings-hide-followers"><span>Masquer mes abonnés (ceux qui me suivent)</span></label>
+            <p class="priv-sub">Présence</p>
+            <label class="check-row"><input type="checkbox" id="settings-show-presence" checked><span>Afficher quand je suis en ligne et ma dernière connexion (sur mon profil et dans le chat)</span></label>
+            <p class="priv-sub">Communications</p>
+            <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
+          </fieldset>
+          <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
+          <div class="panel-section-title mt" id="security-title">Sécurité du compte</div>
+          <div id="security-box" class="sec-box">
+            <p class="lap-meta" id="security-google" hidden>Ton compte est connecté avec Google : le mot de passe et l'adresse e-mail se gèrent depuis ton compte Google.</p>
+            <form id="security-pw" class="sec-form" autocomplete="off" novalidate>
+              <p class="priv-sub">Changer le mot de passe</p>
+              <div class="input-stack"><label>Mot de passe actuel</label><input type="password" id="sec-cur" autocomplete="current-password"></div>
+              <div class="input-stack"><label>Nouveau mot de passe</label><input type="password" id="sec-new" autocomplete="new-password" minlength="8"></div>
+              <div class="input-stack"><label>Confirmer le nouveau mot de passe</label><input type="password" id="sec-new2" autocomplete="new-password" minlength="8"></div>
+              <div class="form-feedback error-txt" id="sec-pw-msg" role="alert"></div>
+              <button type="submit" class="cta-btn fill-btn w-100" id="sec-pw-btn">Changer le mot de passe</button>
+            </form>
+            <form id="security-mail" class="sec-form" autocomplete="off" novalidate>
+              <p class="priv-sub">Changer l'adresse e-mail</p>
+              <div class="input-stack"><label>Nouvelle adresse e-mail</label><input type="email" id="sec-mail" autocomplete="email"></div>
+              <div class="input-stack"><label>Mot de passe actuel</label><input type="password" id="sec-mail-pw" autocomplete="current-password"></div>
+              <div class="form-feedback error-txt" id="sec-mail-msg" role="alert"></div>
+              <button type="submit" class="cta-btn fill-btn w-100" id="sec-mail-btn">Envoyer le lien de confirmation</button>
+            </form>
+          </div>
+          <div class="panel-section-title mt">Mes données</div>
+          <p class="lap-meta">Télécharge une copie de tes données (profil, garage, entretiens, coûts, journal, abonnements, notifications) dans un fichier JSON.</p>
+          <button type="button" class="cta-btn w-100" id="export-data-btn">Télécharger mes données</button>
+          <div class="danger-zone mt">
+            <div class="panel-section-title">Zone sensible</div>
+            <p class="lap-meta">Tu peux supprimer ton compte à tout moment. Ton profil, tes voitures, tes chronos, tes publications, ta collection de cartes et tes photos sont effacés définitivement.</p>
+            <button type="button" class="secondary-destructive-btn" id="open-delete-account">Supprimer mon compte</button>
+          </div>
+        </div>
+    </section>
+    <section class="tab-panel" data-tab="ambiance" hidden><div id="settings-theme"></div></section>
+    <section class="tab-panel" data-tab="notifications" hidden><div id="settings-notifs"></div></section>
+    <section class="tab-panel" data-tab="carte" hidden><div id="settings-map"></div></section>
+  </div>

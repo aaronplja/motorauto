@@ -1,0 +1,48 @@
+  <div class="page page-layer" id="garage-modal" data-page="garage">
+  <div class="stage-shell page-wrap">
+    <header class="page-head">
+      <div class="page-head-text garage-id">
+        <img id="garage-pilot-avatar" src="" alt="Ta photo de profil" class="garage-avatar" data-fallback="avatar">
+        <div class="garage-id-text">
+        <span class="status-tag-verified">Dossier synchronisé</span>
+        <h1 class="page-title" id="garage-pilot-name">Pilote</h1>
+        <p class="page-sub" id="garage-pilot-meta">Membre</p>
+        <div class="badge-row" id="garage-badges"></div>
+        </div>
+      </div>
+      <div class="page-head-actions"><button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats" data-self="1">📊 Caractéristiques</button><button type="button" class="secondary-destructive-btn" id="logout-btn">Se déconnecter</button></div>
+    </header>
+    <nav data-section="pilotes"></nav>
+    <section class="tab-panel" data-tab="apercu" hidden>
+      <div class="social-row" id="garage-social">
+          <button type="button" class="social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b> abonnés</button>
+          <button type="button" class="social-count" data-action="show-follow-list" data-kind="following"><b data-sc="following">–</b> abonnements</button>
+        </div>
+      <div class="stats-ribbon">
+          <div class="ribbon-card"><span class="ribbon-value" id="stat-chronos-count">0</span><span class="ribbon-key">Chronos</span></div>
+          <div class="ribbon-card"><span class="ribbon-value" id="stat-favs-count">0</span><span class="ribbon-key">En écurie</span></div>
+          <div class="ribbon-card"><span class="ribbon-value" id="stat-status-badge">Actif</span><span class="ribbon-key">Statut</span></div>
+        </div>
+      <div class="subtabs-bar" role="tablist">
+          <button type="button" role="tab" class="subtab-btn active" id="tab-my-telemetry">Journal de télémétrie</button>
+          <button type="button" role="tab" class="subtab-btn" id="tab-my-favorites">Mes favoris</button>
+        </div>
+        <div class="garage-panel active" id="garage-telemetry-panel"><div class="telemetry-stack" id="user-telemetry-journal"></div></div>
+        <div class="garage-panel" id="garage-favorites-panel"><div class="vehicles-dynamic-grid compact-subgrid" id="user-favorites-grid"></div></div>
+      <div id="garage-reminders"></div>
+    </section>
+    <section class="tab-panel" data-tab="voitures" hidden>
+      <p class="lap-meta">Ajoute toutes tes voitures : motorisation, description, modifications et jusqu'à 8 photos défilables. Elles apparaissent sur ton profil et dans la communauté.</p>
+      <div id="my-gauge" class="game-zone"></div>
+      <div class="comm-grid" id="my-cars-list"></div>
+      <button type="button" class="cta-btn fill-btn mt" data-action="mycar-new">+ Ajouter une voiture</button>
+    </section>
+    <section class="tab-panel" data-tab="suivi" hidden>
+      <div class="follow-sections">
+        <section class="follow-block" id="follow-maint"><div id="maint-root"></div></section>
+        <section class="follow-block" id="follow-costs"><div id="costs-root"></div></section>
+        <section class="follow-block" id="follow-journal"><div id="journal-root"></div></section>
+      </div>
+    </section>
+
+  </div>

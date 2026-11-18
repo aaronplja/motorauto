@@ -1,0 +1,60 @@
+  <div class="modal-layer" id="theme-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="theme-title">
+    <div class="modal-dialog wide-box theme-box">
+      <div class="dialog-header">
+        <div>
+          <span class="status-tag-verified">Ambiances</span>
+          <h2 class="dialog-title" id="theme-title">Choisis ton univers</h2>
+          <p class="dialog-sub">16 ambiances, de la nuit sur circuit au showroom lumineux</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-theme-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <!-- MON THEME -->
+        <section class="ct-box" id="ct-box" aria-labelledby="ct-title">
+          <div class="theme-family-title" id="ct-title">🎨 Mon thème</div>
+          <div class="ct-row">
+            <label class="ct-field"><span>Fond</span><input type="color" id="ct-bg" value="#0f172a"></label>
+            <label class="ct-field"><span>Accent</span><input type="color" id="ct-accent" value="#38bdf8"></label>
+            <div class="ct-preview" id="ct-preview" aria-hidden="true"><b>Aa</b><span>Aperçu</span><i>Bouton</i></div>
+          </div>
+          <p class="ct-note" id="ct-note">Les textes s'adaptent tout seuls pour rester toujours lisibles.</p>
+          <div class="ct-actions">
+            <button type="button" class="btn btn-ghost" id="ct-reset">Réinitialiser</button>
+            <button type="button" class="btn btn-ghost" id="ct-copy">Copier mon code</button>
+            <input type="text" id="ct-code" class="ct-code" placeholder="Coller un code MA-…" autocomplete="off" spellcheck="false" aria-label="Code de thème à importer">
+            <button type="button" class="btn btn-ghost" id="ct-import">Importer</button>
+          </div>
+        </section>
+        <!-- COCKPITS NOCTURNES -->
+        <div class="theme-family-title">✨ Studio (nouvelle ambiance par défaut)</div>
+        <div class="theme-palette-grid">
+          <button class="theme-tile active" data-set-theme="studio-creme"><span class="swatch-circle" style="background:#f6f3ec; border:2px solid #1f6b45;"></span><span class="tile-meta"><span class="tile-title">Studio Crème</span><span class="tile-sub">Crème chaud &amp; vert profond</span></span></button>
+          <button class="theme-tile" data-set-theme="garage-nuit"><span class="swatch-circle" style="background:#0b140f; border:2px solid #6fcf97;"></span><span class="tile-meta"><span class="tile-title">Garage de nuit</span><span class="tile-sub">Vert très sombre &amp; crème</span></span></button>
+        </div>
+        <div class="theme-family-title">🌙 Cockpits Nocturnes (8 Univers Sombres)</div>
+        <div class="theme-palette-grid">
+          <button class="theme-tile" data-set-theme="onyx-carbon"><span class="swatch-circle" style="background:#09090b; border:2px solid #ef4444;"></span><span class="tile-meta"><span class="tile-title">Onyx Carbon</span><span class="tile-sub">Noir pur & rouge racing</span></span></button>
+          <button class="theme-tile" data-set-theme="midnight-blue"><span class="swatch-circle" style="background:#060913; border:2px solid #3b82f6;"></span><span class="tile-meta"><span class="tile-title">Midnight Blue</span><span class="tile-sub">Bleu nuit métallisé profond</span></span></button>
+          <button class="theme-tile" data-set-theme="asphalt-smoke"><span class="swatch-circle" style="background:#111111; border:2px solid #f59e0b;"></span><span class="tile-meta"><span class="tile-title">Asphalt Smoke</span><span class="tile-sub">Anthracite circuit mat</span></span></button>
+          <button class="theme-tile" data-set-theme="monza-night"><span class="swatch-circle" style="background:#0a0507; border:2px solid #e11d48;"></span><span class="tile-meta"><span class="tile-title">Monza Night</span><span class="tile-sub">Carbone noir & reflets bordeaux</span></span></button>
+          <button class="theme-tile" data-set-theme="tokyo-neon"><span class="swatch-circle" style="background:#050508; border:2px solid #a855f7;"></span><span class="tile-meta"><span class="tile-title">Tokyo Neon</span><span class="tile-sub">Nuit urbaine & lueur violette</span></span></button>
+          <button class="theme-tile" data-set-theme="cyber-matrix"><span class="swatch-circle" style="background:#022c22; border:2px solid #10b981;"></span><span class="tile-meta"><span class="tile-title">Cyber Matrix</span><span class="tile-sub">Vert terminal & acier sombre</span></span></button>
+          <button class="theme-tile" data-set-theme="abyss-titanium"><span class="swatch-circle" style="background:#070d1a; border:2px solid #06b6d4;"></span><span class="tile-meta"><span class="tile-title">Abyss Titanium</span><span class="tile-sub">Titane brossé & lagon cyan</span></span></button>
+          <button class="theme-tile" data-set-theme="velvet-gothic"><span class="swatch-circle" style="background:#18050f; border:2px solid #ec4899;"></span><span class="tile-meta"><span class="tile-title">Velvet Gothic</span><span class="tile-sub">Bordeaux sombre & rose fushia</span></span></button>
+        </div>
+
+        <!-- SHOWROOMS LUMINEUX -->
+        <div class="theme-family-title" style="margin-top: 2rem;">☀️ Showrooms Lumineux (8 Univers Clairs)</div>
+        <div class="theme-palette-grid">
+          <button class="theme-tile" data-set-theme="carrara-white"><span class="swatch-circle" style="background:#f8fafc; border:2px solid #dc2626;"></span><span class="tile-meta"><span class="tile-title">Carrara White</span><span class="tile-sub">Blanc atelier haute précision</span></span></button>
+          <button class="theme-tile" data-set-theme="silver-arrow"><span class="swatch-circle" style="background:#f1f5f9; border:2px solid #0284c7;"></span><span class="tile-meta"><span class="tile-title">Silver Arrow</span><span class="tile-sub">Aluminium brossé épuré</span></span></button>
+          <button class="theme-tile" data-set-theme="ivory-dune"><span class="swatch-circle" style="background:#fbf9f5; border:2px solid #b45309;"></span><span class="tile-meta"><span class="tile-title">Ivory Dune</span><span class="tile-sub">Sellerie vintage & beige luxe</span></span></button>
+          <button class="theme-tile" data-set-theme="nordic-frost"><span class="swatch-circle" style="background:#f0fdf4; border:2px solid #16a34a;"></span><span class="tile-meta"><span class="tile-title">Nordic Frost</span><span class="tile-sub">Blanc glacier teinté d'azur</span></span></button>
+          <button class="theme-tile" data-set-theme="solar-flare"><span class="swatch-circle" style="background:#fffbeb; border:2px solid #d97706;"></span><span class="tile-meta"><span class="tile-title">Solar Flare</span><span class="tile-sub">Sable chaud & éclat ambré</span></span></button>
+          <button class="theme-tile" data-set-theme="alpine-horizon"><span class="swatch-circle" style="background:#eff6ff; border:2px solid #2563eb;"></span><span class="tile-meta"><span class="tile-title">Alpine Horizon</span><span class="tile-sub">Bleu azur & clarté alpine</span></span></button>
+          <button class="theme-tile" data-set-theme="rose-gold-gt"><span class="swatch-circle" style="background:#fff1f2; border:2px solid #e11d48;"></span><span class="tile-meta"><span class="tile-title">Rose Gold GT</span><span class="tile-sub">Nacré rosé & élégance pure</span></span></button>
+          <button class="theme-tile" data-set-theme="mint-speedway"><span class="swatch-circle" style="background:#ecfdf5; border:2px solid #0d9488;"></span><span class="tile-meta"><span class="tile-title">Mint Speedway</span><span class="tile-sub">Vert menthe & design épuré</span></span></button>
+        </div>
+      </div>
+    </div>
+  </div>

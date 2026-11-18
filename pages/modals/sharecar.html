@@ -1,0 +1,12 @@
+  <div class="modal-layer" id="sharecar-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="sharecar-title">
+    <div class="modal-dialog">
+      <div class="dialog-header"><div><span class="status-tag-verified">Chat</span><h2 class="dialog-title" id="sharecar-title">Envoyer cette fiche</h2><p class="dialog-sub" id="sharecar-sub"></p></div><button type="button" class="dialog-close-btn" id="close-sharecar-modal" aria-label="Fermer">&times;</button></div>
+      <div class="dialog-body">
+        <div class="input-stack"><label for="sharecar-q">Destination</label><input type="search" id="sharecar-q" autocomplete="off" placeholder="Salon, canal ou pseudo d'un pilote…"></div>
+        <div id="sharecar-list" class="engine-picker-list"></div>
+        <div class="input-stack mt"><label for="sharecar-note">Message (facultatif)</label><input type="text" id="sharecar-note" maxlength="300" placeholder="Regarde cette fiche !"></div>
+        <div class="form-feedback error-txt" id="sharecar-err" role="alert"></div>
+        <button type="button" class="cta-btn fill-btn w-100" id="sharecar-send" disabled>Envoyer dans le chat</button>
+      </div>
+    </div>
+  </div>

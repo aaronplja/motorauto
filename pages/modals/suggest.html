@@ -1,0 +1,46 @@
+  <div class="modal-layer" id="suggest-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="suggest-title">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div>
+          <h2 class="dialog-title" id="suggest-title">Proposer une modification</h2>
+          <p class="dialog-sub" id="sg-car">Véhicule</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-suggest-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <form class="dialog-body" id="suggest-form" novalidate>
+        <div class="seg-switch" role="tablist" aria-label="Type de proposition">
+          <button type="button" role="tab" class="seg-btn active" data-sg-kind="correction">✎ Corriger une info</button>
+          <button type="button" role="tab" class="seg-btn" data-sg-kind="photo">📷 Ajouter une photo</button>
+        </div>
+
+        <div id="sg-correction-fields" class="sg-block">
+          <div class="input-stack"><label for="sg-field">Information concernée</label>
+            <select id="sg-field" class="custom-select full">
+              <option>Puissance</option><option>Couple</option><option>Vitesse de pointe</option><option>0-100 km/h</option>
+              <option>Années de production</option><option>Description</option><option>Motorisation</option><option>Record / anecdote</option><option>Autre</option>
+            </select>
+          </div>
+          <div class="input-stack"><label for="sg-text">Ta correction</label><textarea id="sg-text" rows="4" maxlength="1000" placeholder="Ex. La 106 S16 phase 2 fait 120 ch (et non 118) d'après la fiche constructeur…"></textarea></div>
+          <div class="input-stack"><label for="sg-source">Source (optionnel)</label><input type="text" id="sg-source" maxlength="300" placeholder="Lien ou référence"></div>
+        </div>
+
+        <div id="sg-photo-fields" class="sg-block" hidden>
+          <div class="avatar-upload">
+            <img id="sg-photo-preview" class="car-preview" alt="Aperçu" data-fallback="car">
+            <div class="avatar-upload-body">
+              <button type="button" class="cta-btn btn-ghost compact-btn" id="sg-photo-btn">📷 Choisir une photo</button>
+              <input type="file" id="sg-photo-file" accept="image/*" hidden>
+              <small id="sg-photo-status">Depuis ta galerie ou tes fichiers (jusqu'à 25 Mo), ou colle une URL ci-dessous.</small>
+            </div>
+          </div>
+          <div class="input-stack"><label for="sg-photo-url">… ou adresse de l'image</label><input type="text" id="sg-photo-url" placeholder="https://…"></div>
+          <div class="input-stack"><label for="sg-caption">Légende (optionnel)</label><input type="text" id="sg-caption" maxlength="120" placeholder="Ex. Ma S16 au Mans, 2024"></div>
+          <label class="check-row"><input type="checkbox" id="sg-rights"><span>Je suis l'auteur de cette photo ou j'ai le droit de la partager.</span></label>
+        </div>
+
+        <div class="form-feedback error-txt" id="sg-error" role="alert"></div>
+        <button type="submit" class="cta-btn fill-btn w-100" id="sg-submit">Envoyer à l'équipe</button>
+        <p class="admin-note">Ta proposition est relue avant publication. Tu seras notifié de la décision.</p>
+      </form>
+    </div>
+  </div>

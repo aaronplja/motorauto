@@ -20,7 +20,10 @@
       "index.src.html",
       "vercel.json",
       ".vercelignore",
-      "IMAGES-A-AJOUTER.txt"
+      "data/**",
+      "pages/**",
+      "docs/**",
+      "*.md"
     ]
   },
   "functions": {

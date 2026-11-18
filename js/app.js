@@ -1977,7 +1977,7 @@
     if (!isAdmin) return;
     const isLocal = MOTORAUTO_DATABASE.some((c) => c.id === carId);
     if (isLocal && !cloudIds.has(carId)) {
-      MA.toast("Ce véhicule est défini dans js/data.js ou js/data2.js : il ne peut être retiré qu'en modifiant ce fichier.", "err");
+      MA.toast("Ce véhicule est défini dans js/data/data.js ou js/data/data2.js : il ne peut être retiré qu'en modifiant ce fichier.", "err");
       return;
     }
     const msg = isLocal

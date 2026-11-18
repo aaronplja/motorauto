@@ -26,7 +26,9 @@ const SAME_ESBUILD = !!es && ESV === PIN;
 if (es && !SAME_ESBUILD) console.warn("⚠ esbuild " + ESV + " installé, " + PIN + " attendu : lance « npm install » pour obtenir les mêmes fichiers que la CI.");
 if (!es) console.warn("⚠ esbuild introuvable : regroupement sans minification (npm i -D esbuild pour minifier).");
 
-const src = rd("index.src.html");
+// fragments de pages (ORG-101) : voir scripts/include.js
+const { include } = require("./include.js");
+const src = include(rd("index.src.html"));
 const CSS_RE = /^[ \t]*<link rel="stylesheet" href="(css\/[^"?]+\.css)">[ \t]*\r?\n/gm;
 const JS_RE = /^[ \t]*<script defer src="(js\/[^"?]+\.js)"><\/script>[ \t]*\r?\n/gm;
 
@@ -37,7 +39,7 @@ if (!cssFiles.length || !jsFiles.length) { console.error("Aucune feuille de styl
 // --- modules « à la demande » : chargés après le premier affichage (administration pour les administrateurs, quiz+ sur la page quiz)
 //     le fichier reste listé dans index.src.html (mode développement sans build) ; le build le sort des bundles principaux
 const LAZY = {
-  admin: ["js/admin-dot.js", "js/admin-extra.js", "js/admin-game.js", "js/admin-logos.js", "js/admin-noimg.js", "js/admin-rarity.js", "js/admin-steps.js", "js/pro-admin.js"],
+  admin: ["js/admin/admin-dot.js", "js/admin/admin-extra.js", "js/admin/admin-game.js", "js/admin/admin-logos.js", "js/admin/admin-noimg.js", "js/admin/admin-rarity.js", "js/admin/admin-steps.js", "js/pro-admin.js"],
   quiz: ["js/quiz-plus.js"]
 };
 const lazyOf = new Map(); Object.keys(LAZY).forEach((k) => LAZY[k].forEach((f) => lazyOf.set(f, k)));

@@ -16,7 +16,7 @@
  *   1. cherche la page Wikipédia (fr, en, de, it, es) qui correspond à « marque modèle » avec plusieurs variantes de nom, puis, à défaut, directement dans Wikimedia Commons (photo alors marquée « à vérifier ») ;
  *   2. récupère la photo principale de la page, uniquement si elle est sur Wikimedia Commons (licence libre) ;
  *   3. la télécharge en 900 px dans img/auto/ et note l'auteur, la licence et le lien dans img/auto/credits.json ;
- *   4. génère js/data-enrich-zzz-images.js, qui rattache l'image à la fiche (et le crédit « Photo : auteur, licence »).
+ *   4. génère js/data/data-enrich-zzz-images.js, qui rattache l'image à la fiche (et le crédit « Photo : auteur, licence »).
  * Aucun module à installer : il suffit de Node 18 ou plus.
  */
 "use strict";
@@ -25,7 +25,7 @@ const root = path.join(__dirname, "..");
 const OUT_DIR = path.join(root, "img", "auto");
 const CREDITS = path.join(OUT_DIR, "credits.json");
 const REPORT = path.join(OUT_DIR, "rapport.json");
-const PATCH = path.join(root, "js", "data-enrich-zzz-images.js");
+const PATCH = path.join(root, "js", "data", "data-enrich-zzz-images.js");
 const UA = "MotorautoImageFetcher/1.0 (projet personnel motorauto.fr ; recherche de photos libres)";
 const WIDTH = 900;
 

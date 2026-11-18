@@ -1,0 +1,46 @@
+  <div class="page page-layer" id="page-community" data-page="community">
+  <div class="stage-shell page-wrap">
+    <header class="page-head">
+        <div class="page-head-text">
+          <span class="status-tag-verified">Pilotes, clubs & sorties</span>
+          <h1 class="page-title">La communauté</h1>
+          <p class="page-sub">Les pilotes, leurs voitures, les sorties et l'actualité du site.</p>
+        </div>
+        <div class="page-head-actions"><a class="cta-btn fill-btn compact-btn" href="#/chat">💬 Ouvrir le salon</a></div>
+      </header>
+    <nav data-section="pilotes"></nav>
+    <section class="tab-panel" data-tab="hub-pilotes" hidden><div id="comm-hub-pilotes"></div></section>
+    <section class="tab-panel" data-tab="hub-clubs" hidden><div id="comm-hub-clubs"></div></section>
+    <section class="tab-panel" data-tab="hub-classements" hidden><div id="comm-hub-classements"></div></section>
+    <section class="tab-panel" data-tab="fil" hidden>
+      <div class="seg-switch" role="tablist" aria-label="Filtrer le fil"><button type="button" role="tab" class="seg-btn active" data-feed-mode="all">Tout</button><button type="button" role="tab" class="seg-btn" data-feed-mode="follow">Mes abonnements</button></div>
+      <div class="feed-list" id="feed-list" aria-live="polite"></div>
+      <button type="button" class="cta-btn btn-ghost w-100 mt" id="feed-more" data-action="feed-more" hidden>Voir plus</button>
+    </section>
+    <section class="tab-panel" data-tab="voitures" hidden>
+      <div class="community-tools">
+        <input type="search" id="community-search" placeholder="Rechercher une voiture, un moteur, un pilote…" aria-label="Rechercher une voiture de la communauté">
+        <span class="lap-meta" id="community-count" aria-live="polite"></span>
+        <button type="button" class="cta-btn fill-btn compact-btn" data-action="mycar-new">+ Ajouter ma voiture</button>
+      </div>
+      <div class="comm-grid" id="community-grid"></div>
+    </section>
+    <section class="tab-panel" data-tab="pilotes" hidden>
+      <div class="community-tools">
+        <input type="search" id="pilots-search" placeholder="Rechercher un pilote…" aria-label="Rechercher un pilote">
+        <span class="lap-meta" id="pilots-count" aria-live="polite"></span>
+      </div>
+      <div class="telemetry-stack" id="pilots-registry-list"></div>
+    </section>
+    <section class="tab-panel" data-tab="evenements carte" hidden>
+      <div class="community-tools">
+        <span class="lap-meta" id="events-count" aria-live="polite"></span>
+        <button type="button" class="cta-btn fill-btn compact-btn" data-action="event-new">+ Proposer une sortie</button>
+      </div>
+      <div class="seg-switch" role="tablist" aria-label="Affichage des sorties"><button type="button" role="tab" class="seg-btn active" data-ev-view="list">☰ Liste</button><button type="button" role="tab" class="seg-btn" data-ev-view="map">🗺 Carte</button></div>
+      <div id="events-map-wrap" hidden><div id="events-map" class="events-map"></div><p class="lap-meta" id="events-map-status" aria-live="polite"></p></div>
+      <div class="seg-switch ev-when" role="tablist" aria-label="Sorties à venir ou passées"><button type="button" role="tab" class="seg-btn active" data-ev-when="up" aria-selected="true">À venir <span class="seg-n" id="ev-n-up"></span></button><button type="button" role="tab" class="seg-btn" data-ev-when="past" aria-selected="false">Passés <span class="seg-n" id="ev-n-past"></span></button></div>
+      <div class="events-list" id="events-list"></div>
+      <div class="events-list" id="events-past" hidden></div>
+    </section>
+  </div>

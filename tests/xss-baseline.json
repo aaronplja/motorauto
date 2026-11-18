@@ -1,7 +1,7 @@
 [
  "a11y.js:label",
- "admin-extra.js:label",
- "admin-game.js:type || \"text\"",
+ "admin/admin-extra.js:label",
+ "admin/admin-game.js:type || \"text\"",
  "app.js:avatarImg(c.avatar, \"pilot-row-avatar\")",
  "app.js:ax.label",
  "app.js:label",

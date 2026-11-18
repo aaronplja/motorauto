@@ -1,0 +1,59 @@
+  <div class="page page-layer" id="public-profile-modal" data-page="pilot">
+  <div class="stage-shell page-wrap">
+    <nav data-section="pilotes"></nav>
+    <a class="back-link" href="#/communaute/pilotes" data-back="#/communaute/pilotes">← Tous les pilotes</a>
+    <section class="pro-hero pv3" aria-labelledby="pub-profile-name">
+      <div class="pv3-cover" id="pub-cover" aria-hidden="true"></div>
+      <div class="pv3-id">
+        <div class="pv3-av"><img id="pub-profile-avatar" src="" alt="Avatar du pilote" class="profile-avatar pro-avatar" data-fallback="avatar"></div>
+        <div class="pv3-who">
+          <h1 class="page-title" id="pub-profile-name">Pilote</h1>
+          <span class="status-tag-verified pv3-tag" id="pub-profile-subtitle">Pilote</span>
+          <p class="pv3-car" id="pub-profile-car">Projet : -</p>
+          <p class="presence-line" id="pub-presence" hidden></p>
+        </div>
+      </div>
+      <div class="pro-stats pv3-stats" id="pub-social">
+        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="followers"><b data-sc="followers">–</b><span>abonnés</span></button>
+        <button type="button" class="pro-stat social-count" data-action="show-follow-list" data-kind="following"><b data-sc="following">–</b><span>abonnements</span></button>
+        <div class="pro-stat" id="pub-stat-cards"><b>–</b><span>cartes</span></div>
+        <div class="pro-stat" id="pub-stat-level"><b>–</b><span>niveau</span></div>
+      </div>
+      <div class="pv3-actions">
+        <button type="button" class="cta-btn fill-btn compact-btn follow-btn" data-action="toggle-follow" hidden>Suivre</button>
+        <a class="icon-btn pub-gear" id="pub-settings-btn" href="#/reglages/profil" aria-label="Réglages" title="Réglages" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
+        <button type="button" class="cta-btn fill-btn compact-btn" id="pub-edit-btn" hidden>✏️ Personnaliser le profil</button>
+        <button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats">📊 Caractéristiques</button>
+        <button type="button" class="cta-btn btn-ghost compact-btn" id="pub-block-btn" data-action="toggle-block" hidden>Bloquer</button>
+        <button type="button" class="cta-btn btn-ghost compact-btn grade-btn" id="pub-admin-btn" data-action="toggle-admin" hidden>Nommer admin</button>
+      </div>
+      <p id="pub-profile-bio" class="profile-bio pv3-bio">Aucune bio renseignée.</p>
+      <div id="pub-socials"></div>
+      <div class="badge-row" id="pub-profile-badges"></div>
+      <div class="pv2-level pv3-level" id="pub-level-card" hidden></div>
+    </section>
+    <div id="pub-profile-private-warning" class="private-warning" style="display:none">🔒 Ce pilote garde son garage privé.</div>
+    <nav class="pro-tabs" id="pub-tabs" role="tablist" aria-label="Sections du profil">
+      <button type="button" role="tab" class="pro-tab active" data-pt="vitrine" aria-selected="true">Vitrine</button>
+      <button type="button" role="tab" class="pro-tab" data-pt="badges" aria-selected="false">Badges</button>
+      <button type="button" role="tab" class="pro-tab" data-pt="garage" aria-selected="false">Garage</button>
+      <button type="button" role="tab" class="pro-tab" data-pt="chronos" aria-selected="false">Chronos</button>
+      <button type="button" role="tab" class="pro-tab" data-pt="ecurie" aria-selected="false">Écurie</button>
+    </nav>
+    <div class="page-body">
+      <section class="pro-panel" data-pp="vitrine"><div id="pub-vitrine"></div></section>
+      <section class="pro-panel" data-pp="badges" hidden><div id="pub-badges-slot"></div></section>
+      <section class="pro-panel" data-pp="garage" hidden>
+        <div class="car-showcase" id="pub-profile-carcard" hidden></div>
+        <div id="pub-profile-cars" hidden></div>
+      </section>
+      <div id="pub-profile-public-content">
+        <section class="pro-panel" data-pp="chronos" hidden>
+          <div class="telemetry-stack scroll-box" id="pub-profile-telemetry"></div>
+        </section>
+        <section class="pro-panel" data-pp="ecurie" hidden>
+          <div class="vehicles-dynamic-grid compact-subgrid" id="pub-profile-favorites"></div>
+        </section>
+      </div>
+    </div>
+  </div>

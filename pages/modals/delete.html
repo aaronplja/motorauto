@@ -1,0 +1,14 @@
+  <div class="modal-layer" id="delete-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div><h2 class="dialog-title" id="delete-title">Supprimer mon compte</h2><p class="dialog-sub">Cette action est définitive.</p></div>
+        <button type="button" class="dialog-close-btn" id="close-delete-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <p>Seront effacés : ton profil et ton avatar, tes voitures et photos, tes chronos, tes commentaires, likes et annonces, tes événements, ta collection de cartes et tes échanges, puis ton compte de connexion. Tu ne pourras pas revenir en arrière.</p>
+        <div class="input-stack"><label for="delete-confirm">Pour confirmer, écris <b>SUPPRIMER</b></label><input type="text" id="delete-confirm" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="SUPPRIMER"></div>
+        <p class="form-feedback error-txt" id="delete-error" role="alert"></p>
+        <div class="acf-actions"><button type="button" class="secondary-destructive-btn" id="delete-go" disabled>Supprimer définitivement</button><button type="button" class="cta-btn btn-ghost" id="delete-cancel">Annuler</button></div>
+      </div>
+    </div>
+  </div>

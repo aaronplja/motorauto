@@ -2,7 +2,7 @@
 /**
  * MOTORAUTO — ajoute des voitures au catalogue en lot : UNE FICHE PAR VOITURE, à partir d'un simple tableau.
  *
- *   node scripts/add-cars.js voitures.csv            -> crée js/data-enrich-pack-voitures.js et l'ajoute au site
+ *   node scripts/add-cars.js voitures.csv            -> crée js/data/data-enrich-pack-voitures.js et l'ajoute au site
  *   node scripts/add-cars.js voitures.csv --photos   -> en plus, cherche les photos libres (Wikimedia) des nouvelles voitures
  *   node scripts/add-cars.js voitures.csv --dry      -> montre ce qui serait créé, sans rien écrire
  *
@@ -52,7 +52,7 @@ const list = rows.map((r) => { const o = {}; head.forEach((k, i) => { if (k) o[k
 
 // ---- identifiants déjà pris
 const html = fs.readFileSync(path.join(root, "index.src.html"), "utf8");
-const files = [...html.matchAll(/src="(js\/data[^"]*\.js)"/g)].map((m) => m[1]).filter((f) => !/data-enrich-zzz-images/.test(f));
+const files = [...html.matchAll(/src="(js\/data\/[^"]*\.js)"/g)].map((m) => m[1]).filter((f) => !/data-enrich-zzz-images/.test(f));
 const ctx = { console: { log() {}, warn() {}, error() {} } }; ctx.window = ctx; ctx.self = ctx; vm.createContext(ctx);
 files.forEach((f) => vm.runInContext(fs.readFileSync(path.join(root, f), "utf8"), ctx, { filename: f }));
 const taken = new Set(vm.runInContext("MOTORAUTO_DATABASE.map(c=>c.id)", ctx));
@@ -69,7 +69,7 @@ list.forEach((o) => {
     e: [o.engine || "—", num(o.power), num(o.torque), num(o.speed), num(o.zero), o.trans || "—"] });
 });
 const name = slug(path.basename(file, path.extname(file))) || "pack";
-const target = path.join(root, "js", `data-enrich-pack-${name}.js`);
+const target = path.join(root, "js", "data", `data-enrich-pack-${name}.js`);
 console.log(`${list.length} ligne(s) lue(s) · ${out.length} voiture(s) à créer · ${skipped.length} déjà au catalogue${skipped.length ? " (" + skipped.join(", ") + ")" : ""}.`);
 if (DRY || !out.length) { out.slice(0, 8).forEach((c) => console.log("  +", c.id)); if (DRY) console.log("(essai à blanc : rien n'est écrit)"); process.exit(0); }
 
@@ -85,14 +85,14 @@ ${out.map((c) => `    C(${JSON.stringify(c.id)}, ${JSON.stringify(c.brand)}, ${J
 `;
 fs.writeFileSync(target, js);
 // rattache le fichier au site (avant les photos automatiques)
-const tag = `  <script defer src="js/data-enrich-pack-${name}.js"></script>\n`;
+const tag = `  <script defer src="js/data/data-enrich-pack-${name}.js"></script>\n`;
 let src = fs.readFileSync(path.join(root, "index.src.html"), "utf8");
 if (!src.includes(`data-enrich-pack-${name}.js`)) {
-  const anchor = src.indexOf('  <script defer src="js/data-enrich-zzz-images.js"></script>');
+  const anchor = src.indexOf('  <script defer src="js/data/data-enrich-zzz-images.js"></script>');
   if (anchor < 0) { console.error("Point d'insertion introuvable dans index.src.html : ajoute la balise à la main :\n" + tag); process.exit(1); }
   src = src.slice(0, anchor) + tag + src.slice(anchor); fs.writeFileSync(path.join(root, "index.src.html"), src);
 }
-console.log(`✔ js/data-enrich-pack-${name}.js créé et ajouté à index.src.html (${out.length} voitures).`);
+console.log(`✔ js/data/data-enrich-pack-${name}.js créé et ajouté à index.src.html (${out.length} voitures).`);
 if (PHOTOS) {
   console.log("Recherche des photos libres…");
   cp.spawnSync(process.execPath, [path.join(__dirname, "fetch-images.js"), "--ids", out.map((c) => c.id).join(","), "--jobs", "4"], { stdio: "inherit" });

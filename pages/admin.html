@@ -1,0 +1,44 @@
+  <div class="page page-layer" id="admin-panel-modal" data-page="admin">
+  <div class="stage-shell page-wrap">
+    <header class="page-head">
+        <div class="page-head-text">
+          <span class="status-tag-verified">Administration</span>
+          <h1 class="page-title">Administration</h1>
+          <p class="page-sub">Tableau de bord, modération, catalogue et journal des actions.</p>
+          <button type="button" class="cta-btn fill-btn" id="open-site-editor">Ouvrir l'éditeur visuel de l'interface</button>
+        </div>
+        
+      </header>
+    <nav data-section="admin"></nav>
+    <section class="tab-panel" data-tab="tableau" hidden>
+      <div class="adm-block-head"><h2>À traiter</h2><span>Ce qui attend une décision</span></div>
+      <div id="admin-inbox"><div class="empty-note">Chargement…</div></div>
+      <div id="adm-dash"></div>
+      <div hidden aria-hidden="true"><span id="adm-stat-cars"></span><span id="adm-stat-users"></span><span id="adm-stat-laps"></span><span id="adm-stat-msgs"></span><span id="adm-stat-sg"></span><span id="adm-stat-rp"></span></div>
+    </section>
+    <section class="tab-panel" data-tab="moderation" hidden>
+      <details class="adm-sec" open><summary><span class="adm-t">Messages signalés du salon</span></summary><div class="adm-body"><div class="admin-list" id="admin-rp-list"></div></div></details><details class="adm-sec" open><summary><span class="adm-t">Propositions de la communauté</span></summary><div class="adm-body"><div class="admin-list" id="admin-sg-list"></div></div></details><details class="adm-sec" open><summary><span class="adm-t">Messages reçus (contact)</span></summary><div class="adm-body"><div class="admin-list" id="admin-msg-list"></div></div></details><details class="adm-sec"><summary><span class="adm-t">Pilotes en sourdine</span></summary><div class="adm-body"><div class="admin-list" id="admin-mute-list"></div></div></details><details class="adm-sec"><summary><span class="adm-t">Raccourcis</span></summary><div class="adm-body"><div class="admin-quick"><a class="cta-btn btn-ghost" href="#/communaute/pilotes">Gérer les pilotes</a><a class="cta-btn btn-ghost" href="#/classement/chronos">Modérer les chronos</a><a class="cta-btn btn-ghost" href="#/chat">Modérer le salon &amp; canaux</a></div></div></details><details class="adm-sec"><summary><span class="adm-t">Réponses toutes prêtes</span></summary><div class="adm-body"><p class="lap-meta">Elles apparaissent dans le menu « Réponse rapide » de la messagerie, pour répondre en un clic aux demandes fréquentes.</p><div id="canned-root"></div></div></details>
+    </section>
+    <section class="tab-panel" data-tab="catalogue" hidden>
+      <div class="admin-quick">
+        <button type="button" class="cta-btn fill-btn" data-action="admin-new-car">＋ Ajouter un véhicule</button>
+        <button type="button" class="cta-btn btn-ghost" data-action="admin-open-import">⇪ Importer (CSV / lien)</button>
+      </div>
+      <details class="adm-sec" open><summary><span class="adm-t">Véhicules ajoutés ou modifiés</span></summary><div class="adm-body"><div class="admin-list" id="admin-car-list"></div></div></details>
+      <p class="admin-note">Astuce : en tant qu'administrateur, les boutons « Modifier » et « Supprimer » apparaissent aussi sur chaque carte du catalogue, et la corbeille 🗑 sur chaque message du salon.</p>
+    </section>
+    <section class="tab-panel" data-tab="jeu" hidden>
+      <div id="admin-game"><div class="empty-note">Chargement…</div></div>
+    </section>
+    <section class="tab-panel" data-tab="pro" hidden>
+      <div id="admin-pro"><div class="empty-note">Chargement…</div></div>
+    </section>
+    <section class="tab-panel" data-tab="erreurs" hidden>
+      <div class="adm-block-head"><h2>Erreurs du navigateur</h2><span>Ce qui plante chez les pilotes, regroupé par erreur</span></div>
+      <div id="errors-root"><div class="empty-note">Chargement…</div></div>
+    </section>
+    <section class="tab-panel" data-tab="journal" hidden>
+      <p class="admin-note">Les dernières actions des administrateurs (suppressions, grades, sourdines, décisions…).</p>
+      <div class="admin-list" id="admin-log-list"></div>
+    </section>
+  </div>

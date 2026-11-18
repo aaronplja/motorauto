@@ -91,8 +91,8 @@ test("authErrorMessage", () => {
 
 // Données réelles : tout le catalogue doit se normaliser sans erreur
 const fs = require("fs");
-const src = fs.readFileSync(__dirname + "/../js/data.js", "utf8").replace(/^const MOTORAUTO_DATABASE/m, "var MOTORAUTO_DATABASE")
-  + "\n" + fs.readFileSync(__dirname + "/../js/data2.js", "utf8");
+const src = fs.readFileSync(__dirname + "/../js/data/data.js", "utf8").replace(/^const MOTORAUTO_DATABASE/m, "var MOTORAUTO_DATABASE")
+  + "\n" + fs.readFileSync(__dirname + "/../js/data/data2.js", "utf8");
 const db = new Function(src + ";return MOTORAUTO_DATABASE;")();
 test(`catalogue réel (${db.length} véhicules) normalisé sans erreur`, () => {
   const cars = db.map(MA.normalizeCar);

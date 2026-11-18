@@ -2,9 +2,9 @@
 const fs = require("fs"), path = require("path"), assert = require("assert");
 const root = path.join(__dirname, "..");
 const MA = require(path.join(root, "js/utils.js"));
-const src = fs.readFileSync(path.join(root, "js/data.js"), "utf8").replace(/^const MOTORAUTO_DATABASE/m, "var MOTORAUTO_DATABASE") + "\n" + fs.readFileSync(path.join(root, "js/data2.js"), "utf8");
+const src = fs.readFileSync(path.join(root, "js/data/data.js"), "utf8").replace(/^const MOTORAUTO_DATABASE/m, "var MOTORAUTO_DATABASE") + "\n" + fs.readFileSync(path.join(root, "js/data/data2.js"), "utf8");
 const cars = new Function(src + ";return MOTORAUTO_DATABASE;")().map(MA.normalizeCar);
-const w = {}; new Function("window", fs.readFileSync(path.join(root, "js/data-extra.js"), "utf8"))(w);
+const w = {}; new Function("window", fs.readFileSync(path.join(root, "js/data/data-extra.js"), "utf8"))(w);
 const X = w.MAExtra;
 let n = 0; const t = (name, fn) => { fn(); n++; console.log("  ok - " + name); };
 

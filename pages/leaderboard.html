@@ -1,0 +1,67 @@
+  <div class="page page-layer" id="leaderboard-modal" data-page="leaderboard">
+  <div class="stage-shell page-wrap">
+    <header class="page-head">
+        <div class="page-head-text">
+          <span class="status-tag-verified">Chronos & records</span>
+          <h1 class="page-title">Les classements</h1>
+          <p class="page-sub">Chronos mondiaux, circuits et voitures préférées de la communauté.</p>
+        </div>
+        
+      </header>
+    <nav data-section="pilotes"></nav>
+    <section class="tab-panel" data-tab="chronos" hidden>
+      <div class="lb-filters">
+          <label class="lb-field"><span>Circuit</span><select id="leaderboard-track-select" class="custom-select" aria-label="Choisir un circuit"></select></label>
+          <label class="lb-field"><span>Catégorie</span>
+            <select id="leaderboard-cat-select" class="custom-select" aria-label="Filtrer par catégorie">
+              <option value="all">Toutes</option>
+              <optgroup label="Transmission">
+                <option value="traction">Traction</option>
+                <option value="propulsion">Propulsion</option>
+                <option value="4x4">4x4</option>
+              </optgroup>
+              <optgroup label="Moteur">
+                <option value="turbo">Turbo / compressé</option>
+                <option value="atmo">Atmosphérique</option>
+              </optgroup>
+              <optgroup label="Carrosserie">
+                <option value="berline">Berline</option>
+                <option value="coupé">Coupé &amp; Sport</option>
+                <option value="break">Break</option>
+                <option value="supercar">Supercar</option>
+                <option value="le mans">Le Mans</option>
+              </optgroup>
+            </select>
+          </label>
+          <label class="lb-field"><span>Période</span>
+            <select id="leaderboard-period-select" class="custom-select" aria-label="Filtrer par période">
+              <option value="all">Depuis toujours</option>
+              <option value="365">12 derniers mois</option>
+              <option value="30">30 derniers jours</option>
+              <option value="7">7 derniers jours</option>
+            </select>
+          </label>
+        </div>
+      <div class="telemetry-stack" id="global-leaderboard-list"></div>
+    </section>
+    <section class="tab-panel" data-tab="circuits" hidden>
+      <div class="community-tools"><input type="search" id="circuits-search" placeholder="Rechercher un circuit…" aria-label="Rechercher un circuit"><span class="lap-meta" id="circuits-count"></span></div>
+      <div class="circuits-grid" id="circuits-list"></div>
+    </section>
+    <section class="tab-panel" data-tab="voitures" hidden>
+      <div class="seg-switch" role="tablist" aria-label="Critère">
+        <button type="button" role="tab" class="seg-btn active" data-top-mode="likes">♥ Les plus aimées</button>
+        <button type="button" role="tab" class="seg-btn" data-top-mode="rating">★ Les mieux notées</button>
+        <button type="button" role="tab" class="seg-btn" data-top-mode="community">🚗 Voitures de pilotes</button>
+      </div>
+      <ol class="top-list" id="top-cars-list"></ol>
+    </section>
+    <section class="tab-panel" data-tab="pilotes" hidden>
+      <p class="lap-meta">Les pilotes les plus actifs : chronos, commentaires, voitures, événements et connexions rapportent des points.</p>
+      <ol class="top-list pilots-rank" id="pilots-rank-list"></ol>
+    </section>
+    <section class="tab-panel" data-tab="collection" hidden>
+      <p class="lap-meta">Les plus grandes collections de cartes MOTORAUTO : ouvre des packs, échange tes doublons et monte dans le classement.</p>
+      <ol class="top-list pilots-rank" id="collectors-rank-list"></ol>
+    </section>
+  </div>

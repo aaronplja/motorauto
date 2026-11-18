@@ -6,10 +6,12 @@ Site statique (HTML/CSS/JS) + Firebase (Auth, Firestore, Storage, Functions), h�
 | Besoin | Fichier |
 |---|---|
 | Modifier, construire, tester, publier | ce README (sections ci-dessous) |
-| Réglages de sécurité de la console, règles, en-têtes | `SECURITE.md` |
-| Mise en ligne complète, domaine, premières vérifications | `GO-LIVE.md` |
-| Abonnement PRO (Stripe) | `PRO-STRIPE.md` |
-| Liste des fonctionnalités | `FEATURES.md` |
+| Réglages de sécurité de la console, règles, en-têtes | `docs/SECURITE.md` |
+| Mise en ligne complète, domaine, premières vérifications | `docs/GO-LIVE.md` |
+| Abonnement PRO (Stripe) | `docs/PRO-STRIPE.md` |
+| Liste des fonctionnalités | `docs/FEATURES.md` |
+| Règles de navigation (routes, onglets, barres) | `docs/NAVIGATION.md` |
+| Données sources (fiches en CSV, listes d'images) | `data/` |
 
 Commandes utiles : `node scripts/build.js` (construire) · `npm test` (tests rapides, sans navigateur) · `npm run test:journeys` (parcours dans un vrai navigateur, optionnel : `npm i -D playwright && npx playwright install chromium`).
 
@@ -135,7 +137,7 @@ Adresses : `#/` accueil · `#/catalogue` · `#/voiture/<id>` · `#/communaute/{f
 - Garage : jauge de ma voiture partageable en image (champ « 0-100 » ajouté aux voitures de pilote), garage virtuel (rangée de cartes + total de chevaux), budget & consommation (`users/{uid}/costs`), journal avant / après (`users/{uid}/journal`), export du carnet d'entretien en PDF (fenêtre d'impression : « Enregistrer au format PDF »).
 
 **Catalogue**
-- Comparateur : poids, ch/tonne, kg/ch, courbes de couple et de puissance (estimées) — `js/data-extra.js` contient poids / transmission / budget indicatifs de chaque fiche (à compléter pour les nouvelles fiches, sinon estimation automatique).
+- Comparateur : poids, ch/tonne, kg/ch, courbes de couple et de puissance (estimées) — `js/data/data-extra.js` contient poids / transmission / budget indicatifs de chaque fiche (à compléter pour les nouvelles fiches, sinon estimation automatique).
 - Mode duel `#/duel/a/b` : course animée 0-100 km/h ou 400 m D.A. (400 m estimé), résultat partageable en image. Quiz `#/quiz`. Voiture du jour sur l'accueil (rappel quotidien facultatif : notification du navigateur quand le site est ouvert).
 - Carte des sorties (`js/map.js`, tuiles OpenStreetMap, géocodage Nominatim à la création d'une sortie) ; fiches circuits éditoriales (`circuit_info`, éditées par l'admin sur la page du circuit).
 
@@ -195,14 +197,14 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 
 ## Nouveautés (tours 11 et 12)
 - **Cartes** : nouvelle mise en page (barres de caractéristiques, effet holo, pastille NEW), ouverture de paquet en plusieurs étapes, vues grille / compacte / albums, tri, fiche 3D avec verso et navigation, **Bataille** d'entraînement (`js/card-battle.js`). Animations uniquement en transform/opacity, grille rendue par paquets de 36.
-- **181 nouvelles fiches** : 38 Alfa Romeo (`js/data-alfa.js`), 72 Audi (`js/data-audi.js`) et 71 voitures des 24 Heures du Mans (`js/data-lemans.js`, catégorie **Le Mans**, identifiants `lm-…`). Elles sont écrites avec `js/data-kit.js` et contiennent une biographie, des anecdotes, des records, des phases et des moteurs. Les chiffres marqués `approx` sont indicatifs (une note s'affiche sur la fiche).
+- **181 nouvelles fiches** : 38 Alfa Romeo (`js/data/data-alfa.js`), 72 Audi (`js/data/data-audi.js`) et 71 voitures des 24 Heures du Mans (`js/data/data-lemans.js`, catégorie **Le Mans**, identifiants `lm-…`). Elles sont écrites avec `js/data/data-kit.js` et contiennent une biographie, des anecdotes, des records, des phases et des moteurs. Les chiffres marqués `approx` sont indicatifs (une note s'affiche sur la fiche).
 - Après toute modification des données : `node scripts/sync-functions.js` puis `node scripts/build-seo.js`.
-- Les images à déposer dans `img/` sont listées dans `IMAGES-A-AJOUTER.txt`.
+- Les images à déposer dans `img/` sont listées dans `data/IMAGES-A-AJOUTER.txt`.
 - Classement des raretés : les voitures du Mans comptent à 60 % de leur puissance pour ne pas écraser les voitures de route.
 
 ### Fiches complétées (tour 13)
 - Les 292 fiches ont désormais une histoire, au moins une anecdote et un palmarès ; les couples, vitesses max et 0-100 manquants ont été ajoutés (fichiers `js/data-enrich-*.js`, `data-enrich-more1/2.js`).
-- `js/data-enrich-auto.js` génère un palmarès à partir des chiffres de la fiche pour les voitures sans record.
+- `js/data/data-enrich-auto.js` génère un palmarès à partir des chiffres de la fiche pour les voitures sans record.
 - Les chiffres anciens ou de course sont signalés « indicatifs » sur la fiche.
 
 ### Interface : passe de finition (tour 14)
@@ -272,7 +274,7 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - Fluidité : flou de la barre allégé, particules de saison limitées (30 images/s, désactivées sur appareils modestes), observateur de squelettes allégé.
 
 ## Tour 21
-- Fiches : plusieurs boîtes par moteur, transmission détaillée (`car.drives`), fiabilité circuit + verdict (`js/data-track.js`, 292 voitures préremplies — estimations indicatives, modifiables dans l'admin).
+- Fiches : plusieurs boîtes par moteur, transmission détaillée (`car.drives`), fiabilité circuit + verdict (`js/data/data-track.js`, 292 voitures préremplies — estimations indicatives, modifiables dans l'admin).
 - Mentions : clause de responsabilité (mentions légales, fiche circuit, modifications d'un pilote, case à cocher à l'ajout).
 - Admin : brouillons locaux (`js/draft.js`) + file d'envoi qui repart au retour du réseau.
 - Concours : une participation = jusqu'à 12 photos ; la carte récompense affiche une mosaïque de 3–4 photos.
@@ -300,18 +302,18 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 
 ## Tour 22.3 — BMW, Mercedes-Benz / AMG, Renault, Alpine et rallye
 
-- Nouvelles fiches (≈ 260) dans `js/data-bmw-*.js`, `data-mercedes-*.js`, `data-renault-*.js`, `data-alpine-1.js`, `data-rally-*.js`, écrites avec le format compact `MAKIT.X` (voir `js/data-kit.js`) : une fiche par génération, avec phases, tous les moteurs connus (puissance, couple, vitesse, 0-100, boîte, code moteur), description et histoire.
+- Nouvelles fiches (≈ 260) dans `js/data-bmw-*.js`, `data-mercedes-*.js`, `data-renault-*.js`, `data-alpine-1.js`, `data-rally-*.js`, écrites avec le format compact `MAKIT.X` (voir `js/data/data-kit.js`) : une fiche par génération, avec phases, tous les moteurs connus (puissance, couple, vitesse, 0-100, boîte, code moteur), description et histoire.
 - Les voitures déjà présentes (Clio / Mégane RS, Clio V6, Spider, A442B, A424, 205 T16, 206 WRC, Xsara, RS200, quattro, Celica GT-Four ST185/205, Escort Cosworth…) ne sont pas dupliquées.
 - Chiffres INDICATIFS (`approx: true`) : à relire fiche par fiche depuis l'administration.
 - `tests/brands.test.js` : ids uniques, liens « voir aussi » valides, aucun moteur vide.
 - Après ajout d'un fichier de données : `node scripts/sync-functions.js && node scripts/build-seo.js`.
 - Ajout rapide de photo (admin) : boutons « + Photo » / « + Lien » sur les cartes du catalogue et les fiches ; l'image générique est remplacée.
 
-### Une fiche par voiture (js/data-split.js)
+### Une fiche par voiture (js/data/data-split.js)
 Les fiches qui regroupaient plusieurs modèles (ex. 106 Maxi / AX Sport / Visa) sont scindées au chargement, une fiche par voiture ; les Renault restent groupées. La première fiche garde son id (cartes déjà obtenues conservées). Pour scinder une autre fiche, ajouter une entrée dans `S` de ce fichier. Après modification : `node scripts/sync-functions.js` puis redéployer les functions.
 
 ### Cartes à plusieurs images
 Une voiture avec plusieurs photos https (galerie admin) = une carte à plusieurs images. Quand le joueur obtient à nouveau la carte, une image qu'il n'a pas encore se débloque au hasard (pas un doublon, pas de cristaux). Palier 50 % (si 4 images ou plus) : cristaux = 4 x valeur doublon ; 100 % : cristaux = coût de fabrication. Une fois tout débloqué, les copies suivantes sont de vrais doublons. Données : champs `pics` et `picClaims` du document `collections/{uid}` (règles Firestore mises à jour). Code : `js/game-core.js` (picKey, picsHave, picReward), `functions/game.js` (openPack), `js/cards.js` (pastille, galerie).
 
 ### Compléments de fiches (lots)
-`js/data-enrich-bmw.js`, `data-enrich-mercedes.js` et `data-enrich-renault.js` (Renault + Alpine) complètent 0-100, couple, histoire et anecdotes via `MAKIT.enrich` (sans jamais écraser une valeur existante). Valeurs constructeur arrondies : fiches marquées « indicatif ». Reste à faire : rallye, anciennes fiches (couples / V-Max).
+`js/data/data-enrich-bmw.js`, `data-enrich-mercedes.js` et `data-enrich-renault.js` (Renault + Alpine) complètent 0-100, couple, histoire et anecdotes via `MAKIT.enrich` (sans jamais écraser une valeur existante). Valeurs constructeur arrondies : fiches marquées « indicatif ». Reste à faire : rallye, anciennes fiches (couples / V-Max).

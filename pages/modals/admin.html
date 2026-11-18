@@ -1,0 +1,63 @@
+  <div class="modal-layer" id="admin-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+    <div class="modal-dialog wide-box form-modal">
+      <div class="dialog-header">
+        <div>
+          <span class="status-tag-verified">Administration</span>
+          <h2 class="dialog-title" id="admin-title">Éditeur de véhicule</h2>
+          <p class="dialog-sub">Publie ou modifie une fiche du catalogue public</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-admin-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <form id="admin-car-form">
+          <div class="form-grid">
+            <div class="input-stack"><label for="adm-id">ID unique</label><input type="text" id="adm-id" required placeholder="peugeot-206-s16"></div>
+            <div class="input-stack"><label for="adm-brand">Marque</label><input type="text" id="adm-brand" required placeholder="Peugeot" list="adm-brand-list" autocomplete="off"></div>
+            <div class="input-stack"><label for="adm-model">Modèle</label><input type="text" id="adm-model" required placeholder="206 S16"></div>
+            <div class="input-stack"><label for="adm-years">Années</label><input type="text" id="adm-years" required placeholder="1999 - 2007"></div>
+            <div class="input-stack"><label for="adm-category">Catégorie</label>
+              <select id="adm-category"><option value="Berline">Berline</option><option value="Coupé">Coupé &amp; Sport</option><option value="Break">Break</option><option value="Supercar">Supercar</option><option value="Le Mans">Le Mans</option></select>
+            </div>
+            </div>
+          <div class="input-stack mt adm-photos">
+            <label for="adm-image">Photos (la première est la principale, les autres défilent sur la carte)</label>
+            <div id="adm-gallery" class="adm-gallery"></div>
+            <div class="adm-photo-add">
+              <input type="url" id="adm-image" placeholder="Coller l'URL d'une image (https://…)">
+              <button type="button" class="cta-btn btn-ghost compact-btn" data-action="adm-img-add-url">Ajouter l'URL</button>
+              <label class="cta-btn btn-ghost compact-btn adm-file-btn" for="adm-files">Depuis la galerie</label>
+              <input type="file" id="adm-files" accept="image/*" multiple hidden>
+            </div>
+            <span id="adm-upload-status" class="hint-line" aria-live="polite"></span>
+          </div>
+          <div class="input-stack mt"><label for="adm-related">Voir aussi — déclinaisons <small>(identifiants séparés par des virgules)</small></label><input type="text" id="adm-related" maxlength="300" placeholder="nissan-silvia-ps13, nissan-onevia, nissan-sileighty"></div>
+          <div class="adm-track mt"><div class="panel-section-title">Transmission &amp; circuit</div>
+            <p class="hint-line">Coche la ou les transmissions de la voiture (propulsion, traction, 4x4…).</p>
+            <div class="adm-drives" id="adm-drives"><label class="chk-pill"><input type="checkbox" value="P"><span>Propulsion</span></label><label class="chk-pill"><input type="checkbox" value="T"><span>Traction</span></label><label class="chk-pill"><input type="checkbox" value="A"><span>4x4 permanent</span></label><label class="chk-pill"><input type="checkbox" value="E"><span>4x4 enclenchable</span></label><label class="chk-pill"><input type="checkbox" value="X"><span>Propulsion transaxle</span></label><label class="chk-pill"><input type="checkbox" value="M"><span>Moteur central</span></label><label class="chk-pill"><input type="checkbox" value="R"><span>Moteur arrière</span></label></div>
+            <div class="admin-engine-grid mt">
+              <div class="input-stack"><label for="adm-tk-verdict">Verdict piste</label><select id="adm-tk-verdict"><option value="">Non renseigné</option><option value="ideal">Idéale</option><option value="correct">Correcte</option><option value="watch">À surveiller</option><option value="avoid">Déconseillée</option><option value="race">Voiture de course</option></select></div>
+              <div class="input-stack"><label for="adm-tk-heat">Chauffe (1-5)</label><select id="adm-tk-heat"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+              <div class="input-stack"><label for="adm-tk-brakes">Freins (1-5)</label><select id="adm-tk-brakes"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+              <div class="input-stack"><label for="adm-tk-trans">Transmission (1-5)</label><select id="adm-tk-trans"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+            </div>
+            <div class="input-stack mt"><label for="adm-tk-note">Conseil pour la piste <small>(points faibles, renforts conseillés…)</small></label><input type="text" id="adm-tk-note" maxlength="400" placeholder="Ex : boîte fragile, freins à renforcer avant un usage intensif"></div>
+          </div>
+          <div class="input-stack mt"><label for="adm-desc">Description</label><textarea id="adm-desc" rows="3" placeholder="Résumé du châssis et de son histoire…"></textarea></div>
+          <div class="input-stack mt"><label for="adm-history">Histoire / biographie de la voiture <small>(plusieurs paragraphes possibles)</small></label><textarea id="adm-history" rows="6" placeholder="Genèse du projet, designers, évolution, carrière en compétition, héritage…"></textarea></div>
+          <div class="input-stack mt"><label for="adm-anecdotes">Anecdotes (une ligne = « Titre | Texte »)</label><textarea id="adm-anecdotes" rows="4" placeholder="Nom de code | Le projet s'appelait en interne…"></textarea></div>
+          <div class="input-stack mt"><label for="adm-archives">Archives : anciens catalogues, publicités (une ligne = « Titre | URL | type | année »)</label><textarea id="adm-archives" rows="3" placeholder="Brochure commerciale | https://… | catalogue | 1998"></textarea>
+            <div class="adm-photo-add"><label class="cta-btn btn-ghost compact-btn adm-file-btn" for="adm-archive-files">Envoyer des images d'archives</label><input type="file" id="adm-archive-files" accept="image/*" multiple hidden><span id="adm-archive-status" class="hint-line" aria-live="polite"></span></div></div>
+          <div class="input-stack mt"><label for="adm-records">Records &amp; anecdotes (une ligne = « Type | Description »)</label><textarea id="adm-records" rows="3" placeholder="Nürburgring | 8:12 en configuration route"></textarea></div>
+          <div class="admin-engines-head">
+            <span class="panel-section-title nomargin">Phases &amp; motorisations</span>
+            <button type="button" id="pick-engine-row-btn" class="cta-btn btn-ghost compact-btn">Choisir un moteur existant</button>
+            <button type="button" id="add-engine-row-btn" class="cta-btn fill-btn compact-btn">+ Ajouter un moteur</button>
+          </div>
+          <datalist id="adm-phase-list"></datalist><datalist id="adm-brand-list"></datalist>
+          <div id="admin-engines-container"></div>
+          <div class="form-feedback error-txt" id="admin-form-error" role="alert"></div>
+          <button type="submit" class="cta-btn fill-btn w-100">Publier dans l'archive</button>
+        </form>
+      </div>
+    </div>
+  </div>

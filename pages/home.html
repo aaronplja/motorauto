@@ -1,0 +1,134 @@
+  <div class="page" id="page-home" data-page="home">
+  <!-- ============ HERO ============ -->
+  <section class="hero-stage">
+    <div class="hero-aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="hero-grid-lines" aria-hidden="true"></div>
+    <div class="hero-streaks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+    <div class="stage-shell hero-inner">
+      <div class="hero-copy">
+        <div class="badge-hero-pill"><span class="pulse-optic"></span><span>Archive vivante des sportives de route</span></div>
+        <h1 class="hero-heroic-title">
+          <span class="ht-line">Chaque version.</span>
+          <span class="ht-line ht-outline">Chaque chiffre.</span>
+        </h1>
+        <p class="hero-heroic-sub">
+          Puissance, couple, phases et records de centaines de voitures, comparés par les pilotes qui les conduisent. Cherchez un modèle, un moteur ou une génération.
+        </p>
+
+        <div class="command-search-container" id="search-container">
+          <div class="command-search-wrapper">
+            <svg class="search-lens" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="search" id="global-search-input" placeholder="Essayez : S16, Z32, MX-5, Rallye, V8…" autocomplete="off" spellcheck="false" aria-label="Rechercher une voiture" enterkeyhint="search">
+            <kbd class="cmd-key-indicator" title="Raccourci clavier">⌘K</kbd>
+          </div>
+          <div class="search-suggestions-dropdown" id="search-suggestions" aria-hidden="true"></div>
+        </div>
+
+        <div class="quick-chips" aria-label="Recherches rapides">
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="Rallye">Rallye</button>
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="Turbo">Turbo</button>
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="V6">V6</button>
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="Traction">Traction</button>
+          <button type="button" class="quick-chip" data-action="quick-search" data-q="Break">Break</button>
+        </div>
+
+        <dl class="hero-stats">
+          <div><dt>Véhicules</dt><dd id="stat-cars">0</dd></div>
+          <div><dt>Motorisations</dt><dd id="stat-engines">0</dd></div>
+          <div><dt>Marques</dt><dd id="stat-brands">0</dd></div>
+        </dl>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-gauge" id="hero-gauge" aria-label="Compte-tours : puissance maximale des résultats affichés">
+          <svg viewBox="0 0 300 300" class="gauge-svg" role="img" aria-hidden="true">
+            <defs>
+              <linearGradient id="gaugeArc" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0" stop-color="var(--accent)" stop-opacity="0.15"/>
+                <stop offset="1" stop-color="var(--accent)" stop-opacity="0.95"/>
+              </linearGradient>
+              <filter id="needleGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <circle cx="150" cy="150" r="146" class="gauge-ring"/>
+            <circle cx="150" cy="150" r="140" class="gauge-bezel"/>
+            <circle cx="150" cy="150" r="128" class="gauge-face"/>
+            <path id="gauge-track" class="gauge-track"/>
+            <path id="gauge-redline" class="gauge-redline"/>
+            <path id="gauge-fill" class="gauge-fill"/>
+            <g id="gauge-ticks"></g>
+            <g id="gauge-needle" class="gauge-needle">
+              <polygon class="needle-body" points="150,146.2 256,149.2 256,150.8 150,153.8" filter="url(#needleGlow)"/>
+              <polygon class="needle-tail" points="150,145 126,147.2 126,152.8 150,155"/>
+            </g>
+            <circle cx="150" cy="150" r="10" class="gauge-hub"/>
+          </svg>
+          <div class="gauge-readout">
+            <div class="gauge-line"><span class="gauge-value" id="gauge-power">0</span><span class="gauge-unit">ch</span></div>
+            <span class="gauge-caption" id="gauge-count">Calcul…</span>
+          </div>
+          <div class="gauge-chip gauge-chip-a"><span>V-Max</span><b id="gauge-vmax">—</b></div>
+          <div class="gauge-chip gauge-chip-b"><span>0–100</span><b id="gauge-zero">—</b></div>
+        </div>
+      </div>
+    </div>
+    <a class="scroll-hint" href="#home-feed-sec" aria-label="Descendre vers l'actualité"><span></span></a>
+  </section>
+
+  <!-- ============ BANDEAU DES MARQUES ============ -->
+  <section class="brand-marquee" aria-label="Marques du catalogue">
+    <div class="marquee-track" id="brand-marquee"></div>
+  </section>
+
+
+
+  <section class="stage-shell home-section home-contest" id="home-contest" hidden></section>
+
+
+
+  <section class="stage-shell home-section">
+    <div class="home-cols">
+      <div class="home-col">
+        <div class="section-head compact"><h2 class="section-title small">Prochains événements</h2><a class="link-more" href="#/communaute/evenements">Voir tout&nbsp;➔</a></div>
+        <div class="events-mini" id="home-events"></div>
+      </div>
+      <div class="home-col">
+        <div class="section-head compact"><h2 class="section-title small">Les plus aimées</h2><a class="link-more" href="#/classement/voitures">Classement&nbsp;➔</a></div>
+        <div class="top-mini" id="home-top-cars"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage-shell home-section" id="home-feed-sec">
+    <div class="section-head">
+      <div><h2 class="section-title">Fil d'actualité</h2><p class="count-stream">Nouveaux pilotes, nouvelles voitures et nouveaux records</p></div>
+      <a class="link-more" href="#/communaute/fil">Tout voir&nbsp;➔</a>
+    </div>
+    <div class="feed-list" id="home-feed" aria-live="polite"></div>
+  </section>
+
+  <section class="stage-shell home-section">
+    <div class="section-head">
+      <div><h2 class="section-title">Dans les garages</h2><p class="count-stream">Les dernières voitures publiées par les pilotes</p></div>
+      <a class="link-more" href="#/communaute/voitures">Toutes les voitures&nbsp;➔</a>
+    </div>
+    <div class="comm-grid" id="home-community"></div>
+  </section>
+
+  <!-- ============ APPEL À REJOINDRE ============ -->
+  <section class="stage-shell">
+    <div class="cta-band">
+      <div class="cta-copy">
+        <h2>Ton garage, tes chronos, ta place au classement.</h2>
+        <p>Enregistre tes tours, garde tes favoris et discute avec les autres pilotes dans le salon.</p>
+      </div>
+      <div class="cta-actions">
+        <button type="button" class="cta-btn fill-btn" data-action="open-auth">Créer mon compte</button>
+        <a class="cta-btn btn-ghost" href="#/chat">Ouvrir le salon</a>
+      </div>
+    </div>
+  </section>
+</div>
+

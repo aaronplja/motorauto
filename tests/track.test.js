@@ -1,6 +1,6 @@
 "use strict";
 const assert = require("assert");
-const T = require("../js/data-track.js");
+const T = require("../js/data/data-track.js");
 assert(T.DRIVES && T.VERDICTS, "tables manquantes");
 assert.deepStrictEqual(Object.keys(T.VERDICTS).sort(), Object.keys(T.VERDICTS).sort());
 assert.strictEqual(T.gearboxes("Manuelle 5 / Automatique 4").length, 2, "2 boîtes attendues");

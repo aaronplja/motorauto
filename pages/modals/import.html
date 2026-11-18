@@ -1,0 +1,45 @@
+  <div class="modal-layer" id="import-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="import-title">
+    <div class="modal-dialog wide-box">
+      <div class="dialog-header">
+        <div>
+          <h2 class="dialog-title" id="import-title">Importer des véhicules</h2>
+          <p class="dialog-sub">En masse par fichier CSV, ou depuis un lien / un nom de véhicule</p>
+        </div>
+        <button type="button" class="dialog-close-btn" id="close-import-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="seg-switch" role="tablist">
+          <button type="button" role="tab" class="seg-btn active" data-import-tab="csv">Fichier CSV</button>
+          <button type="button" role="tab" class="seg-btn" data-import-tab="wiki">Depuis un lien</button>
+        </div>
+
+        <div id="import-pane-csv" class="import-pane">
+          <p class="admin-note">Une ligne = un moteur. Les lignes qui partagent le même <b>id</b> forment un seul véhicule (puis des phases). Séparateur « ; » ou « , » (Excel FR : « ; »). Plusieurs records dans une cellule : <code>Type|Description || Type|Description</code>.</p>
+          <div class="admin-quick">
+            <button type="button" class="cta-btn btn-ghost" data-action="import-template">⬇ Modèle CSV</button>
+            <button type="button" class="cta-btn btn-ghost" data-action="import-export">⬇ Exporter le catalogue actuel</button>
+            <label class="cta-btn fill-btn file-pick">Choisir un fichier…<input type="file" id="import-file" accept=".csv,text/csv,text/plain" hidden></label>
+          </div>
+          <details class="paste-import"><summary>Ou coller depuis Excel / Google Sheets</summary>
+            <p class="admin-note">Copie les cellules du tableur (avec la ligne d'en-têtes du modèle) puis colle-les ici.</p>
+            <textarea id="import-paste" rows="5" placeholder="id&#9;brand&#9;model&#9;years…" aria-label="Tableau collé"></textarea>
+            <button type="button" class="cta-btn btn-ghost" id="import-paste-go">Analyser le tableau collé</button></details>
+          <div id="import-preview"></div>
+        </div>
+
+        <div id="import-pane-wiki" class="import-pane" hidden>
+          <p class="admin-note">Colle le <b>lien de n'importe quelle page</b> (constructeur, Wikipédia, site d'essais, annonce…) ou tape simplement <b>le nom du véhicule</b>. Le site lit la page, cherche les chiffres (moteurs, puissance, couple, V-max, 0-100), l'image et l'histoire, puis complète avec Wikipédia. Le brouillon s'ouvre dans l'éditeur : <b>relis-le avant de publier</b>.</p>
+          <div class="wiki-row">
+            <input type="text" id="wiki-url" placeholder="https://…  ou  « Renault Clio 3 RS »" autocomplete="off" aria-label="Lien de la page ou nom du véhicule">
+            <button type="button" class="cta-btn fill-btn" id="wiki-go">Analyser</button>
+          </div>
+          <p class="contact-status" id="wiki-status" role="status" aria-live="polite"></p>
+          <div id="wiki-paste-wrap" hidden>
+            <textarea id="wiki-paste" rows="6" placeholder="Colle ici le texte de la page (Ctrl+A puis Ctrl+C sur la page, ou son code source)…" aria-label="Texte de la page"></textarea>
+            <button type="button" class="cta-btn btn-ghost" id="wiki-paste-go">Analyser le texte collé</button>
+          </div>
+          <p class="admin-note">Les sites qui bloquent la lecture depuis un navigateur sont lus via des relais publics gratuits (le lien de la page leur est transmis). Respecte les droits d'auteur : reformule les textes et vérifie la licence des images.</p>
+        </div>
+      </div>
+    </div>
+  </div>

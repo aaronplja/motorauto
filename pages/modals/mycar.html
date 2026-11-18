@@ -1,0 +1,41 @@
+  <div class="modal-layer" id="mycar-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mc-title">
+    <div class="modal-dialog form-modal">
+      <div class="dialog-header">
+        <div><span class="status-tag-verified">Mes voitures</span><h2 class="dialog-title" id="mc-title">Ajouter une voiture</h2></div>
+        <button type="button" class="dialog-close-btn" id="close-mycar-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <fieldset class="fsec"><legend><span>1</span>Identité</legend>
+        <div class="form-grid">
+          <div class="input-stack"><label for="mc-name">Voiture</label><input type="text" id="mc-name" maxlength="80" placeholder="Ex. Peugeot 106 S16"></div>
+          <div class="input-stack wide"><label for="mc-cat">Basée sur une fiche du catalogue <small>(facultatif)</small></label><input type="text" id="mc-cat" list="mc-cat-list" maxlength="120" autocomplete="off" placeholder="Tape un nom et choisis dans la liste"><datalist id="mc-cat-list"></datalist><small class="hint-line" id="mc-cat-hint">Ta voiture affichera le lien vers la fiche et reprendra ses caractéristiques pour les duels.</small></div>
+          <div class="input-stack"><label for="mc-year">Année</label><input type="text" id="mc-year" maxlength="20" placeholder="1999"></div>
+          </div></fieldset>
+        <fieldset class="fsec"><legend><span>2</span>Technique</legend><div class="form-grid">
+          <div class="input-stack"><label for="mc-engine">Motorisation</label><input type="text" id="mc-engine" maxlength="100" placeholder="1.6 16V TU5J4"></div>
+          <div class="input-stack"><label for="mc-drive">Transmission</label><select id="mc-drive"><option value="">Non précisée</option><option value="P">Propulsion</option><option value="T">Traction</option><option value="A">4x4 permanent</option><option value="E">4x4 enclenchable</option><option value="X">Propulsion transaxle</option><option value="M">Moteur central</option><option value="R">Moteur arrière</option></select></div>
+          <div class="input-stack"><label for="mc-power">Puissance (ch)</label><input type="number" id="mc-power" min="0" max="4999" placeholder="120"></div>
+          <div class="input-stack"><label for="mc-zero">0-100 km/h (s)</label><input type="text" id="mc-zero" inputmode="decimal" maxlength="5" placeholder="7,9"></div>
+          <div class="input-stack"><label for="mc-speed">Vitesse maxi (km/h)</label><input type="number" id="mc-speed" min="0" max="599" inputmode="numeric" placeholder="215"></div>
+        </div></fieldset>
+        <fieldset class="fsec"><legend><span>3</span>Histoire &amp; modifications</legend>
+        <div class="input-stack"><label for="mc-desc">Description</label><textarea id="mc-desc" rows="3" maxlength="600" placeholder="Son histoire, ton projet…"></textarea></div>
+        <div class="input-stack mt"><label for="mc-mods">Modifications</label><textarea id="mc-mods" rows="3" maxlength="500" placeholder="Une par ligne : échappement, combinés filetés…"></textarea></div>
+        </fieldset>
+        <label class="check-row mc-legal" id="mc-legal-row"><input type="checkbox" id="mc-legal"><span>Je comprends que les pièces et modifications mentionnées ou conseillées ici n'engagent pas l'équipe MOTORAUTO : en cas de problème, la responsabilité incombe au garagiste ou professionnel qui a réalisé le montage.</span></label>
+        <fieldset class="fsec"><legend><span>4</span>Photos</legend><div class="input-stack adm-photos">
+          <label for="mc-url">Photos (8 maximum, la première est la principale)</label>
+          <div id="mc-gallery" class="adm-gallery"></div>
+          <div class="adm-photo-add">
+            <input type="url" id="mc-url" placeholder="Coller l'URL d'une image (https://…)">
+            <button type="button" class="cta-btn btn-ghost compact-btn" data-action="mycar-add-url">Ajouter l'URL</button>
+            <label class="cta-btn btn-ghost compact-btn adm-file-btn" for="mc-files">Depuis la galerie</label>
+            <input type="file" id="mc-files" accept="image/*" multiple hidden>
+          </div>
+          <span id="mc-upload-status" class="hint-line" aria-live="polite"></span>
+        </div></fieldset>
+        <div class="form-feedback error-txt" id="mc-error" role="alert"></div>
+        <div class="sticky-save"><button type="button" class="cta-btn fill-btn w-100" id="mc-save" data-action="mycar-save">Enregistrer la voiture</button></div>
+      </div>
+    </div>
+  </div>

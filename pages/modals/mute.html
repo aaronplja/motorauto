@@ -1,0 +1,15 @@
+  <div class="modal-layer" id="mute-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mute-title">
+    <div class="modal-dialog">
+      <div class="dialog-header">
+        <div><span class="status-tag-verified">Modération</span><h2 class="dialog-title" id="mute-title">Mettre en sourdine</h2></div>
+        <button type="button" class="dialog-close-btn" id="close-mute-modal" aria-label="Fermer">&times;</button>
+      </div>
+      <form class="dialog-body" id="mute-form" novalidate>
+        <p class="lap-meta" id="mute-who"></p>
+        <div class="input-stack"><label for="mute-dur">Durée</label>
+          <select id="mute-dur" class="custom-select"><option value="1h">1 heure</option><option value="24h" selected>24 heures</option><option value="7d">7 jours</option><option value="30d">30 jours</option><option value="perma">Définitive (jusqu'à levée)</option></select></div>
+        <div class="input-stack"><label for="mute-reason">Motif (visible par le pilote)</label><input type="text" id="mute-reason" maxlength="140" placeholder="Ex. propos injurieux dans le salon"></div>
+        <button type="submit" class="cta-btn fill-btn w-100">Mettre en sourdine</button>
+      </form>
+    </div>
+  </div>

@@ -1,0 +1,12 @@
+  <div class="modal-layer" id="engine-add-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="engine-add-title">
+    <div class="modal-dialog">
+      <div class="dialog-header"><div><span class="status-tag-verified">Administration</span><h2 class="dialog-title" id="engine-add-title">Ajouter ce moteur à une voiture</h2><p class="dialog-sub" id="engine-add-sub"></p></div><button type="button" class="dialog-close-btn" id="close-engine-add-modal" aria-label="Fermer">&times;</button></div>
+      <div class="dialog-body">
+        <div class="input-stack"><label for="engine-add-q">Voiture</label><input type="search" id="engine-add-q" autocomplete="off" placeholder="Rechercher une voiture du catalogue…"></div>
+        <div id="engine-add-list" class="engine-picker-list"></div>
+        <div class="input-stack mt" id="engine-add-phase-box" hidden><label for="engine-add-phase">Phase / génération</label><select id="engine-add-phase"></select></div>
+        <div class="form-feedback error-txt" id="engine-add-error" role="alert"></div>
+        <button type="button" class="cta-btn fill-btn w-100" id="engine-add-confirm" disabled>Ajouter le moteur</button>
+      </div>
+    </div>
+  </div>
