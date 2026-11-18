@@ -79,3 +79,8 @@ ok("démontage des pages lourdes quittées : frise et succès libèrent leur DOM
   assert(/h\.leave/.test(r) && /PAGE_ID\[previous\.name\] !== PAGE_ID\[route\.name\]/.test(r), "routeur : leave() jamais sur un bloc réutilisé");
   assert(/leave: \(\) =>/.test(read("js/frise.js")) && /leave: \(\) =>/.test(read("js/minigames.js")));
 });
+
+ok("Vercel : aucun build en ligne (le site est déjà construit ; scripts/ n'y est pas déployé)", () => {
+  const v = JSON.parse(read("vercel.json"));
+  assert(v.buildCommand === null && v.installCommand === null);
+});

@@ -1,6 +1,8 @@
 {
   "outputDirectory": ".",
   "framework": null,
+  "buildCommand": null,
+  "installCommand": null,
   "headers": [
     {
       "source": "/(js|css)/bundle(.*)\\.min\\.(js|css)",
