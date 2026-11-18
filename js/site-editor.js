@@ -316,7 +316,7 @@ details.ed-sec>summary{cursor:pointer;font-weight:700;list-style:none;padding:.1
   function delBlock(rid, id) {
     change(() => { const pg = P()[rid]; if (!pg) return; pg.add = (pg.add || []).filter((x) => x.id !== id); const a = "#ed-b-" + String(id).replace(/[^a-z0-9]/gi, ""); Object.keys(pg.s || {}).filter((k) => k === a || k.startsWith(a + " ")).forEach((k) => delete pg.s[k]); });
   }
-  function onClick(e) {
+  async function onClick(e) {
     const t = e.target.closest("[data-ed]"); if (!t) return; const a = t.dataset.ed;
     if (a === "quit") { close(); return; }
     if (a === "dev-pc" || a === "dev-mobile") { dev = a === "dev-pc" ? "pc" : "mobile"; picked = null; mountFrame(); paintBar(); paintPanel(); return; }
@@ -324,7 +324,7 @@ details.ed-sec>summary{cursor:pointer;font-weight:700;list-style:none;padding:.1
     if (a === "undo" && undo.length) { redo.push(JSON.stringify(draft)); draft = JSON.parse(undo.pop()); lay(); push(); autosave(); paintBar(); paintPanel(); return; }
     if (a === "redo" && redo.length) { undo.push(JSON.stringify(draft)); draft = JSON.parse(redo.pop()); lay(); push(); autosave(); paintBar(); paintPanel(); return; }
     if (a === "publish") { publish(); return; }
-    if (a === "discard") { if (confirm("Abandonner toutes les modifications non publiées ?")) { change(() => { draft = clone(live); ["pc", "mobile"].forEach((k) => { draft[k] = draft[k] || {}; }); }); tgt = ""; picked = null; paintBar(); paintPanel(); } return; }
+    if (a === "discard") { if (await window.MA.confirm("Abandonner toutes les modifications non publiées ?")) { change(() => { draft = clone(live); ["pc", "mobile"].forEach((k) => { draft[k] = draft[k] || {}; }); }); tgt = ""; picked = null; paintBar(); paintPanel(); } return; }
     if (a === "versions") { versions(); return; }
     if (a === "scenes") { scenesModal(); return; }
     if (a === "tree") { treeModal(); return; }
@@ -333,7 +333,7 @@ details.ed-sec>summary{cursor:pointer;font-weight:700;list-style:none;padding:.1
     if (a === "loadver") { loadVersion(t.dataset.id); return; }
     if (a === "treepick") { const el = treeNodes[+t.dataset.i]; if (el && win) { const d = win.MASiteLayout.describe(el); if (d && win.MASiteLayout.pathOf(el)) { win.__edSelect(el); picked = d; el.scrollIntoView({ block: "center" }); const m = $(".ed-modal"); if (m) m.remove(); mode = "edit"; paintBar(); paintPanel(); } } return; }
     if (a === "scnew") { const id = "s" + Date.now().toString(36), now = Date.now(); change(() => { draft.scenes = draft.scenes || []; draft.scenes.push({ id, name: "Nouvelle scène", from: now, to: now + 7 * 86400000, on: true, layout: { pc: {}, mobile: {} } }); }); scenesModal(); paintBar(); return; }
-    if (a === "scdel") { if (!confirm("Supprimer cette scène et ses modifications ?")) return; change(() => { draft.scenes = (draft.scenes || []).filter((x) => x.id !== t.dataset.id); }); if (tgt === t.dataset.id) { tgt = ""; push(); } scenesModal(); paintBar(); paintPanel(); return; }
+    if (a === "scdel") { if (!await window.MA.confirm("Supprimer cette scène et ses modifications ?")) return; change(() => { draft.scenes = (draft.scenes || []).filter((x) => x.id !== t.dataset.id); }); if (tgt === t.dataset.id) { tgt = ""; push(); } scenesModal(); paintBar(); paintPanel(); return; }
     if (a === "scedit") { tgt = t.dataset.id; picked = null; const m = $(".ed-modal"); if (m) m.remove(); push(); paintBar(); paintPanel(); return; }
     if (a === "blkdel") { delBlock(t.dataset.r, t.dataset.id); picked = null; paintPanel(); return; }
     if (a === "blkup") { upTarget = { kind: "blk", id: t.dataset.id, r: t.dataset.r, k: t.dataset.k }; $("#ed-file").click(); return; }
@@ -432,7 +432,7 @@ details.ed-sec>summary{cursor:pointer;font-weight:700;list-style:none;padding:.1
 
   // ---------------------------------------------------------------- publication et versions
   async function publish() {
-    if (!confirm("Publier ces changements pour TOUT LE MONDE ?")) return;
+    if (!await window.MA.confirm("Publier ces changements pour TOUT LE MONDE ?")) return;
     clearTimeout(saveT);
     try {
       const json = JSON.stringify(draft), at = Date.now(), by = ctx.user ? ctx.user.uid : "";

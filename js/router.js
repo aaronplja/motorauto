@@ -236,6 +236,17 @@
     pageEl.querySelectorAll(":scope .tab-panel").forEach((p) => { p.hidden = (" " + p.dataset.tab + " ").indexOf(" " + tab + " ") < 0; });
   }
 
+  /** titre de l'onglet du navigateur : « Boutique · Jouer | MOTORAUTO » quand la page a des sous-onglets (UX-101) */
+  function titleOf(route, pageEl) {
+    const base = TITLES[route.name] || TITLES.home;
+    if (!pageEl || route.params.tab === undefined) return base;
+    const act = pageEl.querySelector(".page-tab.active");
+    const label = act ? act.textContent.replace(/\s+/g, " ").trim() : "";
+    const head = base.replace(/\s*\|\s*MOTORAUTO\s*$/, "");
+    if (!label || label.toLowerCase() === head.toLowerCase()) return base;
+    return label + " · " + head + " | MOTORAUTO";
+  }
+
   async function dispatch() {
     const route = parse(location.hash);
     const pageChanged = !current || current.name !== route.name || ((route.name === "car" || route.name === "commcar") && current.params.id !== route.params.id) ||
@@ -259,8 +270,8 @@
     if (route.params.tab !== undefined) showTab(pageEl, route.params.tab);
     if (route.params.tab !== undefined) { try { localStorage.setItem("ma.tab." + route.name, route.params.tab); } catch (_) { /* ignoré */ } }
     setActiveNav(route.name);
-    document.title = TITLES[route.name] || TITLES.home;
-    if (pageChanged) { const y = wasBack ? scrollAt[route.path] : 0; window.scrollTo(0, y || 0); if (wasBack && y) requestAnimationFrame(() => window.scrollTo(0, y)); }
+    document.title = titleOf(route, pageEl);
+    if (pageChanged) { const y = wasBack ? scrollAt[route.path] : 0; window.scrollTo(0, y || 0); if (wasBack && y) { let n = 0; const back = () => { window.scrollTo(0, y); if (Math.abs(window.scrollY - y) > 40 && n++ < 20) setTimeout(back, 100); }; requestAnimationFrame(back); } }   // contenu dessiné après coup : on réessaie jusqu'à 2 s (UX-105)
     document.dispatchEvent(new CustomEvent("ma:route", { detail: route }));
     for (const h of list) {
       if (!h.enter) continue;

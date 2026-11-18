@@ -92,7 +92,7 @@
     document.addEventListener("click", async (e) => {
       const a = e.target.closest("[data-inbox]"); if (a) { inboxAction(a.dataset.inbox, Number(a.dataset.i)); return; }
       const d = e.target.closest("[data-canned-del]");
-      if (d && confirm("Supprimer cette réponse ?")) { try { await C.db.collection("canned_replies").doc(d.dataset.cannedDel).delete(); await loadCanned(); renderCanned(); } catch (x) { C.toast("Suppression impossible : " + x.message, "err"); } return; }
+      if (d && await window.MA.confirm("Supprimer cette réponse ?")) { try { await C.db.collection("canned_replies").doc(d.dataset.cannedDel).delete(); await loadCanned(); renderCanned(); } catch (x) { C.toast("Suppression impossible : " + x.message, "err"); } return; }
       if (e.target.closest("[data-canned-seed]")) { try { for (const [title, text] of defaults()) await C.db.collection("canned_replies").add({ title, text, createdAt: C.FieldValue.serverTimestamp() }); await loadCanned(); renderCanned(); } catch (x) { C.toast("Ajout impossible : " + x.message, "err"); } return; }
       if (e.target.closest("#import-paste-go")) { const t = document.getElementById("import-paste").value; if (t.trim()) window.MAApp.previewImport(t); else C.toast("Colle d'abord le tableau.", "err"); }
     });

@@ -10,3 +10,18 @@
 .nf-text { max-width: 52ch; margin: 0 0 1.2rem; color: var(--color-secondary); }
 .nf-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
 .nf-actions .cta-btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding-inline: 1.2rem; }
+
+/* champs mot de passe : œil + jauge (UI-107) */
+.pw-wrap { position: relative; display: flex; align-items: center; min-width: 0; }
+.pw-wrap > input { width: 100%; padding-right: 3rem; }
+.pw-eye { position: absolute; right: .35rem; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 999px; background: transparent; color: var(--color-secondary); cursor: pointer; }
+.pw-eye:hover { color: var(--color-ink); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.pw-eye:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pw-meter { display: flex; align-items: center; gap: .6rem; margin-top: .1rem; font-size: .78rem; color: var(--color-secondary); }
+.pw-meter[hidden] { display: none; }
+.pw-bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 96px; }
+.pw-bars i { height: 5px; border-radius: 999px; background: color-mix(in srgb, var(--color-ink) 14%, transparent); transition: background .2s; }
+.pw-meter[data-level="1"] .pw-bars i.on { background: #d4483b; }
+.pw-meter[data-level="2"] .pw-bars i.on { background: #d99a1f; }
+.pw-meter[data-level="3"] .pw-bars i.on, .pw-meter[data-level="4"] .pw-bars i.on { background: #2f9a5b; }
+@media (prefers-reduced-motion: reduce) { .pw-bars i { transition: none; } }

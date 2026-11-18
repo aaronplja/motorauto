@@ -57,3 +57,21 @@
 
 /* pas de ré-animation des tuiles quand une grille est simplement mise à jour (chiffres chargés après coup) */
 .hub-redraw .hub-grid > * { animation: none; }
+
+/* ---------- état vide unique (UI-110) : icône, phrase, action ---------- */
+.empty-state, .empty-note:not(.small):not(.todo-clear):not(.tcg-empty), .mkt-empty { display: grid; justify-items: center; gap: .5rem; text-align: center; padding: 2rem 1.2rem; border: 1px dashed var(--stroke-line, color-mix(in srgb, var(--color-ink) 18%, transparent)); border-radius: 20px; background: color-mix(in srgb, var(--color-ink) 3%, transparent); color: var(--color-muted); }
+.empty-state { grid-column: 1 / -1; }
+.empty-state svg { opacity: .6; }
+.empty-state b { color: var(--color-ink); font-size: 1.02rem; }
+.empty-state p { margin: 0; max-width: 34ch; font-size: .9rem; }
+.empty-state .btn { margin-top: .4rem; }
+.empty-link { font-size: .85rem; color: var(--accent-ink, var(--accent)); text-decoration: underline; text-underline-offset: 3px; }
+.empty-note.error::before { content: ""; width: 28px; height: 28px; background: currentColor; opacity: .9; -webkit-mask: var(--warn-ico) center / contain no-repeat; mask: var(--warn-ico) center / contain no-repeat; }
+:root { --warn-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 2 20h20L12 3z'/%3E%3Cpath d='M12 10v4M12 17.5v.1'/%3E%3C/svg%3E"); }
+
+/* bouton occupé (UX-106) */
+button.is-busy { position: relative; cursor: progress; }
+button.is-busy::after { content: ""; display: inline-block; width: .95em; height: .95em; margin-left: .55em; vertical-align: -.12em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ma-spin .7s linear infinite; }
+@keyframes ma-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { button.is-busy::after { animation-duration: 2s; } }
+.empty-note .empty-note, .empty-state .empty-note { padding: 0; border: 0; background: none; }

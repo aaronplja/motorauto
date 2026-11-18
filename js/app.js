@@ -19,6 +19,19 @@
   } = window.MA;
 
   const ITEMS_PER_PAGE = 20;
+  // filtres du catalogue gardés pour la session : on retrouve sa recherche en revenant d'une fiche (UX-105)
+  const FILTER_KEYS = ["category", "brand", "sort", "query", "page"];
+  function saveFilters() { try { const o = {}; FILTER_KEYS.forEach((k) => { o[k] = filters[k]; }); sessionStorage.setItem("ma.filters", JSON.stringify(o)); } catch (_) { /* facultatif */ } }
+  function restoreFilters() {
+    try { const o = JSON.parse(sessionStorage.getItem("ma.filters") || "null"); if (!o) return false; let any = false; FILTER_KEYS.forEach((k) => { if (k in o && o[k] !== filters[k]) { filters[k] = o[k]; any = true; } }); return any; } catch (_) { return false; }
+  }
+  function advHasFilters() { return ["drive", "verdict", "turbo", "rarity"].some((k) => filters[k] !== "all") || ["pmin", "pmax", "zero", "vmax", "yfrom", "yto"].some((k) => filters[k] != null); }
+  function syncFiltersUi() {
+    const pills = $("body-filter-chips"); if (pills) pills.querySelectorAll(".filter-pill:not(#noimg-pill)").forEach((b) => b.classList.toggle("active", b.dataset.filterType === filters.category));
+    const bs = $("brand-select"); if (bs && [...bs.options].some((o) => o.value === filters.brand)) bs.value = filters.brand;
+    const ss = $("sort-select"); if (ss && [...ss.options].some((o) => o.value === filters.sort)) ss.value = filters.sort;
+    const ci = $("catalog-search-input"); if (ci) ci.value = filters.query || "";
+  }
   const ADMIN_FIELDS_ALLOWED = ["username", "usernameAt", "currentCar", "avatar", "bio", "isPublicGarage", "hideFollowing", "hideFollowers", "carPhoto", "mods", "emailNotifs", "instagram", "snapchat", "tiktok"];
 
   const { auth, db, storage, FieldValue } = window.MAFB;
@@ -398,8 +411,10 @@
     const pageItems = result.slice((filters.page - 1) * ITEMS_PER_PAGE, filters.page * ITEMS_PER_PAGE);
 
     updateGauge(heroMatches());
+    saveFilters();
+    const filtered = filters.category !== "all" || filters.brand !== "all" || !!filters.query || advHasFilters();
     grid.innerHTML = pageItems.length === 0
-      ? `<div class="empty-grid">Aucun véhicule trouvé.</div>`
+      ? `<div class="empty-state"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><b>Aucun véhicule ne correspond</b><p>${filtered ? "Essaie avec moins de filtres ou une autre orthographe." : "Le catalogue est vide pour le moment."}</p>${filtered ? `<button type="button" class="btn btn-primary" data-action="reset-all-filters">Réinitialiser les filtres</button>` : ""}<a class="empty-link" href="#/contact">Proposer ce véhicule</a></div>`
       : pageItems.map(carCard).join("");
     renderPagination(totalPages);
     if (opts && opts.animate === false) grid.querySelectorAll(".car-box").forEach((c) => c.classList.add("in"));
@@ -820,6 +835,10 @@
 
   async function saveProfileSettings() {
     if (!currentUser) return;
+    const sbtn = $("save-profile-settings-btn"); MA.busy(sbtn, true);
+    try { await saveProfileSettingsInner(); } finally { MA.busy(sbtn, false); }
+  }
+  async function saveProfileSettingsInner() {
     const newUsername = $("settings-username").value.trim();
     const newAvatar = $("settings-avatar").value.trim();
     const err = validateUsername(newUsername);
@@ -2480,7 +2499,7 @@
     }
     if (Date.now() - contactLastSent < 30000) { setContactStatus("Patiente quelques secondes avant d'envoyer une nouvelle demande.", "err"); return; }
     const btn = $("ct-submit");
-    btn.disabled = true; setContactStatus("Envoi en cours…", "");
+    btn.disabled = true; MA.busy(btn, true); setContactStatus("Envoi en cours…", "");
     try {
       const adminUid = await getAdminUid();
       if (!adminUid) throw new Error("no-admin");
@@ -2507,7 +2526,7 @@
         : e.code === "permission-denied" ? "Envoi refusé : les règles Firestore sont à republier."
         : "L'envoi a échoué. Utilise « Ouvrir dans ma messagerie » : le mail est déjà rédigé.";
       setContactStatus(msg, "err");
-    } finally { btn.disabled = false; }
+    } finally { btn.disabled = false; MA.busy(btn, false); }
   }
 
 
@@ -2952,6 +2971,14 @@
       advRefresh();
     });
 
+    // « Réinitialiser les filtres » depuis l'état vide du catalogue (UX-110)
+    $("vehicles-grid").addEventListener("click", (e) => {
+      if (!e.target.closest('[data-action="reset-all-filters"]')) return;
+      $("adv-reset").click();
+      filters.category = "all"; filters.brand = "all"; filters.query = ""; filters.page = 1;
+      syncFiltersUi(); searchInput.value = ""; renderCatalog();
+    });
+    if (restoreFilters()) { syncFiltersUi(); renderCatalog(); }
     $("brand-select").addEventListener("change", (e) => { filters.brand = e.target.value; filters.page = 1; renderCatalog(); });
     $("sort-select").addEventListener("change", async (e) => { filters.sort = e.target.value; filters.page = 1; if (filters.sort === "rarity-desc" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) {} } renderCatalog(); });
     $("noimg-pill").addEventListener("click", () => {
@@ -3003,7 +3030,7 @@
       e.preventDefault();
       const errBox = $("login-error"), btn = $("login-submit-btn");
       errBox.textContent = "";
-      btn.disabled = true;
+      btn.disabled = true; MA.busy(btn, true);
       btn.querySelector(".btn-text").textContent = "Connexion…";
       try {
         await auth.signInWithEmailAndPassword($("login-email").value.trim(), $("login-password").value);
@@ -3013,7 +3040,7 @@
       } catch (err) {
         errBox.textContent = authErrorMessage(err);
       } finally {
-        btn.disabled = false;
+        btn.disabled = false; MA.busy(btn, false);
         btn.querySelector(".btn-text").textContent = "Se connecter";
       }
     });
@@ -3026,6 +3053,7 @@
       const car = $("register-car").value.trim().slice(0, 80);
       const nameError = validateUsername(username);
       if (nameError) { errBox.textContent = nameError; return; }
+      const rbtn = e.target.querySelector('button[type="submit"]'); MA.busy(rbtn, true);
       try {
         if (await isUsernameTaken(username, null)) { errBox.textContent = "Ce pseudo est déjà utilisé par un autre pilote."; return; }
         pendingRegistration = { username, car };
@@ -3037,7 +3065,7 @@
       } catch (err) {
         pendingRegistration = null;
         errBox.textContent = authErrorMessage(err);
-      }
+      } finally { MA.busy(rbtn, false); }
     });
 
     $("google-login-btn").addEventListener("click", async () => {

@@ -128,7 +128,7 @@
     if (kind === "broadcast") {
       const text = document.getElementById("tl-msg").value.trim();
       if (text.length < 3) { err.textContent = "Écris le message à envoyer."; return; }
-      if (!confirm("Envoyer cette annonce à tous les pilotes ?\n\n« " + text + " »")) return;
+      if (!await window.MA.confirm("Envoyer cette annonce à tous les pilotes ?\n\n« " + text + " »")) return;
       busy = true;
       try { const r = await window.MAGameAPI.call("adminBroadcast", { text, link: "#/jouer" }); if (window.MALog) window.MALog.log("broadcast", { detail: text }); C.toast("Annonce envoyée à " + r.sent + " pilote(s).", "ok"); document.getElementById("tl-msg").value = ""; if (window.MADraft) MADraft.clear("announce"); }
       catch (ex) { err.textContent = ex.message; }
@@ -137,7 +137,7 @@
     if (kind === "revokeLegend") {
       if (!val) { err.textContent = "Choisis d'abord le pilote concerné."; return; }
       const sel = document.getElementById("tl-legend"), label = sel.options[sel.selectedIndex].textContent, reopen = document.getElementById("tl-reopen").checked;
-      if (!confirm("Retirer la carte Légende « " + label + " » à " + name + " ?" + (reopen ? "\n\nSon album pourra être réclamé de nouveau." : "\n\nSon album reste marqué comme réclamé : il ne pourra pas la regagner."))) return;
+      if (!await window.MA.confirm("Retirer la carte Légende « " + label + " » à " + name + " ?" + (reopen ? "\n\nSon album pourra être réclamé de nouveau." : "\n\nSon album reste marqué comme réclamé : il ne pourra pas la regagner."))) return;
       busy = true;
       try {
         const r = await window.MAGameAPI.call("adminGameTool", { action: "revokeLegend", uid: target, cardId: sel.value, reopen });
@@ -147,7 +147,7 @@
       } catch (ex) { err.textContent = ex.message; }
       busy = false; return;
     }
-    if (kind === "resetCollection" && !confirm("Remettre à zéro la collection de " + name + " ? Cette action est définitive.")) return;
+    if (kind === "resetCollection" && !await window.MA.confirm("Remettre à zéro la collection de " + name + " ? Cette action est définitive.")) return;
     busy = true;
     try {
       if (kind === "test-pack") {
@@ -236,7 +236,7 @@
     const err = document.getElementById("gr-err"), val = document.getElementById("gr-user").value.trim(), qty = Number(document.getElementById("gr-qty").value) || 1;
     const u = users.find((x) => val === x.name + " · " + x.uid.slice(0, 5)) || (users.filter((x) => x.name.toLowerCase() === val.toLowerCase()).length === 1 ? users.find((x) => x.name.toLowerCase() === val.toLowerCase()) : null);
     if (!u) { err.textContent = "Choisis un pilote dans la liste proposée."; return; }
-    if (mode === "revoke" && !confirm(`Retirer ${qty} exemplaire(s) à ${u.name} ?`)) return;
+    if (mode === "revoke" && !await window.MA.confirm(`Retirer ${qty} exemplaire(s) à ${u.name} ?`)) return;
     if (busy) return; busy = true;
     try {
       const r = await window.MAGameAPI.call("adminGrantCard", { uid: u.uid, cardId: form.dataset.card, qty, mode });
@@ -321,17 +321,17 @@
         } catch (ex) { err.textContent = "Téléversement impossible : " + ex.message; }
       }
     });
-    document.addEventListener("click", (e) => {
+    document.addEventListener("click", async (e) => {
       const t = e.target; if (!t.closest("#admin-game")) return;
       if (t.closest("[data-sp-new]")) { draft = blankDraft(); editing = null; render(); const n = document.getElementById("sp-name"); if (n) n.focus(); return; }
       if (t.closest("[data-sp-cancel]")) { draft = null; editing = null; render(); return; }
       if (t.closest("[data-sp-upload]")) { document.getElementById("sp-file").click(); return; }
       const ed = t.closest("[data-sp-edit]"); if (ed) { const c = cards.find((x) => x.id === ed.dataset.spEdit); if (c) { draft = Object.assign(blankDraft(), c, { startsAt: dayStr(c.startsAtMs), endsAt: dayStr(c.endsAtMs) }); editing = c.id; render(); document.getElementById("sp-form").scrollIntoView({ block: "start", behavior: "smooth" }); } return; }
-      const dl = t.closest("[data-sp-del]"); if (dl) { if (confirm("Supprimer définitivement cette carte (aucun exemplaire attribué) ?")) C.db.collection("special_cards").doc(dl.dataset.spDel).delete().then(() => load()).then(render).catch((ex) => C.toast("Suppression impossible : " + ex.message, "err")); return; }
+      const dl = t.closest("[data-sp-del]"); if (dl) { if (await window.MA.confirm("Supprimer définitivement cette carte (aucun exemplaire attribué) ?")) C.db.collection("special_cards").doc(dl.dataset.spDel).delete().then(() => load()).then(render).catch((ex) => C.toast("Suppression impossible : " + ex.message, "err")); return; }
       const g = t.closest("[data-sp-grant]"); if (g) { grantFor = grantFor === g.dataset.spGrant ? "" : g.dataset.spGrant; render(); const u = document.getElementById("gr-user"); if (u) u.focus(); return; }
       if (t.closest("[data-sp-grant-cancel]")) { grantFor = ""; render(); return; }
       const en = t.closest("[data-entry]"); if (en) { setEntry(en.dataset.id, en.dataset.entry); return; }
-      if (t.closest("[data-ct-close]")) { if (confirm("Clôturer le concours maintenant ? Le gagnant sera couronné et recevra sa carte spéciale.")) contestAction("close", { month: contestId }); return; }
+      if (t.closest("[data-ct-close]")) { if (await window.MA.confirm("Clôturer le concours maintenant ? Le gagnant sera couronné et recevra sa carte spéciale.")) contestAction("close", { month: contestId }); return; }
       if (t.closest("[data-ct-open]")) { contestAction("open"); return; }
       if (t.closest("[data-ct-new]")) { ctForm = true; render(); const el = document.getElementById("ctn-theme"); if (el) el.focus(); return; }
       if (t.closest("[data-ct-newcancel]")) { ctForm = false; render(); return; }

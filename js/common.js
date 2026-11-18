@@ -107,6 +107,12 @@
 
   // ------------------------------------------------------------------ toasts
   /** Confirmation unique du site : MA.confirm("Supprimer ?", { ok: "Supprimer", danger: true }) -> Promise<boolean> (Échap ou clic hors de la carte = non) */
+  // bouton « occupé » : désactivé + pastille de chargement, pendant une action (UX-106). Un seul geste pour tout le site.
+  MA.busy = function (btn, on) {
+    if (!btn) return;
+    if (on) { btn.disabled = true; btn.setAttribute("aria-busy", "true"); btn.classList.add("is-busy"); }
+    else { btn.disabled = false; btn.removeAttribute("aria-busy"); btn.classList.remove("is-busy"); }
+  };
   MA.confirm = function (message, opts) {
     opts = opts || {};
     return new Promise((resolve) => {
