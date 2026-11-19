@@ -46,12 +46,21 @@
     const power = (car.stats && car.stats.power) || 0, zero = car.stats && car.stats.zero, speed = car.stats && car.stats.speed;
     const past = [1, 2, 3, 4, 5].map((i) => pickFor(keyOfNum(dayNum(today) - i))).filter(Boolean);
     let on = false; try { on = localStorage.getItem(KEY) === "1"; } catch (_) { /* ignoré */ }
-    box.innerHTML = `<a class="cod-card" href="#/voiture/${encodeURIComponent(car.id)}">${img ? `<img src="${C.esc(img)}" alt="" loading="lazy" data-fallback="car">` : `<span class="cod-ph"></span>`}
+    const sd = document.documentElement.dataset.maStreak || "";
+    box.innerHTML = `<button type="button" class="cod-heart" data-cod-like="${C.esc(car.id)}" aria-pressed="false" aria-label="${T("J'aime")}"><span aria-hidden="true">♡</span></button><span class="cod-streak" data-cod-streak>${sd && sd !== "0" ? `<b>${C.esc(sd)}</b><small>${T("jours")}</small>` : ""}</span>
+      <a class="cod-card" href="#/voiture/${encodeURIComponent(car.id)}">${img ? `<img src="${C.esc(img)}" alt="" loading="lazy" data-fallback="car">` : `<span class="cod-ph"></span>`}
         <span class="cod-txt"><small>${T("Voiture du jour")}</small><b>${C.esc(nameOf(car))}</b><em>${C.esc(String(car.years || ""))}${car.category ? " · " + C.esc(car.category) : ""}</em>
         <span class="cod-k">${power ? `<i>${power} ch</i>` : ""}${zero ? `<i>0-100 : ${zero} s</i>` : ""}${speed ? `<i>${speed} km/h</i>` : ""}</span></span></a>
       <div class="cod-foot"><label class="cod-notif"><input type="checkbox" id="cod-notif"${on ? " checked" : ""}> ${T("Me rappeler chaque jour dans l'appli")}</label>
         <details><summary>${T("Les jours précédents")}</summary><ul>${past.map((c, i) => `<li><span>${T(i === 0 ? "Hier" : "Il y a " + (i + 1) + " jours")}</span><a href="#/voiture/${encodeURIComponent(c.id)}">${C.esc(nameOf(c))}</a></li>`).join("")}</ul></details></div>`;
     if (on) remind(car, today);
+    syncHeart();
+  }
+  /** cœur du bandeau (pilote connecté) : même « j'aime » que sur la fiche de la voiture */
+  function syncHeart() {
+    const b = document.querySelector("[data-cod-like]"); if (!b || !window.MASocial) return;
+    const s = window.MASocial.carStats("cat", b.dataset.codLike), on = !!s.liked, h = b.firstElementChild;
+    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false"); if (h) h.textContent = on ? "♥" : "♡";
   }
   function remind(car, today) {
     try { if (localStorage.getItem("ma_cod_seen") === today) return; localStorage.setItem("ma_cod_seen", today); } catch (_) { return; }
@@ -85,6 +94,9 @@
     setTimeout(paint, 1200);
     document.addEventListener("change", (e) => { if (e.target.id === "cod-notif") { try { localStorage.setItem(KEY, e.target.checked ? "1" : "0"); } catch (_) { /* ignoré */ } if (e.target.checked) C.toast("Rappel activé.", "ok"); } });
     document.addEventListener("click", (e) => { const s = e.target.closest("[data-cod-save]"); if (s) saveDay(s.dataset.codSave); });
+    document.addEventListener("click", (e) => { const b = e.target.closest("[data-cod-like]"); if (b && window.MASocial) { e.preventDefault(); window.MASocial.like("cat", b.dataset.codLike, null); } });
+    document.addEventListener("ma:social", syncHeart);
+    try { if (window.MASocial) window.MASocial.loadStats().then(syncHeart, () => {}); } catch (_) { /* ignoré */ }
   });
   window.MACarOfDay = { adminMount, pickFor, today: () => pickFor(G.dayKey()) };
 })();

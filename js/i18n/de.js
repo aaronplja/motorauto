@@ -1163,6 +1163,8 @@
 "3 cartes": "3 Karten",
 "cartes du thème": "Karten des Themas",
 "il manque": "es fehlen",
+"Plus que": "Nur noch",
+"pour ouvrir ton pack du jour": "um dein Tagespack zu öffnen",
 "Packs thématiques": "Themen-Packs",
 "en cours": "laufend",
 "à venir": "kommend",

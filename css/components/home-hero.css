@@ -1,0 +1,54 @@
+/* Accueil du pilote connecté : titre « Bon retour », bandeau de la voiture du jour, résumé compact et menus déroulants.
+   Le visiteur garde son accueil (les menus y restent ouverts et ne se replient pas). */
+html.ma-garage #page-home>#home-garage-rest { order: 3; }
+html.ma-garage #page-home>#home-contest { order: 4; }
+html.ma-garage #page-home>#home-garage { margin-bottom: .2rem; }
+html.ma-garage #page-home>#home-garage-rest { margin-top: .9rem; margin-bottom: .4rem; }
+html.ma-garage #page-home>#cod-home { margin-top: 0; }
+html.ma-garage .gh-title.gh-long { font-size: clamp(2.2rem, 7.5vw, 3.6rem); }
+html.ma-garage .gh-title.gh-xl { font-size: clamp(1.8rem, 6vw, 2.8rem); }
+html.ma-garage .gh-title em { overflow-wrap: anywhere; }
+
+/* bandeau de la voiture du jour */
+#cod-home { position: relative; }
+html.ma-garage #cod-home .cod-card { display: block; position: relative; min-height: 300px; padding: 0; overflow: hidden; border-radius: 28px; border: 1px solid var(--stroke-line); background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, var(--bg-surface)), var(--bg-surface)); }
+html.ma-garage #cod-home .cod-card img, html.ma-garage #cod-home .cod-ph { position: absolute; inset: 0; width: 100% !important; height: 100% !important; object-fit: cover; border-radius: 0 !important; }
+html.ma-garage #cod-home .cod-card::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, transparent 38%, color-mix(in srgb, var(--bg-surface) 96%, transparent)); }
+html.ma-garage #cod-home .cod-card::after { content: "\2197"; position: absolute; right: 16px; bottom: 16px; z-index: 2; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--color-ink); color: var(--bg-surface); font-weight: 700; }
+html.ma-garage #cod-home .cod-txt { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 1.1rem 4.4rem 1.2rem 1.2rem; gap: .25rem; }
+html.ma-garage #cod-home .cod-txt small { color: var(--accent-ink, var(--accent)); letter-spacing: .12em; }
+html.ma-garage #cod-home .cod-txt b { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 2.1rem; line-height: 1.05; color: var(--color-ink); }
+html.ma-garage #cod-home .cod-txt em { color: var(--color-secondary); opacity: 1; font-size: .9rem; }
+html.ma-garage #cod-home .cod-k { display: none; }
+html:not(.ma-garage) .cod-heart, html:not(.ma-garage) .cod-streak { display: none; }
+.cod-heart { position: absolute; left: 14px; top: 14px; z-index: 3; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--accent-ink, var(--accent)); font-size: 1.3rem; line-height: 1; cursor: pointer; }
+.cod-heart:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cod-streak { position: absolute; right: 14px; top: 14px; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 68px; height: 68px; border-radius: 50%; background: var(--accent); color: var(--on-accent, #fff); pointer-events: none; }
+.cod-streak:empty { display: none; }
+.cod-streak b { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 1.7rem; line-height: 1; }
+.cod-streak small { font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; }
+@media (min-width: 760px) { html.ma-garage #cod-home .cod-card { min-height: 380px; } }
+
+/* alerte pack, résumé compact */
+.gh-alert { display: block; margin: 0 0 .6rem; padding: .7rem 1rem; border-radius: 16px; border: 1px solid color-mix(in srgb, #ea580c 45%, transparent); background: color-mix(in srgb, #ea580c 12%, var(--bg-surface)); color: var(--color-ink); font-weight: 700; text-decoration: none; }
+html.ma-garage .gh-rest .gh-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; margin-top: .7rem; }
+html.ma-garage .gh-rest .gh-tile { padding: .7rem .75rem; min-height: 0; }
+html.ma-garage .gh-rest .gh-ring { display: none; }
+html.ma-garage .gh-rest .gh-tile small { font-size: .72rem; }
+
+/* menus de l'accueil */
+html.ma-garage #page-home>section:has(details.home-acc) { margin-block: .6rem; }
+details.home-acc .acc-t b { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 1.5rem; line-height: 1.1; }
+details.home-acc > .acc-body { gap: .7rem; }
+details.home-acc .link-more { justify-self: start; }
+html:not(.ma-garage) details.home-acc { border: 0; background: none; border-radius: 0; overflow: visible; }
+html:not(.ma-garage) details.home-acc > summary { pointer-events: none; padding: 0; min-height: 0; cursor: default; }
+html:not(.ma-garage) details.home-acc .acc-chev { display: none; }
+html:not(.ma-garage) details.home-acc > .acc-body { border: 0; padding: .6rem 0 0; }
+/* les sections qui contiennent un menu n'ont plus leur propre cadre (le menu fait déjà le bloc) */
+html.ma-garage #page-home>section:has(details.home-acc) { background: none; border: 0; box-shadow: none; padding: 0; border-radius: 0; }
+html.ma-garage #page-home>#home-garage-rest { margin-top: .3rem; }
+html.ma-garage #page-home>#cod-home { margin-bottom: 0; }
+html.ma-garage #cod-home .cod-foot { margin-top: .5rem; }
+html.ma-garage .home-col:has(details.home-acc) { background: none; border: 0; box-shadow: none; padding: 0; border-radius: 0; }
+html.ma-garage .home-cols:has(details.home-acc) { gap: .6rem; }

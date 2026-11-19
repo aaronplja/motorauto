@@ -15,9 +15,11 @@
     (root || document).querySelectorAll("details.acc[data-acc]").forEach(function (d) { d.open = get(d.getAttribute("data-acc"), d.hasAttribute("open")); });
   }
   document.addEventListener("toggle", function (e) {
-    var d = e.target; if (d && d.matches && d.matches("details.acc[data-acc]")) set(d.getAttribute("data-acc"), d.open);
+    var d = e.target; if (d && d.matches && d.matches("details.acc[data-acc]")) { if (d.dataset.accQuiet) { delete d.dataset.accQuiet; return; } set(d.getAttribute("data-acc"), d.open); }
   }, true);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { apply(); }); else apply();
-  var api = { open: get, o: o, c: "</div></details>", apply: apply };
+  /** ouvre / ferme sans retenir le choix (état par défaut posé par le site, pas par le pilote) */
+  function quiet(d, on) { if (d.open === !!on) return; d.dataset.accQuiet = "1"; d.open = !!on; }
+  var api = { open: get, o: o, c: "</div></details>", apply: apply, quiet: quiet };
   window.MA.register("Acc", api);
 })();

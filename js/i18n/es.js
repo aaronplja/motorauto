@@ -1163,6 +1163,8 @@
 "3 cartes": "3 cartas",
 "cartes du thème": "cartas del tema",
 "il manque": "te faltan",
+"Plus que": "Solo quedan",
+"pour ouvrir ton pack du jour": "para abrir tu pack del día",
 "Packs thématiques": "Sobres temáticos",
 "en cours": "en curso",
 "à venir": "próximos",

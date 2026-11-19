@@ -19,12 +19,21 @@
     const r = 15.5, c = 2 * Math.PI * r;
     return `<svg class="gh-ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="${r}" class="gh-ring-bg"/><circle cx="18" cy="18" r="${r}" class="gh-ring-fg" style="stroke-dasharray:${(c * pct / 100).toFixed(1)} ${c.toFixed(1)}"/></svg>`;
   }
+  /** menus de l'accueil : fermés par défaut pour le pilote connecté (sauf choix déjà fait), toujours ouverts pour un visiteur */
+  function homeAcc(garage) {
+    const A = window.MAAcc; if (!A) return;
+    document.querySelectorAll("#page-home details.home-acc[data-acc]").forEach((d) => {
+      if (!garage) { A.quiet(d, true); return; }
+      let saved = null; try { saved = localStorage.getItem("ma_acc_" + d.dataset.acc); } catch (_) { /* ignoré */ }
+      if (saved === null) A.quiet(d, false);
+    });
+  }
   /** pilote déjà connu lors d'une visite précédente : on réserve la place tout de suite, sans montrer l'ancien accueil */
   function skeleton() {
     const page = document.getElementById("page-home");
     if (!page || document.getElementById("home-garage") || !document.documentElement.classList.contains("ma-garage")) return;
     const b = document.createElement("section"); b.id = "home-garage"; b.className = "stage-shell home-section gh gh-skel"; b.setAttribute("aria-busy", "true");
-    b.innerHTML = '<div class="gh-head"><div><span class="gh-k">&nbsp;</span><h2 class="gh-title">&nbsp;</h2></div></div><div class="gh-grid"><i class="gh-tile"></i><i class="gh-tile"></i><i class="gh-tile"></i><i class="gh-tile"></i></div><i class="gh-cta"></i>';
+    b.innerHTML = '<div class="gh-head"><div><h2 class="gh-title">&nbsp;<br>&nbsp;</h2></div></div>';
     page.insertAdjacentElement("afterbegin", b);
   }
   /** visiteur : deux boutons d'action sous les chiffres du hero (créer un compte, parcourir le catalogue) */
@@ -89,7 +98,7 @@
     if (!C) return;
     try { await C.authReady; } catch (_) { /* ignoré */ }
     box = document.getElementById("home-garage");
-    if (!C.user) { visitorCta(); if (box) box.remove(); document.documentElement.classList.remove("ma-garage"); try { localStorage.removeItem("ma_in"); } catch (_) { /* ignoré */ } last = ""; return; }
+    if (!C.user) { visitorCta(); if (box) box.remove(); const rest = document.getElementById("home-garage-rest"); if (rest) rest.remove(); homeAcc(false); delete document.documentElement.dataset.maStreak; document.documentElement.classList.remove("ma-garage"); try { localStorage.removeItem("ma_in"); } catch (_) { /* ignoré */ } last = ""; return; }
     try { localStorage.setItem("ma_in", "1"); } catch (_) { /* ignoré */ }
     if (!window.MACards || !window.MAGame) return;
     let doc = window.MACards.mine();
@@ -102,7 +111,7 @@
     if (!C.user) return;
     const lv = window.MAGame.levelOf(st.xp || 0), total = (C.cars ? C.cars.length : 0) + (G.CIRCUIT_CARDS ? G.CIRCUIT_CARDS.length : 0) + (G.LIVERIES ? G.LIVERIES.length : 0);
     const day = window.MAGame.day(), canDaily = doc.lastPack !== day, bonus = Number(doc.bonus) || 0;
-    const sig = [me, st.xp, st.days, doc.dust, doc.count, doc.lastPack, bonus, total].join("|");
+    const sig = [me, st.xp, st.days, doc.dust, doc.count, doc.lastPack, bonus, total, Math.floor((nextMidnight() - Date.now()) / 60000 / 15)].join("|");
     if (box && sig === last && !box.classList.contains("gh-skel")) return; last = sig;
     if (box) { box.classList.remove("gh-skel"); box.removeAttribute("aria-busy"); }
     box = document.getElementById("home-garage") || box;
@@ -112,20 +121,31 @@
     const dust = window.MA && window.MA.dustIcon ? window.MA.dustIcon(22) : icon("💎");
     const cta = canDaily ? { t: T("Ouvrir mon pack du jour"), ic: "🎁", cl: "ready" } : bonus > 0 ? { t: T("Ouvrir un pack bonus") + " (" + bonus + ")", ic: "🎁", cl: "ready" } : { t: T("Voir ma collection"), ic: "🎴", cl: "" };
     const href = canDaily || bonus > 0 ? "#/jouer/boutique" : "#/jouer/collection";
-    box.innerHTML = `<div class="gh-head"><div><span class="gh-k">${T("Bon retour")}, ${C.esc(who())}</span><h2 class="gh-title">${T("Le garage,")} <em>${T("c'est ici.")}</em></h2></div></div>
+    const nm = who(), long = nm.length > 20 ? " gh-xl" : nm.length > 12 ? " gh-long" : "";
+    box.innerHTML = `<div class="gh-head"><h2 class="gh-title${long}">${T("Bon retour")},<br><em>${C.esc(nm)}.</em></h2></div>`;
+    let rest = document.getElementById("home-garage-rest");
+    if (!rest) { rest = document.createElement("section"); rest.id = "home-garage-rest"; rest.className = "stage-shell home-section gh gh-rest"; box.insertAdjacentElement("afterend", rest); }
+    document.querySelectorAll("#home-garage-rest").forEach((x, i) => { if (i) x.remove(); });
+    const left = nextMidnight() - Date.now(), alertTxt = canDaily && left > 0 && left <= 6 * 3600000
+      ? T("Plus que") + " " + (left < 3600000 ? Math.max(1, Math.ceil(left / 60000)) + " min" : Math.ceil(left / 3600000) + " h") + " " + T("pour ouvrir ton pack du jour") : "";
+    rest.innerHTML = `${alertTxt ? `<a class="gh-alert" href="#/jouer/boutique">${alertTxt}</a>` : ""}
+      <a class="gh-cta ${cta.cl}" href="${href}">${icon(cta.ic)}<span class="gh-cta-t"><small>${canDaily ? T("Pack du jour") : bonus > 0 ? T("Pack bonus") : T("Prochain pack dans") + ' <span data-gh-cd>--:--:--</span>'}</small>${cta.t}</span></a>
       <div class="gh-grid">
-        <a class="gh-tile gh-level" href="#/garage" aria-label="${T("Niveau")}">${ring(lv.pct)}<span class="gh-lab">${T("Niveau")}</span><b class="gh-num">${lv.level.n}</b><small>${C.esc(lv.level.name || lv.level.label || "")}${lv.next ? " · " + nf(lv.toNext) + " XP" : ""}</small></a>
-        <a class="gh-tile" href="#/jouer/boutique"><span class="gh-lab">${T("Cristaux")}</span><b class="gh-num gh-row">${dust}${nf(doc.dust)}</b><small>${T("Boutique")}</small></a>
-        <a class="gh-tile gh-chal-link" href="#/jouer/defis"><span class="gh-lab">${T("Série")}</span><b class="gh-num gh-row">${icon("🔥")}${nf(st.days || 0)}<i>${T("jours")}</i></b><small>${T("Reviens chaque jour")}</small></a>
+        <a class="gh-tile" href="#/jouer/boutique"><span class="gh-lab">${T("Cristaux")}</span><b class="gh-num gh-row">${dust}${nf(doc.dust)}</b></a>
+        <a class="gh-tile gh-level" href="#/garage" aria-label="${T("Niveau")}"><span class="gh-lab">${T("Niveau")}</span><b class="gh-num">${lv.level.n}</b><small>${C.esc(lv.level.name || lv.level.label || "")}</small></a>
         <a class="gh-tile" href="#/jouer/collection"><span class="gh-lab">${T("Cartes")}</span><b class="gh-num">${nf(doc.count)}<i>/ ${nf(total)}</i></b><span class="gh-bar"><u style="width:${total ? Math.min(100, Math.round((doc.count / total) * 100)) : 0}%"></u></span></a>
       </div>
-      <a class="gh-cta ${cta.cl}" href="${href}">${icon(cta.ic)}<span class="gh-cta-t"><small>${canDaily ? T("Pack du jour") : bonus > 0 ? T("Pack bonus") : T("Prochain pack dans") + ' <span data-gh-cd>--:--:--</span>'}</small>${cta.t}</span></a>
       <div class="gh-duo">
-        <a class="gh-card gh-chal-link" href="#/jouer/defis"><span class="gh-lab">${T("Défi du jour")}</span><b>${T("Relève le défi")}</b><small>${T("Gagne des cristaux et de l'XP")}</small><i class="gh-go" aria-hidden="true">→</i></a>
         <a class="gh-card" href="${lv.next ? "#/garage" : "#/jouer/collection"}"><span class="gh-lab">${T("Prochain objectif")}</span><b>${lv.next ? nf(lv.toNext) + " XP " + T("pour le niveau") + " " + (lv.level.n + 1) : nf(Math.max(0, total - doc.count)) + " " + T("cartes à trouver")}</b><span class="gh-bar"><u style="width:${lv.next ? lv.pct : (total ? Math.round(doc.count / total * 100) : 0)}%"></u></span><small>${lv.next ? nf(Math.max(0, total - doc.count)) + " " + T("cartes pour compléter la collection") : T("Collection en cours")}</small><i class="gh-go" aria-hidden="true">→</i></a>
+        <a class="gh-card gh-chal-link" href="#/jouer/defis"><span class="gh-lab">${T("Défi du jour")}</span><b>${T("Relève le défi")}</b><small>${T("Gagne des cristaux et de l'XP")}</small><i class="gh-go" aria-hidden="true">→</i></a>
       </div>
       <div class="gh-friends" id="gh-friends" hidden></div>
       <div class="gh-links"><a href="#/quiz">${icon("🎯")}${T("Quiz")}</a><a href="#/duel">${icon("⚔")}${T("Duel")}</a><a class="gh-chal-link" href="#/jouer/defis">${icon("🏆")}${T("Défis")}</a><a href="#/jouer/echanges">${icon("🔄")}${T("Échanges")}</a></div>`;
+    // pastille de série sur le bandeau de la voiture du jour
+    document.documentElement.dataset.maStreak = String(st.days || 0);
+    const sp = document.querySelector("[data-cod-streak]");
+    if (sp) sp.innerHTML = st.days ? `<b>${nf(st.days)}</b><small>${T("jours")}</small>` : "";
+    homeAcc(true);
     document.documentElement.classList.add("ma-garage");
     countdown(!canDaily && !(bonus > 0));
     friends();

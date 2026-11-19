@@ -43,16 +43,16 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=8af02d5c9d","quiz":"js/lazy-quiz.min.js?v=28aabbf116","quizbank":"js/lazy-quizbank.min.js?v=ecf0c4999f"};</script>
-  <script defer src="js/bundle1.min.js?v=e68d3aecc0"></script>
+  <script defer src="js/bundle1.min.js?v=13980bc906"></script>
   <script defer src="js/bundle2.min.js?v=b76759192e"></script>
-  <script defer src="js/bundle3.min.js?v=5085977cdc"></script>
+  <script defer src="js/bundle3.min.js?v=ee3c1de9aa"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
   <link rel="preload" href="fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/hanken-grotesk-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/bundle.min.css?v=5d7b7f3c24">
+  <link rel="stylesheet" href="css/bundle.min.css?v=25629adcb1">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -208,30 +208,20 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <section class="stage-shell home-section">
     <div class="home-cols">
       <div class="home-col">
-        <div class="section-head compact"><h2 class="section-title small">Prochains événements</h2><a class="link-more" href="#/communaute/evenements"><span class="mi-w">Voir tout&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a></div>
-        <div class="events-mini" id="home-events"></div>
+        <details class="acc home-acc" data-acc="home-events" open><summary><span class="acc-t"><b>Prochains événements</b></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body"><div class="events-mini" id="home-events"></div><a class="link-more" href="#/communaute/evenements"><span class="mi-w">Voir tout&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a></div></details>
       </div>
       <div class="home-col">
-        <div class="section-head compact"><h2 class="section-title small">Les plus aimées</h2><a class="link-more" href="#/classement/voitures"><span class="mi-w">Classement&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a></div>
-        <div class="top-mini" id="home-top-cars"></div>
+        <details class="acc home-acc" data-acc="home-top" open><summary><span class="acc-t"><b>Les plus aimées</b></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body"><div class="top-mini" id="home-top-cars"></div><a class="link-more" href="#/classement/voitures"><span class="mi-w">Classement&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a></div></details>
       </div>
     </div>
   </section>
 
   <section class="stage-shell home-section" id="home-feed-sec">
-    <div class="section-head">
-      <div><h2 class="section-title">Fil d'actualité</h2><p class="count-stream">Nouveaux pilotes, nouvelles voitures et nouveaux records</p></div>
-      <a class="link-more" href="#/communaute/fil"><span class="mi-w">Tout voir&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a>
-    </div>
-    <div class="feed-list" id="home-feed" aria-live="polite"></div>
+    <details class="acc home-acc" data-acc="home-feed" open><summary><span class="acc-t"><b>Fil d'actualité</b><small>Nouveaux pilotes, nouvelles voitures et nouveaux records</small></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body"><div class="feed-list" id="home-feed" aria-live="polite"></div><a class="link-more" href="#/communaute/fil"><span class="mi-w">Tout voir&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a></div></details>
   </section>
 
   <section class="stage-shell home-section">
-    <div class="section-head">
-      <div><h2 class="section-title">Dans les garages</h2><p class="count-stream">Les dernières voitures publiées par les pilotes</p></div>
-      <a class="link-more" href="#/communaute/voitures"><span class="mi-w">Toutes les voitures&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a>
-    </div>
-    <div class="comm-grid" id="home-community"></div>
+    <details class="acc home-acc" data-acc="home-garages" open><summary><span class="acc-t"><b>Dans les garages</b><small>Les dernières voitures publiées par les pilotes</small></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body"><div class="comm-grid" id="home-community"></div><a class="link-more" href="#/communaute/voitures"><span class="mi-w">Toutes les voitures&nbsp;<i class="mi mi-arrow_r" data-e="➔" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></svg><b class="mi-t">➔</b></i></span></a></div></details>
   </section>
 
   <!-- ============ APPEL À REJOINDRE ============ -->

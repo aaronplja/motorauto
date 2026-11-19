@@ -467,7 +467,7 @@
     box.innerHTML = list.length ? list.map((e, i) => `<a class="mini-row" href="${e.href}"><span class="mini-rank">${i + 1}</span><span class="mini-main"><b>${esc(e.name)}</b><small>${esc(e.sub)}</small></span><span class="rank-score">♥ ${e.s.likes}</span></a>`).join("") : `<div class="empty-note small">Aucune voiture likée pour l'instant.</div>`;
   }
 
-  window.MASocial = { carStats, badge, loadStats, mount, relatedOf,
+  window.MASocial = { carStats, badge, loadStats, mount, relatedOf, like: toggleLike,
     raw: () => ({ likes, votes, comments, reacts }),
     reactionsOf: (kind, target) => { const m = reacts.get(key(kind, target)); const out = { fire: 0, flag: 0, love: 0, up: 0, wow: 0 }; if (m) m.forEach((e) => { if (out[e] != null) out[e]++; }); return out; } };
 

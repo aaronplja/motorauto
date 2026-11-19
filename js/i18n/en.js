@@ -1163,6 +1163,8 @@
 "3 cartes": "3 cards",
 "cartes du thème": "cards in the theme",
 "il manque": "you need",
+"Plus que": "Only",
+"pour ouvrir ton pack du jour": "left to open your daily pack",
 "Packs thématiques": "Themed packs",
 "en cours": "running",
 "à venir": "coming",
