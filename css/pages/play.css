@@ -49,7 +49,6 @@
 .tcg-c-gold { --rc: #f59e0b; } .tcg-c-ice { --rc: #38bdf8; } .tcg-c-rose { --rc: #f472b6; } .tcg-c-emerald { --rc: #10b981; } .tcg-c-violet { --rc: #8b5cf6; }
 .tcg-special, .tcg[class*="tcg-c-"] { box-shadow: 0 0 24px color-mix(in srgb, var(--rc) 45%, transparent); }
 @keyframes foil { to { background-position: -150% 0; } }
-.tcg-mini { width: 96px; flex: none; }
 .tcg-mini .tcg-body { padding: .35rem .45rem .45rem; } .tcg-mini .tcg-stats, .tcg-mini .tcg-note { display: none; }
 .tcg-overlay { overscroll-behavior: contain; animation: ovin .25s var(--ease-out); }
 @keyframes ovin { from { opacity: 0; } }

@@ -5,23 +5,23 @@ const fs = require("fs"), path = require("path"), root = path.join(__dirname, ".
 
 ok("anciennes adresses redirigées, jamais supprimées", () => {
   const r = read("js/router.js");
-  [["/fusion", "/jouer/collection"], ["/marche", "/jouer/echanges"], ["/souhaits", "/jouer/echanges"], ["/jouer/boutique", "/jouer/minijeux"], ["/jouer/troc", "/jouer/echanges"], ["/jouer/cartes", "/jouer/collection"]]
+  [["/fusion", "/jouer/collection"], ["/marche", "/jouer/echanges"], ["/souhaits", "/jouer/echanges"], ["/jouer/troc", "/jouer/echanges"], ["/jouer/cartes", "/jouer/collection"]]
     .forEach(([a, b]) => assert(r.includes('"' + a + '": "' + b + '"'), a + " -> " + b));
   assert(/HINTS = \{[^}]*"\/marche": "market"[^}]*"\/souhaits": "wish"[^}]*"\/fusion": "fuse"/.test(r), "sections voulues mémorisées");
 });
 ok("play : onglets réduits, défaut = accueil Jouer", () => {
   const r = read("js/router.js");
-  assert(/tabs: \["collection", "echanges", "minijeux", "communaute", "defis", "concours"\]/.test(r));
-  assert(/play: "minijeux"/.test(r));
+  assert(/tabs: \["collection", "boutique", "echanges", "minijeux", "communaute", "defis", "concours"\]/.test(r));
+  assert(/play: "collection"/.test(r) && /\["Boutique", "#\/jouer\/boutique"/.test(r), "Boutique reste un sous-onglet de Cartes ; l'onglet Jeux est inchangé");
 });
 ok("les pages Fusion, Marché et Souhaits ne sont plus dupliquées (un identifiant = un élément)", () => {
   const src = read("index.src.html"), play = read("pages/play.html");
   ["fusion", "cardmarket", "wishfeed"].forEach((n) => assert(!src.includes("pages/" + n + ".html"), n));
-  ["cards-root", "trades-root", "cardmarket-root", "wishfeed-root", "shop-host", "cards-host"].forEach((id) => assert((play.match(new RegExp('id="' + id + '"', "g")) || []).length === 1, id));
+  ["cards-root", "trades-root", "cardmarket-root", "wishfeed-root"].forEach((id) => assert((play.match(new RegExp('id="' + id + '"', "g")) || []).length === 1, id));
 });
 ok("Atelier : sélection, barre d'actions, fusion et ancienne adresse #/fusion", () => {
   const c = read("js/game/cards.js");
-  ["data-atelier-toggle", "atelier-bar", "atActions", "atPreselectFuse", "isCardsRoute", 'MAExchange.fuse', "shop-host", "cards-host"].forEach((k) => assert(c.includes(k), k));
+  ["data-atelier-toggle", "atelier-bar", "atActions", "atPreselectFuse", "isCardsRoute", 'MAExchange.fuse' ].forEach((k) => assert(c.includes(k), k));
   assert(/Fusionner " \+ FN \+ " doublons/.test(c), "libellé de fusion");
 });
 ok("Échanges : Pilotes, Marché, Souhaits, Reçues, Envoyées, Historique dans un seul onglet", () => {

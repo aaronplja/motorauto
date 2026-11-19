@@ -5,7 +5,6 @@
 .app-pages { min-height: 100vh; min-height: 100dvh; outline: none; }
 .page { display: none; }
 .page.page-on { display: block; animation: pageIn 0.18s ease-out; }
-html.nav-back .page.page-on { animation: none; }
 @media (prefers-reduced-motion: reduce) { .page.page-on { animation: none; } }
 .page-wrap { padding-top: clamp(1rem, 3vw, 2rem); padding-bottom: clamp(5.5rem, 10vw, 4rem); }
 .page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }

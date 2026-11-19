@@ -13,7 +13,7 @@
     { name: "car", re: /^\/voiture\/([^/]+)\/?$/, keys: ["id"] },
     { name: "commcar", re: /^\/voiture-pilote\/([^/]+)\/?$/, keys: ["id"] },
     { name: "community", re: /^\/communaute(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["fil", "voitures", "pilotes", "evenements", "carte"] },
-    { name: "play", re: /^\/jouer(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["collection", "echanges", "minijeux", "communaute", "defis", "concours"] },
+    { name: "play", re: /^\/jouer(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["collection", "boutique", "echanges", "minijeux", "communaute", "defis", "concours"] },
     { name: "pilotes", re: /^\/pilotes\/?$/, keys: [] },
     { name: "chat", re: /^\/chat(?:\/(.+?))?\/?$/, keys: ["sub"] },
     { name: "leaderboard", re: /^\/classement(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["chronos", "circuits", "voitures", "pilotes", "collection"] },
@@ -58,9 +58,9 @@
     admin: "Administration | MOTORAUTO", pro: "MOTORAUTO PRO | Modifications voiture par voiture", legal: "Informations légales | MOTORAUTO", engine: "Moteur | MOTORAUTO", brand: "Marque | MOTORAUTO", contact: "Contact | MOTORAUTO", commcar: "Voiture de pilote | MOTORAUTO", compare: "Comparateur | MOTORAUTO", duel: "Duel | MOTORAUTO", quiz: "Quiz | MOTORAUTO", club: "Club | MOTORAUTO", clubs: "Clubs | MOTORAUTO", market: "Annonces | MOTORAUTO", car: "Fiche véhicule | MOTORAUTO",
     pass: "Pass de saison | MOTORAUTO", fusion: "Fusion de cartes | MOTORAUTO", cardmarket: "Marché de cartes | MOTORAUTO", wishfeed: "Souhaits et échanges | MOTORAUTO", plusmoins: "Plus ou moins | MOTORAUTO", quizgame: "Quiz | MOTORAUTO", achievements: "Succès | MOTORAUTO", timeline: "Frise chronologique | MOTORAUTO", news: "Nouveautés | MOTORAUTO"
   };
-  const DEFAULT_TAB = { settings: "profil", community: "fil", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "minijeux" };
+  const DEFAULT_TAB = { settings: "profil", community: "fil", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "collection" };
   // anciennes adresses (liens partagés, favoris) → adresse actuelle
-  const REDIRECTS = { "/apropos": "/a-propos", "/plan": "/a-propos", "/circuits": "/classement/circuits", "/annonces": "/communaute", "/pro/offre": "/pro", "/pro/explorer": "/pro", "/pro/abonnement": "/pro", "/communaute/hub-pilotes": "/communaute/fil", "/communaute/hub-clubs": "/clubs", "/communaute/hub-classements": "/classement/chronos", "/jouer/apercu": "/jouer/minijeux", "/jouer/cartes": "/jouer/collection", "/jouer/boutique": "/jouer/minijeux", "/jouer/troc": "/jouer/echanges", "/fusion": "/jouer/collection", "/marche": "/jouer/echanges", "/souhaits": "/jouer/echanges", "/garage/parametres": "/reglages/profil", "/garage/cartes": "/jouer/collection", "/garage/entretien": "/garage/suivi", "/garage/budget": "/garage/suivi", "/garage/projets": "/garage/suivi", "/admin/traiter": "/admin/tableau" };
+  const REDIRECTS = { "/apropos": "/a-propos", "/plan": "/a-propos", "/circuits": "/classement/circuits", "/annonces": "/communaute", "/pro/offre": "/pro", "/pro/explorer": "/pro", "/pro/abonnement": "/pro", "/communaute/hub-pilotes": "/communaute/fil", "/communaute/hub-clubs": "/clubs", "/communaute/hub-classements": "/classement/chronos", "/jouer/apercu": "/jouer/collection", "/jouer/cartes": "/jouer/collection", "/jouer/troc": "/jouer/echanges", "/fusion": "/jouer/collection", "/marche": "/jouer/echanges", "/souhaits": "/jouer/echanges", "/garage/parametres": "/reglages/profil", "/garage/cartes": "/jouer/collection", "/garage/entretien": "/garage/suivi", "/garage/budget": "/garage/suivi", "/garage/projets": "/garage/suivi", "/admin/traiter": "/admin/tableau" };
   // barres d'onglets : une seule définition, dessinée dans chaque page de la section (nav[data-section])
   const SECTIONS = {
     pilotes: { page: "pilotes", items: [] },
@@ -166,17 +166,17 @@
   }
 
   // ----- Jouer : trois onglets (Cartes / Mini-jeux / Communauté) et, dessous, les sous-onglets du groupe ; la même barre est posée sur chaque sous-page
-  const PLAY_GROUPS = [["minijeux", "Jouer"], ["cartes", "Cartes"], ["troc", "Échanges"], ["communaute", "Défis"]];
+  const PLAY_GROUPS = [["cartes", "Cartes"], ["minijeux", "Jeux"], ["troc", "Échanges"], ["communaute", "Défis"]];
   const PLAY_HREF = { minijeux: "#/jouer/minijeux", cartes: "#/jouer/collection", troc: "#/jouer/echanges", communaute: "#/jouer/communaute" };
   const PLAY_SUBS = {
-    cartes: [],
+    cartes: [["Collection", "#/jouer/collection", (r) => r.name === "play" && r.params.tab === "collection"], ["Boutique", "#/jouer/boutique", (r) => r.name === "play" && r.params.tab === "boutique"]],
     minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Bataille", "#/jouer/minijeux", () => false, "data-battle-tile"]],
     troc: [],
     communaute: [["Semaine", "#/jouer/defis", (r) => r.name === "play" && r.params.tab === "defis"], ["Concours photo", "#/jouer/concours", (r) => r.name === "play" && r.params.tab === "concours"], ["Succès", "#/succes", (r) => r.name === "achievements"]]
   };
   function playGroup(r) {
-    if (r.name === "play") return { collection: "cartes", echanges: "troc", minijeux: "minijeux", communaute: "communaute", defis: "communaute", concours: "communaute" }[r.params.tab] || "minijeux";
-    return { fusion: "cartes", cardmarket: "troc", wishfeed: "troc", plusmoins: "minijeux", quizgame: "minijeux", duel: "minijeux", achievements: "communaute" }[r.name] || "minijeux";
+    if (r.name === "play") return { collection: "cartes", boutique: "cartes", echanges: "troc", minijeux: "minijeux", communaute: "communaute", defis: "communaute", concours: "communaute" }[r.params.tab] || "cartes";
+    return { fusion: "cartes", cardmarket: "troc", wishfeed: "troc", plusmoins: "minijeux", quizgame: "minijeux", duel: "minijeux", achievements: "communaute" }[r.name] || "cartes";
   }
   // ---- Pilotes : le grand espace des profils. 4 onglets (Profil · Garage · Communauté · Classement) et, dessous, les sous-onglets du groupe.
   //      Un visiteur ne voit que Communauté et Classement ; le profil et le garage demandent un compte.
@@ -208,7 +208,7 @@
       ${landing || !subs[g].length ? "" : `<div class="page-tabs fit play-subtabs" role="tablist" aria-label="${groups.find((x) => x[0] === g)[1]}" style="--n:${subs[g].length}">${subs[g].map((s) => { const on = !!s[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}><span class="tl" data-s="${s[4] || s[0]}">${s[0]}</span></a>`; }).join("")}</div>`}`;
   }
   function renderPlayBar(nav, route) {
-    groupBar(nav, route, "Jouer", PLAY_GROUPS, PLAY_SUBS, playGroup(route), route.name === "play" && ["defis", "concours"].indexOf(route.params.tab) < 0, (k) => PLAY_HREF[k], true);
+    groupBar(nav, route, "Jouer", PLAY_GROUPS, PLAY_SUBS, playGroup(route), route.name === "play" && ["minijeux", "communaute", "echanges"].indexOf(route.params.tab) >= 0, (k) => PLAY_HREF[k], !(route.name === "play" && ["collection", "boutique"].indexOf(route.params.tab) >= 0));
   }
   function renderSectionTabs(pageEl, route) {
     if (!pageEl) return;

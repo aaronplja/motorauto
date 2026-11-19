@@ -55,7 +55,6 @@
 .tcg:hover { transform: translateY(-3px); }
 .tcg-rare { --rc: #3b82f6; } .tcg-epic { --rc: #a855f7; } .tcg-legendary { --rc: #f59e0b; box-shadow: 0 0 22px color-mix(in srgb, #f59e0b 45%, transparent); }
 .tcg-art { aspect-ratio: 4/3; background: var(--bg-elevated); position: relative; overflow: hidden; display: grid; place-items: center; }
-.tcg-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tcg-q { font-size: 3rem; font-weight: 900; color: var(--color-muted); }
 .tcg-foil { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.45) 50%, transparent 70%); background-size: 250% 100%; }
 .tcg-epic .tcg-foil, .tcg-legendary .tcg-foil { opacity: .5; animation: foil 3.2s linear infinite; }
@@ -68,7 +67,6 @@
 .tcg-dup { position: absolute; bottom: .4rem; right: .4rem; padding: .05rem .4rem; border-radius: 99px; font-size: .75rem; font-weight: 800; background: #000a; color: #fff; }
 .tcg.locked { filter: grayscale(1) brightness(.75); border-style: dashed; } .tcg.locked .tcg-foil { display: none; }
 .tcg-mini { width: 108px; font-size: .8em; } .tcg-strip { display: flex; gap: .6rem; overflow-x: auto; padding-bottom: .4rem; } .tcg-mini-link { flex: none; text-decoration: none; color: inherit; }
-.tcg-big { width: min(240px, 62vw); }
 .tcg-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,.82); display: grid; place-items: center; overflow: auto; padding: 1rem; }
 .tcg-overlay.flash { animation: flash .9s ease-out; } @keyframes flash { 0% { background: rgba(245,158,11,.95); } }
 .tcg-stage { display: grid; gap: .8rem; justify-items: center; text-align: center; color: #fff; max-width: 900px; } .tcg-stage h2 { margin: 0; }

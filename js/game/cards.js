@@ -1028,7 +1028,7 @@
     if (best) { let tot = 0; by[best].sort((a, b) => doc.owned[b] - doc.owned[a]).forEach((id) => { if (tot < FN && sel.length < 12) { sel.push(id); tot += doc.owned[id] - 1; } }); }
     atRender();
   }
-  const isCardsRoute = () => !!(C && C.Router && (C.Router.is("play", { tab: "collection" }) || C.Router.is("play", { tab: "minijeux" })));
+  const isCardsRoute = () => !!(C && C.Router && (C.Router.is("play", { tab: "collection" }) || C.Router.is("play", { tab: "boutique" })));
 
   // ----- structure de la page
   /** met à jour l'en-tête et le panneau visible (pas la grille de la collection) */
@@ -1112,11 +1112,9 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     ctx.Router.register("play", { enter: async (p) => {
-      if (p.tab !== "collection" && p.tab !== "minijeux") { if (selMode) atOff(); return; }
-      // la Boutique vit dans l'accueil Jouer : le même bloc est déplacé là, sans le recréer (les autres scripts le retrouvent par #cards-root)
-      { const host = document.getElementById(p.tab === "minijeux" ? "shop-host" : "cards-host"), rt = document.getElementById("cards-root"); if (host && rt && rt.parentNode !== host) host.appendChild(rt); }
-      ctab = p.tab === "minijeux" ? "shop" : "mine";
-      if (p.tab === "minijeux" && selMode) atOff();
+      if (p.tab !== "collection" && p.tab !== "boutique") { if (selMode) atOff(); return; }
+      ctab = p.tab === "boutique" ? "shop" : "mine";
+      if (p.tab === "boutique" && selMode) atOff();
       const hint = p.tab === "collection" ? window.MAHint : ""; if (hint) window.MAHint = "";
       render();
       await load().catch(() => {});

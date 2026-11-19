@@ -177,20 +177,11 @@ html .play-bar.inner .play-subtabs { flex: 1 1 auto; min-width: 0; margin: 0; ma
 }
 
 /* ---- page Fusion : introduction en carte, raretés en deux colonnes sur grand écran ---- */
-#fusion-root { display: grid; gap: .9rem; }
-#fusion-root .fz-intro { max-width: none; margin: 0; padding: .9rem 1.1rem; border-radius: 20px; background: var(--fl-bg-soft); border: 1px solid var(--fl-line); box-shadow: var(--fl-shadow-sm); }
-#fusion-root .fz-block { margin: 0; }
-@media (min-width: 900px) { #fusion-root { grid-template-columns: 1fr 1fr; align-items: start; } #fusion-root > .fz-intro { grid-column: 1 / -1; } }
-@media (max-width: 600px) { #fusion-root .fz-actions .cta-btn { flex: 1 1 auto; } }
 
 /* ---- Fusion : même en-tête que Collection et Boutique, seul le contenu change quand on passe d'un onglet à l'autre ---- */
 .play-sec-head { margin: .2rem 0 1rem; }
 .play-sec-title { font: 400 clamp(1.5rem, 3.4vw, 2rem)/1.1 'Instrument Serif', Georgia, serif; margin: 0; color: var(--color-ink); }
 .play-sec-sub { margin: .25rem 0 0; color: var(--color-secondary); font-size: .92rem; max-width: 65ch; }
-#fusion-root .fz-intro p { font-size: .92rem; line-height: 1.5; }
-#fusion-root .fz-intro p.lap-meta { font-size: .8rem; }
-#fusion-root .fz-block { margin: 0; }
-#fusion-root { display: grid; gap: .9rem; }
 
 /* ---------- Connexion / inscription : carte pleine, en-tête centré, onglets et champs en pilules ---------- */
 html #auth-modal .modal-dialog.auth-box { background: linear-gradient(var(--bg-surface), var(--bg-surface)), var(--bg-core) !important; max-width: 440px; border-radius: 28px; border: 1px solid var(--fl-line); box-shadow: var(--fl-shadow, 0 30px 70px -30px rgba(0,0,0,.55)); }
