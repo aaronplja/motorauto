@@ -234,8 +234,8 @@
     } });
     ctx.Router.register("leaderboard", { enter: (p) => { if (p.tab === "pilotes") renderRanking(); } });
     ctx.Router.register("home", { enter: () => renderHomeRank() });
-    document.addEventListener("ma:auth", () => { cache.at = 0; touchStreak().then(announce); });
+    document.addEventListener("ma:auth", () => { cache.at = 0; touchStreak().then(announce).catch(() => {}); });
     document.addEventListener("ma:social", () => { cache.at = 0; });
-    if (ctx.user) touchStreak().then(announce);
+    if (ctx.user) touchStreak().then(announce).catch(() => {});
   });
 })();

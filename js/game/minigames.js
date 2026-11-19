@@ -52,7 +52,7 @@
   }
   async function pmRender() {
     const root = rootOf("plusmoins"); if (!root) return;
-    if (pm.rows === null) { pm.rows = []; board("pmBest", 10).then((r) => { pm.rows = r; if (pm.state === "idle" || pm.state === "over") pmRender(); }); }
+    if (pm.rows === null) { pm.rows = []; board("pmBest", 10).then((r) => { pm.rows = r; if (pm.state === "idle" || pm.state === "over") pmRender(); }).catch(() => {}); }
     const rules = `<div class="mg-rules"><b>${T("Séries qui rapportent")}</b> ${G.PM_REWARDS.map((r) => `${r[0]} → ${dust(r[1], 13)}`).join(" · ")} <small>(${T("plafond")} ${G.PM_DAILY_CAP} ${T("par jour")})</small></div>`;
     const lb = `<h3 class="sec-title">${T("Meilleures séries")}</h3>${boardHtml(pm.rows || [], T("de suite"))}`;
     if (!C.user) { root.innerHTML = loginNote(T("jouer à Plus ou moins")) + lb; return; }
@@ -106,7 +106,7 @@
   const newSeed = () => { const a = new Uint32Array(2); (window.crypto || window.msCrypto).getRandomValues(a); return a[0].toString(36) + a[1].toString(36); };
   function qzRender() {
     const root = rootOf("quizgame"); if (!root) return;
-    if (qz.rows === null) { qz.rows = []; board("quizPts", 10).then((r) => { qz.rows = r; if (qz.state === "menu" || qz.state === "end") qzRender(); }); }
+    if (qz.rows === null) { qz.rows = []; board("quizPts", 10).then((r) => { qz.rows = r; if (qz.state === "menu" || qz.state === "end") qzRender(); }).catch(() => {}); }
     const lb = `<h3 class="sec-title">${T("Classement des quiz")}</h3>${boardHtml(qz.rows || [], T("pts"))}<p class="lap-meta">${T("Points = somme de tes meilleurs scores sur toutes les combinaisons catégorie × niveau.")}</p>`;
     if (!C.user) { root.innerHTML = loginNote(T("jouer au quiz")) + lb; return; }
     if (qz.err) { root.innerHTML = `<div class="empty-note error">${C.esc(qz.err)}</div><button type="button" class="cta-btn btn-ghost" data-qz-menu>${T("Retour")}</button>`; return; }
@@ -116,7 +116,7 @@
       if (qz.mode === "chrono") {
         const lv = qz.cLevel || 2, wk = qz.cRows && qz.cRows[lv];
         if (!qz.cRows) { qz.cRows = {}; }
-        if (!wk) board(G.chronoField(Date.now(), lv), 10).then((r) => { qz.cRows[lv] = r; if (qz.state === "menu" && qz.mode === "chrono") qzRender(); });
+        if (!wk) board(G.chronoField(Date.now(), lv), 10).then((r) => { qz.cRows[lv] = r; if (qz.state === "menu" && qz.mode === "chrono") qzRender(); }).catch(() => {});
         root.innerHTML = `${tabs}<p class="lap-meta">${G.CHRONO.secs} ${T("secondes, toutes catégories mélangées")} · +1 ${T("par bonne réponse")} · −${G.CHRONO.penalty} s ${T("par erreur")} · ${G.CHRONO.reward} ${T("cristaux par bonne réponse")} (${T("plafond")} ${G.CHRONO.cap} ${T("par jour")})</p>
           <div class="qz-levels chrono">${LV.map((l) => `<button type="button" class="qz-lv lv${l}" data-qz-chrono="${l}" ${qz.busy ? "disabled" : ""}><span>${T(G.QLEVELS[l])}</span><small>${(qz.cBest && qz.cBest[l]) ? T("record") + " " + qz.cBest[l] : "—"}</small></button>`).join("")}</div>
           <h3 class="sec-title">${T("Classement de la semaine")}</h3>

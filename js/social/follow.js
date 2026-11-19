@@ -53,7 +53,7 @@
   function watch() {
     const host = document.getElementById("vehicle-detail-content"); if (!host) return;
     let t = null;
-    new MutationObserver(() => { if (host.querySelector(".follow-btns")) return; clearTimeout(t); t = setTimeout(() => load().then(paint), 30); }).observe(host, { childList: true });
+    new MutationObserver(() => { if (host.querySelector(".follow-btns")) return; clearTimeout(t); t = setTimeout(() => load().then(paint).catch(() => {}), 30); }).observe(host, { childList: true });
   }
 
   window.MAFollow = { load, has, toggle, get: () => doc, remove: async (kind, val) => { await load(); if (has(kind, val)) return toggle(kind, val); return false; } };
@@ -61,8 +61,8 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     watch();
-    ctx.Router.register("car", { enter: () => { load().then(paint); } });
-    document.addEventListener("ma:auth", () => { loadedFor = ""; load(true).then(paint); });
+    ctx.Router.register("car", { enter: () => { load().then(paint).catch(() => {}); } });
+    document.addEventListener("ma:auth", () => { loadedFor = ""; load(true).then(paint).catch(() => {}); });
     document.addEventListener("click", async (e) => {
       const b = e.target.closest("[data-follow]"); if (!b) return;
       e.preventDefault(); b.disabled = true;

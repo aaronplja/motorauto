@@ -92,7 +92,7 @@
     unsub = C.db.collection("card_battles").doc(id).onSnapshot((s) => {
       if (!s.exists) { C.toast("Bataille introuvable.", "err"); close(); return; }
       const was = bt; bt = s.data();
-      if (bt.status === "active" && !hand.length) loadHand().then(render); else { if (was && was.round !== bt.round) { pick = -1; holdUntil = Date.now() + 4500; setTimeout(() => { if (ov && bt) render(); }, 4600); } render(); }
+      if (bt.status === "active" && !hand.length) loadHand().then(render).catch(() => {}); else { if (was && was.round !== bt.round) { pick = -1; holdUntil = Date.now() + 4500; setTimeout(() => { if (ov && bt) render(); }, 4600); } render(); }
     }, () => { C.toast("Connexion à la bataille impossible.", "err"); close(); });
     timer = setInterval(() => { if (bt && ov) tick(); }, 1000);
   }

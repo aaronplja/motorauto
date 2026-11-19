@@ -33,3 +33,9 @@ ok("Atelier : styles présents et nouveaux textes traduits", () => {
   assert(/\.at-bar\b/.test(read("css/components/cards.css")));
   ["en", "es", "de", "it"].forEach((l) => assert(read("js/i18n/" + l + ".js").includes('"Sélectionner"'), l));
 });
+ok("promesses d'arrière-plan : classements, défis, suivi et pass ne laissent plus d'erreur non gérée (lot 5)", () => {
+  assert(/board\("pmBest", 10\)\.then[^\n]*\.catch\(/.test(read("js/game/minigames.js")));
+  assert(/loadWeekly\(true\)\.then\(renderChallenges\)\.catch\(/.test(read("js/game/play.js")));
+  assert(/touchStreak\(\)\.then\(announce\)\.catch\(/.test(read("js/game/gamify.js")));
+  assert(/load\(true\)\.then\(paint\)\.catch\(/.test(read("js/social/follow.js")));
+});

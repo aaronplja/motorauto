@@ -231,7 +231,7 @@
     ctx.Router.register("pro", { enter });
     document.addEventListener("ma:auth", () => { subUid = ""; modsCache.clear(); if (/^#\/pro/.test(location.hash)) enter(); else loadSub(true).then(paintChip); });
     document.addEventListener("ma:route", () => paintChip());
-    setTimeout(() => { loadConfig().then(() => loadSub()).then(paintChip); }, 1500);
+    setTimeout(() => { loadConfig().then(() => loadSub()).then(paintChip).catch(() => {}); }, 1500);
     document.addEventListener("click", (e) => {
       const b = e.target.closest("[data-mp]");
       if (b) { if (b.dataset.mp === "login") C.requireLogin(); else act(b.dataset.mp); return; }

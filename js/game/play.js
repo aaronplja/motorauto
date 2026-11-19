@@ -109,7 +109,7 @@
       if (weekly) { const all = weekly.items.concat(weekly.daily ? [weekly.daily] : []); const it = all.find((x) => x.id === id); if (it) it.claimed = true; }
       C.toast(`🎯 Défi validé : ${rewardText(r.reward, true)}${r.perfect ? " · semaine parfaite : +1 pack bonus !" : ""}`, "ok");
       busy = false; busyId = ""; renderChallenges(); paintChalDot();
-      loadWeekly(true).then(renderChallenges);            // resynchronisation en arrière-plan
+      loadWeekly(true).then(renderChallenges).catch(() => {});            // resynchronisation en arrière-plan
       return;
     } catch (e) { C.toast(e.message, "err"); }
     busy = false; busyId = ""; await loadWeekly(true); renderChallenges();
@@ -239,13 +239,13 @@
       if (p.tab === "cartes" || p.tab === "minijeux" || p.tab === "troc" || p.tab === "communaute") renderHub(p.tab);
       else if (p.tab === "defis") { renderChallenges(); await Promise.all([loadWeekly(true), loadCardCh(true)]); renderChallenges(); paintChalDot(); tick = setInterval(() => { const el = document.getElementById("chal-left"); if (el && weekly) el.textContent = remaining(weekly.endsAt - Date.now()); else clearInterval(tick); }, 30000); }
     } });
-    document.addEventListener("ma:auth", () => { weekly = null; weeklyAt = 0; const cur = ["cartes", "minijeux", "troc", "communaute"].find((k) => ctx.Router.is("play", { tab: k })); if (cur) renderHub(cur); else if (ctx.Router.is("play", { tab: "defis" })) { renderChallenges(); loadWeekly(true).then(renderChallenges); } });
+    document.addEventListener("ma:auth", () => { weekly = null; weeklyAt = 0; const cur = ["cartes", "minijeux", "troc", "communaute"].find((k) => ctx.Router.is("play", { tab: k })); if (cur) renderHub(cur); else if (ctx.Router.is("play", { tab: "defis" })) { renderChallenges(); loadWeekly(true).then(renderChallenges).catch(() => {}); } });
     document.addEventListener("click", (e) => { const c = e.target.closest("[data-chal-claim]"); if (c) claim(c.dataset.chalClaim); const k = e.target.closest("[data-cc-claim]"); if (k) claimCard(k.dataset.ccClaim); });
     document.addEventListener("ma:duel-done", () => log("duel"));
     document.addEventListener("ma:shared", () => log("share"));
     document.addEventListener("ma:cards", () => { weeklyAt = 0; paintShopDot(); });
     document.addEventListener("ma:auth", () => { cardCh = null; setTimeout(() => { if (C.user) Promise.all([loadWeekly(true), loadCardCh(true)]).then(paintChalDot); else paintChalDot(); }, 1500); });
-    setTimeout(() => { if (C.user) Promise.all([loadWeekly(), loadCardCh()]).then(paintChalDot); }, 4000);
+    setTimeout(() => { if (C.user) Promise.all([loadWeekly(), loadCardCh()]).then(paintChalDot).catch(() => {}); }, 4000);
     document.addEventListener("ma:route", () => setTimeout(paintShopDot, 120));
   });
   document.addEventListener("click", (e) => {
