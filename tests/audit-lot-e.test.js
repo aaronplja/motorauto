@@ -19,3 +19,7 @@ ok("vérification de types configurée sur utils, game-core, quiz-bank (ORG-205)
 });
 ok("CHANGELOG généré depuis js/news-seed.js (ORG-206)", () => { const c = read("docs/CHANGELOG.md"); assert(/Fichier généré/.test(c) && /2026-11-19/.test(c)); });
 ok("nouveautés : l'entrée du jour est publiée (FR + EN)", () => { const w = {}; new Function("window", read("js/news-seed.js"))(w); const e = w.MA_NEWS_SEED.find((x) => x.id === "s-2026-11-19"); assert(e && e.fr.title && e.en.title); });
+
+ok(".vercelignore : chaque ligne est ancrée à la racine (sinon css/pages/ et js/data/ ne sont pas déployés)", () => {
+  read(".vercelignore").split("\n").filter((l) => l.trim() && !l.startsWith("#")).forEach((l) => assert(l.startsWith("/"), "ligne non ancrée : " + l));
+});
