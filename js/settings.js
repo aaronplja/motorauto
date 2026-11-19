@@ -85,6 +85,7 @@
     document.addEventListener("click", async (e) => {
       const t = e.target;
       const th = t.closest && t.closest("#theme-btn"); if (th) { e.preventDefault(); e.stopImmediatePropagation(); ctx.Router.go("/reglages/ambiance"); return; }
+      if (t.closest && t.closest("#settings-logout-btn")) { e.preventDefault(); const lo = document.getElementById("logout-btn"); if (lo) lo.click(); return; }
       const pa = t.closest && t.closest("[data-push]"); if (pa) { pushAction(pa.dataset.push); return; }
       if (t.closest && t.closest("[data-loc-remove]")) { try { await window.MAMap.removeMyLocation(); C.toast("Tu n'apparais plus sur la carte.", "ok"); } catch (ex) { C.toast(ex.message, "err"); } renderMap(); }
     }, true);

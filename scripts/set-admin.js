@@ -11,10 +11,11 @@
  * Après l'opération, l'utilisateur doit se déconnecter puis se reconnecter
  * pour que son jeton contienne le claim.
  */
-const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
 const serviceAccount = require("./serviceAccountKey.json");
 
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+initializeApp({ credential: cert(serviceAccount) });
 
 const email = process.argv[2];
 const remove = process.argv[3] === "remove";
@@ -26,8 +27,8 @@ if (!email) {
 
 (async () => {
   try {
-    const user = await admin.auth().getUserByEmail(email);
-    await admin.auth().setCustomUserClaims(user.uid, remove ? { admin: false } : { admin: true });
+    const user = await getAuth().getUserByEmail(email);
+    await getAuth().setCustomUserClaims(user.uid, remove ? { admin: false } : { admin: true });
     console.log(`${remove ? "Droit admin retiré à" : "Droit admin accordé à"} ${email} (uid ${user.uid})`);
     console.log("L'utilisateur doit se reconnecter pour que le changement soit pris en compte.");
   } catch (err) {
