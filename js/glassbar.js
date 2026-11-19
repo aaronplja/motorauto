@@ -4,7 +4,7 @@
  *  - on peut glisser le doigt d'un onglet à l'autre : la bulle suit le doigt, l'onglet se valide au relâchement ;
  *  - en descendant, le dock se réduit (zoom depuis le centre-bas) ; en remontant, au toucher ou en changeant de page, il regonfle avec un ressort ;
  *  - un seul écouteur de défilement (rAF) pilote le dock ET la barre du haut, avec hystérésis pour éviter tout tremblement.
- * Le style vit dans css/dock.css : on n'anime que transform / opacity.
+ * Le style vit dans css/components/dock.css : on n'anime que transform / opacity.
  */
 (function () {
   "use strict";

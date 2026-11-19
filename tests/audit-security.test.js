@@ -6,7 +6,7 @@ const { fs, path, assert, jsFiles, read, ok } = require("./_helpers");
 ok("minuteries : timers.js chargé avant les autres scripts, sondages globaux espacés", () => {
   const src = read("index.src.html");
   assert(src.indexOf("js/timers.js") > -1 && src.indexOf("js/timers.js") < src.indexOf("js/common.js"), "timers.js doit précéder common.js");
-  assert(/setInterval\(tick, 4000\)/.test(read("js/fab-pack.js")) && /setInterval\(run, 3000\)/.test(read("js/chat-plus.js")), "sondages espacés");
+  assert(/setInterval\(tick, 4000\)/.test(read("js/game/fab-pack.js")) && /setInterval\(run, 3000\)/.test(read("js/chat/chat-plus.js")), "sondages espacés");
 });
 
 // ---- Série 2, lot 1 : sécurité et dette technique
@@ -25,7 +25,7 @@ ok("vie privée : emailNotifs vit dans users/{uid}/private/prefs (règles, site,
 ok("CSP : directives sûres appliquées (object, base, frame-ancestors, form-action) + politique complète en observation", () => {
   const v = JSON.parse(read("vercel.json")), all = v.headers.flatMap((h) => h.headers), enf = all.find((x) => x.key === "Content-Security-Policy");
   assert(enf && /object-src 'none'/.test(enf.value) && /frame-ancestors 'self'/.test(enf.value) && /base-uri 'self'/.test(enf.value), "CSP bloquante");
-  assert(all.some((x) => x.key === "Content-Security-Policy-Report-Only" && /script-src/.test(x.value)), "CSP complète en observation");
+  assert(all.some((x) => x.key === "Content-Security-Policy" && /script-src/.test(x.value)), "CSP complète appliquée (TECH-206)");
 });
 ok("App Check : prêt côté site (clé vide = désactivé) et côté fonctions (ENFORCE_APPCHECK)", () => {
   assert(/APPCHECK_SITE_KEY = ""/.test(read("js/firebase-init.js")) && /firebase-app-check-compat\.js/.test(read("index.src.html")));

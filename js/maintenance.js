@@ -10,7 +10,7 @@
   "use strict";
   const KEY = "ma_maint", ADM = "ma_maint_adm";
   const knownAdmin = () => { try { return localStorage.getItem(ADM) === "1"; } catch (e) { return false; } };
-  const setAdminHint = (v) => { try { if (v) localStorage.setItem(ADM, "1"); else localStorage.removeItem(ADM); } catch (e) {} };
+  const setAdminHint = (v) => { try { if (v) localStorage.setItem(ADM, "1"); else localStorage.removeItem(ADM); } catch (e) { /* stockage ou API indisponible : sans effet */ } };
   let C = null, authDone = false, state = { on: false, message: "", image: "" }, unsub = null;
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const okUrl = (u) => /^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "";
@@ -84,7 +84,7 @@
   }
 
   function apply() {
-    try { localStorage.setItem(KEY, JSON.stringify({ on: !!state.on, message: state.message, image: state.image })); } catch (e) {}
+    try { localStorage.setItem(KEY, JSON.stringify({ on: !!state.on, message: state.message, image: state.image })); } catch (e) { /* stockage ou API indisponible : sans effet */ }
     const admin = !!(C && C.isAdmin);
     if (admin) setAdminHint(true); else if (authDone && C && !C.user) setAdminHint(false);
     if (!authDone && state.on) { pill(); syncBtn(); return; } // on attend de savoir si le visiteur est admin (l'écran de travaux en cache reste affiché)
@@ -141,8 +141,9 @@
   }
 
   // affichage immédiat depuis le dernier état connu (évite d'entrevoir le site avant la lecture Firestore)
-  try { const c = JSON.parse(localStorage.getItem(KEY) || "null"); if (c && c.on) { state = { on: true, message: c.message || "", image: c.image || "" }; if (!knownAdmin()) { document.addEventListener("DOMContentLoaded", () => { if (state.on && !(C && C.isAdmin)) showOverlay(); }); if (document.readyState !== "loading" && document.body) showOverlay(); } } } catch (e) {}
+  try { const c = JSON.parse(localStorage.getItem(KEY) || "null"); if (c && c.on) { state = { on: true, message: c.message || "", image: c.image || "" }; if (!knownAdmin()) { document.addEventListener("DOMContentLoaded", () => { if (state.on && !(C && C.isAdmin)) showOverlay(); }); if (document.readyState !== "loading" && document.body) showOverlay(); } } } catch (e) { /* stockage ou API indisponible : sans effet */ }
 
+  window.addEventListener("pagehide", () => { if (unsub) { try { unsub(); } catch (_) { /* ignoré */ } unsub = null; } });
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx;
     if (unsub) unsub();

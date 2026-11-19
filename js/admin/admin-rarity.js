@@ -1,6 +1,6 @@
 /**
  * MOTORAUTO — Admin › Jeu : modifier la rareté des cartes déjà présentes.
- * config/rarities { map: { idCarte: rareté } } : lu par le site (js/cards.js) et par le serveur du jeu (functions/game.js).
+ * config/rarities { map: { idCarte: rareté } } : lu par le site (js/game/cards.js) et par le serveur du jeu (functions/game.js).
  * « Auto » = on retire la surcharge et la rareté calculée par le score reprend.
  */
 (function () {

@@ -37,9 +37,11 @@
     if (!b) { b = document.createElement("div"); b.id = "ma-offline"; b.setAttribute("role", "status"); b.textContent = "Hors connexion : tes actions seront renvoyées au retour du réseau."; b.hidden = true; document.body.appendChild(b); }
     return b;
   }
-  function netState() { const b = offlineBar(); const off = navigator.onLine === false; if (off === !b.hidden) return; b.hidden = !off; if (!off) { try { window.MA && window.MA.toast("Connexion rétablie.", "ok"); } catch (_) { /* ignoré */ } } }
+  function netState() { const b = offlineBar(); const off = navigator.onLine === false; if (off === !b.hidden) return; b.hidden = !off; document.body.classList.toggle("offline-on", off); if (!off) { try { window.MA && window.MA.toast("Connexion rétablie.", "ok"); } catch (_) { /* ignoré */ } } }
   window.addEventListener("offline", netState); window.addEventListener("online", netState);
   if (document.readyState !== "loading") netState(); else document.addEventListener("DOMContentLoaded", netState);
+
+  document.addEventListener("change", (e) => { if (e.target && e.target.id === "settings-email-notifs") { const t = document.getElementById("settings-email-types"); if (t) t.hidden = !e.target.checked; } });
 
   // ---- UX-206 : brouillons automatiques des formulaires utilisateur (contact, réglages) — MADraft (js/draft.js)
   function drafts() {

@@ -53,7 +53,7 @@
     };
     tick(); cdT = setInterval(tick, 1000);
   }
-  /** pilotes suivis : pastilles « en ligne » (présence réciproque, voir js/presence.js) */
+  /** pilotes suivis : pastilles « en ligne » (présence réciproque, voir js/social/presence.js) */
   let frFor = "";
   async function friends() {
     const box = document.getElementById("gh-friends"); if (!box || !C.user || !C.db) return;

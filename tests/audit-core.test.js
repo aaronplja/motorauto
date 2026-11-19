@@ -6,24 +6,24 @@ let n = 0;
 
 // 1. marque jamais écrite deux fois (« Nissan Nissan Silvia S15 »)
 const nameOfSrc = (f) => { const m = read(f).match(/const nameOf = (\(c\) => \{[^\n]*\});/); assert(m, f + " : nameOf introuvable"); return eval("(" + m[1] + ")"); };
-["js/car-of-day.js", "js/fiche-plus.js", "js/studio-home.js"].forEach((f) => ok("nameOf sans doublon : " + f, () => {
+["js/catalogue/car-of-day.js", "js/catalogue/fiche-plus.js", "js/studio-home.js"].forEach((f) => ok("nameOf sans doublon : " + f, () => {
   const nameOf = nameOfSrc(f);
   assert.strictEqual(nameOf({ brand: "Nissan", model: "Nissan Silvia S15" }), "Nissan Silvia S15");
   assert.strictEqual(nameOf({ brand: "Mazda", model: "Mazda MX-5 Miata (NA)" }), "Mazda MX-5 Miata");
   assert.strictEqual(nameOf({ brand: "Peugeot", model: "205 GTI (1.9)" }), "Peugeot 205 GTI");
   assert.strictEqual(nameOf({ brand: "Seat", model: "Seatrick" }), "Seat Seatrick");   // pas de faux positif : il faut brand + espace
 }));
-ok("cartes : la marque n'est pas répétée dans le nom", () => assert(/model\.toLowerCase\(\)\.startsWith\(bl \+ " "\)\) model = model\.slice/.test(read("js/cards.js"))));
+ok("cartes : la marque n'est pas répétée dans le nom", () => assert(/model\.toLowerCase\(\)\.startsWith\(bl \+ " "\)\) model = model\.slice/.test(read("js/game/cards.js"))));
 
 // 2. lisibilité : puces de la carte et paliers de succès
-ok("puces de la carte : texte foncé sur fond translucide", () => assert(/\.mm-bar \.chip\.on \{[^}]*color: var\(--color-ink\)/.test(read("css/refonte.css"))));
-ok("paliers argent/or lisibles en clair et en sombre", () => { const c = read("css/plus.css"); assert(/\.ac-t\.silver b \{ color: #55657a; \}/.test(c) && /data-tone="dark"\] \.ac-t\.gold b/.test(c)); });
+ok("puces de la carte : texte foncé sur fond translucide", () => assert(/\.mm-bar \.chip\.on \{[^}]*color: var\(--color-ink\)/.test(read("css/themes/refonte.css"))));
+ok("paliers argent/or lisibles en clair et en sombre", () => { const c = read("css/components/plus.css"); assert(/\.ac-t\.silver b \{ color: #55657a; \}/.test(c) && /data-tone="dark"\] \.ac-t\.gold b/.test(c)); });
 
 // 3. bouton « ? » : place réservée en haut à droite de l'en-tête
-ok("bouton ? : marge réservée dans l'en-tête de page", () => assert(/\.page-head:has\(> \.guide-help\) > :not\(\.page-head-actions\):not\(\.guide-help\) \{ padding-right: 50px; \}/.test(read("css/guides.css"))));
+ok("bouton ? : marge réservée dans l'en-tête de page", () => assert(/\.page-head:has\(> \.guide-help\) > :not\(\.page-head-actions\):not\(\.guide-help\) \{ padding-right: 50px; \}/.test(read("css/components/guides.css"))));
 
 // 4. défis : une réponse serveur vide ne fait plus planter la route
-ok("défis : réponse sans « items » → message d'erreur, pas d'exception", () => assert(/Array\.isArray\(weekly\.items\)\) throw new Error/.test(read("js/play.js"))));
+ok("défis : réponse sans « items » → message d'erreur, pas d'exception", () => assert(/Array\.isArray\(weekly\.items\)\) throw new Error/.test(read("js/game/play.js"))));
 
 // 5. traductions : mêmes {0}/{1} dans les 4 langues, aucune valeur vide
 const dict = (l) => { const m = []; new Function("window", read("js/i18n/" + l + ".js"))({ __MA_DICT: m }); const o = {}; m.forEach((e) => Object.assign(o, e[1])); return o; };
@@ -92,12 +92,12 @@ ok("navigation : Chat remplace Communauté, « Moi » devient Pilotes (profil ·
   assert(/name: "pilotes", re:/.test(rt) && /PILOT_GROUPS = \[\["espace"[\s\S]*?\["communaute"[\s\S]*?\["classement"/.test(rt));
   ["community", "leaderboard", "garage", "settings", "pilot", "clubs"].forEach((r) => assert(new RegExp(r + ': "pilotes"').test(rt.match(/const NAV_OF = \{[^\n]*/)[0]), r + " → Pilotes"));
   ["hub-pilotes", "hub-clubs", "hub-classements"].forEach((x) => assert(rt.indexOf('"/communaute/' + x + '"') >= 0, "ancienne adresse " + x + " redirigée"));
-  assert(/id="pub-settings-btn"[^>]*href="#\/reglages\/profil"/.test(h) && /pub-settings-btn/.test(read("js/profile-edit.js")), "engrenage Réglages dans le profil");
+  assert(/id="pub-settings-btn"[^>]*href="#\/reglages\/profil"/.test(h) && /pub-settings-btn/.test(read("js/social/profile-edit.js")), "engrenage Réglages dans le profil");
   assert(!/nav-me-btn|touch-me-btn/.test(nv));
   assert(/"data-s"/.test(read("js/i18n.js")), "libellés courts des onglets traduits");
 });
 ok("Jouer : 4 univers (Cartes · Jeux · Échanges · Défis), chacun avec sa page d'accueil", () => {
-  const rt = read("js/router.js"), h = read("index.src.html"), pl = read("js/play.js");
+  const rt = read("js/router.js"), h = read("index.src.html"), pl = read("js/game/play.js");
   assert(/PLAY_GROUPS = \[\["cartes", "Cartes"\], \["minijeux", "Jeux"\], \["troc", "Échanges"\], \["communaute", "Défis"\]\]/.test(rt));
   assert(/"troc", "minijeux"|"echanges", "troc"/.test(rt) && /data-tab="troc"[^>]*><div id="play-hub-troc"/.test(h));
   assert(/echanges: "troc"/.test(rt) && /cardmarket: "troc", wishfeed: "troc"/.test(rt) && /fusion: "cartes"/.test(rt));
@@ -121,39 +121,39 @@ ok("barre du haut : plus de bouton Nouveautés (elles sont dans les notification
   assert(/const inner = !!backTo && !landing/.test(rt), "pages internes de Jouer : retour au lieu de la barre des univers");
 });
 ok("chat : nouvelle interface (chat3.css) avec onglets Tout / Canaux / Privés, ids conservés", () => {
-  const h = read("chat.html"), c = read("css/chat3.css");
-  assert(/css\/chat3\.css/.test(h) && !/chat2\.css|chatglass\.css/.test(h), "chat3 remplace chat2 + chatglass");
+  const h = read("chat.html"), c = read("css/pages/chat3.css");
+  assert(/css\/pages\/chat3\.css/.test(h) && !/chat2\.css|chatglass\.css/.test(h), "chat3 remplace chat2 + chatglass");
   assert(h.indexOf("chat3.css") > h.indexOf("themes-studio.css"), "chargé en dernier");
   ["chat-channels-list", "chat-convs-list", "chat-send-form", "chat-input-message", "chat-messages-container", "dm-picker", "emoji-panel", "side-tabs"].forEach((id) => assert(h.indexOf('id="' + id + '"') >= 0, "#" + id));
   assert(/data-tab="all"[\s\S]*data-tab="channels"[\s\S]*data-tab="dms"/.test(h) && /data-grp="dms"/.test(h));
   assert(/\[data-grp="dms"\]/.test(c) && /@media \(max-width: 860px\)/.test(c));
 });
 ok("chat v3.2 : page du site (#/chat) intégrée sans rechargement, en-tête flottant, nom cliquable, bulles avec heure", () => {
-  const h = read("chat.html"), c = read("css/chat3.css"), g = read("js/chatglass.js"), cp = read("js/chat-plus.js"), ch = read("js/chat.js"), ce = read("js/chat-embed.js"), rt = read("js/router.js"), ix = read("index.src.html");
+  const h = read("chat.html"), c = read("css/pages/chat3.css"), g = read("js/chat/chatglass.js"), cp = read("js/chat/chat-plus.js"), ch = read("js/chat/chat.js"), ce = read("js/chat/chat-embed.js"), rt = read("js/router.js"), ix = read("index.src.html");
   assert(/name: "chat", re:/.test(rt) && /chat: "page-chat"/.test(rt) && /chat: "chat"/.test(rt), "route #/chat");
-  assert(/id="page-chat"/.test(ix) && /js\/chat-embed\.js/.test(ix) && /data-nav="chat"/.test(ix) && !/href="chat\.html"/.test(ix), "page + liens vers #/chat");
+  assert(/id="page-chat"/.test(ix) && /js\/chat\/chat-embed\.js/.test(ix) && /data-nav="chat"/.test(ix) && !/href="chat\.html"/.test(ix), "page + liens vers #/chat");
   assert(/location\.replace\("index\.html#\/chat"/.test(h) && !/id="mobile-touch-bar"/.test(h), "chat.html seul → redirigé ; plus de dock en double");
   assert(/chat-view/.test(ch) && /chat-ready/.test(ch) && /chat-conv/.test(ce) && /on-chat/.test(ce), "la page parente suit la vue (liste / conversation)");
-  assert(/html\.chat-conv \.app-header/.test(read("css/refonte.css")), "en-tête masqué dans une conversation (mobile)");
+  assert(/html\.chat-conv \.app-header/.test(read("css/themes/refonte.css")), "en-tête masqué dans une conversation (mobile)");
   assert(/id="conv-pill"/.test(h) && /class="back-list fl-btn"/.test(h) && /--fl-bg/.test(c) && /\.compose-wrap \{ position: absolute/.test(c), "pilule + boutons + saisie flottants");
   assert(/chat-nav/.test(g) && /conv-pill/.test(g), "toucher le nom ouvre le profil");
   assert(/LOUPE/.test(cp) && !/textContent = "🔍"/.test(cp), "loupe dessinée, plus d'emoji");
   assert(/class="b-time"/.test(ch) && /class="msg-meta"/.test(ch), "heure dans la bulle, pseudo + admin + titre dans la bulle");
 });
 ok("croix et boutons : croix dessinées automatiquement, barre du haut à hauteur unique, plus de double croix dans la recherche", () => {
-  assert(/x-drawn/.test(read("js/a11y.js")) && /\.x-drawn::before/.test(read("css/base.css")));
-  assert(/--hb: 40px/.test(read("css/refonte.css")) && /spot-field input::-webkit-search-cancel-button/.test(read("css/refonte.css")));
+  assert(/x-drawn/.test(read("js/a11y.js")) && /\.x-drawn::before/.test(read("css/base/base.css")));
+  assert(/--hb: 40px/.test(read("css/themes/refonte.css")) && /spot-field input::-webkit-search-cancel-button/.test(read("css/themes/refonte.css")));
 });
 ok("style flottant : verre de la barre du bas sur tout le site (en-tête en pastilles, boutons, retours, onglets), serif moins étiré", () => {
-  const f = read("css/float.css"), h = read("index.src.html");
-  assert(/css\/float\.css/.test(h) && h.indexOf("css/float.css") > h.indexOf("css/themes-studio.css"), "float.css chargé en dernier");
+  const f = read("css/components/float.css"), h = read("index.src.html");
+  assert(/css\/components\/float\.css/.test(h) && h.indexOf("css/components/float.css") > h.indexOf("css/themes/themes-studio.css"), "float.css chargé en dernier");
   assert(/\.brand-link[^}]*backdrop-filter/.test(f) && /\.desktop-navigation[^}]*backdrop-filter/.test(f) && /\.back-link/.test(f) && /\.play-back/.test(f) && /\.page-tabs/.test(f) && /\.seg-btn/.test(f), "pastilles, retours et onglets en verre");
   assert(/prefers-reduced-transparency/.test(f) && /@supports not/.test(f), "repli sans transparence");
   assert(!/\.toolbar-cluster\s*\{[^}]*border-radius: 999px/.test(f), "le panneau de filtres n'est pas une bulle");
   assert(/letter-spacing: \.004em/.test(f) && /line-height: 1\.1/.test(f), "serif : crénage et interligne détendus");
 });
 ok("barre du haut : mêmes dimensions que le chat (50 px), pas de rectangle au repli, onglet actif = pilule qui épouse la barre", () => {
-  const f = read("css/float.css");
+  const f = read("css/components/float.css");
   assert(/html \{ --hb: 50px; \}/.test(f), "pastilles de 50 px comme dans le chat");
   assert(/html\[data-anim\] \.app-header\.is-scrolling[^{]*\{[^}]*background: none !important/.test(f), "plus de fond plein pendant le défilement");
   assert(/\.app-header\.hide-up \.brand-link/.test(f) && /transform: none !important;/.test(f), "repli pastille par pastille, sans parent animé");
@@ -161,7 +161,7 @@ ok("barre du haut : mêmes dimensions que le chat (50 px), pas de rectangle au r
   assert(/html\.on-chat, html\.on-chat body \{ background: var\(--bg-core\)/.test(f), "fond du chat sans bandeau");
 });
 ok("bouton PRO en verre, navigation compacte en dock, menu roue en verre, filtres du catalogue compacts sur mobile", () => {
-  const f = read("css/float.css");
+  const f = read("css/components/float.css");
   assert(/\.mp-chip \{ color: var\(--color-ink\) !important/.test(f) && /\.mp-chip:active \{ transform: scale\(\.92\)/.test(f), "PRO = même verre et mêmes animations");
   assert(/max-width: 1279px\)/.test(f) && /\.nav-link \{ flex-direction: column/.test(f), "nav compacte : icône au-dessus du libellé");
   assert(/html \.me-sheet \{ background: color-mix\(in srgb, var\(--bg-surface\) 58%/.test(f), "menu de la roue crantée translucide");

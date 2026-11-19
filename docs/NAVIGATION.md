@@ -58,7 +58,7 @@ La source de vérité est `js/router.js` (tableaux `DEFS`, `PAGE_ID`, `NAV_OF`, 
 | `legal` | `/legal[/onglet]` | `page-legal` | — |
 
 ## Le Chat : une seule implémentation
-- Le Chat est **une seule application** : `chat.html` + `js/chat.js` (+ `chat-plus.js`, `chatglass.js`, `css/chat.css`, `css/chat3.css`).
-- Dans le site, la route `#/chat` charge `chat.html` dans un cadre (`js/chat-embed.js`) : les barres du haut et du bas restent celles du site. Ouvert seul, `chat.html` renvoie vers `#/chat`.
+- Le Chat est **une seule application** : `chat.html` + `js/chat/chat.js` (+ `chat-plus.js`, `chatglass.js`, `css/pages/chat.css`, `css/pages/chat3.css`).
+- Dans le site, la route `#/chat` charge `chat.html` dans un cadre (`js/chat/chat-embed.js`) : les barres du haut et du bas restent celles du site. Ouvert seul, `chat.html` renvoie vers `#/chat`.
 - `index.src.html` ne charge **jamais** `chat.js` : le site n'a pas de seconde copie du Chat. Seuls l'indicateur de messages non lus (`js/common.js`) et l'envoi d'un message à l'administrateur (`js/app.js`) lisent les mêmes collections Firestore.
 - `chat.html` est exclu de `robots.txt` et du `sitemap.xml`.

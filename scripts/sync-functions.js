@@ -12,7 +12,8 @@ const root = path.join(__dirname, "..");
 const MA = require(path.join(root, "js/utils.js"));
 
 fs.copyFileSync(path.join(root, "js/game-core.js"), path.join(root, "functions/game-core.js"));
-// le même moteur tourne aussi dans le navigateur quand les Cloud Functions ne sont pas déployées (js/game-api.js)
+fs.copyFileSync(path.join(root, "js/quiz-bank.js"), path.join(root, "functions/quiz-bank.js"));
+// le même moteur tourne aussi dans le navigateur quand les Cloud Functions ne sont pas déployées (js/game/game-api.js)
 fs.copyFileSync(path.join(root, "functions/game.js"), path.join(root, "js/game-engine.js"));
 const src = fs.readFileSync(path.join(root, "js/data/data.js"), "utf8").replace(/^const MOTORAUTO_DATABASE/m, "var MOTORAUTO_DATABASE")
   + "\n" + fs.readFileSync(path.join(root, "js/data/data2.js"), "utf8")
@@ -38,10 +39,10 @@ cars.forEach((raw) => {
   mine.forEach((m, i) => variants.push({ id: c.id + "~" + (i + 1), base: c.id, power: m.power, speed: m.speed, zero: m.zero, name: full + " · " + m.name, brand: c.brand, category: c.category, year: require(path.join(root, "js/game-core.js")).yearOf(c), label: String(c.model).trim() + " · " + m.name }));
 });
 fs.writeFileSync(path.join(root, "functions/catalog-variants.json"), JSON.stringify(variants));
-fs.writeFileSync(path.join(root, "js/car-variants.js"), "/* généré par scripts/sync-functions.js : ne pas modifier à la main */\nwindow.MA_VARIANTS = " + JSON.stringify(variants.map((v) => [v.id, v.base, v.label, v.power, v.speed, v.zero])) + ";\n");
+fs.writeFileSync(path.join(root, "js/catalogue/car-variants.js"), "/* généré par scripts/sync-functions.js : ne pas modifier à la main */\nwindow.MA_VARIANTS = " + JSON.stringify(variants.map((v) => [v.id, v.base, v.label, v.power, v.speed, v.zero])) + ";\n");
 console.log("functions/catalog-variants.json · " + variants.length + " modèles séparés (plus ou moins) issus de " + new Set(variants.map((v) => v.base)).size + " fiches");
 
 // index léger des voitures pour les mentions « #bmw-m3-e46 » (messages, commentaires, bio) : identifiant, nom, années — chargé aussi par le chat
 const idx = cars.map((c) => [c.id, ((c.brand || "") + " " + (c.model || "")).replace(/\s+/g, " ").trim(), String(c.years || "")]);
-fs.writeFileSync(path.join(root, "js/car-index.js"), "/* généré par scripts/sync-functions.js : ne pas modifier à la main */\nwindow.MA_CAR_INDEX = " + JSON.stringify(idx) + ";\n");
-console.log("js/car-index.js · " + idx.length + " voitures");
+fs.writeFileSync(path.join(root, "js/catalogue/car-index.js"), "/* généré par scripts/sync-functions.js : ne pas modifier à la main */\nwindow.MA_CAR_INDEX = " + JSON.stringify(idx) + ";\n");
+console.log("js/catalogue/car-index.js · " + idx.length + " voitures");

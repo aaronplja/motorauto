@@ -3,6 +3,7 @@
 <head>
 <!-- FICHIER GÉNÉRÉ par scripts/build.js — ne pas modifier : éditer index.src.html puis relancer « node scripts/build.js » -->
   <meta charset="UTF-8">
+  <script>/* ADD-201 : adresses propres à l'ouverture (motorauto.fr/catalogue -> catalogue) ; la navigation interne reste en #/ */(function(){try{var m=/^\/(a-propos|admin|annonces|catalogue|chat|circuit|classement|club|clubs|communaute|comparer|contact|duel|frise|fusion|garage|jouer|legal|marche|moteur|nouveautes|pass|pilote|pilotes|plusmoins|pro|quiz|reglages|souhaits|succes|voiture-pilote)(\/.*)?$/.exec(location.pathname);if(m&&!location.hash)history.replaceState(null,"","/"+location.search+"#"+location.pathname.replace(/\/$/,""))}catch(e){}})()</script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="no-referrer">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -32,9 +33,7 @@
   <script>try{var L=localStorage,t=L.getItem('motorauto_theme');if(!L.getItem('ma_studio_b')){L.setItem('ma_studio_b','1');if(t!=='custom'){t='studio-creme';L.setItem('motorauto_theme',t)}}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 
   <link rel="preconnect" href="https://www.gstatic.com">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="alternate" type="application/rss+xml" title="Nouveautés MOTORAUTO" href="/feed.xml">
 
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js"></script>
@@ -43,14 +42,17 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
-  <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=69a160359a","quiz":"js/lazy-quiz.min.js?v=28aabbf116"};</script>
-  <script defer src="js/bundle1.min.js?v=4dfc2d6e6f"></script>
-  <script defer src="js/bundle2.min.js?v=a1a1dc0d07"></script>
-  <script defer src="js/bundle3.min.js?v=022eb90328"></script>
+  <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=8af02d5c9d","quiz":"js/lazy-quiz.min.js?v=28aabbf116","quizbank":"js/lazy-quizbank.min.js?v=ecf0c4999f"};</script>
+  <script defer src="js/bundle1.min.js?v=c49db70a30"></script>
+  <script defer src="js/bundle2.min.js?v=b76759192e"></script>
+  <script defer src="js/bundle3.min.js?v=48de54297b"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
-  <link rel="stylesheet" href="css/bundle.min.css?v=2d9448b122">
+  <link rel="preload" href="fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/hanken-grotesk-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/bundle.min.css?v=dc36f7aabe">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -709,6 +711,10 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
             <label class="check-row"><input type="checkbox" id="settings-show-presence" checked><span>Afficher quand je suis en ligne et ma dernière connexion (sur mon profil et dans le chat)</span></label>
             <p class="priv-sub">Communications</p>
             <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
+            <div id="settings-email-types" class="check-sub">
+              <label class="check-row"><input type="checkbox" id="settings-email-login"><span>E-mail de bon retour après une longue absence</span></label>
+              <label class="check-row"><input type="checkbox" id="settings-email-event"><span>E-mail quand un pilote s'inscrit à mon événement</span></label>
+            </div>
           </fieldset>
           <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
           <div class="panel-section-title mt" id="security-title">Sécurité du compte</div>
@@ -730,6 +736,9 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
               <button type="submit" class="cta-btn fill-btn w-100" id="sec-mail-btn">Envoyer le lien de confirmation</button>
             </form>
           </div>
+          <div class="panel-section-title mt">Mon année</div>
+          <p class="lap-meta">Ton récapitulatif de l'année : chronos, records, voitures et cartes, à partager en image.</p>
+          <button type="button" class="cta-btn w-100" id="my-year-btn">Voir mon année</button>
           <div class="panel-section-title mt">Mes données</div>
           <p class="lap-meta">Télécharge une copie de tes données (profil, garage, entretiens, coûts, journal, abonnements, notifications) dans un fichier JSON.</p>
           <button type="button" class="cta-btn w-100" id="export-data-btn">Télécharger mes données</button>

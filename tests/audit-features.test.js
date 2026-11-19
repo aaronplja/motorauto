@@ -21,7 +21,7 @@ ok("données structurées Car + BreadcrumbList sur les fiches (ADD-105)", () => 
   assert(/BreadcrumbList/.test(read("js/seo-live.js")) && /seo-live\.js/.test(read("index.src.html")) && /BreadcrumbList/.test(read("scripts/build-seo.js")));
 });
 ok("partage d'un chrono (garage et classement) (ADD-106)", () => {
-  assert((read("js/app.js").match(/data-share-lap/g) || []).length >= 2 && /\[data-share-lap\]/.test(read("js/share.js")));
+  assert((read("js/app.js").match(/data-share-lap/g) || []).length >= 2 && /\[data-share-lap\]/.test(read("js/catalogue/share.js")));
 });
 ok("page À propos / Plan du site + redirections (ADD-110)", () => {
   assert(/id="page-about"/.test(read("index.src.html")) && /\/a-propos/.test(read("js/router.js")));
@@ -30,7 +30,7 @@ ok("page À propos / Plan du site + redirections (ADD-110)", () => {
 // ---------- Lot 4 : organisation
 ok("Chat : une seule implémentation, le site ne charge pas chat.js (DEL-106)", () => {
   const h = read("index.src.html");
-  assert(!/js\/chat\.js/.test(h) && /js\/chat-embed\.js/.test(h) && /js\/chat\.js/.test(read("chat.html")));
+  assert(!/js\/chat\/chat\.js/.test(h) && /js\/chat\/chat-embed\.js/.test(h) && /js\/chat\/chat\.js/.test(read("chat.html")));
   assert(!/chat\.html/.test(read("sitemap.xml")));
 });
 ok("pages en fragments : chaque include existe et index.src.html reste court (ORG-101)", () => {
@@ -77,7 +77,7 @@ ok("!important : le nombre ne dépasse pas le plafond actuel (DEL-101)", () => {
 ok("démontage des pages lourdes quittées : frise et succès libèrent leur DOM (DEL-104)", () => {
   const r = read("js/router.js");
   assert(/h\.leave/.test(r) && /PAGE_ID\[previous\.name\] !== PAGE_ID\[route\.name\]/.test(r), "routeur : leave() jamais sur un bloc réutilisé");
-  assert(/leave: \(\) =>/.test(read("js/frise.js")) && /leave: \(\) =>/.test(read("js/minigames.js")));
+  assert(/leave: \(\) =>/.test(read("js/game/frise.js")) && /leave: \(\) =>/.test(read("js/game/minigames.js")));
 });
 
 ok("Vercel : aucun build en ligne (le site est déjà construit ; scripts/ n'y est pas déployé)", () => {

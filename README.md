@@ -131,9 +131,9 @@ Adresses : `#/` accueil · `#/catalogue` · `#/voiture/<id>` · `#/communaute/{f
 ## Nouveautés (tour 6) — jeu, communauté et outils
 
 **Pilotes**
-- Niveaux, XP, 20 badges (`js/gamify.js`) et classement des pilotes les plus actifs (Classement › Pilotes, et accueil). Série de visites (`streaks/{uid}`) avec flamme sur le profil.
-- Cartes à collectionner (`js/cards.js`, Garage › Cartes) : chaque fiche du catalogue est une carte (rareté calculée sur la puissance, la collection grandit avec le catalogue). 1 pack gratuit par jour, 1 pack bonus par badge, doublons → poussière → fabrication de la carte voulue. Collection publique sur les profils.
-- Réactions rapides 🔥 🏁 😍 (`reactions`), fil « Mes abonnements », clubs par marque / région avec fil et classement (`js/clubs.js`), annonces entre pilotes avec signalement (`js/market.js`).
+- Niveaux, XP, 20 badges (`js/game/gamify.js`) et classement des pilotes les plus actifs (Classement › Pilotes, et accueil). Série de visites (`streaks/{uid}`) avec flamme sur le profil.
+- Cartes à collectionner (`js/game/cards.js`, Garage › Cartes) : chaque fiche du catalogue est une carte (rareté calculée sur la puissance, la collection grandit avec le catalogue). 1 pack gratuit par jour, 1 pack bonus par badge, doublons → poussière → fabrication de la carte voulue. Collection publique sur les profils.
+- Réactions rapides 🔥 🏁 😍 (`reactions`), fil « Mes abonnements », clubs par marque / région avec fil et classement (`js/social/clubs.js`), annonces entre pilotes avec signalement (`js/game/market.js`).
 - Garage : jauge de ma voiture partageable en image (champ « 0-100 » ajouté aux voitures de pilote), garage virtuel (rangée de cartes + total de chevaux), budget & consommation (`users/{uid}/costs`), journal avant / après (`users/{uid}/journal`), export du carnet d'entretien en PDF (fenêtre d'impression : « Enregistrer au format PDF »).
 
 **Catalogue**
@@ -171,7 +171,7 @@ firebase deploy --only functions,firestore:rules
 Le plan Blaze est requis (fonctions + planificateur Cloud Scheduler pour la clôture mensuelle). Les e-mails restent désactivés : mets `MAIL_ENABLED=true` dans `functions/.env` pour les réactiver (voir tour 4). Les voitures ajoutées depuis l'admin sont prises en compte automatiquement par le tirage.
 
 ### Mode sans Cloud Functions (par défaut tant qu'elles ne sont pas déployées)
-Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur le même moteur exécuté dans le navigateur (`js/game-engine.js`, copie de `functions/game.js` générée par `node scripts/sync-functions.js`). Tout marche (packs, craft, défis, série, concours, cartes spéciales) sauf les **échanges**, qui exigent le serveur. Les règles Firestore bornent alors ce que chaque pilote peut écrire, mais la triche reste possible pour un pilote averti : déployer les fonctions la supprime.
+Si les fonctions ne répondent pas, `js/game/game-api.js` bascule automatiquement sur le même moteur exécuté dans le navigateur (`js/game-engine.js`, copie de `functions/game.js` générée par `node scripts/sync-functions.js`). Tout marche (packs, craft, défis, série, concours, cartes spéciales) sauf les **échanges**, qui exigent le serveur. Les règles Firestore bornent alors ce que chaque pilote peut écrire, mais la triche reste possible pour un pilote averti : déployer les fonctions la supprime.
 
 ## Nouveautés (tour 8)
 - **Pages légales** (`#/legal/mentions`, `#/legal/confidentialite`, `#/legal/cgu`) : renseigne `editorName`, `editorAddress`, `publicationDirector` en tête de `js/legal.js`. Case de consentement à l'inscription.
@@ -196,7 +196,7 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - Fonctions à (re)déployer : `claimReferral` (nouvelle) et les précédentes (`adminGameTool`, `adminBroadcast`).
 
 ## Nouveautés (tours 11 et 12)
-- **Cartes** : nouvelle mise en page (barres de caractéristiques, effet holo, pastille NEW), ouverture de paquet en plusieurs étapes, vues grille / compacte / albums, tri, fiche 3D avec verso et navigation, **Bataille** d'entraînement (`js/card-battle.js`). Animations uniquement en transform/opacity, grille rendue par paquets de 36.
+- **Cartes** : nouvelle mise en page (barres de caractéristiques, effet holo, pastille NEW), ouverture de paquet en plusieurs étapes, vues grille / compacte / albums, tri, fiche 3D avec verso et navigation, **Bataille** d'entraînement (`js/game/card-battle.js`). Animations uniquement en transform/opacity, grille rendue par paquets de 36.
 - **181 nouvelles fiches** : 38 Alfa Romeo (`js/data/data-alfa.js`), 72 Audi (`js/data/data-audi.js`) et 71 voitures des 24 Heures du Mans (`js/data/data-lemans.js`, catégorie **Le Mans**, identifiants `lm-…`). Elles sont écrites avec `js/data/data-kit.js` et contiennent une biographie, des anecdotes, des records, des phases et des moteurs. Les chiffres marqués `approx` sont indicatifs (une note s'affiche sur la fiche).
 - Après toute modification des données : `node scripts/sync-functions.js` puis `node scripts/build-seo.js`.
 - Les images à déposer dans `img/` sont listées dans `data/IMAGES-A-AJOUTER.txt`.
@@ -208,7 +208,7 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - Les chiffres anciens ou de course sont signalés « indicatifs » sur la fiche.
 
 ### Interface : passe de finition (tour 14)
-- `css/polish.css` (chargé en dernier) : champs de saisie homogènes (16 px pour éviter le zoom iOS), boutons qui passent à la ligne au lieu d'être coupés, fenêtres sans débordement, titres jamais coupés, en-tête adapté aux écrans de 320 px, onglets défilants, cibles tactiles de 44 px, boutons d'action de la fiche en grille.
+- `css/base/polish.css` (chargé en dernier) : champs de saisie homogènes (16 px pour éviter le zoom iOS), boutons qui passent à la ligne au lieu d'être coupés, fenêtres sans débordement, titres jamais coupés, en-tête adapté aux écrans de 320 px, onglets défilants, cibles tactiles de 44 px, boutons d'action de la fiche en grille.
 - `js/polish.js` : le verrouillage du défilement ne peut plus « fuir », les fenêtres plein écran des cartes ont une croix et se ferment à la navigation, la barre du bas s'efface quand le clavier est ouvert, l'onglet actif reste visible.
 - Fiche voiture : « Palmarès & records » (plus de doublon avec « Historique »), section « Versions & générations » masquée quand elle n'apporte rien.
 - Salon : texte d'invite raccourci sur petit écran.
@@ -221,14 +221,14 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 
 ## Tour 16 — Navigation et refonte visuelle v2
 - Navigation : 4 pages (Accueil, Catalogue, Jouer, Communauté) + « Moi ». Sur mobile : barre d'onglets ancrée en bas (5 entrées) ; sur ordinateur : le bouton du compte ouvre le même menu « Moi » (garage, cartes, profil, messages, admin, classement, ambiance, contact, légal, déconnexion). Code : `js/nav.js`.
-- Refonte visuelle : `css/refonte.css` (dernière feuille) — en-tête ancré, surfaces plates, rayons unifiés, boutons à aplat d'accent, feuille « Moi », modales en feuille basse sur mobile. Compatible avec les 16 ambiances.
+- Refonte visuelle : `css/themes/refonte.css` (dernière feuille) — en-tête ancré, surfaces plates, rayons unifiés, boutons à aplat d'accent, feuille « Moi », modales en feuille basse sur mobile. Compatible avec les 16 ambiances.
 - Plus de doublons : thème retiré de l'en-tête (dans « Moi »), pied de page réduit aux liens essentiels.
 
 ## Tour 17 — Fluidité Android et en-tête opaque
-- Suppression du « verre » (backdrop-filter, surfaces translucides), du halo plein écran fixe (`body::before`), des flous animés, des perspectives 3D par carte et des animations de fond sur mobile/tactile : cause du clignotement sous Android. En-tête et barre du bas opaques. Tout est dans la fin de `css/refonte.css`.
+- Suppression du « verre » (backdrop-filter, surfaces translucides), du halo plein écran fixe (`body::before`), des flous animés, des perspectives 3D par carte et des animations de fond sur mobile/tactile : cause du clignotement sous Android. En-tête et barre du bas opaques. Tout est dans la fin de `css/themes/refonte.css`.
 
 ## Tour 18 — Duel v2, Réglages, notifications, carte, clubs
-- **Duel** : recherche de n'importe quelle voiture (catalogue, communauté, tes voitures), épreuves 0-100 / 0-200 / 400 m / 1000 m, sol sec ou mouillé, niveau de pilote. Moteur de calcul `js/duel-engine.js` (courbe de puissance, rapports de boîte et temps de passage, adhérence selon la transmission, traînée calée sur la vitesse maxi, départ calé sur le 0-100 publié) ; test `tests/duel.test.js`. Le quiz « voiture faite pour toi » est supprimé.
+- **Duel** : recherche de n'importe quelle voiture (catalogue, communauté, tes voitures), épreuves 0-100 / 0-200 / 400 m / 1000 m, sol sec ou mouillé, niveau de pilote. Moteur de calcul `js/game/duel-engine.js` (courbe de puissance, rapports de boîte et temps de passage, adhérence selon la transmission, traînée calée sur la vitesse maxi, départ calé sur le 0-100 publié) ; test `tests/duel.test.js`. Le quiz « voiture faite pour toi » est supprimé.
 - **Échanges** : la carte « Tu reçois » n'est plus inversée, pastille « Tu l'as déjà ». **Profils** : bouton Suivre rétabli. **Admin** : peut modifier les voitures des pilotes. **Chat** : aperçu mis à jour après suppression, « Vu par… » dans le salon et les canaux, « Envoyer dans le chat » (aperçu, plusieurs destinations, récents).
 - **Défis** : 10 défis par semaine + 1 défi du jour. **Raretés** : Shiny (arc-en-ciel, ≈ 0,5 % par carte, 16 voitures mythiques dans `SHINY` de `js/game-core.js`), couleurs Silver / Carbone / Rouge sang / Bronze / Néon / Coucher de soleil pour les cartes spéciales (admin → Jeu).
 - **Concours** : bandeau sur l'accueil seulement quand un concours est ouvert ; l'admin crée et modifie des concours personnalisés (admin → Jeu) ; les photos sont publiées sans validation (l'admin peut les retirer).
@@ -297,8 +297,8 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 - À redéployer : règles Firestore + fonctions (`claimSets`) + site.
 
 ## Tour 22.1 — dock et animations
-- Barre du bas réécrite (`css/dock.css`, `js/glassbar.js`) : coque fixe centrée + dock animé en transform/opacity, bulle à ressort, hystérésis au défilement.
-- Langage d'animation unique (`css/motion.css`) ; les `transition: all` sont remplacés par des propriétés précises.
+- Barre du bas réécrite (`css/components/dock.css`, `js/glassbar.js`) : coque fixe centrée + dock animé en transform/opacity, bulle à ressort, hystérésis au défilement.
+- Langage d'animation unique (`css/base/motion.css`) ; les `transition: all` sont remplacés par des propriétés précises.
 
 ## Tour 22.3 — BMW, Mercedes-Benz / AMG, Renault, Alpine et rallye
 
@@ -313,7 +313,7 @@ Si les fonctions ne répondent pas, `js/game-api.js` bascule automatiquement sur
 Les fiches qui regroupaient plusieurs modèles (ex. 106 Maxi / AX Sport / Visa) sont scindées au chargement, une fiche par voiture ; les Renault restent groupées. La première fiche garde son id (cartes déjà obtenues conservées). Pour scinder une autre fiche, ajouter une entrée dans `S` de ce fichier. Après modification : `node scripts/sync-functions.js` puis redéployer les functions.
 
 ### Cartes à plusieurs images
-Une voiture avec plusieurs photos https (galerie admin) = une carte à plusieurs images. Quand le joueur obtient à nouveau la carte, une image qu'il n'a pas encore se débloque au hasard (pas un doublon, pas de cristaux). Palier 50 % (si 4 images ou plus) : cristaux = 4 x valeur doublon ; 100 % : cristaux = coût de fabrication. Une fois tout débloqué, les copies suivantes sont de vrais doublons. Données : champs `pics` et `picClaims` du document `collections/{uid}` (règles Firestore mises à jour). Code : `js/game-core.js` (picKey, picsHave, picReward), `functions/game.js` (openPack), `js/cards.js` (pastille, galerie).
+Une voiture avec plusieurs photos https (galerie admin) = une carte à plusieurs images. Quand le joueur obtient à nouveau la carte, une image qu'il n'a pas encore se débloque au hasard (pas un doublon, pas de cristaux). Palier 50 % (si 4 images ou plus) : cristaux = 4 x valeur doublon ; 100 % : cristaux = coût de fabrication. Une fois tout débloqué, les copies suivantes sont de vrais doublons. Données : champs `pics` et `picClaims` du document `collections/{uid}` (règles Firestore mises à jour). Code : `js/game-core.js` (picKey, picsHave, picReward), `functions/game.js` (openPack), `js/game/cards.js` (pastille, galerie).
 
 ### Compléments de fiches (lots)
 `js/data/data-enrich-bmw.js`, `data-enrich-mercedes.js` et `data-enrich-renault.js` (Renault + Alpine) complètent 0-100, couple, histoire et anecdotes via `MAKIT.enrich` (sans jamais écraser une valeur existante). Valeurs constructeur arrondies : fiches marquées « indicatif ». Reste à faire : rallye, anciennes fiches (couples / V-Max).

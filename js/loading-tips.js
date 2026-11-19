@@ -3,7 +3,7 @@
  *  1. Écran d'accueil : si le catalogue met plus de ~0,7 s à arriver, un écran MOTORAUTO affiche une astuce qui change toutes les 3,5 s
  *     (jamais plus de 8 s ; Échap ou un clic pour passer). Rien ne s'affiche si tout est rapide.
  *  2. Squelettes : un chargement qui dure plus de 1,5 s ajoute une astuce sous le squelette.
- * Le chargement affiché est la marque « Respiration » (css/brand-loader.css).
+ * Le chargement affiché est la marque « Respiration » (css/components/brand-loader.css).
  */
 (function () {
   "use strict";

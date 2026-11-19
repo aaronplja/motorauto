@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "allowJs": true, "checkJs": true, "noEmit": true, "strict": false, "target": "es2020", "lib": ["es2020", "dom"], "skipLibCheck": true },
+  "files": ["types/globals.d.ts", "js/utils.js", "js/game-core.js", "js/quiz-bank.js"]
+}

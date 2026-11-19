@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * MOTORAUTO — récupère les logos de marques (SVG monochromes) depuis le paquet « simple-icons » (licence CC0)
- * et les range dans assets/brands/, avec la liste assets/brands/index.json lue par js/brand-logos.js.
+ * et les range dans assets/brands/, avec la liste assets/brands/index.json lue par js/catalogue/brand-logos.js.
  *
  *   npm i --no-save simple-icons
  *   node scripts/brand-logos.js

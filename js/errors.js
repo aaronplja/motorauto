@@ -25,7 +25,17 @@
   }
   function report(kind, err, extra) { try { const e = shape(kind, err, extra); if (e) send(e); } catch (_) { /* ne jamais casser le site à cause du suivi */ } }
   window.addEventListener("error", (ev) => { if (ev.error || ev.message) report("js", ev.error || ev.message, { src: ev.filename ? String(ev.filename).split("/").pop().split("?")[0] + ":" + (ev.lineno || 0) : "" }); });
-  window.addEventListener("unhandledrejection", (ev) => report("promesse", ev.reason));
+  // UX-203 : une action de l'utilisateur qui échoue sans message dédié affiche un message unique « Action impossible, réessaie. »
+  let lastGesture = 0, lastToast = 0;
+  ["click", "submit", "keydown"].forEach((t) => document.addEventListener(t, () => { lastGesture = Date.now(); }, { capture: true, passive: true }));
+  function userFacing(err) {
+    try {
+      const now = Date.now(); if (now - lastGesture > 3000 || now - lastToast < 10000) return;
+      const msg = String((err && err.message) || err || ""); if (!msg || IGNORE.test(msg) || /aborted|cancel/i.test(msg)) return;
+      lastToast = now; if (window.MA && window.MA.toast) window.MA.toast(navigator.onLine === false ? "Hors connexion : réessaie au retour du réseau." : "Action impossible, réessaie.", "err");
+    } catch (_) { /* ne jamais casser le site à cause du suivi */ }
+  }
+  window.addEventListener("unhandledrejection", (ev) => { report("promesse", ev.reason); userFacing(ev.reason); });
   window.MAErrors = { report, openCount: () => count };
 
   // ----- côté administrateur

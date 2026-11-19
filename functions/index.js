@@ -25,7 +25,7 @@ const APPCHECK_ENFORCED = process.env.ENFORCE_APPCHECK === "true";
 let VARIANTS = [];
 try { VARIANTS = require("./catalog-variants.json"); } catch (_) { /* absent : plus ou moins sur les fiches entières */ }
 
-/** une voiture de Firestore -> entrée du catalogue de jeu. DOIT donner les mêmes valeurs que le site (js/utils.js normalizeCar + js/minigames.js quizPool) :
+/** une voiture de Firestore -> entrée du catalogue de jeu. DOIT donner les mêmes valeurs que le site (js/utils.js normalizeCar + js/game/minigames.js quizPool) :
  *  sinon le quiz rejoué ici à partir de la graine n'a pas les mêmes questions que celles affichées, et le score est faux. */
 function poolEntry(id, x) {
   x = x || {};

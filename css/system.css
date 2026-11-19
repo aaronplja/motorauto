@@ -126,3 +126,22 @@ img[id*="avatar"], .avatar-preview img { aspect-ratio: 1 / 1; }
 /* UX-205 : bandeau hors connexion (nouvel élément, ne touche ni l'en-tête ni la barre du bas) */
 #ma-offline { position: fixed; z-index: 4000; left: 50%; transform: translateX(-50%); top: calc(var(--safe-top, 0px) + 64px); max-width: min(92vw, 420px); padding: .45rem 1rem; border-radius: 999px; background: var(--bg-elevated); color: var(--color-ink); border: 1px solid var(--stroke-line); box-shadow: var(--shadow-pop); font-size: .82rem; pointer-events: none; }
 #ma-offline[hidden] { display: none; }
+
+/* ADD-205 : bandeau « Vérifie ton e-mail » (nouvel élément, sous l'en-tête) */
+#ma-verify-bar { position: fixed; z-index: 3900; left: 50%; transform: translateX(-50%); top: calc(var(--safe-top, 0px) + 64px); width: max-content; max-width: min(94vw, 460px); display: flex; align-items: center; gap: .6rem; padding: .45rem .5rem .45rem 1rem; border-radius: 999px; background: var(--bg-elevated); color: var(--color-ink); border: 1px solid var(--stroke-line); box-shadow: var(--shadow-pop); font-size: .82rem; }
+#ma-verify-bar[hidden] { display: none; }
+#ma-verify-bar button { min-height: 32px; padding: 0 .8rem; border-radius: 999px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
+#ma-verify-bar [data-verify-hide] { border-color: transparent; color: var(--color-muted); padding: 0 .6rem; }
+body.offline-on #ma-verify-bar { top: calc(var(--safe-top, 0px) + 108px); }
+.check-sub { padding-left: 1.6rem; }
+.check-sub[hidden] { display: none; }
+
+/* ADD-209 : « Mon année » */
+.ma-year-ov { position: fixed; inset: 0; z-index: 5200; display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.55); }
+.ma-year-card { width: min(94vw, 420px); padding: 1.4rem; border-radius: 22px; background: var(--bg-elevated); color: var(--color-ink); border: 1px solid var(--stroke-line); box-shadow: var(--shadow-pop); }
+.ma-year-h { margin: 0 0 1rem; font-family: var(--font-display); font-weight: 400; font-size: 1.9rem; }
+.ma-year-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-bottom: 1rem; }
+.ma-year-grid div { padding: .8rem; border-radius: 16px; background: color-mix(in srgb, var(--accent) 8%, transparent); display: grid; gap: .1rem; }
+.ma-year-grid b { font-size: 1.8rem; line-height: 1; }
+.ma-year-grid span { font-size: .8rem; color: var(--color-muted); }
+.ma-year-act { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; }

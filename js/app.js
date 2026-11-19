@@ -675,6 +675,8 @@
           carPhoto: d.carPhoto || "",
           mods: d.mods || "",
           emailNotifs: (pSnap && pSnap.exists ? pSnap.data().emailNotifs : d.emailNotifs) !== false,
+          emailLogin: !(pSnap && pSnap.exists) || pSnap.data().emailLogin !== false,
+          emailEvent: !(pSnap && pSnap.exists) || pSnap.data().emailEvent !== false,
           instagram: d.instagram || "", snapchat: d.snapchat || "", tiktok: d.tiktok || ""
         };
 
@@ -724,6 +726,8 @@
     $("settings-hide-following").checked = profile.hideFollowing === true;
     $("settings-hide-followers").checked = profile.hideFollowers === true;
     $("settings-email-notifs").checked = profile.emailNotifs !== false;
+    $("settings-email-login").checked = profile.emailLogin !== false; $("settings-email-event").checked = profile.emailEvent !== false;
+    $("settings-email-types").hidden = profile.emailNotifs === false;
     $("settings-car").value = profile.currentCar === "Projet Principal" || profile.currentCar === "Non renseignée" ? "" : profile.currentCar;
     $("settings-car-photo").value = profile.carPhoto;
     $("settings-car-preview").src = safeUrl(profile.carPhoto) || FALLBACK_CAR;
@@ -745,7 +749,7 @@
   }
 
   // le document public ne porte plus les réglages privés
-  function publicProfile(p) { const o = Object.assign({}, p); delete o.emailNotifs; return o; }
+  function publicProfile(p) { const o = Object.assign({}, p); delete o.emailNotifs; delete o.emailLogin; delete o.emailEvent; return o; }
 
   async function saveProfile() {
     const data = {
@@ -758,7 +762,7 @@
     if (profile.usernameAt) data.usernameAt = profile.usernameAt;
     await db.collection("users").doc(currentUser.uid).set(data);
     // préférence privée (TECH-105) : hors du profil public, lisible seulement par son propriétaire
-    await db.collection("users").doc(currentUser.uid).collection("private").doc("prefs").set({ emailNotifs: profile.emailNotifs !== false });
+    await db.collection("users").doc(currentUser.uid).collection("private").doc("prefs").set({ emailNotifs: profile.emailNotifs !== false, emailLogin: profile.emailLogin !== false, emailEvent: profile.emailEvent !== false });
   }
 
   async function saveGarage() {
@@ -867,6 +871,7 @@
       profile.hideFollowing = $("settings-hide-following").checked;
       profile.hideFollowers = $("settings-hide-followers").checked;
       profile.emailNotifs = $("settings-email-notifs").checked;
+      profile.emailLogin = $("settings-email-login").checked; profile.emailEvent = $("settings-email-event").checked;
       for (const k of ["instagram", "snapchat", "tiktok"]) {
         const raw = $("settings-" + k) ? $("settings-" + k).value : "";
         const h = window.MANets.parse(k, raw);
@@ -2966,7 +2971,7 @@
     Object.entries(advMap).forEach(([id, key]) => $(id).addEventListener("input", (e) => { filters[key] = numOrNull(e.target.value); advRefresh(); }));
     $("adv-drive").addEventListener("change", (e) => { filters.drive = e.target.value; advRefresh(); });
     $("adv-turbo").addEventListener("change", (e) => { filters.turbo = e.target.value; advRefresh(); });
-    $("adv-rarity").addEventListener("change", async (e) => { filters.rarity = e.target.value; if (filters.rarity !== "all" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) {} } advRefresh(); });
+    $("adv-rarity").addEventListener("change", async (e) => { filters.rarity = e.target.value; if (filters.rarity !== "all" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) { if (window.MAErrors) window.MAErrors.report("silencieux", _); } } advRefresh(); });
     $("adv-verdict").addEventListener("change", (e) => { filters.verdict = e.target.value; advRefresh(); });
     $("adv-reset").addEventListener("click", () => {
       Object.entries(advMap).forEach(([id, key]) => { $(id).value = ""; filters[key] = null; });
@@ -2983,7 +2988,7 @@
     });
     if (restoreFilters()) { syncFiltersUi(); renderCatalog(); }
     $("brand-select").addEventListener("change", (e) => { filters.brand = e.target.value; filters.page = 1; renderCatalog(); });
-    $("sort-select").addEventListener("change", async (e) => { filters.sort = e.target.value; filters.page = 1; if (filters.sort === "rarity-desc" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) {} } renderCatalog(); });
+    $("sort-select").addEventListener("change", async (e) => { filters.sort = e.target.value; filters.page = 1; if (filters.sort === "rarity-desc" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) { if (window.MAErrors) window.MAErrors.report("silencieux", _); } } renderCatalog(); });
     $("noimg-pill").addEventListener("click", () => {
       filters.noimg = !filters.noimg; filters.page = 1;
       $("noimg-pill").classList.toggle("active", filters.noimg); $("noimg-pill").setAttribute("aria-pressed", String(filters.noimg));

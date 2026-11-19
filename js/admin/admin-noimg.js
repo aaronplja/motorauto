@@ -105,7 +105,7 @@
       <label style="display:flex;gap:6px;align-items:center;font-size:.85rem"><input type="checkbox" id="ani-url"> Afficher aussi celles qui ont déjà une URL</label></div>
       <small id="ani-count" style="width:100%;color:var(--color-secondary)"></small></header><div class="ani-body"></div>`;
     document.body.appendChild(d); document.body.classList.add("tcg-open");
-    const close = async () => { d.remove(); document.body.classList.remove("tcg-open"); document.removeEventListener("keydown", esc2); if (added) { try { await C.reloadCatalog(); } catch (_) {} C.toast(added + " photo" + (added > 1 ? "s ajoutées" : " ajoutée") + " au catalogue.", "ok"); } };
+    const close = async () => { d.remove(); document.body.classList.remove("tcg-open"); document.removeEventListener("keydown", esc2); if (added) { try { await C.reloadCatalog(); } catch (_) { if (window.MAErrors) window.MAErrors.report("silencieux", _); } C.toast(added + " photo" + (added > 1 ? "s ajoutées" : " ajoutée") + " au catalogue.", "ok"); } };
     const esc2 = (e) => { if (e.key === "Escape") close(); };
     document.addEventListener("keydown", esc2);
     d.addEventListener("click", (e) => {

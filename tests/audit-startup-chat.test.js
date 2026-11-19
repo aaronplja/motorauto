@@ -9,8 +9,8 @@ ok("démarrage D2 (tracé), chargement C8 (respiration) et icône noire", () => 
   const src = read("index.src.html");
   assert.ok(/<style id="splash-css">[\s\S]*spDraw[\s\S]*Big Shoulders Display/.test(src), "splash : tracé + police du logo");
   assert.ok(!/sp-line/.test(src), "plus de barre de progression dans le splash");
-  assert.ok(/href="css\/brand-loader\.css"/.test(src) && /brand-loader\.css/.test(read("chat.html")), "feuille du chargement liée (site + chat)");
-  const bl = read("css/brand-loader.css");
+  assert.ok(/href="css\/components\/brand-loader\.css"/.test(src) && /brand-loader\.css/.test(read("chat.html")), "feuille du chargement liée (site + chat)");
+  const bl = read("css/components/brand-loader.css");
   ["\\.spinner", "\\.chat-embed-spin", "\\.ptr span", "\\.skel-wrap::before", "\\.tcg-skeleton::before", "\\.ma-busy::after", "#ltips \\.lt-sp"].forEach((r) => assert.ok(new RegExp(r).test(bl), "loader : " + r));
   assert.ok(/maBreathe/.test(bl) && /clip-path/.test(bl), "respiration en clip-path");
   const fav = src.split("\n").filter((l) => /rel="icon"/.test(l)).join("");
@@ -29,7 +29,7 @@ ok("écran de démarrage : couleurs du thème choisi (y compris Mon thème)", ()
 });
 ok("connexion : carte pleine, marque et pilules", () => {
   assert.ok(/class="auth-mark"/.test(read("index.src.html")));
-  assert.ok(/#auth-modal \.modal-dialog\.auth-box/.test(read("css/float.css")));
+  assert.ok(/#auth-modal \.modal-dialog\.auth-box/.test(read("css/components/float.css")));
 });
 ok("tutoriels : une aide pour chaque page de Jouer", () => {
   const g = read("js/guides.js");
@@ -48,9 +48,9 @@ ok("en-tête : revient au changement de page", () => {
 
 // ---- série z9 : avatars, accueil, filtre, chat iPhone, date
 ok("avatars : jamais étirés (badge d'en-tête du chat)", () => {
-  const c = read("css/chat3.css");
+  const c = read("css/pages/chat3.css");
   assert.ok(/\.conv-badge \.avatar \{ position: absolute; inset: 0;[^}]*object-fit: cover/.test(c), "avatar du badge en absolu 100 %");
-  assert.ok(/aspect-ratio: 1 \/ 1/.test(read("css/float.css")), "avatars ronds : ratio 1/1");
+  assert.ok(/aspect-ratio: 1 \/ 1/.test(read("css/components/float.css")), "avatars ronds : ratio 1/1");
 });
 ok("accueil : un seul bandeau garage (pas de dessins concurrents)", () => {
   const g = read("js/garage-home.js");
@@ -58,11 +58,11 @@ ok("accueil : un seul bandeau garage (pas de dessins concurrents)", () => {
   assert.ok(/querySelectorAll\("#home-garage"\)\.forEach\(\(x, i\) => \{ if \(i\) x\.remove\(\); \}\)/.test(g), "doublons retirés");
 });
 ok("filtre : glissement sans rebond", () => {
-  const t = read("css/themefix.css");
+  const t = read("css/themes/themefix.css");
   assert.ok(/animation:adv-up \.26s cubic-bezier\(\.22,\.9,\.3,1\)/.test(t) && !/adv-up \.28s var\(--m-spring/.test(t));
 });
 ok("chat iPhone : page redimensionnée seulement clavier ouvert, saisie au niveau du dock, plus de date flottante", () => {
-  const j = read("js/chat.js"), e = read("js/chat-embed.js"), c = read("css/chat3.css");
+  const j = read("js/chat/chat.js"), e = read("js/chat/chat-embed.js"), c = read("css/pages/chat3.css");
   assert.ok(!/--vvh/.test(j) && /window\.addEventListener\("resize", fit\)/.test(j), "le chat ne mesure plus le clavier lui-même");
   assert.ok(/chat-blur/.test(j) && /chat-blur/.test(e) && /function settle\(\)/.test(e), "page du site remise en place après le clavier");
   assert.ok(/max\(6px, calc\(var\(--safe-bottom, 0px\) - 12px\)\)/.test(c), "saisie au niveau du dock");
@@ -71,7 +71,7 @@ ok("chat iPhone : page redimensionnée seulement clavier ouvert, saisie au nivea
 
 // ---- série z10 : chat iPhone (hauteur réduite après le clavier, recouvrement en haut)
 ok("chat iPhone : recalcul de la hauteur après le clavier, salon sous la barre du haut, voile en haut de conversation", () => {
-  const e = read("js/chat-embed.js"), g = read("js/glassbar.js"), c = read("css/chat3.css");
+  const e = read("js/chat/chat-embed.js"), g = read("js/glassbar.js"), c = read("css/pages/chat3.css");
   assert.ok(/let peak = window\.innerHeight/.test(e) && /function remeasure\(\)/.test(e) && /sentinel\.style\.display = "none"/.test(e), "contournement du bug de hauteur iOS");
   assert.ok(/function fitTop\(\)/.test(e) && /getBoundingClientRect\(\)\.bottom/.test(e), "le salon commence sous la barre réelle");
   assert.ok(/box: "border-box"/.test(g) && /addEventListener\("resize", setH\)/.test(g), "hauteur de la barre du haut recalculée (encoche comprise)");
@@ -80,7 +80,7 @@ ok("chat iPhone : recalcul de la hauteur après le clavier, salon sous la barre 
 
 // ---- série z11 : chat iPhone (décalage persistant, saisie sous le clavier, cadres débloqués)
 ok("chat iPhone : seule la saisie suit le clavier (--kb), cadre et liste immobiles, page du site défilable pour revenir à sa place", () => {
-  const e = read("js/chat-embed.js"), r = read("css/refonte.css"), c = read("css/chat.css"), c3 = read("css/chat3.css");
+  const e = read("js/chat/chat-embed.js"), r = read("css/themes/refonte.css"), c = read("css/pages/chat.css"), c3 = read("css/pages/chat3.css");
   assert.ok(/function layout\(now\)/.test(e) && /window\.innerHeight - vv\.height/.test(e) && /"--kb"/.test(e), "hauteur du clavier transmise au chat");
   assert.ok(!/host\.style\.bottom = bottom/.test(e) && /host\.style\.top = topBase; host\.style\.bottom = "";/.test(e), "le cadre ne bouge pas");
   assert.ok(/translate3d\(0, calc\(-1 \* max\(var\(--kb, 0px\), var\(--kbp, 0px\)\)\), 0\)/.test(c3), "la saisie monte avec le clavier");
@@ -90,36 +90,36 @@ ok("chat iPhone : seule la saisie suit le clavier (--kb), cadre et liste immobil
   assert.ok(!/--vvh|--vvt/.test(c) && /body\.chat-page \{[^}]*height: 100%/.test(c), "la page du chat remplit son cadre");
 });
 ok("chat : cadres débloqués visibles autour des pdp (anneau propre, pas de filtre sur la photo)", () => {
-  const c = read("css/chat3.css");
+  const c = read("css/pages/chat3.css");
   assert.ok(/\.chat-app img\.avatar\.cosm-f \{[^}]*filter: none;[^}]*box-shadow:[^}]*var\(--cf/.test(c), "anneau prioritaire sur l'ombre d'avatar du chat");
   assert.ok(/@keyframes chatFrameGlow/.test(c) && /cf-prism[^{]*\{ animation: chatFrameGlow/.test(c.replace(/\n/g, " ")), "animation sans hue-rotate");
   assert.ok(!/\.chat-app img\.avatar\.cosm-f \{[^}]*overflow: visible/.test(c), "la photo reste ronde");
 });
 ok("chat iPhone : saisie en cours signalée au site, la disposition au-dessus du clavier n'est pas annulée pendant l'animation", () => {
-  const j = read("js/chat.js"), e = read("js/chat-embed.js");
+  const j = read("js/chat/chat.js"), e = read("js/chat/chat-embed.js");
   assert.ok(/tell\(\{ ma: "chat-focus" \}\)/.test(j) && /tell\(\{ ma: "chat-blur" \}\)/.test(j), "le chat signale focus et blur");
   assert.ok(/d\.ma === "chat-focus"\) \{ hold = true/.test(e) && /hold && Date\.now\(\) - lastOpenAt < 1200/.test(e), "pas de remise en place pendant la saisie");
 });
 ok("chat iPhone : hauteur de clavier stable (90 ms), valeurs absurdes ignorées, marge pour la barre d'accessoires iOS", () => {
-  const e = read("js/chat-embed.js");
+  const e = read("js/chat/chat-embed.js");
   assert.ok(/stabT = setTimeout\(\(\) => layout\(true\), 90\)/.test(e) && /window\.innerHeight \* 0\.7/.test(e), "stabilisation");
   assert.ok(/\(kbPx \+ 8\) \+ "px"/.test(e), "marge au-dessus de la barre d'accessoires");
 });
 ok("chat iPhone : saisie remontée dès le toucher (avant le clavier), zone visible suivie sans bouger l'en-tête, conteneurs non défilables", () => {
-  const e = read("js/chat-embed.js"), j = read("js/chat.js"), c = read("css/chat3.css");
+  const e = read("js/chat/chat-embed.js"), j = read("js/chat/chat.js"), c = read("css/pages/chat3.css");
   assert.ok(/d\.ma === "chat-pre"\) pre\(\)/.test(e) && /function pre\(\)/.test(e) && /ma_kbh/.test(e), "pré-remontée avec la dernière hauteur connue");
   assert.ok(/function pan\(\)/.test(e) && /translate3d\(0,/.test(e) && /vv\.offsetTop/.test(e), "cadre ramené sur la zone visible");
   assert.ok(/tell\(\{ ma: "chat-pre" \}\)/.test(j) && /const still = \(\) =>/.test(j), "le chat annonce le toucher et remet les conteneurs à zéro");
   assert.ok(/@supports \(overflow: clip\) \{ html, body\.chat-page, \.chat-app \{ overflow: clip; \} \}/.test(c), "overflow:clip");
 });
 ok("chat iPhone : le clavier s'ouvre (barre remontée au relâchement du doigt, focus donné par le chat, repli natif si échec)", () => {
-  const j = read("js/chat.js"), c = read("css/chat3.css");
+  const j = read("js/chat/chat.js"), c = read("css/pages/chat3.css");
   assert.ok(/input\.addEventListener\("touchend"/.test(j) && /e\.preventDefault\(\);\s*wrap\.style\.setProperty\("--kbp"/.test(j) && /input\.focus\(\{ preventScroll: true \}\)/.test(j), "remontée au relâchement puis focus");
   assert.ok(!/input\.addEventListener\("(touchstart|pointerdown)", \(\) => tell/.test(j), "rien ne bouge pendant le toucher");
   assert.ok(/native = true/.test(j) && /max\(var\(--kb, 0px\), var\(--kbp, 0px\)\)/.test(c), "repli natif et remontée provisoire");
 });
 ok("démarrage rapide : comparateurs réutilisés, recherche calculée à la demande, logos testés par index, images du catalogue différées", () => {
-  const a = read("js/app.js"), u = read("js/utils.js"), b = read("js/brand-logos.js"), cd = read("js/cards.js");
+  const a = read("js/app.js"), u = read("js/utils.js"), b = read("js/catalogue/brand-logos.js"), cd = read("js/game/cards.js");
   assert.ok(/const COLL = new Intl\.Collator\("fr"\), COLL_NUM = new Intl\.Collator\("fr", \{ numeric: true \}\)/.test(a), "comparateurs créés une fois");
   assert.ok(!/localeCompare\([^)]*"fr"/.test(a), "plus de localeCompare(…, \"fr\") dans app.js (recréé à chaque comparaison)");
   assert.ok(/COLL_FR\.compare\(a\.brand, b\.brand\)/.test(cd), "tri des cartes par marque");
@@ -129,7 +129,7 @@ ok("démarrage rapide : comparateurs réutilisés, recherche calculée à la dem
   assert.ok(/requestAnimationFrame\(\(\) => \{ gliderRaf = 0; placeGlider\(gliderTarget\); \}\)/.test(a), "mesures de la navigation regroupées");
 });
 ok("pack ouvert sur mobile : les boutons de fin prennent la case libre de la grille (plus de chevauchement avec le récapitulatif)", () => {
-  const j = read("js/cards.js"), c = read("css/polish.css");
+  const j = read("js/game/cards.js"), c = read("css/base/polish.css");
   assert.ok(/endBox\.classList\.add\("in-grid"\); grid\.appendChild\(endBox\)/.test(j) && /results\.length % cols !== 0/.test(j), "déplacement dans la grille quand la dernière ligne n'est pas pleine");
   assert.ok(/\.pk3 \.tcg-flips > #tcg-end\.in-grid \{ position: static;/.test(c), "boutons empilés, hors position collante");
 });
@@ -151,7 +151,7 @@ ok("quiz : le serveur rejoue les mêmes questions que le site (même catalogue d
   Object.keys(G.QCATS).forEach((cat) => [1, 3].forEach((lv) => { const seed = "t" + cat + lv, A = G.quizBuild(seed, cat, lv, client), B = G.quizBuild(seed, cat, lv, server); assert.deepStrictEqual(A.map((q) => [q.q, q.a, q.m]), B.map((q) => [q.q, q.a, q.m]), cat + lv); }));
 });
 ok("bandeau Comparer / bouton flottant / passe de saison : plus de chevauchement ni de mot coupé", () => {
-  const t = read("css/themefix.css"), s = read("css/season.css");
+  const t = read("css/themes/themefix.css"), s = read("css/pages/season.css");
   assert.ok(/#compare-go\{flex:none;white-space:nowrap\}/.test(t), "bouton Comparer sur une ligne");
   assert.ok(/#compare-tray:not\(\[hidden\]\)~\.fab-pack\{bottom:calc\(10\.1rem/.test(t), "bouton flottant au-dessus du bandeau");
   assert.ok(/\.ssn-left small\{display:block;overflow-wrap:normal;word-break:keep-all/.test(s), "libellé du niveau de saison non coupé");
@@ -161,9 +161,9 @@ ok("traductions : les libellés de jeu, de marque et d'accueil ajoutés existent
   ["en", "es", "de", "it"].forEach((l) => { const d = dict(l); keys.forEach((k) => assert.ok(d[k] && d[k].trim(), l + " : manque « " + k + " »")); });
   assert.ok(Object.keys(dict("en")).length === Object.keys(dict("es")).length && Object.keys(dict("de")).length === Object.keys(dict("it")).length && Object.keys(dict("en")).length === Object.keys(dict("de")).length, "mêmes clés dans les 4 langues");
 });
-ok("frise : pastilles hors écran non dessinées (content-visibility), pastilles-points exclues", () => assert.ok(/\.fr-chip:not\(\.fr-mini\)\{content-visibility:auto;contain-intrinsic-size:128px 52px\}/.test(read("css/plus.css"))));
+ok("frise : pastilles hors écran non dessinées (content-visibility), pastilles-points exclues", () => assert.ok(/\.fr-chip:not\(\.fr-mini\)\{content-visibility:auto;contain-intrinsic-size:128px 52px\}/.test(read("css/components/plus.css"))));
 ok("quiz, chrono, survie : le site joue les questions envoyées par le serveur (plus de reconstruction côté site), repli prévu si le serveur n'est pas à jour", () => {
-  const m = read("js/minigames.js"), q = read("js/quiz-plus.js"), g = read("functions/game.js"), i = read("functions/index.js");
+  const m = read("js/game/minigames.js"), q = read("js/game/quiz-plus.js"), g = read("functions/game.js"), i = read("functions/index.js");
   assert.ok(/MAGameAPI\.call\("quizSubmit", \{ op: "start", cat, level, lang: lang\(\) \}\)/.test(m), "partie notée lancée par le serveur");
   assert.ok(/qz\.seed = r\.seed; qz\.qs = fromServer\(r\.qs\)/.test(m), "questions du serveur affichées telles quelles");
   assert.ok(/e\.code === "invalid-argument"\) old = true/.test(m) && /G\.quizBuild\(qz\.seed, cat, level, quizPool\(\)/.test(m), "repli sur l'ancienne méthode si le serveur n'a pas encore la mise à jour");
@@ -175,18 +175,18 @@ ok("quiz, chrono, survie : le site joue les questions envoyées par le serveur (
   assert.ok(/collection\("motorauto_catalog"\)\.limit\(5000\)/.test(i), "le serveur lit tout le catalogue en ligne, comme le site");
 });
 ok("clignotements et sauts : pied de page hors écran pendant les chargements, badges de « Mon espace » gardés en place", () => {
-  const p = read("css/pages.css"), t = read("css/themefix.css"), a = read("js/app.js");
+  const p = read("css/pages/pages.css"), t = read("css/themes/themefix.css"), a = read("js/app.js");
   assert.ok(/\.app-pages \{ min-height: 100vh; min-height: 100dvh; outline: none; \}/.test(p), "zone de page haute d'un écran au minimum");
   assert.ok(/#garage-badges:empty\{display:block;min-height:39px\}/.test(t), "place réservée pour la ligne des badges");
   assert.ok(/if \(gb\.dataset\.uid !== who\) \{ gb\.innerHTML = ""; gb\.dataset\.uid = who; \}/.test(a) && !/\$\("garage-badges"\)\.innerHTML = "";\n    if \(currentUser\)/.test(a), "badges non vidés à chaque rendu");
 });
 ok("voiture du jour (téléphone), niveaux du quiz (ordinateur), bandeau Comparer dans le salon", () => {
-  const t = read("css/themefix.css");
+  const t = read("css/themes/themefix.css");
   assert.ok(/@media \(max-width:480px\)\{#page-main \.cod-card img,#page-main \.cod-ph\{width:104px;height:72px\}/.test(t), "photo de la voiture du jour réduite sur téléphone");
   assert.ok(/\.qz-cat\{container-type:inline-size\}/.test(t) && /@container \(max-width:318px\)\{\.qz-cat \.qz-levels\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important\}\}/.test(t), "niveaux en 2 × 2 quand 4 ne tiennent pas");
   assert.ok(/html\.on-chat #compare-tray\{display:none!important\}/.test(t), "bandeau Comparer masqué dans le salon");
   assert.ok(!require("fs").existsSync(require("path").join(__dirname, "..", "css/chat2.css")) && !require("fs").existsSync(require("path").join(__dirname, "..", "css/chatglass.css")), "anciennes feuilles du salon supprimées");
-  assert.ok(/Touche « Nouveau » pour écrire à un pilote\./.test(read("js/chat.js")), "texte d'aide du salon sans pictogramme décalé");
+  assert.ok(/Touche « Nouveau » pour écrire à un pilote\./.test(read("js/chat/chat.js")), "texte d'aide du salon sans pictogramme décalé");
 });
 ok("site ouvert depuis longtemps : il se recharge seul quand une nouvelle version est en ligne (hors saisie, partie ou salon), une seule fois par version", () => {
   const u = read("js/update-check.js"), s = read("index.src.html");
@@ -208,15 +208,15 @@ ok("points de quiz comptés dans l'XP (site et serveur), barre du profil public 
     const a = c.finish(Object.assign(c.BLANK_STATS(), { quizPts: 0 }), 100), b = c.finish(Object.assign(c.BLANK_STATS(), { quizPts: 40 }), 100);
     assert.ok(b.xp >= a.xp + 120, "chaque point de quiz rapporte 3 XP");
   });
-  assert.ok(/s\.quizPts = Number\(x\.quizPts\) \|\| 0/.test(read("js/gamify.js")), "le site lit les points de quiz");
+  assert.ok(/s\.quizPts = Number\(x\.quizPts\) \|\| 0/.test(read("js/game/gamify.js")), "le site lit les points de quiz");
   const g = read("functions/game.js");
   assert.ok(/col\("gstats"\)\.doc\(uid\)\.get\(\)/.test(g) && /s\.quizPts = Number\(x\.quizPts\) \|\| 0/.test(g), "le serveur lit aussi les compteurs de jeu pour l'XP");
-  const v = read("css/profile-v2.css");
+  const v = read("css/components/profile-v2.css");
   assert.ok(/#public-profile-modal \.pro-tabs \{ position: sticky; top: calc\(var\(--hdr-h, 64px\) \+ 6px\)/.test(v) && /html\.hdr-hidden #public-profile-modal \.pro-tabs \{ top: calc\(var\(--safe-top, 0px\) \+ 8px\); \}/.test(v), "onglets du profil sous la barre du haut, remontent quand elle se cache");
-  const t = read("css/themefix.css");
+  const t = read("css/themes/themefix.css");
   assert.ok(/\.cod-notif input\[type="checkbox"\] \{ appearance: none;/.test(t) && /\.cod-notif input\[type="checkbox"\]:checked::after/.test(t), "case de rappel quotidien stylée");
-  const r = read("css/reveal.css"), s = read("index.src.html");
-  assert.ok(/<link rel="stylesheet" href="css\/reveal\.css">/.test(s) && s.indexOf("css/reveal.css") > s.indexOf("css/pro.css"), "feuille chargée en dernier");
+  const r = read("css/base/reveal.css"), s = read("index.src.html");
+  assert.ok(/<link rel="stylesheet" href="css\/base\/reveal\.css">/.test(s) && s.indexOf("css/base/reveal.css") > s.indexOf("css/pages/pro.css"), "feuille chargée en dernier");
   assert.ok(/@keyframes rvUp/.test(r) && /\.rv1/.test(r) && /\.rv2/.test(r) && /prefers-reduced-motion: no-preference/.test(r) && /data-anim="reduced"/.test(r), "apparition échelonnée, coupée en mouvement réduit");
   assert.ok(!/(^|[^-])(width|height|top|left|margin)\s*:/.test(r.replace(/@keyframes[\s\S]*?\}\s*\}/g, "")), "opacité et translation uniquement : aucun décalage de mise en page");
 });
@@ -227,10 +227,10 @@ ok("apparition des pages sans clignotement, espace Pilotes harmonisé, croix uni
   const rt = read("js/router.js");
   assert.ok(!/\["Carte", "#\/communaute\/carte"/.test(rt) && /tab === "evenements" \|\| r\.params\.tab === "carte"/.test(rt), "Sorties et Carte réunies dans la barre de la communauté");
   assert.ok(/wrap\.insertBefore\(nav, wrap\.firstElementChild\)/.test(rt), "barre de l'espace Pilotes toujours en tête de page");
-  const ps = read("css/pilotspace.css");
+  const ps = read("css/components/pilotspace.css");
   assert.ok(/nav\[data-section="pilotes"\]\.play-bar:not\(\.inner\)/.test(ps) && /html \.play-bar\.inner \.play-back \{ align-self: stretch/.test(ps), "carte de navigation unique et bouton retour aligné");
-  assert.ok(/css\/pilotspace\.css/.test(idx) && /css\/closebtn\.css/.test(idx), "feuilles chargées");
-  const cb = read("css/closebtn.css");
+  assert.ok(/css\/components\/pilotspace\.css/.test(idx) && /css\/base\/closebtn\.css/.test(idx), "feuilles chargées");
+  const cb = read("css/base/closebtn.css");
   ["dialog-close-btn", "ov-x", "ac-x", "guide-x", "me-close", "pe-x", "vt-x", "lightbox-x", "lightbox-close"].forEach((c) => assert.ok(cb.indexOf("." + c) >= 0, "croix : " + c));
   assert.ok(/display: inline-flex !important; align-items: center; justify-content: center/.test(cb) && /mask: var\(--x-mask\)/.test(cb), "croix dessinée au centre exact");
   assert.ok(/const catalogShown = /.test(read("js/app.js")) && /if \(!catalogShown\(\) && !\(opts && opts\.force\)\) \{ updateGauge\(heroMatches\(\)\); return; \}/.test(read("js/app.js")), "catalogue dessiné seulement quand on l'ouvre");
@@ -243,9 +243,9 @@ ok("sécurité : règles anti-triche, en-têtes Vercel, échappement des listes 
   assert.ok(!/validGStats/.test(rules), "ancienne règle de compteurs supprimée");
   assert.ok(!/'email'/.test(blk("users")), "aucun champ e-mail dans les profils publics");
   const v = JSON.parse(read("vercel.json")), h = {}; v.headers.forEach((x) => x.headers.forEach((y) => { h[y.key] = y.value; }));
-  ["X-Frame-Options", "Strict-Transport-Security", "Permissions-Policy", "Content-Security-Policy-Report-Only", "X-Content-Type-Options", "Referrer-Policy"].forEach((k) => assert.ok(h[k], "en-tête " + k));
-  assert.ok(/frame-ancestors 'self'/.test(h["Content-Security-Policy-Report-Only"]) && /object-src 'none'/.test(h["Content-Security-Policy-Report-Only"]) && /gstatic\.com/.test(h["Content-Security-Policy-Report-Only"]), "politique couvrant Firebase");
-  assert.ok(/<option value="\$\{esc\(c\.text\)\}">\$\{esc\(c\.title\)\}<\/option>/.test(read("js/chat.js")), "réponses rapides échappées");
+  ["X-Frame-Options", "Strict-Transport-Security", "Permissions-Policy", "Content-Security-Policy", "X-Content-Type-Options", "Referrer-Policy"].forEach((k) => assert.ok(h[k], "en-tête " + k));
+  assert.ok(/frame-ancestors 'self'/.test(h["Content-Security-Policy"]) && /object-src 'none'/.test(h["Content-Security-Policy"]) && /gstatic\.com/.test(h["Content-Security-Policy"]), "politique couvrant Firebase");
+  assert.ok(/<option value="\$\{esc\(c\.text\)\}">\$\{esc\(c\.title\)\}<\/option>/.test(read("js/chat/chat.js")), "réponses rapides échappées");
   // aucune donnée de pilote injectée sans échappement dans un innerHTML (contrôle strict, sur une même ligne)
   const fs = require("fs"), path = require("path"), bad = [];
   jsFiles().filter((f) => /\.js$/.test(f) && !/bundle|lazy|^data-|^game-|car-index|car-variants/.test(f)).forEach((f) => {
@@ -258,13 +258,13 @@ ok("fiabilité : minuteries en pause en arrière-plan, observateurs limités, co
   const idx = read("index.src.html"), t = read("js/timers.js");
   assert.ok(/js\/timers\.js/.test(idx) && idx.indexOf("js/timers.js") < idx.indexOf("js/firebase-init.js"), "minuteries chargées en premier");
   assert.ok(/ms <= 5000/.test(t) && /document\.hidden/.test(t), "pause des répétitions rapides en arrière-plan");
-  assert.ok(/document\.body\.dataset\.page === "chat" \|\| curKey \|\| searchBar/.test(read("js/chat-plus.js")) && /requestAnimationFrame/.test(read("js/chat-plus.js")), "salon : un seul passage par image, seulement dans le salon");
-  assert.ok(/\(catalog\|compare\)/.test(read("js/catalog-ui.js")) && /\^clubs\?\$/.test(read("js/clubs-plus.js")), "interrogations limitées à leur page");
-  assert.ok(/watching/.test(read("js/seasonal.js")), "un seul écouteur des saisons");
+  assert.ok(/document\.body\.dataset\.page === "chat" \|\| curKey \|\| searchBar/.test(read("js/chat/chat-plus.js")) && /requestAnimationFrame/.test(read("js/chat/chat-plus.js")), "salon : un seul passage par image, seulement dans le salon");
+  assert.ok(/\(catalog\|compare\)/.test(read("js/catalogue/catalog-ui.js")) && /\^clubs\?\$/.test(read("js/social/clubs-plus.js")), "interrogations limitées à leur page");
+  assert.ok(/watching/.test(read("js/game/seasonal.js")), "un seul écouteur des saisons");
   const c = read("js/common.js");
   assert.ok(/MA\.confirm = function/.test(c) && /role", "alertdialog"/.test(c) && /e\.key === "Escape"/.test(c), "confirmation accessible (Échap, focus)");
   const fs = require("fs"), path = require("path"); let native = [];
-  ["app", "cards", "chat", "clubs", "clubs-plus", "community", "contest", "event-albums", "garage-extra", "garage-tools", "market", "news", "pro", "social"].forEach((f) => {
+  ["app", "game/cards", "chat/chat", "social/clubs", "social/clubs-plus", "social/community", "game/contest", "social/event-albums", "garage-extra", "garage-tools", "game/market", "news", "pro", "social/social"].forEach((f) => {
     fs.readFileSync(path.join(__dirname, "../js", f + ".js"), "utf8").split("\n").forEach((l, i) => { if (/(^|[^.\w])confirm\(/.test(l.replace(/MA\.confirm\(/g, ""))) native.push(f + ":" + (i + 1)); });
   });
   assert.deepStrictEqual(native, [], "plus aucune fenêtre native confirm() côté pilote : " + native.join(", "));
@@ -282,13 +282,13 @@ ok("compte : mot de passe oublié, vérification d'e-mail, suppression, page 404
   assert.ok(/class="priv-sub"/.test(idx) && !/🔐/.test(idx.slice(idx.indexOf("priv-group"), idx.indexOf("priv-group") + 400)), "confidentialité en groupes, sans emoji");
   ["settings-public-garage", "settings-hide-following", "settings-hide-followers", "settings-show-presence", "settings-email-notifs"].forEach((id) => assert.ok(idx.includes('id="' + id + '"'), "réglage conservé : " + id));
   assert.ok(/function grouped\(\)/.test(cm) && /function removeMany/.test(cm) && /GROUPABLE/.test(cm), "notifications groupées (like, abonnement, sortie)");
-  assert.ok(/css\/account\.css/.test(idx), "feuille de style du compte");
+  assert.ok(/css\/components\/account\.css/.test(idx), "feuille de style du compte");
   ["en", "es", "de", "it"].forEach((l) => { const d = dict(l); ["Mot de passe oublié ?", "Renvoyer l'e-mail", "Cette page n'existe pas", "Présence"].forEach((k) => assert.ok(d[k], l + " : manque " + k)); });
 });
 ok("design system : en-tête unique, échelle de texte ≥ 12 px, cartes et boutons homogènes, émojis → icônes, onglet mémorisé, bouton flottant discret", () => {
   const fs = require("fs"), path = require("path"), idx = read("index.src.html"), sys = read("css/system.css");
-  assert.ok(/css\/system\.css/.test(idx) && idx.indexOf("css/system.css") > idx.indexOf("css/themefix.css"), "feuille du système chargée en dernier");
-  assert.ok(!/content: "\d\d — "/.test(read("css/studio-b.css")), "plus de numéros de section décoratifs");
+  assert.ok(/css\/system\.css/.test(idx) && idx.indexOf("css/system.css") > idx.indexOf("css/themes/themefix.css"), "feuille du système chargée en dernier");
+  assert.ok(!/content: "\d\d — "/.test(read("css/themes/studio-b.css")), "plus de numéros de section décoratifs");
   const small = [];
   fs.readdirSync(path.join(__dirname, "../css")).filter((f) => /\.css$/.test(f) && !/bundle/.test(f)).forEach((f) => {
     fs.readFileSync(path.join(__dirname, "../css", f), "utf8").replace(/([^{}]+)\{([^{}]*)\}/g, (m, sel, body) => {
@@ -301,7 +301,7 @@ ok("design system : en-tête unique, échelle de texte ≥ 12 px, cartes et bout
   assert.ok(/--btn-h: 44px/.test(sys) && /--btn-h-sm: 36px/.test(sys) && /--r-card/.test(sys) && /--r-tile/.test(sys) && /--r-row/.test(sys), "échelle de boutons et trois rayons de carte");
   assert.ok(/status-tag-verified">Jouer<\/span><h1 class="page-title">Mode duel/.test(idx), "étiquette de section sur chaque page");
   assert.ok(/ma\.tab\./.test(read("js/router.js")), "dernier onglet de chaque section mémorisé");
-  assert.ok(/typing/.test(read("js/fab-pack.js")) && /reglages\|contact\|admin/.test(read("js/fab-pack.js")), "bouton flottant masqué sur les formulaires");
+  assert.ok(/typing/.test(read("js/game/fab-pack.js")) && /reglages\|contact\|admin/.test(read("js/game/fab-pack.js")), "bouton flottant masqué sur les formulaires");
   assert.ok(/nEng/.test(read("js/app.js")) && /catégorie<\/small>/.test(read("js/app.js")), "fiche voiture : deuxième rangée d'essentiels");
   assert.ok(/"🚧":"warn"/.test(read("js/emoji-icons.js")), "émojis restants reliés aux icônes");
 });
@@ -319,7 +319,7 @@ ok("structure : Pilotes = Mon espace / Communauté / Classement, libellés uniqu
 ok("allègement : feuilles réunies, registre de modules figé, parcours navigateur, documentation", () => {
   const fs = require("fs"), path = require("path"), idx = read("index.src.html");
   ["cards3.css", "cards4.css", "cards5.css", "center.css", "albums3.css"].forEach((f) => assert.ok(!fs.existsSync(path.join(__dirname, "../css", f)) && !idx.includes("css/" + f), f + " fusionné"));
-  assert.ok(fs.existsSync(path.join(__dirname, "../css/cards.css")) && fs.existsSync(path.join(__dirname, "../css/albums.css")), "feuilles réunies présentes");
+  assert.ok(fs.existsSync(path.join(__dirname, "../css/components/cards.css")) && fs.existsSync(path.join(__dirname, "../css/components/albums.css")), "feuilles réunies présentes");
   assert.ok(/MA\.register = function/.test(read("js/common.js")) && /defineProperty\(MA, "mods"/.test(read("js/common.js")), "registre MA.mods");
   const names = new Set();
   jsFiles().filter((f) => /\.js$/.test(f) && !/bundle|lazy-/.test(f)).forEach((f) => { (fs.readFileSync(path.join(__dirname, "../js", f), "utf8").match(/window\.(MA[A-Za-z0-9_]*)\s*=[^=]/g) || []).forEach((m) => names.add(m.replace(/window\.|\s*=.*/g, ""))); });

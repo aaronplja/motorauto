@@ -1,6 +1,6 @@
 "use strict";
 const assert = require("assert");
-const E = require("../js/duel-engine.js");
+const E = require("../js/game/duel-engine.js");
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
 const car = (o) => Object.assign({ hp: 200, kg: 1300, drive: "F", vmax: 230, zero: 7, year: 2010, category: "Coupé", name: "x" }, o);
 

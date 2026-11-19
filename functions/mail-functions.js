@@ -49,7 +49,9 @@ async function recipient(uid) {
   ]);
   if (!authUser || !authUser.email) return null;
   const p = profile.exists ? profile.data() : {};
-  return { email: authUser.email, name: p.username || authUser.displayName || "", optOut: (prefs && prefs.exists ? prefs.data().emailNotifs : p.emailNotifs) === false };
+  const pd = prefs && prefs.exists ? prefs.data() : {};
+  // préférences par type (ADD-206) : interrupteur général « emailNotifs », puis « emailLogin » (bon retour) et « emailEvent » (inscription à un événement)
+  return { email: authUser.email, name: p.username || authUser.displayName || "", optOut: (prefs && prefs.exists ? pd.emailNotifs : p.emailNotifs) === false, noLogin: pd.emailLogin === false, noEvent: pd.emailEvent === false };
 }
 
 // ---- 1. connexion : bienvenue / bon retour --------------------------------------------------
@@ -65,7 +67,7 @@ exports.onLoginMail = onDocumentWritten(
     if (!first && now - (st.lastLoginMailAt || 0) < BACK_AFTER_MS) return;
     const who = await recipient(uid);
     if (!who) return;
-    if (!first && who.optOut) return; // le premier message de bienvenue est toujours envoyé
+    if (!first && (who.optOut || who.noLogin)) return; // le premier message de bienvenue est toujours envoyé
     const siteUrl = SITE_URL.value();
     // on marque AVANT d'envoyer : un doublon d'événement ne renvoie pas le message
     await stateRef.set({ welcomedAt: st.welcomedAt || now, lastLoginMailAt: now }, { merge: true });
@@ -86,7 +88,7 @@ exports.onNotificationMail = onDocumentCreated(
     const notif = event.data.data();
     if (!MAIL_TYPES.has(notif.type)) return;
     const who = await recipient(uid);
-    if (!who || who.optOut) return;
+    if (!who || who.optOut || (notif.type === "event" && who.noEvent)) return;
     const stateRef = db.collection("mail_state").doc(uid);
     const now = Date.now();
     const allowed = await db.runTransaction(async (tx) => {

@@ -1226,6 +1226,7 @@
     const slim = (qs) => qs.map((q) => { const r = { q: q.q, o: q.o, a: q.a, k: q.k }; if (q.m) r.m = q.m; return r; });
     async function quizSubmit(caller, data) {
       const uid = caller.uid, pool = await getPool();
+      if (core.ensureBank) await core.ensureBank(); // banque de questions écrites (js/quiz-bank.js) : déjà prête côté serveur, chargée à la demande dans le navigateur
       if (data && data.op === "start") {
         const cat = str(data.cat, 12), level = Math.max(1, Math.min(4, Number(data.level) | 0 || 1));
         if (!core.QCATS[cat]) fail("invalid-argument", "Catégorie inconnue.");

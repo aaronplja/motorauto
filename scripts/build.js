@@ -40,7 +40,8 @@ if (!cssFiles.length || !jsFiles.length) { console.error("Aucune feuille de styl
 //     le fichier reste listé dans index.src.html (mode développement sans build) ; le build le sort des bundles principaux
 const LAZY = {
   admin: ["js/admin/admin-dot.js", "js/admin/admin-extra.js", "js/admin/admin-game.js", "js/admin/admin-logos.js", "js/admin/admin-noimg.js", "js/admin/admin-rarity.js", "js/admin/admin-steps.js", "js/pro-admin.js"],
-  quiz: ["js/quiz-plus.js"]
+  quiz: ["js/game/quiz-plus.js"],
+  quizbank: ["js/quiz-bank.js"]
 };
 const lazyOf = new Map(); Object.keys(LAZY).forEach((k) => LAZY[k].forEach((f) => lazyOf.set(f, k)));
 const mainFiles = jsFiles.filter((f) => !lazyOf.has(f));
@@ -105,6 +106,26 @@ html = html.replace(/<head>/, "<head>\n<!-- FICHIER GÉNÉRÉ par scripts/build.
 
 html = iconifyStatic(html);
 const files = { "index.html": html, "css/bundle.min.css": cssOut };
+// ADD-208 : flux RSS des Nouveautés, généré depuis js/news-seed.js (20 dernières entrées, en français)
+{
+  const vm = require("vm"), sb = { window: {} };
+  vm.createContext(sb); vm.runInContext(fs.readFileSync(path.join(root, "js/news-seed.js"), "utf8"), sb);
+  const list = (sb.window.MA_NEWS_SEED || []).slice().sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 20);
+  const x = (v) => String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const items = list.map((n) => `  <item>\n    <title>${x(n.fr.title)}</title>\n    <link>https://motorauto.fr/#/nouveautes</link>\n    <guid isPermaLink="false">${x(n.id)}</guid>\n    <pubDate>${new Date(n.date + "T09:00:00Z").toUTCString()}</pubDate>\n    <description>${x(n.fr.body)}</description>\n  </item>`).join("\n");
+  const last = list.length ? new Date(list[0].date + "T09:00:00Z").toUTCString() : new Date(0).toUTCString();
+  // ORG-206 : CHANGELOG.md généré depuis la même source (js/news-seed.js) : une seule liste de nouveautés à tenir à jour
+  const all = (sb.window.MA_NEWS_SEED || []).slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  files["docs/CHANGELOG.md"] = "# Historique des nouveautés\n\n> Fichier généré par `node scripts/build.js` depuis `js/news-seed.js` : ne pas le modifier à la main.\n\n" + all.map((n) => `## ${n.date} — ${n.fr.title}\n\n${n.fr.body}\n`).join("\n");
+  files["feed.xml"] = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n<channel>\n  <title>Nouveautés MOTORAUTO</title>\n  <link>https://motorauto.fr/#/nouveautes</link>\n  <description>Les nouveautés du site MOTORAUTO : voitures, cartes, jeux, communauté.</description>\n  <language>fr</language>\n  <lastBuildDate>${last}</lastBuildDate>\n${items}\n</channel>\n</rss>\n`;
+}
+// TECH-207 : le cache hors-ligne du service worker porte l'empreinte du build ; à chaque déploiement, l'ancien cache est supprimé à l'activation
+{
+  const swPath = path.join(root, "firebase-messaging-sw.js");
+  const buildId = hash([hash(html), cssHash, ...outputs.map((o) => o.h), ...lazyOut.map((o) => o.h)].join("|"));
+  const sw = fs.readFileSync(swPath, "utf8"), swNew = sw.replace(/const CACHE = "ma-offline-[a-z0-9]+";/, `const CACHE = "ma-offline-${buildId}";`);
+  if (swNew !== sw) files["firebase-messaging-sw.js"] = swNew;
+}
 fs.readdirSync(path.join(root, "js")).filter((n) => /^(bundle\d*|lazy-[a-z]+)\.min\.js$/.test(n)).forEach((n) => { if (!outputs.find((o) => o.name === n) && !lazyOut.find((o) => o.name === n)) files["js/" + n] = null; });
 outputs.forEach((o) => { files["js/" + o.name] = o.body; });
 lazyOut.forEach((o) => { files["js/" + o.name] = o.body; });

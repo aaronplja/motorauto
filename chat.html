@@ -15,9 +15,6 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0e0c'/%3E%3Cg transform='translate(14 11) scale(.7)'%3E%3Cpolygon points='0,60 12,60 31.5,0 19.5,0' fill='%23fff'/%3E%3Cpolygon points='20,60 32,60 51.5,0 39.5,0' fill='%233fbf82'/%3E%3C/g%3E%3C/svg%3E">
   <script>try{var L=localStorage,t=L.getItem('motorauto_theme');if(!L.getItem('ma_studio_b')){L.setItem('ma_studio_b','1');if(t!=='custom'){t='studio-creme';L.setItem('motorauto_theme',t)}}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -25,17 +22,18 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
   <script src="js/i18n-boot.js"></script>
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/chat.css">
-  <link rel="stylesheet" href="css/season.css">
-  <link rel="stylesheet" href="css/studio.css">
-  <link rel="stylesheet" href="css/homog.css">
-  <link rel="stylesheet" href="css/presence.css">
-  <link rel="stylesheet" href="css/plus.css">
-  <link rel="stylesheet" href="css/studio-b.css">
-  <link rel="stylesheet" href="css/themes-studio.css">
-  <link rel="stylesheet" href="css/chat3.css">
-  <link rel="stylesheet" href="css/brand-loader.css">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/base/base.css">
+  <link rel="stylesheet" href="css/pages/chat.css">
+  <link rel="stylesheet" href="css/pages/season.css">
+  <link rel="stylesheet" href="css/themes/studio.css">
+  <link rel="stylesheet" href="css/base/homog.css">
+  <link rel="stylesheet" href="css/components/presence.css">
+  <link rel="stylesheet" href="css/components/plus.css">
+  <link rel="stylesheet" href="css/themes/studio-b.css">
+  <link rel="stylesheet" href="css/themes/themes-studio.css">
+  <link rel="stylesheet" href="css/pages/chat3.css">
+  <link rel="stylesheet" href="css/components/brand-loader.css">
 </head>
 <body class="chat-page">
 
@@ -226,10 +224,10 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script defer src="js/firebase-init.js"></script>
-  <script defer src="js/presence.js"></script>
+  <script defer src="js/social/presence.js"></script>
   <script defer src="js/i18n.js"></script>
-  <script defer src="js/car-index.js"></script>
-  <script defer src="js/mentions.js"></script>
+  <script defer src="js/catalogue/car-index.js"></script>
+  <script defer src="js/chat/mentions.js"></script>
   <script defer src="js/utils.js"></script>
   <script defer src="js/push-config.js"></script>
   <script defer src="js/push.js"></script>
@@ -238,15 +236,15 @@
   <script defer src="js/themes.js"></script>
   <script defer src="js/common.js"></script>
   <script src="js/feel.js" defer></script>
-  <script src="js/seasonal.js" defer></script>
+  <script src="js/game/seasonal.js" defer></script>
   <script defer src="js/game-core.js"></script>
   <script defer src="js/titles.js"></script>
-  <script defer src="js/cosmetics.js"></script>
-  <script defer src="js/game-api.js"></script>
-  <script defer src="js/blocks.js"></script>
+  <script defer src="js/game/cosmetics.js"></script>
+  <script defer src="js/game/game-api.js"></script>
+  <script defer src="js/social/blocks.js"></script>
   <script defer src="js/native.js"></script>
-  <script defer src="js/chat.js"></script>
-  <script defer src="js/chat-plus.js"></script>
-  <script defer src="js/chatglass.js"></script>
+  <script defer src="js/chat/chat.js"></script>
+  <script defer src="js/chat/chat-plus.js"></script>
+  <script defer src="js/chat/chatglass.js"></script>
 </body>
 </html>

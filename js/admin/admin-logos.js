@@ -2,7 +2,7 @@
  * MOTORAUTO — Administration : « Logos de marques ».
  * Même principe que « Voitures sans image » : une ligne par marque, on colle le lien https du logo puis Entrée, et on passe à la marque suivante.
  * Les liens sont enregistrés dans Firestore config/brand_logos { map: { cléDeMarque: url } } (lecture publique, écriture admin) ;
- * js/brand-logos.js les lit et remplace les initiales de la marque par son logo, partout sur le site.
+ * js/catalogue/brand-logos.js les lit et remplace les initiales de la marque par son logo, partout sur le site.
  * Un logo déjà présent dans assets/brands/ (fichier du site) ou déjà enregistré par lien est détecté : ces marques sont masquées par défaut.
  */
 (function () {

@@ -9,7 +9,7 @@ const fs = require("fs"), path = require("path");
 const root = path.join(__dirname, "..");
 const FIELDS = /\b(username|userName|pseudo|bio|currentCar|carName|message|msg|comment|description|desc|title|text|pilot|author|authorName|label|reply|caption|place|city|club|clubName|team|note|reason)\b/;
 const SAFE = /(esc|escapeHtml|escHtml|safe|enc|encodeURIComponent|Number|parseInt|parseFloat|fmt|fmtNum|toFixed|length|size|count|\.n\b|\.id\b)\s*\(|\.length\b|\?\s*["'`]/;
-const files = ["", "admin/"].flatMap((d) => fs.readdirSync(path.join(root, "js/" + d)).filter((f) => f.endsWith(".js")).map((f) => d + f)).filter((f) => f.endsWith(".js") && !/\.min\.js$/.test(f) && !/^(data-|i18n)/.test(f) && f !== "emoji-icons.js");
+const files = ["", "admin/", "chat/", "game/", "social/", "catalogue/"].flatMap((d) => fs.readdirSync(path.join(root, "js/" + d)).filter((f) => f.endsWith(".js")).map((f) => d + f)).filter((f) => f.endsWith(".js") && !/\.min\.js$/.test(f) && !/^(data-|i18n)/.test(f) && f !== "emoji-icons.js");
 const found = [];
 for (const f of files) {
   const src = fs.readFileSync(path.join(root, "js", f), "utf8");

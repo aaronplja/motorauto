@@ -87,7 +87,7 @@
     const dist = () => { const [a, b] = Array.from(ptrs.values()); return Math.hypot(a.x - b.x, a.y - b.y); };
     el.addEventListener("pointerdown", (e) => {
       if (e.target.closest(".mm-pin, .mm-ctl, .mm-popup, a, .mm-bar")) return;
-      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { el.setPointerCapture(e.pointerId); } catch (_) { /* stockage ou API indisponible : sans effet */ }
       if (ptrs.size === 2) { pinch = { d: dist(), z: m.z }; drag = null; return; }
       drag = { x: e.clientX, y: e.clientY, cx: m.cx, cy: m.cy, moved: false }; el.classList.add("grab");
     });

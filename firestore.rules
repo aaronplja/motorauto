@@ -80,8 +80,10 @@ service cloud.firestore {
       match /private/{docId} {
         allow read, delete: if isOwner(uid);
         allow create, update: if isOwner(uid)
-          && request.resource.data.keys().hasOnly(['emailNotifs'])
-          && request.resource.data.get('emailNotifs', true) is bool;
+          && request.resource.data.keys().hasOnly(['emailNotifs', 'emailLogin', 'emailEvent'])
+          && request.resource.data.get('emailNotifs', true) is bool
+          && request.resource.data.get('emailLogin', true) is bool
+          && request.resource.data.get('emailEvent', true) is bool;
       }
 
       // --- Garage (favoris + chronos perso) : visible seulement si le garage est public
@@ -574,11 +576,12 @@ service cloud.firestore {
 
     // --- Anti-spam des réponses du fil : une réponse doit partir dans le même lot que la mise à jour du tampon « feed_rate/{uid} »,
     //     et au moins 8 secondes après la précédente. (Le tampon est illisible côté client : il ne sert qu'aux règles.)
-    function feedRateOk() {
+    function rateOkS(secs) {
       let p = /databases/$(database)/documents/feed_rate/$(request.auth.uid);
       return getAfter(p).data.at == request.time
-        && (!exists(p) || get(p).data.at < request.time - duration.value(8, 's'));
+        && (!exists(p) || get(p).data.at < request.time - duration.value(secs, 's'));
     }
+    function feedRateOk() { return rateOkS(8); }
     match /feed_rate/{uid} {
       allow create, update: if isOwner(uid)
         && request.resource.data.keys().hasOnly(['at'])
@@ -592,6 +595,7 @@ service cloud.firestore {
       allow create: if signedIn() && notMuted()
         && request.resource.data.keys().hasOnly(['kind', 'target', 'uid', 'pilot', 'avatar', 'text', 'createdAt'])
         && request.resource.data.kind in ['cat', 'com', 'feed']
+        && (request.resource.data.kind == 'feed' ? feedRateOk() : rateOkS(3))
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.target is string && request.resource.data.target.size() <= 80
         && request.resource.data.pilot is string && request.resource.data.pilot.size() <= 40

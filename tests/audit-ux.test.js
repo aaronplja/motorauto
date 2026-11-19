@@ -10,7 +10,7 @@ ok("page Jouer : l'étiquette n'est plus identique au titre (UI-101)", () => {
 ok("couleur de la barre du navigateur alignée sur le thème par défaut dès le premier octet (UI-104)", () => { assert(/theme-color" content="#f6f3ec"/.test(read("index.src.html"))); });
 ok("mot de passe : œil afficher/masquer + jauge à l'inscription (UI-107)", () => {
   const j = read("js/password-field.js"); assert(/pw-eye/.test(j) && /pw-meter/.test(j) && /aria-pressed/.test(j) && /new-password/.test(j));
-  assert(/password-field\.js/.test(read("index.src.html")) && /\.pw-eye/.test(read("css/account.css")));
+  assert(/password-field\.js/.test(read("index.src.html")) && /\.pw-eye/.test(read("css/components/account.css")));
 });
 ok("états vides : catalogue sans résultat propose de réinitialiser (UI-110, UX-110)", () => {
   const a = read("js/app.js"); assert(/data-action="reset-all-filters"/.test(a) && /class="empty-state"/.test(a) && /\.empty-state/.test(read("css/system.css")));

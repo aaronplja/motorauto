@@ -49,6 +49,10 @@
             <label class="check-row"><input type="checkbox" id="settings-show-presence" checked><span>Afficher quand je suis en ligne et ma dernière connexion (sur mon profil et dans le chat)</span></label>
             <p class="priv-sub">Communications</p>
             <label class="check-row"><input type="checkbox" id="settings-email-notifs"><span>Recevoir des e-mails de MOTORAUTO (connexion, inscriptions à mes événements)</span></label>
+            <div id="settings-email-types" class="check-sub">
+              <label class="check-row"><input type="checkbox" id="settings-email-login"><span>E-mail de bon retour après une longue absence</span></label>
+              <label class="check-row"><input type="checkbox" id="settings-email-event"><span>E-mail quand un pilote s'inscrit à mon événement</span></label>
+            </div>
           </fieldset>
           <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
           <div class="panel-section-title mt" id="security-title">Sécurité du compte</div>
@@ -70,6 +74,9 @@
               <button type="submit" class="cta-btn fill-btn w-100" id="sec-mail-btn">Envoyer le lien de confirmation</button>
             </form>
           </div>
+          <div class="panel-section-title mt">Mon année</div>
+          <p class="lap-meta">Ton récapitulatif de l'année : chronos, records, voitures et cartes, à partager en image.</p>
+          <button type="button" class="cta-btn w-100" id="my-year-btn">Voir mon année</button>
           <div class="panel-section-title mt">Mes données</div>
           <p class="lap-meta">Télécharge une copie de tes données (profil, garage, entretiens, coûts, journal, abonnements, notifications) dans un fichier JSON.</p>
           <button type="button" class="cta-btn w-100" id="export-data-btn">Télécharger mes données</button>

@@ -18,7 +18,7 @@ La clé qui apparaît dans `js/firebase-init.js` est publique par conception, ma
 
 ## 2. Content-Security-Policy
 
-`vercel.json` envoie la politique en mode « rapport seulement » (`Content-Security-Policy-Report-Only`). Elle ne bloque rien : le navigateur écrit dans la console les ressources qu'elle aurait refusées. Ouvre le site, la console (onglet Console), navigue dans tout le site. S'il n'y a aucune ligne « Content Security Policy », remplace `Content-Security-Policy-Report-Only` par `Content-Security-Policy` dans `vercel.json`.
+`vercel.json` applique la politique (`Content-Security-Policy`, TECH-206) : le navigateur refuse tout ce qui sort de la liste (scripts Google/Firebase, polices, cartes, YouTube, Stripe). Si une ressource légitime est bloquée, la console (onglet Console) affiche « Content Security Policy » avec le domaine : ajoute-le dans `vercel.json`, au bon champ (`script-src`, `connect-src`, `img-src`…).
 
 ## 3. App Check (facultatif, recommandé)
 
