@@ -202,7 +202,7 @@
       const d = s.d || (s.model + " : " + base + (sub ? "" : range));
       const car = Object.assign({}, c, {
         id, brand: s.brand || c.brand, model: s.model, category: s.cat || c.category, years: s.y || c.years, description: d,
-        image: id === c.id ? c.image : "img/" + id + ".jpg", phases,
+        image: id === c.id ? c.image : ((typeof window !== "undefined" && window.MA_IMG && !window.MA_IMG.has(id + ".jpg")) ? "" : "img/" + id + ".jpg"), phases,
         history: s.h || (hs.length ? hs.join(" ") : d + (spec.length > 1 ? " Fiches voisines : " + spec.filter((o, k) => k !== i).map((o) => o.model).join(", ") + "." : "")),
         anecdotes: (c.anecdotes || []).filter((a) => re.test(a.title + " " + a.text)),
         records: (c.records || []).filter((r) => re.test(r.description)),

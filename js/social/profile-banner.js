@@ -42,7 +42,7 @@
   }
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx;
-    setInterval(async () => { const i = $("settings-car-photo"); if (!i || !i.offsetParent || !C.user) return; await load(); paint(); }, 1200);
+    setInterval(async () => { const i = $("settings-car-photo"); if (document.hidden || !i || !i.offsetParent || !C.user) return; await load(); paint(); }, 1200);
     document.addEventListener("ma:cars-changed", () => { loadedFor = ""; });
   });
 })();

@@ -54,7 +54,7 @@
     C = ctx;
     const obs = new MutationObserver(() => { clearTimeout(timer); timer = setTimeout(render, 150); });
     const watch = () => { const r = document.getElementById("club-root"); if (r && !r._plusObs) { r._plusObs = true; obs.observe(r, { childList: true }); } };
-    watch(); window.addEventListener("hashchange", () => setTimeout(watch, 200)); setInterval(() => { if (/^clubs?$/.test(document.body.dataset.page || "")) watch(); }, 2000);
+    watch(); window.addEventListener("hashchange", () => setTimeout(watch, 200)); setInterval(() => { if (!document.hidden && /^clubs?$/.test(document.body.dataset.page || "")) watch(); }, 2000);
     document.addEventListener("click", async (e) => {
       const cr = e.target.closest("[data-cr]"); if (cr) { tab = cr.dataset.cr; refresh(); return; }
       const go = e.target.closest("[data-cev-go]");

@@ -6,7 +6,7 @@ const { fs, path, assert, jsFiles, read, ok } = require("./_helpers");
 ok("minuteries : timers.js chargé avant les autres scripts, sondages globaux espacés", () => {
   const src = read("index.src.html");
   assert(src.indexOf("js/timers.js") > -1 && src.indexOf("js/timers.js") < src.indexOf("js/common.js"), "timers.js doit précéder common.js");
-  assert(/setInterval\(tick, 4000\)/.test(read("js/game/fab-pack.js")) && /setInterval\(run, 3000\)/.test(read("js/chat/chat-plus.js")), "sondages espacés");
+  assert(/setInterval\(\(\) => \{ if \(!document\.hidden\) tick\(\); \}, 4000\)/.test(read("js/game/fab-pack.js")) && /setInterval\(run, 3000\)/.test(read("js/chat/chat-plus.js")), "sondages espacés");
 });
 
 // ---- Série 2, lot 1 : sécurité et dette technique

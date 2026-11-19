@@ -23,3 +23,12 @@ ok("nouveautés : l'entrée du jour est publiée (FR + EN)", () => { const w = {
 ok(".vercelignore : chaque ligne est ancrée à la racine (sinon css/pages/ et js/data/ ne sont pas déployés)", () => {
   read(".vercelignore").split("\n").filter((l) => l.trim() && !l.startsWith("#")).forEach((l) => assert(l.startsWith("/"), "ligne non ancrée : " + l));
 });
+
+ok("images : la liste des fichiers présents (img-index) existe et les fiches générées ne pointent que vers des fichiers connus (lot 1)", () => {
+  const idx = read("js/data/img-index.js"); assert(/window\.MA_IMG = new Set\(\[/.test(idx) && idx.length > 1000, "liste vide");
+  assert(/MA_IMG/.test(read("js/data/data-kit.js")) && /MA_IMG/.test(read("js/data/data-split.js")));
+  assert(read("index.src.html").indexOf("js/data/img-index.js") < read("index.src.html").indexOf("js/data/data.js"), "la liste doit se charger avant les données");
+});
+ok("boucles : en onglet masqué, bannière, clubs et pack du jour ne travaillent plus (lot 1)", () => {
+  assert(/document\.hidden/.test(read("js/social/profile-banner.js")) && /!document\.hidden/.test(read("js/social/clubs-plus.js")) && /!document\.hidden/.test(read("js/game/fab-pack.js")));
+});

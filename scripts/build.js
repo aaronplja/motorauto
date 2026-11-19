@@ -28,6 +28,14 @@ if (!es) console.warn("⚠ esbuild introuvable : regroupement sans minification 
 
 // fragments de pages (ORG-101) : voir scripts/include.js
 const { include } = require("./include.js");
+// --- liste des images présentes dans img/ : les fiches générées (data-kit, data-split) n'écrivent « img/<id>.jpg » que si le fichier existe,
+//     sinon le navigateur envoie une requête qui finit en 404 pour chaque voiture sans photo (la carte affiche alors l'image de repli)
+(function () {
+  const dir = path.join(root, "img"); if (!fs.existsSync(dir)) return;   // dossier absent (copie sans images) : on garde la liste déjà générée
+  const names = fs.readdirSync(dir).filter((f) => /\.(jpe?g|png|webp|avif)$/i.test(f)).sort();
+  const out = "/* MOTORAUTO — images présentes dans img/ (généré par scripts/build.js, ne pas éditer) */\nwindow.MA_IMG = new Set(" + JSON.stringify(names) + ");\n";
+  const f = path.join(root, "js/data/img-index.js"); if (!fs.existsSync(f) || fs.readFileSync(f, "utf8") !== out) fs.writeFileSync(f, out);
+})();
 const src = include(rd("index.src.html"));
 const CSS_RE = /^[ \t]*<link rel="stylesheet" href="(css\/[^"?]+\.css)">[ \t]*\r?\n/gm;
 const JS_RE = /^[ \t]*<script defer src="(js\/[^"?]+\.js)"><\/script>[ \t]*\r?\n/gm;

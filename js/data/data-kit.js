@@ -12,10 +12,12 @@ const MAKIT = (function () {
   "use strict";
   const E = (name, power, torque, speed, zero, trans, code, info) => ({ name, power: power || 0, torque: torque || 0, speed: speed || 0, zeroToHundred: zero || 0, transmission: trans || "—", code: code || "", info: info || "" });
   const P = (phaseName, details, engines, notableEditions) => ({ phaseName, details: details || "", engines: engines || [], notableEditions: notableEditions || [] });
+  /** « img/<id>.jpg » seulement si le fichier existe (liste window.MA_IMG générée au build) ; sinon vide : la carte affiche l'image de repli sans requête 404 */
+  const imgOf = (id) => { const L = typeof window !== "undefined" ? window.MA_IMG : null; return L && !L.has(id + ".jpg") ? "" : "img/" + id + ".jpg"; };
   function C(id, brand, model, category, years, description, phases, x) {
     x = x || {};
     return {
-      id, brand, model, category, years, description, image: "img/" + id + ".jpg", phases,
+      id, brand, model, category, years, description, image: imgOf(id), phases,
       records: (x.r || []).map((r) => ({ type: r[0], description: r[1] })), userRecords: [],
       history: x.h || "", anecdotes: (x.a || []).map((a) => ({ title: a[0], text: a[1] })),
       related: x.rel || [], approx: !!x.approx
