@@ -49,7 +49,7 @@ async function loadPool() {
   return Array.from(map.values());
 }
 async function isAdmin(caller) {
-  if (caller.token && (caller.token.admin === true || (caller.token.email === ADMIN_MAIL && caller.token.email_verified === true))) return true;
+  if (caller.token && caller.token.admin === true) return true;
   return (await db.collection("admins").doc(caller.uid).get()).exists;
 }
 const game = createGame({

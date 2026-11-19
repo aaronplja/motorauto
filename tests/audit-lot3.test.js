@@ -39,3 +39,7 @@ ok("promesses d'arrière-plan : classements, défis, suivi et pass ne laissent p
   assert(/touchStreak\(\)\.then\(announce\)\.catch\(/.test(read("js/game/gamify.js")));
   assert(/load\(true\)\.then\(paint\)\.catch\(/.test(read("js/social/follow.js")));
 });
+ok("catalogue : filtres lisibles dans l'adresse (categorie, marque, tri, de, a) sans casser ?q= ni ?car=", () => {
+  const a = read("js/app.js");
+  ["q.get(\"categorie\")", "q.get(\"marque\")", "q.get(\"tri\")", "q.get(\"de\")", "q.get(\"a\")", "search = q.get(\"q\")", "car = q.get(\"car\")"].forEach((k) => assert(a.includes(k), k));
+});

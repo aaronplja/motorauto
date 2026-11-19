@@ -10,11 +10,12 @@ ok("minuteries : timers.js chargé avant les autres scripts, sondages globaux es
 });
 
 // ---- Série 2, lot 1 : sécurité et dette technique
-ok("sécurité : le super-admin par e-mail exige une adresse vérifiée (règles, Storage, fonctions, interface)", () => {
-  assert(/admin@motorauto\.fr' && request\.auth\.token\.email_verified == true/.test(read("firestore.rules")), "firestore.rules");
-  assert(/admin@motorauto\.fr' && request\.auth\.token\.email_verified == true/.test(read("storage.rules")), "storage.rules");
-  assert(/email_verified === true/.test(read("functions/index.js")) && /email_verified === true/.test(read("functions/roles.js")) && /email_verified === true/.test(read("functions/pro.js")), "fonctions");
-  assert(/emailVerified === true/.test(read("js/common.js")), "interface");
+ok("sécurité (TECH-205) : l'admin principal = claim { admin: true } ; l'adresse e-mail seule ne donne plus de droits (règles, Storage, fonctions, interface)", () => {
+  assert(!/admin@motorauto\.fr/.test(read("firestore.rules").replace(/\/\/.*$/gm, "")), "firestore.rules");
+  assert(!/admin@motorauto\.fr/.test(read("storage.rules").replace(/\/\/.*$/gm, "")), "storage.rules");
+  assert(/function isSuper\(\)\s*\{ return signedIn\(\) && request\.auth\.token\.admin == true; \}/.test(read("firestore.rules")));
+  assert(!/ADMIN_MAIL && caller\.token\.email_verified/.test(read("functions/index.js")) && !/adminMail && t\.email === adminMail/.test(read("functions/pro.js")), "fonctions");
+  assert(!/emailVerified === true\) return true/.test(read("js/common.js")), "interface");
 });
 ok("vie privée : emailNotifs vit dans users/{uid}/private/prefs (règles, site, e-mails)", () => {
   const r = read("firestore.rules"); assert(/match \/private\/\{docId\}/.test(r) && /allow read, delete: if isOwner\(uid\)/.test(r), "règle private");

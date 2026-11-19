@@ -24,12 +24,10 @@
 
 
   // ------------------------------------------------------------------ admin
-  // Admin = claim { admin: true } OU compte admin@motorauto.fr (voir firestore.rules).
+  // Admin principal = claim { admin: true } uniquement (voir firestore.rules ; l'adresse e-mail ne suffit plus).
   MA.ADMIN_EMAIL = "admin@motorauto.fr";
-  // Admin principal : claim ou compte admin@motorauto.fr (nomme / retire les autres admins).
   MA.checkSuper = async function (user) {
     if (!user) return false;
-    if ((user.email || "").toLowerCase() === MA.ADMIN_EMAIL && user.emailVerified === true) return true;
     try { return (await user.getIdTokenResult()).claims.admin === true; } catch (_) { return false; }
   };
   // Admin = admin principal OU pilote promu (document admins/{uid}, voir firestore.rules).

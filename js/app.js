@@ -2808,8 +2808,20 @@
   function handleDeepLinks() {
     const q = new URLSearchParams(location.search);
     const car = q.get("car"), pilot = q.get("pilot"), login = q.get("login"), search = q.get("q");
-    if (!car && !pilot && !login && !search) return;
+    // filtres du catalogue dans l'adresse : ?categorie=Coupé&marque=bmw&tri=power-desc&de=1980&a=1999 (liens partageables ; valeurs inconnues ignorées)
+    const fcat = q.get("categorie"), fbrand = q.get("marque"), fsort = q.get("tri"), fde = Number(q.get("de")), fa = Number(q.get("a"));
+    const sortOk = (v) => { const ss = $("sort-select"); return !!v && !!ss && [...ss.options].some((o) => o.value === v); };
+    const hasF = !!(fcat || fbrand || sortOk(fsort) || fde || fa);
+    if (!car && !pilot && !login && !search && !hasF) return;
     history.replaceState(null, "", location.pathname + location.hash);
+    if (hasF) {
+      if (fcat && /^[\p{L}\p{N} &'-]{1,30}$/u.test(fcat)) filters.category = fcat;
+      if (fbrand && /^[\p{L}\p{N} .&'-]{1,40}$/u.test(fbrand)) filters.brand = fbrand;
+      if (sortOk(fsort)) filters.sort = fsort;
+      if (fde >= 1880 && fde <= 2100) filters.yfrom = fde;
+      if (fa >= 1880 && fa <= 2100) filters.yto = fa;
+      filters.page = 1; syncFiltersUi(); renderCatalog(); Router.go("/catalogue");
+    }
     if (search) { filters.query = search.slice(0, 80); const ci = $("catalog-search-input"); if (ci) ci.value = filters.query; renderCatalog(); Router.go("/catalogue"); }
     if (car && carsById.has(car)) openVehicleSheet(car);
     else if (pilot) openPublicProfile(pilot);

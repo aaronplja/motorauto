@@ -50,7 +50,7 @@ function createPro({ db, HttpsError, getStripe, getKey, getPrice, adminMail, ts,
 
   async function isAdmin(auth) {
     const t = auth.token || {};
-    if (t.admin === true || t.delegatedAdmin === true || (adminMail && t.email === adminMail && t.email_verified === true)) return true;
+    if (t.admin === true || t.delegatedAdmin === true) return true;
     try { return (await db.collection("admins").doc(auth.uid).get()).exists; } catch (_) { return false; }
   }
   async function settings() {

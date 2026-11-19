@@ -2,16 +2,15 @@ rules_version = '2';
 
 // MOTORAUTO — règles Firestore
 // Phase 8 : rôle modérateur (claim), collections réservées au serveur.
-// L'admin est soit un utilisateur dont le jeton porte le claim { admin: true }
-// (voir scripts/set-admin.js), soit le compte admin@motorauto.fr (compte créé à l'avance
-// dans Firebase Authentication : personne d'autre ne peut s'inscrire avec cette adresse).
+// L'admin principal est un utilisateur dont le jeton porte le claim { admin: true }
+// (voir scripts/set-admin.js). L'adresse e-mail seule ne donne plus aucun droit.
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-    // Admin principal : claim { admin: true } ou compte admin@motorauto.fr (adresse VÉRIFIÉE exigée). Seul lui nomme / retire les autres admins.
-    function isSuper()  { return signedIn() && (request.auth.token.admin == true || (request.auth.token.email == 'admin@motorauto.fr' && request.auth.token.email_verified == true)); }
+    // Admin principal : claim { admin: true } uniquement. Seul lui nomme / retire les autres admins.
+    function isSuper()  { return signedIn() && request.auth.token.admin == true; }
     // Admin = admin principal OU pilote promu (document admins/{uid} créé par l'admin principal).
     function isAdmin()  { return isSuper() || (signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid))); }
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
