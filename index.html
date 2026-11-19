@@ -44,13 +44,13 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=69a160359a","quiz":"js/lazy-quiz.min.js?v=28aabbf116"};</script>
-  <script defer src="js/bundle1.min.js?v=dcc0e6d551"></script>
+  <script defer src="js/bundle1.min.js?v=4dfc2d6e6f"></script>
   <script defer src="js/bundle2.min.js?v=a1a1dc0d07"></script>
-  <script defer src="js/bundle3.min.js?v=6a2145142c"></script>
+  <script defer src="js/bundle3.min.js?v=022eb90328"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
-  <link rel="stylesheet" href="css/bundle.min.css?v=ccc11a2d31">
+  <link rel="stylesheet" href="css/bundle.min.css?v=2d9448b122">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -114,7 +114,8 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
   <div id="page-main" class="app-pages" tabindex="-1">
   <div class="page" id="page-home" data-page="home">
   <!-- ============ HERO ============ -->
-  <section class="hero-stage">
+  <h1 class="sr-only" id="home-sr-h1">MOTORAUTO — ton garage, tes chronos, ta communauté</h1>
+      <section class="hero-stage">
     <div class="hero-aurora" aria-hidden="true"><i></i><i></i><i></i></div>
     <div class="hero-grid-lines" aria-hidden="true"></div>
     <div class="hero-streaks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
@@ -981,7 +982,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <div class="contact-card">
       <div class="contact-intro">
         <span class="contact-kicker">Contact</span>
-        <h2>Une idée, un bug, une voiture manquante&nbsp;?</h2>
+        <h1>Une idée, un bug, une voiture manquante&nbsp;?</h1>
         <p>Écris-nous : ta demande arrive directement dans la messagerie privée de l'administrateur, dans le salon. Il te répond là-bas, tu es prévenu par la cloche.</p>
         <ul class="contact-points">
           <li><b>Ajout de véhicule</b> : indique la version, le moteur et une source.</li>

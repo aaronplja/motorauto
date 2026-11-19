@@ -99,3 +99,30 @@ button.is-busy::after { content: ""; display: inline-block; width: .95em; height
 .sec-box { display: grid; gap: 1.1rem; }
 .sec-form { display: grid; gap: .6rem; }
 .ok-txt { color: #16a34a; }
+
+/* UI-206 / TECH-208 : la marge négative du hero (-70px) remontait toute la zone de pages au premier affichage (CLS 0,08).
+   flow-root contient la marge dans #page-home : même rendu, mais #page-main ne bouge plus. */
+#page-home.page-on { display: flow-root; }
+html.ma-garage #page-home.page-on { display: flex; }
+
+/* UX-201 : le titre de la page Contact est un h1 (même aspect qu'avant) ; le h1 de l'accueil n'est affiché que si le hero est masqué (mode garage) */
+[data-page="contact"] h1:where(:not(.app-header *, [class*="dock"] *)) { font-family: var(--font-display); font-weight: 400; letter-spacing: -.02em; font-size: clamp(2.2rem, 5vw, 3.2rem); line-height: 1.02; margin: .6rem 0 .8rem; }
+html:not(.ma-garage) #home-sr-h1 { display: none; }
+h1:focus, h1:focus-visible { outline: none; }
+
+/* UI-202 : plus aucun texte courant sous 12 px (les micro-libellés d'unité restent à 11 px) */
+small:where(:not(.app-header *, [class*="dock"] *)) { font-size: max(12px, .8em); }
+.spec-u { font-size: max(11px, .75rem); }
+.lap-meta { font-size: max(12px, .8rem); }
+
+/* UI-206 : l'aperçu d'avatar réserve sa place avant le chargement de l'image */
+img[id*="avatar"], .avatar-preview img { aspect-ratio: 1 / 1; }
+
+/* UX-204 : bouton « Annuler » dans le toast */
+.toast.undo { align-items: center; justify-content: space-between; }
+.toast-undo { flex: none; min-height: 36px; padding: 0 1rem; border-radius: 999px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
+.toast-undo:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+/* UX-205 : bandeau hors connexion (nouvel élément, ne touche ni l'en-tête ni la barre du bas) */
+#ma-offline { position: fixed; z-index: 4000; left: 50%; transform: translateX(-50%); top: calc(var(--safe-top, 0px) + 64px); max-width: min(92vw, 420px); padding: .45rem 1rem; border-radius: 999px; background: var(--bg-elevated); color: var(--color-ink); border: 1px solid var(--stroke-line); box-shadow: var(--shadow-pop); font-size: .82rem; pointer-events: none; }
+#ma-offline[hidden] { display: none; }

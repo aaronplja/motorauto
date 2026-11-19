@@ -2224,4 +2224,10 @@
 "Ton export est prêt.": "Dein Export ist fertig.",
 "Export impossible pour le moment.": "Export derzeit nicht möglich.",
 "Partager ce chrono": "Diese Zeit teilen",
+"Dépense supprimée.": "Ausgabe gelöscht.",
+"Photo du journal supprimée.": "Tagebuchfoto gelöscht.",
+"Ligne du carnet supprimée.": "Eintrag im Heft gelöscht.",
+"Hors connexion : tes actions seront renvoyées au retour du réseau.": "Offline: Deine Aktionen werden beim Wiederverbinden erneut gesendet.",
+"Connexion rétablie.": "Wieder online.",
+"MOTORAUTO — ton garage, tes chronos, ta communauté": "MOTORAUTO — deine Garage, deine Zeiten, deine Community",
 }]);

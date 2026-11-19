@@ -100,9 +100,9 @@
     try { await col().add(doc); loaded = false; await load(true); render(); renderOverview(); C.toast("Entretien ajouté au carnet.", "ok"); }
     catch (ex) { err.textContent = "Enregistrement impossible : " + ex.message; }
   }
-  async function del(id) {
-    if (!await window.MA.confirm("Supprimer cette ligne du carnet ?", { ok: "Supprimer" })) return;
-    try { await col().doc(id).delete(); items = items.filter((i) => i.id !== id); render(); renderOverview(); } catch (e) { C.toast("Suppression impossible : " + e.message, "err"); }
+  function del(id) {
+    const keep = items.slice();
+    window.MA.undoable({ label: "Ligne du carnet supprimée.", hide: () => { items = items.filter((i) => i.id !== id); render(); renderOverview(); }, restore: () => { items = keep; render(); renderOverview(); }, commit: () => col().doc(id).delete() });
   }
   function renderOverview() { const b = document.getElementById("garage-reminders"); if (b) b.innerHTML = reminderHtml(); }
 

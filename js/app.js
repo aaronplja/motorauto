@@ -2518,6 +2518,7 @@
       MA.notif.send(adminUid, { type: "dm", from: profile.username || c.pilot, text: "📩 " + (CONTACT_TYPES[c.type] || "Demande"), link: "chat.html#dm/" + encodeURIComponent(currentUser.uid) }, "dm_" + currentUser.uid);
       contactLastSent = Date.now();
       ["ct-message", "ct-brand", "ct-model", "ct-years", "ct-engine"].forEach((id) => { $(id).value = ""; });
+      if (window.MADraft) MADraft.clear("contact");
       updateContactCount();
       setContactStatus("Merci ! Ta demande est dans la messagerie de l'administrateur. Il te répondra dans le salon (messages privés).", "ok");
       MA.toast("Demande envoyée à l'administrateur.", "ok");

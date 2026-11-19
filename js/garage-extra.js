@@ -165,9 +165,9 @@
       const g = e.target.closest("[data-gauge-share]");
       if (g) { const c = gaugeCars.find((x) => x.id === g.dataset.gaugeShare); if (c && window.MAShare) window.MAShare.gaugeImage(c, c.name, c.pilot); return; }
       const cd = e.target.closest("[data-cost-del]");
-      if (cd && await window.MA.confirm("Supprimer cette dépense ?", { ok: "Supprimer" })) { sub("costs").doc(cd.dataset.costDel).delete().then(() => { costs = costs.filter((c) => c.id !== cd.dataset.costDel); renderCosts(); }).catch((x) => C.toast("Suppression impossible : " + x.message, "err")); return; }
+      if (cd) { const id = cd.dataset.costDel, keep = costs.slice(); window.MA.undoable({ label: "Dépense supprimée.", hide: () => { costs = costs.filter((c) => c.id !== id); renderCosts(); }, restore: () => { costs = keep; renderCosts(); }, commit: () => sub("costs").doc(id).delete() }); return; }
       const jd = e.target.closest("[data-jr-del]");
-      if (jd && await window.MA.confirm("Supprimer cette photo du journal ?", { ok: "Supprimer" })) sub("journal").doc(jd.dataset.jrDel).delete().then(() => { journal = journal.filter((j) => j.id !== jd.dataset.jrDel); renderJournal(); }).catch((x) => C.toast("Suppression impossible : " + x.message, "err"));
+      if (jd) { const id = jd.dataset.jrDel, keep = journal.slice(); window.MA.undoable({ label: "Photo du journal supprimée.", hide: () => { journal = journal.filter((j) => j.id !== id); renderJournal(); }, restore: () => { journal = keep; renderJournal(); }, commit: () => sub("journal").doc(id).delete() }); }
     });
     document.addEventListener("input", (e) => { const r = e.target.closest("[data-ba-range]"); if (r) r.closest("[data-ba]").style.setProperty("--ba", r.value + "%"); });
   });

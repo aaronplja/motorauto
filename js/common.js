@@ -162,6 +162,33 @@
     t.addEventListener("click", close);
   };
 
+  /** UX-204 : toast avec bouton « Annuler ». MA.toastUndo("Dépense supprimée", () => restaurer(), 7000). Renvoie une fonction de fermeture. */
+  MA.toastUndo = function (message, onUndo, ms) {
+    let region = document.getElementById("toast-region");
+    if (!region) { MA.toast(message); region = document.getElementById("toast-region"); if (region && region.lastChild) region.lastChild.remove(); }
+    const t = document.createElement("div");
+    t.className = "toast undo";
+    const span = document.createElement("span"); span.textContent = message;
+    const b = document.createElement("button"); b.type = "button"; b.className = "toast-undo"; b.textContent = "Annuler";
+    t.append(span, b); region.appendChild(t);
+    const close = () => { clearTimeout(tm); t.classList.add("out"); setTimeout(() => t.remove(), 320); };
+    const tm = setTimeout(close, ms || 7000);
+    b.addEventListener("click", (e) => { e.stopPropagation(); close(); try { onUndo(); } catch (_) { /* ignoré */ } });
+    return close;
+  };
+  /** Suppression annulable : on retire tout de suite de l'écran, on laisse 7 s pour annuler, puis on supprime pour de bon.
+   *  MA.undoable({ label, hide(), restore(), commit() -> Promise }). Si l'onglet se ferme pendant le délai, la suppression est confirmée. */
+  const pendingUndo = new Set();
+  MA.undoable = function (o) {
+    let done = false, timer = 0;
+    const commit = () => { if (done) return; done = true; clearTimeout(timer); pendingUndo.delete(commit); Promise.resolve().then(o.commit).catch((x) => { try { if (o.restore) o.restore(); } catch (_) { /* ignoré */ } MA.toast("Suppression impossible : " + (x && x.message ? x.message : "réessaie"), "err"); }); };
+    try { o.hide(); } catch (_) { /* ignoré */ }
+    pendingUndo.add(commit);
+    timer = setTimeout(commit, 7000);
+    MA.toastUndo(o.label, () => { if (done) return; done = true; clearTimeout(timer); pendingUndo.delete(commit); try { o.restore(); } catch (_) { /* ignoré */ } }, 7000);
+  };
+  window.addEventListener("pagehide", () => { Array.from(pendingUndo).forEach((f) => f()); });
+
   // ------------------------------------------------------- clés de discussion
   MA.chatKey = (c) => (c.type === "global" ? "global" : c.type === "channel" ? "chan:" + c.id : c.type === "club" ? "club:" + c.id : "dm:" + c.id);
 

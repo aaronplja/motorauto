@@ -2224,4 +2224,10 @@
 "Ton export est prêt.": "Your export is ready.",
 "Export impossible pour le moment.": "Export not possible right now.",
 "Partager ce chrono": "Share this lap time",
+"Dépense supprimée.": "Expense deleted.",
+"Photo du journal supprimée.": "Journal photo deleted.",
+"Ligne du carnet supprimée.": "Logbook entry deleted.",
+"Hors connexion : tes actions seront renvoyées au retour du réseau.": "Offline: your actions will be resent when the network returns.",
+"Connexion rétablie.": "Back online.",
+"MOTORAUTO — ton garage, tes chronos, ta communauté": "MOTORAUTO — your garage, your lap times, your community",
 }]);
