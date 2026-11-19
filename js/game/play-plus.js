@@ -256,6 +256,13 @@
 
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
+    // l'Atelier de cartes (onglet Cartes) et l'onglet Échanges se servent de ces moteurs sans changer de page
+    window.MAExchange = {
+      market: () => mkEnter(),
+      wish: () => wfEnter(),
+      sell: (id) => { mk.tab = "sell"; mk.sell = id; mk.confirm = ""; return mkEnter(); },
+      fuse: async (r, ids) => { fz.doc = MC().mine() || fz.doc; fz.r = r; fz.ids = ids.slice(0, G.FUSE_COUNT); return fzGo(r); }
+    };
     ctx.Router.register("fusion", { enter: () => fzEnter() });
     ctx.Router.register("cardmarket", { enter: () => mkEnter() });
     ctx.Router.register("wishfeed", { enter: () => wfEnter() });

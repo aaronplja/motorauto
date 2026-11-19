@@ -82,8 +82,19 @@
     return `<article class="pilot-trade ${open ? "open" : ""}"><button type="button" class="pt-head" data-trade-open="${esc(o.uid)}" aria-expanded="${open}">${C.avatarImg(u.avatar, "pilot-row-avatar")}<span class="pt-main"><b>${esc(u.username || "Pilote")}</b><small>${m.want.length} doublon${m.want.length > 1 ? "s" : ""} pour toi · ${m.give.length} de ton côté</small>${tags}</span><span class="pt-go" aria-hidden="true">${open ? "−" : "+"}</span></button>${open ? composer(o, m) : `<button type="button" class="cta-btn fill-btn compact-btn pt-quick" data-trade-quick="${esc(o.uid)}" title="Propose automatiquement un de tes doublons contre un des siens">⚡ Échange rapide : ta ${esc(name(quickPair(m).give))} contre sa ${esc(name(quickPair(m).want))}</button>`}</article>`;
   }
 
+  // un seul onglet Échanges : Pilotes, Marché, Souhaits, Reçues, Envoyées, Historique (le marché et les souhaits sont rendus par play-plus.js dans leurs propres conteneurs)
+  const SECS = [["pilots", "Pilotes"], ["market", "Marché"], ["wish", "Souhaits"], ["in", "Reçues"], ["out", "Envoyées"], ["done", "Historique"]];
+  const secBar = (cnt) => SECS.map((t) => { const n = cnt && cnt[t[0]]; return `<button type="button" role="tab" class="tr-tab${tab === t[0] ? " active" : ""}" aria-selected="${tab === t[0]}" data-trtab="${t[0]}">${t[1]}${n ? `<i>${n}</i>` : ""}</button>`; }).join("");
+  function openSection(k) {
+    tab = k; render();
+    if (k === "market" && window.MAExchange) window.MAExchange.market();
+    else if (k === "wish" && window.MAExchange) window.MAExchange.wish();
+  }
   function render() {
     const root = document.getElementById("trades-root"); if (!root) return;
+    const ext = tab === "market" || tab === "wish";
+    { const m = document.getElementById("cardmarket-root"), w = document.getElementById("wishfeed-root"); if (m) m.hidden = tab !== "market"; if (w) w.hidden = tab !== "wish"; }
+    if (ext) { root.innerHTML = `<div class="tr"><div class="tr-tabs" role="tablist" aria-label="Échanges">${secBar(null)}</div></div>`; return; }
     if (!C.user) { root.innerHTML = `<div class="empty-note">Connecte-toi pour échanger tes doublons avec les autres pilotes.<br><button type="button" class="cta-btn fill-btn mt" data-action="open-auth">Me connecter</button></div>`; return; }
     if (!loadedAt) { root.innerHTML = `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
     const me = window.MACards.mine() || { owned: {} }, myDups = Object.keys(me.owned).filter((k) => me.owned[k] > 1).length;
@@ -97,8 +108,8 @@
     else if (!lackable.length) whyNone.push("Les doublons des autres pilotes sont des cartes que tu possèdes déjà.");
     if (myDups && lackable.length) whyNone.push("Il y a des pilotes avec des doublons qui te manquent, mais il faut aussi un de <b>tes</b> doublons à leur donner.");
     const rows = others.map((o) => ({ o, m: matchFor(o) })).filter((x) => x.m.give.length && x.m.want.length).sort((a, b) => b.m.score - a.m.score).slice(0, 30);
-    const tabs = [["pilots", "Pilotes", rows.length], ["in", "Reçues", incoming.length], ["out", "Envoyées", sent.length], ["done", "Historique", done.length]];
-    if (!tab || !tabs.some((t) => t[0] === tab)) tab = incoming.length ? "in" : "pilots";
+    const cnt = { pilots: rows.length, in: incoming.length, out: sent.length, done: done.length };
+    if (!tab || !SECS.some((t) => t[0] === tab)) tab = incoming.length ? "in" : "pilots";
     const empty = (t) => `<div class="empty-note">${t}</div>`;
     const body = tab === "in" ? (incoming.length ? `<div class="trade-list">${incoming.map(tradeRow).join("")}</div>` : empty("Aucune proposition reçue pour l'instant."))
       : tab === "out" ? (sent.length ? `<div class="trade-list">${sent.map(tradeRow).join("")}</div>` : empty("Tu n'as aucune proposition en attente."))
@@ -107,7 +118,7 @@
     root.innerHTML = `<div class="tr">${error ? `<p class="tcg-alert">⚠ ${C.esc(error)}</p>` : ""}
       <div class="tr-hero"><div class="tr-stat"><b>${myDups}</b><span>doublon${myDups > 1 ? "s" : ""}</span></div><div class="tr-stat"><b>${rows.length}</b><span>pilote${rows.length > 1 ? "s" : ""} à contacter</span></div><div class="tr-stat${incoming.length ? " hot" : ""}"><b>${incoming.length}</b><span>proposition${incoming.length > 1 ? "s" : ""} reçue${incoming.length > 1 ? "s" : ""}</span></div></div>
       <p class="tr-lead">On n'échange que des <b>doublons</b> : un exemplaire en trop contre un exemplaire en trop d'un autre pilote.${prefillGive ? ` Tu proposes : <b>${C.esc(name(prefillGive))}</b>.` : ""}</p>
-      <div class="tr-tabs" role="tablist" aria-label="Échanges">${tabs.map((t) => `<button type="button" role="tab" class="tr-tab${tab === t[0] ? " active" : ""}" aria-selected="${tab === t[0]}" data-trtab="${t[0]}">${t[1]}${t[2] ? `<i>${t[2]}</i>` : ""}</button>`).join("")}</div>
+      <div class="tr-tabs" role="tablist" aria-label="Échanges">${secBar(cnt)}</div>
       ${body}</div>`;
   }
 
@@ -138,6 +149,9 @@
     C = Object.create(ctx);
     ctx.Router.register("play", { enter: async (p) => {
       if (p.tab !== "echanges") return;
+      const hint = window.MAHint; window.MAHint = "";
+      if (hint === "market" || hint === "wish") { openSection(hint); return; }
+      if (tab === "market" || tab === "wish") tab = "";
       render();
       try { await load(); } catch (e) { error = "Échanges indisponibles : " + e.message; loadedAt = Date.now(); }
       render();
@@ -145,7 +159,7 @@
     document.addEventListener("ma:auth", () => { loadedAt = 0; trades = []; others = []; if (ctx.Router.is("play", { tab: "echanges" })) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
       const t = e.target;
-      const tt = t.closest("[data-trtab]"); if (tt) { tab = tt.dataset.trtab; render(); return; }
+      const tt = t.closest("[data-trtab]"); if (tt) { openSection(tt.dataset.trtab); return; }
       const op = t.closest("[data-trade-open]"); if (op) { openRow = openRow === op.dataset.tradeOpen ? "" : op.dataset.tradeOpen; render(); return; }
       const pk = t.closest("[data-pick]"); if (pk) { const u = pk.dataset.uid; if (lotMode[u]) { const key = pk.dataset.pick + "L", cur = (picks[u] = picks[u] || {})[key] = (picks[u][key] || []).slice(), ix = cur.indexOf(pk.dataset.id); if (ix >= 0) cur.splice(ix, 1); else if (cur.length < 5) cur.push(pk.dataset.id); render(); return; } picks[u] = Object.assign(picks[u] || {}, { [pk.dataset.pick]: pk.dataset.id }); const msg = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`), v = msg ? msg.value : ""; render(); const m2 = document.querySelector(`[data-trade-msg="${CSS.escape(u)}"]`); if (m2) m2.value = v; return; }
       const lt = t.closest("[data-trade-lot]"); if (lt) { const u = lt.dataset.tradeLot; lotMode[u] = !lotMode[u]; render(); return; }
@@ -181,7 +195,7 @@
       const y = t.closest("[data-trade-yes]"); if (y) { act(() => window.MAGameAPI.call("respondTrade", { id: y.dataset.tradeYes, accept: true }).then((r) => { if (!r.ok) throw new Error(r.message); return r; }), "Échange réalisé 🎉 Les cartes sont dans ta collection."); return; }
       const n = t.closest("[data-trade-no]"); if (n) { act(() => window.MAGameAPI.call("respondTrade", { id: n.dataset.tradeNo, accept: false }), "Proposition déclinée."); return; }
       const c = t.closest("[data-trade-cancel]"); if (c) { act(() => window.MAGameAPI.call("cancelTrade", { id: c.dataset.tradeCancel }), "Proposition annulée."); return; }
-      const tw = t.closest("[data-trade-with]"); if (tw) { openRow = tw.dataset.tradeWith; loadedAt = 0; }
+      const tw = t.closest("[data-trade-with]"); if (tw) { openRow = tw.dataset.tradeWith; loadedAt = 0; tab = "pilots"; if (ctx.Router.is("play", { tab: "echanges" })) { render(); load(true).then(render).catch(() => {}); } }
     });
   });
 })();

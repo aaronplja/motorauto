@@ -697,7 +697,7 @@
     if (doc) { const st = adventState(); document.querySelectorAll("[data-adv-left]").forEach((el) => { if (st.left != null) el.textContent = fmtLeft(st.left); }); }
     if (t === shownDay) return;
     shownDay = t;
-    if (doc) load(true).then(() => { if (C.Router.is("play", { tab: "collection" }) || C.Router.is("play", { tab: "boutique" })) render(); }).catch(() => {});
+    if (doc) load(true).then(() => { if (isCardsRoute()) render(); }).catch(() => {});
   }
   function offersHtml(rows) {
     indexCars();
@@ -921,6 +921,7 @@
     const old = el.querySelector(".cg-pager"); if (old) old.remove();
     const w = new Set(wish || []), sn = seenSet(), slice = curList.slice(gridPage * PAGE, (gridPage + 1) * PAGE);
     el.insertAdjacentHTML("beforeend", slice.map((c) => cardTpl(c, w, sn)).join("") + pagerHtml("data-gpage", gridPage, curList.length));
+    paintSel();
   }
   function renderGrid() {
     const el = document.getElementById("tcg-grid"); if (!el || !doc) return;
@@ -944,6 +945,90 @@
     const r = document.getElementById("cards-rar"); if (r) r.value = rarFilter;
     document.querySelectorAll("#cards-root [data-cf]").forEach((b) => { const on = b.dataset.cf === filter; b.classList.toggle("active", on); b.setAttribute("aria-pressed", String(on)); });
   }
+
+  // ------------------------------------------------------------------ Atelier : on choisit des cartes, la barre du bas propose les actions possibles
+  let selMode = false, sel = [], atBar = null;
+  const FUSE_N = () => (G.FUSE_COUNT || 5);
+  const atCars = () => sel.map((id) => cardObj(id)).filter(Boolean);
+  function atInfo() {
+    const ch = atCars().map((car) => ({ id: car.id, car, qty: countOf(car.id), r: rarityOf(car), sp: !!G.isSpecial(car.id) }));
+    const n = ch.length, sameRar = n > 0 && ch.every((c) => c.r === ch[0].r), extra = ch.reduce((t, c) => t + Math.max(0, c.qty - 1), 0);
+    return { ch, n, sameRar, extra, anyDup: ch.some((c) => c.qty > 1), noSpecial: ch.every((c) => !c.sp) };
+  }
+  function atActions() {
+    const i = atInfo(), A = (act, label, off, main) => ({ act, label, off: !!off, main: !!main });
+    let title = "Aucune carte choisie", hint = "Touche une carte pour la sélectionner.", actions = [];
+    if (i.n === 1) {
+      const c = i.ch[0], canSell = c.qty > 1 && !c.sp && c.r !== "mythic";
+      title = String(c.car.model || c.id).replace(/\s*\(.*$/, ""); hint = c.qty > 1 ? c.qty + " exemplaires : " + (c.qty - 1) + " en trop." : "1 exemplaire.";
+      actions = [A("inspect", "Inspecter", 0, 1), A("showcase", "Vitrine"), A("sell", "Vendre", !canSell), A("swap", "Proposer", c.qty < 2 || c.sp)];
+    } else if (i.n >= 2) {
+      title = i.n + " cartes";
+      const plain = i.ch.every((c) => C.cars.some((x) => x.id === c.id)), FN = FUSE_N(), canFuse = i.sameRar && i.noSpecial && !!(G.FUSE_NEXT && G.FUSE_NEXT[i.ch[0].r]);
+      if (i.n === 2) {
+        hint = i.anyDup ? "Compare-les ou propose un échange." : "Un échange demande au moins un doublon.";
+        actions = [A("compare", "Comparer", !plain, 1), A("trade", "Échanger", !i.anyDup)];
+        if (canFuse && i.extra >= FN) actions.push(A("fuse", "Fusionner " + FN + " doublons", 0));
+      } else if (canFuse && i.extra >= FN) { hint = i.extra + " doublons " + RAR[i.ch[0].r].label + " : " + FN + " = 1 carte de rareté supérieure."; actions = [A("fuse", "Fusionner " + FN + " doublons", 0, 1), A("compare", "Comparer", !plain || i.n > 4)]; }
+      else { hint = canFuse ? i.extra + " doublon(s) sur " + FN + " requis pour fusionner." : "La fusion demande une seule rareté (hors éditions)."; actions = [A("fuse", "Fusionner", 1, 1), A("compare", "Comparer", !plain || i.n > 4)]; }
+    }
+    return { title, hint, actions };
+  }
+  function atBarEl() {
+    if (atBar && document.body.contains(atBar)) return atBar;
+    atBar = document.createElement("div"); atBar.id = "atelier-bar"; atBar.className = "at-bar"; atBar.hidden = true; atBar.setAttribute("role", "region"); atBar.setAttribute("aria-label", "Actions sur la sélection");
+    document.body.appendChild(atBar); return atBar;
+  }
+  function paintSel() {
+    const grid = document.getElementById("tcg-grid"); if (!grid) return;
+    grid.classList.toggle("at-mode", selMode);
+    grid.querySelectorAll("[data-card]").forEach((el) => { const on = selMode && sel.indexOf(el.dataset.card) >= 0; el.classList.toggle("at-on", on); if (selMode) el.setAttribute("aria-pressed", String(on)); else el.removeAttribute("aria-pressed"); });
+  }
+  function atRender() {
+    const bar = atBarEl(), on = selMode && ctab === "mine" && isCardsRoute();
+    document.querySelectorAll("[data-atelier-toggle]").forEach((b) => { b.setAttribute("aria-pressed", String(selMode)); b.textContent = selMode ? "Terminer" : "Sélectionner"; b.classList.toggle("on", selMode); });
+    paintSel();
+    bar.hidden = !on; document.body.classList.toggle("at-open", on);
+    if (!on) return;
+    const a = atActions();
+    bar.innerHTML = `<p class="at-hint" role="status" aria-live="polite"><b>${C.esc(a.title)}</b> ${C.esc(a.hint)}</p><div class="at-acts">${a.actions.map((x) => `<button type="button" class="at-btn${x.main ? " main" : ""}" data-at="${x.act}"${x.off ? " disabled" : ""}>${C.esc(x.label)}</button>`).join("")}${sel.length ? `<button type="button" class="at-btn ghost" data-at="clear">Vider</button>` : ""}</div>`;
+  }
+  function atOff() { selMode = false; sel = []; atRender(); }
+  function atToggle(id) {
+    if (!countOf(id)) { C.toast("Cette carte n'est pas encore dans ta collection.", "err"); return; }
+    const i = sel.indexOf(id);
+    if (i >= 0) sel.splice(i, 1); else if (sel.length < 12) sel.push(id); else { C.toast("12 cartes au maximum.", "err"); return; }
+    atRender();
+  }
+  async function atRun(act) {
+    const i = atInfo(), first = i.ch[0]; if (!first && act !== "clear") return;
+    if (act === "clear") { sel = []; atRender(); return; }
+    if (act === "inspect") { showDetail(first.id, [first.id]); return; }
+    if (act === "showcase") { editShowcase(); return; }
+    if (act === "sell") { const id = first.id; atOff(); if (window.MAExchange) { window.MAHint = "market"; window.MAExchange.sell(id); } C.Router.go("/jouer/echanges"); return; }
+    if (act === "swap" || act === "trade") { const id = (i.ch.find((c) => c.qty > 1) || first).id; atOff(); if (window.MATrades) window.MATrades.prefill(id); C.Router.go("/jouer/echanges"); return; }
+    if (act === "compare") { const ids = i.ch.map((c) => c.id); atOff(); C.Router.go("/comparer/" + ids.map(encodeURIComponent).join(",")); return; }
+    if (act === "fuse") {
+      const FN = FUSE_N(), used = [];
+      i.ch.forEach((c) => { for (let k = 0; k < c.qty - 1 && used.length < FN; k++) used.push(c.id); });
+      if (used.length !== FN || !window.MAExchange) return;
+      const r = first.r; atOff();
+      await window.MAExchange.fuse(r, used);
+      try { await load(true); } catch (_) { /* rechargement facultatif */ }
+      render();
+    }
+  }
+  /** ancienne adresse #/fusion : on ouvre l'Atelier avec les doublons les plus nombreux déjà choisis */
+  function atPreselectFuse() {
+    if (!doc) return;
+    const FN = FUSE_N(), by = {};
+    Object.keys(doc.owned || {}).forEach((id) => { const q = doc.owned[id] || 0, car = cardObj(id); if (q > 1 && car && !G.isSpecial(id)) { const r = rarityOf(car); if (G.FUSE_NEXT && G.FUSE_NEXT[r]) (by[r] = by[r] || []).push(id); } });
+    const best = Object.keys(by).sort((a, b) => by[b].reduce((t, id) => t + doc.owned[id] - 1, 0) - by[a].reduce((t, id) => t + doc.owned[id] - 1, 0))[0];
+    selMode = true; sel = [];
+    if (best) { let tot = 0; by[best].sort((a, b) => doc.owned[b] - doc.owned[a]).forEach((id) => { if (tot < FN && sel.length < 12) { sel.push(id); tot += doc.owned[id] - 1; } }); }
+    atRender();
+  }
+  const isCardsRoute = () => !!(C && C.Router && (C.Router.is("play", { tab: "collection" }) || C.Router.is("play", { tab: "minijeux" })));
 
   // ----- structure de la page
   /** met à jour l'en-tête et le panneau visible (pas la grille de la collection) */
@@ -972,7 +1057,7 @@
       root.innerHTML = `<div class="cg"><div class="cg-top" id="cg-top"></div>
         <div id="cg-shop" role="tabpanel"></div>
         <div id="cg-mine" role="tabpanel" hidden><div id="cg-mine-top"></div>
-          <section class="cg-block" aria-label="Collection"><header class="cg-bh"><h3>Collection</h3><button type="button" class="cg-recycle" data-recycle>♻️ Recycler</button><span class="tcg-count" id="tcg-count" aria-live="polite"></span></header>
+          <section class="cg-block" aria-label="Collection"><header class="cg-bh"><h3>Collection</h3><button type="button" class="cg-recycle at-toggle" data-atelier-toggle aria-pressed="false">Sélectionner</button><button type="button" class="cg-recycle" data-recycle>♻️ Recycler</button><span class="tcg-count" id="tcg-count" aria-live="polite"></span></header>
             <div class="cg-tools"><input type="search" id="cards-search" placeholder="Rechercher une carte…" aria-label="Rechercher une carte" value="${C.esc(query)}" autocomplete="off">
               <select id="cards-rar" aria-label="Rareté"><option value="all">Toutes raretés</option>${ORDER.map((r) => `<option value="${r}">${RAR[r].label}</option>`).join("")}</select>
               <select id="cards-country" aria-label="Pays"><option value="all">Tous pays</option>${countries}</select>
@@ -1027,21 +1112,27 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     ctx.Router.register("play", { enter: async (p) => {
-      if (p.tab !== "collection" && p.tab !== "boutique") return;
-      ctab = p.tab === "boutique" ? "shop" : "mine";
+      if (p.tab !== "collection" && p.tab !== "minijeux") { if (selMode) atOff(); return; }
+      // la Boutique vit dans l'accueil Jouer : le même bloc est déplacé là, sans le recréer (les autres scripts le retrouvent par #cards-root)
+      { const host = document.getElementById(p.tab === "minijeux" ? "shop-host" : "cards-host"), rt = document.getElementById("cards-root"); if (host && rt && rt.parentNode !== host) host.appendChild(rt); }
+      ctab = p.tab === "minijeux" ? "shop" : "mine";
+      if (p.tab === "minijeux" && selMode) atOff();
+      const hint = p.tab === "collection" ? window.MAHint : ""; if (hint) window.MAHint = "";
       render();
       await load().catch(() => {});
       await Promise.all([loadClaims(), loadMyShowcase()]).catch(() => {});
       render();
       let want = "";
       try { const u = new URL(location.href); want = u.searchParams.get("carte") || ""; if (want) { u.searchParams.delete("carte"); history.replaceState(null, "", u.pathname + (u.search || "") + u.hash); } } catch (_) { /* facultatif */ }
+      if (hint === "fuse") atPreselectFuse();
       if (want) {
         if (/^sp-/.test(want)) await loadSpecials().catch(() => {});
         if (cardObj(want)) showDetail(want, [], { peek: true }); else C.toast("Cette carte n'existe plus.", "err");
       }
     } });
     ctx.Router.register("pilot", { enter: (p) => renderProfile(p.uid) });
-    document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (ctx.Router.is("play", { tab: "collection" }) || ctx.Router.is("play", { tab: "boutique" })) { render(); load(true).then(render).catch(() => {}); } });
+    window.addEventListener("hashchange", () => { setTimeout(() => { if (selMode && !isCardsRoute()) atOff(); }, 80); });
+    document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (isCardsRoute()) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-dust-log]")) { showDustLog(); return; }
       if (e.target.closest("#cards-root [data-recycle]")) { recycleOpen(); return; }
@@ -1078,11 +1169,16 @@
       const vw = e.target.closest("#cards-root [data-view]");
       if (vw) { view = vw.dataset.view; store.set("ma_cards_view", view); syncToolbar(); renderGrid(); return; }
       if (e.target.closest("#cards-root [data-battle]")) { if (window.MABattle) window.MABattle.open(); return; }
+      const atg = e.target.closest("#cards-root [data-atelier-toggle]");
+      if (atg) { if (selMode) atOff(); else { selMode = true; sel = []; atRender(); } return; }
+      const atb = e.target.closest("#atelier-bar [data-at]");
+      if (atb) { atRun(atb.dataset.at); return; }
       const cd = e.target.closest("#cards-root [data-card]");
+      if (cd && selMode && ctab === "mine") { atToggle(cd.dataset.card); return; }
       if (cd) showDetail(cd.dataset.card, curList.map((c) => c.id));
     });
     document.addEventListener("keydown", (e) => {
-      if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches("#cards-root [data-card]")) { e.preventDefault(); showDetail(e.target.dataset.card, curList.map((c) => c.id)); }
+      if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches("#cards-root [data-card]")) { e.preventDefault(); if (selMode && ctab === "mine") { atToggle(e.target.dataset.card); return; } showDetail(e.target.dataset.card, curList.map((c) => c.id)); }
     });
     document.addEventListener("pointermove", tiltMove, { passive: true });
     document.addEventListener("toggle", (e) => { const d = e.target; if (d && d.matches && d.matches(".tcg-album") && d.open) fillAlbum(d); }, true);
@@ -1094,6 +1190,6 @@
       else if (e.target.id === "cards-sort") { sortBy = e.target.value; store.set("ma_cards_sort", sortBy); renderGrid(); }
     });
     shownDay = day(); setInterval(dayWatch, 20000); document.addEventListener("visibilitychange", () => { if (!document.hidden) dayWatch(); });
-    document.addEventListener("ma:game", () => { if (doc && (ctx.Router.is("play", { tab: "collection" }) || ctx.Router.is("play", { tab: "boutique" }))) load(true).then(render).catch(() => {}); });
+    document.addEventListener("ma:game", () => { if (doc && (isCardsRoute())) load(true).then(render).catch(() => {}); });
   });
 })();

@@ -96,12 +96,11 @@ ok("navigation : Chat remplace Communauté, « Moi » devient Pilotes (profil ·
   assert(!/nav-me-btn|touch-me-btn/.test(nv));
   assert(/"data-s"/.test(read("js/i18n.js")), "libellés courts des onglets traduits");
 });
-ok("Jouer : 4 univers (Cartes · Jeux · Échanges · Défis), chacun avec sa page d'accueil", () => {
+ok("Jouer : 4 univers (Jouer · Cartes · Échanges · Défis) ; la Boutique est dans l'accueil Jouer, Échanges est un seul onglet (lot 3)", () => {
   const rt = read("js/router.js"), h = read("index.src.html"), pl = read("js/game/play.js");
-  assert(/PLAY_GROUPS = \[\["cartes", "Cartes"\], \["minijeux", "Jeux"\], \["troc", "Échanges"\], \["communaute", "Défis"\]\]/.test(rt));
-  assert(/"troc", "minijeux"|"echanges", "troc"/.test(rt) && /data-tab="troc"[^>]*><div id="play-hub-troc"/.test(h));
+  assert(/PLAY_GROUPS = \[\["minijeux", "Jouer"\], \["cartes", "Cartes"\], \["troc", "Échanges"\], \["communaute", "Défis"\]\]/.test(rt));
   assert(/echanges: "troc"/.test(rt) && /cardmarket: "troc", wishfeed: "troc"/.test(rt) && /fusion: "cartes"/.test(rt));
-  assert(/group === "troc"/.test(pl) && /p\.tab === "troc"/.test(pl));
+  assert(/data-tab="minijeux"[^>]*><div id="shop-host"/.test(read("pages/play.html")) && /group === "minijeux"/.test(pl));
 });
 ok("PRO : une seule page adaptative (offre sans accès, bandeau + explorateur avec accès), anciennes adresses redirigées", () => {
   const rt = read("js/router.js"), h = read("index.src.html"), pro = read("js/pro.js");

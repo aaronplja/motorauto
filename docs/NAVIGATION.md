@@ -27,7 +27,7 @@ La source de vérité est `js/router.js` (tableaux `DEFS`, `PAGE_ID`, `NAV_OF`, 
 | `car` | `/voiture/<id>` | `vehicle-modal` | — |
 | `commcar` | `/voiture-pilote/<id>` | `page-commcar` | — |
 | `community` | `/communaute[/onglet]` | `page-community` | fil, voitures, pilotes, evenements, carte |
-| `play` | `/jouer[/onglet]` | `page-play` | cartes, collection, boutique, echanges, troc, minijeux, communaute, defis, concours |
+| `play` | `/jouer[/onglet]` | `page-play` | minijeux (accueil Jouer : Boutique + jeux), collection (Atelier de cartes), echanges (Pilotes, Marché, Souhaits, Reçues, Envoyées, Historique), communaute, defis, concours |
 | `pilotes` | `/pilotes` | `page-pilotes` | — |
 | `chat` | `/chat[/…]` | `page-chat` | — |
 | `leaderboard` | `/classement[/onglet]` | `leaderboard-modal` | chronos, circuits, voitures, pilotes, collection |
@@ -62,3 +62,8 @@ La source de vérité est `js/router.js` (tableaux `DEFS`, `PAGE_ID`, `NAV_OF`, 
 - Dans le site, la route `#/chat` charge `chat.html` dans un cadre (`js/chat/chat-embed.js`) : les barres du haut et du bas restent celles du site. Ouvert seul, `chat.html` renvoie vers `#/chat`.
 - `index.src.html` ne charge **jamais** `chat.js` : le site n'a pas de seconde copie du Chat. Seuls l'indicateur de messages non lus (`js/common.js`) et l'envoi d'un message à l'administrateur (`js/app.js`) lisent les mêmes collections Firestore.
 - `chat.html` est exclu de `robots.txt` et du `sitemap.xml`.
+
+## Atelier de cartes et Échanges (lot 3)
+- **Un onglet, une tâche.** `/jouer/collection` = l'Atelier : « Sélectionner » active le choix de cartes et une barre d'actions contextuelle (Inspecter, Vitrine, Vendre, Proposer, Comparer, Échanger, Fusionner 5 doublons). `/jouer/echanges` regroupe Pilotes, Marché, Souhaits, Reçues, Envoyées et Historique. `/jouer/minijeux` (« Jouer ») porte la Boutique et les jeux.
+- **Adresses conservées** (`REDIRECTS`) : `/fusion` et `/jouer/cartes` -> Atelier (`/fusion` préselectionne des doublons), `/marche` et `/souhaits` -> Échanges (section voulue via `window.MAHint`), `/jouer/boutique` -> Jouer, `/jouer/troc` -> Échanges.
+- Les pages `fusion`, `cardmarket` et `wishfeed` ne sont plus incluses dans le build ; leurs moteurs restent dans `js/game/play-plus.js` (`window.MAExchange`).
