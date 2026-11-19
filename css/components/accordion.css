@@ -31,3 +31,7 @@ html .toolbar-cluster details.cat-acc > .acc-body { display: grid; gap: .5rem; p
 details.fiche-acc .sheet-section-head { display: none; }
 details.fiche-acc { margin-top: .6rem; }
 details.fiche-acc .acc-body > :first-child { margin-top: 0; }
+/* Réglages : Ambiance et Notifications — le titre du bloc est dans le menu */
+details.set-acc .theme-family-title, details.set-acc > .acc-body > h3:first-child, details.set-acc .set-card > h3:first-child, details.set-acc .a11y-card > h3:first-child { display: none; }
+details.set-acc .ct-box, details.set-acc .set-card { border: 0; box-shadow: none; background: none; padding: 0; margin: 0; }
+details.set-acc + details.set-acc, .set-card + details.set-acc, details.set-acc + .set-card { margin-top: .6rem; }

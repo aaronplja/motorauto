@@ -38,7 +38,12 @@
       <label>${T("Première voiture")}<input name="firstCar" maxlength="60" value="${esc(mine.firstCar)}" placeholder="Renault Clio 2"></label>
       <label>${T("Ville")}<input name="city" maxlength="60" value="${esc(mine.city)}" placeholder="Lyon"></label>
       <button type="submit" class="cta-btn fill-btn compact-btn">${T("Enregistrer mes passions")}</button><small class="px-msg" role="status"></small>`;
-    host.appendChild(f);
+    const save = host.querySelector("#save-profile-settings-btn");
+    if (save && window.MAAcc) {   // Réglages : menu « Mes passions », juste avant le bouton « Enregistrer le profil »
+      const w = document.createElement("div"); w.innerHTML = window.MAAcc.o("set-passions", T("Mes passions"), T("Voiture de rêve, première voiture, ville"), false, "") + window.MAAcc.c;
+      const d = w.firstElementChild; f.style.cssText = "display:flex;flex-direction:column;gap:8px"; const h = f.querySelector("h3"); if (h) h.remove();
+      d.querySelector(".acc-body").appendChild(f); save.before(d);
+    } else host.appendChild(f);
     f.onsubmit = async (e) => {
       e.preventDefault(); const fd = new FormData(f), v = { dreamCar: clean(fd.get("dreamCar")), firstCar: clean(fd.get("firstCar")), city: clean(fd.get("city")) }, m = f.querySelector(".px-msg");
       try { await C.db.collection("profile_extra").doc(C.user.uid).set(Object.assign({}, v, { updatedAt: C.FieldValue.serverTimestamp() })); mine = v; cache.set(C.user.uid, v); m.textContent = "✓ " + T("Enregistré."); }
