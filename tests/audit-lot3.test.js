@@ -43,3 +43,6 @@ ok("catalogue : filtres lisibles dans l'adresse (categorie, marque, tri, de, a) 
   const a = read("js/app.js");
   ["q.get(\"categorie\")", "q.get(\"marque\")", "q.get(\"tri\")", "q.get(\"de\")", "q.get(\"a\")", "search = q.get(\"q\")", "car = q.get(\"car\")"].forEach((k) => assert(a.includes(k), k));
 });
+ok("fiche du catalogue : marque et dates alignées au centre (pas sur la ligne de base du logo)", () => {
+  assert(/\.car-make-row:where[^\n]*align-items: center/.test(read("css/themes/studio-b.css")));
+});
