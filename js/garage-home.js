@@ -98,7 +98,7 @@
     if (!C) return;
     try { await C.authReady; } catch (_) { /* ignoré */ }
     box = document.getElementById("home-garage");
-    if (!C.user) { visitorCta(); if (box) box.remove(); const rest = document.getElementById("home-garage-rest"); if (rest) rest.remove(); homeAcc(false); delete document.documentElement.dataset.maStreak; document.documentElement.classList.remove("ma-garage"); try { localStorage.removeItem("ma_in"); } catch (_) { /* ignoré */ } last = ""; return; }
+    if (!C.user) { visitorCta(); if (box) box.remove(); const rest = document.getElementById("home-garage-rest"); if (rest) rest.remove(); homeAcc(false);  document.documentElement.classList.remove("ma-garage"); try { localStorage.removeItem("ma_in"); } catch (_) { /* ignoré */ } last = ""; return; }
     try { localStorage.setItem("ma_in", "1"); } catch (_) { /* ignoré */ }
     if (!window.MACards || !window.MAGame) return;
     let doc = window.MACards.mine();
@@ -122,7 +122,8 @@
     const cta = canDaily ? { t: T("Ouvrir mon pack du jour"), ic: "🎁", cl: "ready" } : bonus > 0 ? { t: T("Ouvrir un pack bonus") + " (" + bonus + ")", ic: "🎁", cl: "ready" } : { t: T("Voir ma collection"), ic: "🎴", cl: "" };
     const href = canDaily || bonus > 0 ? "#/jouer/boutique" : "#/jouer/collection";
     const nm = who(), long = nm.length > 20 ? " gh-xl" : nm.length > 12 ? " gh-long" : "";
-    box.innerHTML = `<div class="gh-head"><h2 class="gh-title${long}">${T("Bon retour")},<br><em>${C.esc(nm)}.</em></h2></div>`;
+    const nd = st.days || 0;
+    box.innerHTML = `<div class="gh-head${long}"><h2 class="gh-title${long}">${T("Bon retour")},<br><em>${C.esc(nm)}.</em></h2>${nd ? `<a class="gh-streak" href="#/jouer/defis" aria-label="${T("Série")} : ${nd} ${T("jours")}"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg><b>${nf(nd)}</b><small>${T("jours")}</small></a>` : ""}</div>`;
     let rest = document.getElementById("home-garage-rest");
     if (!rest) { rest = document.createElement("section"); rest.id = "home-garage-rest"; rest.className = "stage-shell home-section gh gh-rest"; box.insertAdjacentElement("afterend", rest); }
     document.querySelectorAll("#home-garage-rest").forEach((x, i) => { if (i) x.remove(); });
@@ -141,10 +142,6 @@
       </div>
       <div class="gh-friends" id="gh-friends" hidden></div>
       <div class="gh-links"><a href="#/quiz">${icon("🎯")}${T("Quiz")}</a><a href="#/duel">${icon("⚔")}${T("Duel")}</a><a class="gh-chal-link" href="#/jouer/defis">${icon("🏆")}${T("Défis")}</a><a href="#/jouer/echanges">${icon("🔄")}${T("Échanges")}</a></div>`;
-    // pastille de série sur le bandeau de la voiture du jour
-    document.documentElement.dataset.maStreak = String(st.days || 0);
-    const sp = document.querySelector("[data-cod-streak]");
-    if (sp) sp.innerHTML = st.days ? `<b>${nf(st.days)}</b><small>${T("jours")}</small>` : "";
     homeAcc(true);
     document.documentElement.classList.add("ma-garage");
     countdown(!canDaily && !(bonus > 0));

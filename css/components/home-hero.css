@@ -5,8 +5,16 @@ html.ma-garage #page-home>#home-contest { order: 4; }
 html.ma-garage #page-home>#home-garage { margin-bottom: .2rem; }
 html.ma-garage #page-home>#home-garage-rest { margin-top: .9rem; margin-bottom: .4rem; }
 html.ma-garage #page-home>#cod-home { margin-top: 0; }
-html.ma-garage .gh-title.gh-long { font-size: clamp(2.2rem, 7.5vw, 3.6rem); }
-html.ma-garage .gh-title.gh-xl { font-size: clamp(1.8rem, 6vw, 2.8rem); }
+html.ma-garage .gh-head { --gh-fs: clamp(2.8rem, 9vw, 4.6rem); display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
+html.ma-garage .gh-head.gh-long { --gh-fs: clamp(2.2rem, 7.5vw, 3.6rem); }
+html.ma-garage .gh-head.gh-xl { --gh-fs: clamp(1.8rem, 6vw, 2.8rem); }
+html.ma-garage .gh-head .gh-title { flex: 1 1 auto; min-width: 0; font-size: var(--gh-fs); }
+/* bouton rond de la série : sa hauteur suit celle des deux lignes du titre */
+.gh-streak { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: calc(var(--gh-fs) * 2); height: calc(var(--gh-fs) * 2); border-radius: 50%; background: color-mix(in srgb, var(--accent) 12%, var(--bg-surface)); color: var(--accent-ink, var(--accent)); text-decoration: none; }
+.gh-streak svg { width: calc(var(--gh-fs) * .5); height: calc(var(--gh-fs) * .5); }
+.gh-streak b { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: calc(var(--gh-fs) * .75); line-height: 1; }
+.gh-streak small { font-size: max(.58rem, calc(var(--gh-fs) * .2)); letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+.gh-streak:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 html.ma-garage .gh-title em { overflow-wrap: anywhere; }
 
 /* bandeau de la voiture du jour */
@@ -20,13 +28,9 @@ html.ma-garage #cod-home .cod-txt small { color: var(--accent-ink, var(--accent)
 html.ma-garage #cod-home .cod-txt b { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 2.1rem; line-height: 1.05; color: var(--color-ink); }
 html.ma-garage #cod-home .cod-txt em { color: var(--color-secondary); opacity: 1; font-size: .9rem; }
 html.ma-garage #cod-home .cod-k { display: none; }
-html:not(.ma-garage) .cod-heart, html:not(.ma-garage) .cod-streak { display: none; }
+html:not(.ma-garage) .cod-heart { display: none; }
 .cod-heart { position: absolute; left: 14px; top: 14px; z-index: 3; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--accent-ink, var(--accent)); font-size: 1.3rem; line-height: 1; cursor: pointer; }
 .cod-heart:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.cod-streak { position: absolute; right: 14px; top: 14px; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 68px; height: 68px; border-radius: 50%; background: var(--accent); color: var(--on-accent, #fff); pointer-events: none; }
-.cod-streak:empty { display: none; }
-.cod-streak b { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 1.7rem; line-height: 1; }
-.cod-streak small { font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; }
 @media (min-width: 760px) { html.ma-garage #cod-home .cod-card { min-height: 380px; } }
 
 /* alerte pack, résumé compact */

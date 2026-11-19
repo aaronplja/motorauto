@@ -46,8 +46,7 @@
     const power = (car.stats && car.stats.power) || 0, zero = car.stats && car.stats.zero, speed = car.stats && car.stats.speed;
     const past = [1, 2, 3, 4, 5].map((i) => pickFor(keyOfNum(dayNum(today) - i))).filter(Boolean);
     let on = false; try { on = localStorage.getItem(KEY) === "1"; } catch (_) { /* ignoré */ }
-    const sd = document.documentElement.dataset.maStreak || "";
-    box.innerHTML = `<button type="button" class="cod-heart" data-cod-like="${C.esc(car.id)}" aria-pressed="false" aria-label="${T("J'aime")}"><span aria-hidden="true">♡</span></button><span class="cod-streak" data-cod-streak>${sd && sd !== "0" ? `<b>${C.esc(sd)}</b><small>${T("jours")}</small>` : ""}</span>
+    box.innerHTML = `<button type="button" class="cod-heart" data-cod-like="${C.esc(car.id)}" aria-pressed="false" aria-label="${T("J'aime")}"><span aria-hidden="true">♡</span></button>
       <a class="cod-card" href="#/voiture/${encodeURIComponent(car.id)}">${img ? `<img src="${C.esc(img)}" alt="" loading="lazy" data-fallback="car">` : `<span class="cod-ph"></span>`}
         <span class="cod-txt"><small>${T("Voiture du jour")}</small><b>${C.esc(nameOf(car))}</b><em>${C.esc(String(car.years || ""))}${car.category ? " · " + C.esc(car.category) : ""}</em>
         <span class="cod-k">${power ? `<i>${power} ch</i>` : ""}${zero ? `<i>0-100 : ${zero} s</i>` : ""}${speed ? `<i>${speed} km/h</i>` : ""}</span></span></a>
