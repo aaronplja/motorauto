@@ -655,8 +655,8 @@
     const m = doc.mis && doc.mis.day === day() ? doc.mis : { p: {}, done: [] };
     const list = G.dailyMissions(day()).map((x) => Object.assign({}, x, { n: Math.min(x.goal, m.p[x.id] || 0), ok: (m.done || []).indexOf(x.id) >= 0 }));
     const left = list.filter((x) => !x.ok).length;
-    return `<section class="cg-block cg-missions" aria-label="Missions du jour"><header class="cg-bh"><h3>Missions du jour</h3><span class="cg-sub">${left ? left + " à faire" : "toutes terminées"} · nouvelles à minuit</span></header>
-      <div class="cg-mlist">${list.map((x) => `<div class="cg-mission${x.ok ? " ok" : ""}"><span class="cg-mi" aria-hidden="true">${x.ok ? "✓" : x.n + "/" + x.goal}</span><span class="cg-mt"><b>${C.esc(x.label)}</b>${gauge(x.n, x.goal)}</span><span class="cg-mr">+${dust$(x.reward)}</span></div>`).join("")}</div></section>`;
+    return `${window.MAAcc.o("missions", "Missions du jour", (left ? left + " à faire" : "toutes terminées") + " · nouvelles à minuit", false, "cg-block cg-missions", "Missions du jour")}
+      <div class="cg-mlist">${list.map((x) => `<div class="cg-mission${x.ok ? " ok" : ""}"><span class="cg-mi" aria-hidden="true">${x.ok ? "✓" : x.n + "/" + x.goal}</span><span class="cg-mt"><b>${C.esc(x.label)}</b>${gauge(x.n, x.goal)}</span><span class="cg-mr">+${dust$(x.reward)}</span></div>`).join("")}</div>${window.MAAcc.c}`;
   }
   function packTileHtml(p, o) {
     o = o || {};
@@ -717,10 +717,10 @@
     const log = (doc.log || []).slice(-8).reverse();
     const kinds = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté" };
     const bar = (n, tot, lbl, cls) => `<div class="pity ${cls}"><div class="pity-t"><b>${n === 1 ? "Le prochain pack" : "Plus que " + n + " packs"}</b><small>${lbl}</small></div><span class="pity-bar" aria-hidden="true"><u style="width:${Math.round(100 * (tot - n) / tot)}%"></u></span></div>`;
-    return `<section class="cg-block cg-pity" aria-label="Chance garantie et historique"><header class="cg-bh"><h3>Chance garantie</h3><span class="cg-sub">sur les packs du jour et les packs bonus</span></header>
+    return `${window.MAAcc.o("pity", "Chance garantie", "sur les packs du jour et les packs bonus", false, "cg-block cg-pity", "Chance garantie et historique")}
       ${bar(toRare, G.PITY.rare, "contient une carte rare ou mieux, garantie", "rare")}${bar(toEpic, G.PITY.epic, "contient une carte épique ou mieux, garantie", "epic")}${bar(toLeg, G.PITY.legend, "contient une carte légendaire ou mieux, garantie", "legendary")}
       <div class="pity-stats"><div><b>${all}</b><small>packs ouverts</small></div>${bc && br ? `<div class="pity-best"><b class="${best[1]}">${br.label}</b><small>meilleure pioche : ${C.esc((bc.brand || "") + " " + (bc.model || ""))}</small></div>` : `<div><b>–</b><small>meilleure pioche</small></div>`}</div>
-      ${log.length ? `<details class="pity-log"><summary>Historique des derniers packs</summary><ul>${log.map((l) => { const c = cardObj(l.id), rr = RAR[l.r]; return `<li><span class="pl-d">${C.esc(String(l.t || "").slice(5).split("-").reverse().join("/"))}</span><span class="pl-k">${kinds[l.k] || "Pack"}</span><span class="pl-r tcg-rar-chip ${l.r}">${rr ? rr.label : l.r}</span><span class="pl-c">${c ? C.esc((c.brand || "") + " " + (c.model || "")) : ""}</span></li>`; }).join("")}</ul></details>` : ""}</section>`;
+      ${log.length ? `<details class="pity-log"><summary>Historique des derniers packs</summary><ul>${log.map((l) => { const c = cardObj(l.id), rr = RAR[l.r]; return `<li><span class="pl-d">${C.esc(String(l.t || "").slice(5).split("-").reverse().join("/"))}</span><span class="pl-k">${kinds[l.k] || "Pack"}</span><span class="pl-r tcg-rar-chip ${l.r}">${rr ? rr.label : l.r}</span><span class="pl-c">${c ? C.esc((c.brand || "") + " " + (c.model || "")) : ""}</span></li>`; }).join("")}</ul></details>` : ""}${window.MAAcc.c}`;
   }
   function shopHtml() {
     const rows = packRows(), canDaily = doc.lastPack !== day();
@@ -729,7 +729,7 @@
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
         ${adventBtnHtml()}
       </div>${wheelHtml()}${adventHtml()}${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
-      <section class="cg-block" aria-label="Packs par pays"><header class="cg-bh"><h3>Packs par pays</h3><span class="cg-sub">3 voitures du pays, dont 1 rare ou mieux · Pack Circuit : 3 circuits · Pack Prestige : grandes marques, 1 épique ou mieux · les doublons rapportent des cristaux</span></header><div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div></section>`;
+      ${window.MAAcc.o("packs", "Packs par pays", "3 voitures du pays, dont 1 rare ou mieux · Circuit : 3 circuits · Prestige : épique ou mieux · les doublons rapportent des cristaux", true, "cg-block", "Packs par pays")}<div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div>${window.MAAcc.c}`;
   }
 
   // ----- Mes cartes
@@ -740,7 +740,7 @@
     const ids = ((showcase && showcase.ids) || []).filter((id) => isOwned(id) && cardObj(id)).slice(0, 6);
     const slots = [];
     for (let i = 0; i < 6; i++) slots.push(ids[i] ? `<div class="cg-slot" data-card="${C.esc(ids[i])}">${cardHtml(cardObj(ids[i]), { owned: true, count: 0, lv: lvOf(ids[i]) })}</div>` : `<button type="button" class="cg-slot empty" data-show-edit aria-label="Ajouter une carte à ma vitrine"><span>+</span></button>`);
-    return `<section class="cg-block cg-showcase" aria-label="Ma vitrine"><header class="cg-bh"><h3>Ma vitrine</h3><span class="cg-sub">tes 6 cartes préférées, visibles sur ton profil</span><button type="button" class="cta-btn btn-ghost compact-btn" data-show-edit>Modifier</button></header><div class="cg-slots" data-bg="${(showcase && showcase.bg) || ""}">${slots.join("")}</div></section>`;
+    return `${window.MAAcc.o("showcase", "Ma vitrine", ids.length + " / 6 cartes exposées, visibles sur ton profil", false, "cg-block cg-showcase", "Ma vitrine")}<div class="cg-acc-act"><button type="button" class="cta-btn btn-ghost compact-btn" data-show-edit>Modifier</button></div><div class="cg-slots" data-bg="${(showcase && showcase.bg) || ""}">${slots.join("")}</div>${window.MAAcc.c}`;
   }
   function myCarObj(c) {
     const photos = (c.photos || []).filter((u) => C.safeUrl(u));
@@ -748,9 +748,9 @@
   }
   function myCarsHtml() {
     const cars = ((window.MAApp && window.MAApp.getMyCars && window.MAApp.getMyCars()) || []).slice(0, 6), pub = new Set((showcase && showcase.cars) || []);
-    return `<section class="cg-block cg-mycars" aria-label="Ma voiture en carte"><header class="cg-bh"><h3>Ma voiture en carte</h3><span class="cg-sub">une carte unique faite avec ta photo et tes caractéristiques</span></header>
+    return `${window.MAAcc.o("mycars", "Ma voiture en carte", "une carte unique faite avec ta photo et tes caractéristiques", false, "cg-block cg-mycars", "Ma voiture en carte")}
       ${cars.length ? `<div class="cg-mc-row">${cars.map((c) => `<div class="cg-mc"><div class="cg-mc-card">${cardHtml(myCarObj(c), { owned: true, count: 0 })}</div><button type="button" class="cta-btn ${pub.has(c.id) ? "fill-btn" : "btn-ghost"} compact-btn" data-mycar-pub="${C.esc(c.id)}" aria-pressed="${pub.has(c.id)}">${pub.has(c.id) ? "Visible sur mon profil" : "Privée · afficher sur mon profil"}</button></div>`).join("")}</div>`
-        : `<p class="lap-meta">Ajoute une voiture dans ton garage (Moi › Garage) pour la transformer en carte. Elle reste privée tant que tu ne l'affiches pas sur ton profil.</p>`}</section>`;
+        : `<p class="lap-meta">Ajoute une voiture dans ton garage (Moi › Garage) pour la transformer en carte. Elle reste privée tant que tu ne l'affiches pas sur ton profil.</p>`}${window.MAAcc.c}`;
   }
   const kindLabel = { country: "Pays", decade: "Décennies", brand: "Marques", category: "Familles", theme: "Thèmes" };
   function albumsHtml() {
@@ -764,10 +764,10 @@
         <span class="ab-sub"><span>${s.have} / ${s.ids.length}</span><span>${s.done ? "✓ Terminé" : s.full ? "À récupérer !" : "encore " + left}</span></span>
         <span class="ab-foot"><span>${s.done ? "" : "+" + s.reward + " ◆"}</span>${leg ? `<span class="ab-leg${got ? " got" : ""}" title="Carte Légende : ${got ? C.esc(leg.brand + " " + leg.model) : "à découvrir"}">${got ? "Légende obtenue" : "Légende à gagner"}</span>` : ""}</span></button>`;
     };
-    return `<section class="cg-block cg-albums" aria-label="Albums"><header class="cg-bh"><h3>Albums</h3><span class="cg-sub">${sets.filter((s) => s.done).length} / ${sets.length} terminés · complète un album pour des cristaux (et une carte Légende)</span>${ready.length ? `<button type="button" class="cta-btn fill-btn compact-btn" data-set-claim ${busy ? "disabled" : ""}>Récupérer ${dust$(ready.reduce((t, s) => t + s.reward, 0))}</button>` : ""}</header>
+    return `${ready.length ? `<div class="cg-acc-act"><button type="button" class="cta-btn fill-btn compact-btn" data-set-claim ${busy ? "disabled" : ""}>Récupérer ${dust$(ready.reduce((t, s) => t + s.reward, 0))}</button></div>` : ""}${window.MAAcc.o("albums", "Albums", sets.filter((s) => s.done).length + " / " + sets.length + " terminés" + (ready.length ? " · " + ready.length + " à récupérer" : ""), ready.length > 0, "cg-block cg-albums", "Albums")}
       <div class="seg cg-seg" role="group" aria-label="Type d'album">${Object.keys(kindLabel).map((k) => `<button type="button" data-akind="${k}" aria-pressed="${k === albumKind}">${kindLabel[k]}</button>`).join("")}</div>
       <div id="cg-titles" class="cg-titles"></div>
-      <div class="cg-albumgrid">${list.map(tile).join("") || `<p class="lap-meta">Aucun album de ce type.</p>`}</div></section>`;
+      <div class="cg-albumgrid">${list.map(tile).join("") || `<p class="lap-meta">Aucun album de ce type.</p>`}</div>${window.MAAcc.c}`;
   }
   let albumFilt = "all", albumRar = "all", albumShow = 24;
   const albumCars = (cars) => cars.filter((c) => (albumFilt === "all" || (albumFilt === "owned") === (countOf(c.id) > 0)) && (albumRar === "all" || rarityOf(c) === albumRar));
@@ -944,6 +944,8 @@
     const m = document.getElementById("cards-minp"); if (m) m.value = String(minPower);
     const r = document.getElementById("cards-rar"); if (r) r.value = rarFilter;
     document.querySelectorAll("#cards-root [data-cf]").forEach((b) => { const on = b.dataset.cf === filter; b.classList.toggle("active", on); b.setAttribute("aria-pressed", String(on)); });
+    const fs = document.querySelector('#cards-root details[data-acc="filters"] .acc-t small');
+    if (fs) { const n = (rarFilter !== "all") + (countryFilter !== "all") + (minPower > 0) + (sortBy !== "num") + (filter !== "all"); fs.textContent = n ? n + " actif" + (n > 1 ? "s" : "") + " · rareté, pays, puissance, tri, affichage" : "rareté, pays, puissance, tri, affichage"; }
   }
 
   // ------------------------------------------------------------------ Atelier : on choisit des cartes, la barre du bas propose les actions possibles
@@ -1058,13 +1060,14 @@
         <div id="cg-shop" role="tabpanel"></div>
         <div id="cg-mine" role="tabpanel" hidden><div id="cg-mine-top"></div>
           <section class="cg-block" aria-label="Collection"><header class="cg-bh"><h3>Collection</h3><button type="button" class="cg-recycle at-toggle" data-atelier-toggle aria-pressed="false">Sélectionner</button><button type="button" class="cg-recycle" data-recycle>♻️ Recycler</button><span class="tcg-count" id="tcg-count" aria-live="polite"></span></header>
-            <div class="cg-tools"><input type="search" id="cards-search" placeholder="Rechercher une carte…" aria-label="Rechercher une carte" value="${C.esc(query)}" autocomplete="off">
+            <div class="cg-tools"><input type="search" id="cards-search" placeholder="Rechercher une carte…" aria-label="Rechercher une carte" value="${C.esc(query)}" autocomplete="off"></div>
+            ${window.MAAcc.o("filters", "Trier et filtrer", "rareté, pays, puissance, tri, affichage", false, "cg-filters")}<div class="cg-tools cg-tools-sel">
               <select id="cards-rar" aria-label="Rareté"><option value="all">Toutes raretés</option>${ORDER.map((r) => `<option value="${r}">${RAR[r].label}</option>`).join("")}</select>
               <select id="cards-country" aria-label="Pays"><option value="all">Tous pays</option>${countries}</select>
               <select id="cards-minp" aria-label="Puissance minimale">${[[0, "Toute puissance"], [150, "150 ch et +"], [300, "300 ch et +"], [500, "500 ch et +"], [800, "800 ch et +"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
               <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : rareté"], ["owned", "Tri : doublons d'abord"], ["level", "Tri : niveau"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"], ["year", "Tri : année (anciennes)"], ["yeard", "Tri : année (récentes)"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
             <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"], ["circuits", "🏁 Circuits et livrées"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}
-              <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"], ["binder", "Classeur"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>
+              <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"], ["binder", "Classeur"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>${window.MAAcc.c}
             <div class="tcg-grid" id="tcg-grid"></div></section></div></div>`;
     }
     syncToolbar(); renderHero(); if (ctab === "mine") renderGrid();

@@ -6,6 +6,7 @@
     <section class="tab-panel" data-tab="profil" hidden>
       <div class="settings-box open">
           <div class="verify-banner" id="verify-banner" hidden role="status"><span>Ton adresse e-mail n'est pas encore vérifiée. Ouvre le lien reçu par e-mail.</span><span class="verify-actions"><button type="button" class="cta-btn btn-ghost compact-btn" id="verify-resend">Renvoyer l'e-mail</button><button type="button" class="cta-btn btn-ghost compact-btn" id="verify-check">J'ai vérifié</button></span></div>
+          <details class="acc" data-acc="set-profil" open><summary><span class="acc-t"><b>Profil</b><small>Pseudo, avatar</small></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body">
           <div class="form-grid">
             <div class="input-stack"><label for="settings-username">Pseudo</label><input type="text" id="settings-username" placeholder="Ton pseudo" maxlength="24"><small class="tcg-hint">Unique · modifiable une fois tous les 30 jours · les autres pilotes te mentionnent avec @pseudo.</small></div>
             <div class="input-stack"><label for="settings-avatar">Avatar (URL)</label><input type="text" id="settings-avatar" placeholder="https://…"></div>
@@ -18,7 +19,8 @@
               <small id="avatar-upload-status">Depuis ta galerie ou tes fichiers (n'importe quelle taille, jusqu'à 25 Mo), ou colle une URL ci-dessus.</small>
             </div>
           </div>
-          <div class="settings-sep">Ma voiture</div>
+          </div></details>
+          <details class="acc" data-acc="set-voiture"><summary><span class="acc-t"><b>Ma voiture</b><small>Voiture actuelle, photo, modifications</small></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body">
           <div class="form-grid">
             <div class="input-stack"><label for="settings-car">Voiture actuelle</label><input type="text" id="settings-car" maxlength="80" placeholder="Ex. Peugeot 106 S16 phase 2"></div>
             <div class="input-stack"><label for="settings-car-photo">Photo de la voiture (URL)</label><input type="text" id="settings-car-photo" placeholder="https://…"></div>
@@ -32,6 +34,8 @@
             </div>
           </div>
           <div class="input-stack mt"><label for="settings-mods">Modifications</label><textarea id="settings-mods" rows="3" maxlength="500" placeholder="Une par ligne : ligne d'échappement, combinés filetés, jantes 16&quot;…"></textarea></div>
+          </div></details>
+          <details class="acc" data-acc="set-bio"><summary><span class="acc-t"><b>Bio et réseaux sociaux</b><small>Biographie, Instagram, TikTok, Snapchat</small></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body">
           <div class="input-stack mt"><label for="settings-bio">Biographie</label><textarea id="settings-bio" rows="2" maxlength="300" placeholder="Quelques mots sur toi…"></textarea></div>
           <div class="social-fields mt">
             <div class="panel-section-title">Réseaux sociaux</div>
@@ -40,7 +44,9 @@
             <div class="input-stack"><label for="settings-tiktok">TikTok</label><input type="text" id="settings-tiktok" maxlength="120" placeholder="@pseudo ou tiktok.com/@pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
             <div class="input-stack"><label for="settings-snapchat">Snapchat</label><input type="text" id="settings-snapchat" maxlength="120" placeholder="pseudo ou snapchat.com/add/pseudo" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
           </div>
-          <fieldset class="priv-group"><legend>Confidentialité</legend>
+          </div></details>
+          <details class="acc" data-acc="set-priv"><summary><span class="acc-t"><b>Confidentialité</b><small>Garage public, abonnés, présence, e-mails</small></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body">
+          <fieldset class="priv-group"><legend class="sr-only">Confidentialité</legend>
             <p class="priv-sub">Ce que les autres voient de toi</p>
             <label class="check-row"><input type="checkbox" id="settings-public-garage"><span>Garage public : les autres pilotes voient mes favoris et mes chronos</span></label>
             <label class="check-row"><input type="checkbox" id="settings-hide-following"><span>Masquer mes abonnements (les pilotes que je suis)</span></label>
@@ -54,9 +60,10 @@
               <label class="check-row"><input type="checkbox" id="settings-email-event"><span>E-mail quand un pilote s'inscrit à mon événement</span></label>
             </div>
           </fieldset>
+          </div></details>
           <button type="button" class="cta-btn fill-btn w-100 mt" id="save-profile-settings-btn">Enregistrer le profil</button>
-          <button type="button" class="secondary-destructive-btn w-100 mt" id="settings-logout-btn">Se déconnecter</button>
-          <div class="panel-section-title mt" id="security-title">Sécurité du compte</div>
+          <details class="acc" data-acc="set-secu"><summary><span class="acc-t"><b>Sécurité du compte</b><small>Mot de passe, adresse e-mail</small></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body">
+          <div id="security-title" class="sr-only">Sécurité du compte</div>
           <div id="security-box" class="sec-box">
             <p class="lap-meta" id="security-google" hidden>Ton compte est connecté avec Google : le mot de passe et l'adresse e-mail se gèrent depuis ton compte Google.</p>
             <form id="security-pw" class="sec-form" autocomplete="off" novalidate>
@@ -75,17 +82,23 @@
               <button type="submit" class="cta-btn fill-btn w-100" id="sec-mail-btn">Envoyer le lien de confirmation</button>
             </form>
           </div>
+          </div></details>
+          <details class="acc" data-acc="set-data"><summary><span class="acc-t"><b>Mon année et mes données</b><small>Récapitulatif, export JSON</small></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body">
           <div class="panel-section-title mt">Mon année</div>
           <p class="lap-meta">Ton récapitulatif de l'année : chronos, records, voitures et cartes, à partager en image.</p>
           <button type="button" class="cta-btn w-100" id="my-year-btn">Voir mon année</button>
           <div class="panel-section-title mt">Mes données</div>
           <p class="lap-meta">Télécharge une copie de tes données (profil, garage, entretiens, coûts, journal, abonnements, notifications) dans un fichier JSON.</p>
           <button type="button" class="cta-btn w-100" id="export-data-btn">Télécharger mes données</button>
+          </div></details>
+          <details class="acc" data-acc="set-compte"><summary><span class="acc-t"><b>Compte</b><small>Déconnexion, suppression</small></span><svg class="acc-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acc-body">
+          <button type="button" class="secondary-destructive-btn w-100 mt" id="settings-logout-btn">Se déconnecter</button>
           <div class="danger-zone mt">
             <div class="panel-section-title">Zone sensible</div>
             <p class="lap-meta">Tu peux supprimer ton compte à tout moment. Ton profil, tes voitures, tes chronos, tes publications, ta collection de cartes et tes photos sont effacés définitivement.</p>
             <button type="button" class="secondary-destructive-btn" id="open-delete-account">Supprimer mon compte</button>
           </div>
+          </div></details>
         </div>
     </section>
     <section class="tab-panel" data-tab="ambiance" hidden><div id="settings-theme"></div></section>
