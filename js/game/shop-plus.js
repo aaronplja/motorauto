@@ -38,9 +38,10 @@
         <span class="cg-pm"><b>${esc(T("Pack") + " " + T(t.name))}</b><span class="cg-price${doc.dust < t.cost ? " lack" : ""}"><b>${t.cost}</b> ${window.MA.dustIcon(14)}</span></span>
         <span class="cg-have"><small>${have} / ${list.length} ${T("cartes du thème")}</small></span>${!ok && miss ? `<small class="cg-note">${T("il manque")} ${miss}</small>` : ""}</button>`;
     };
-    return `<section class="cg-block" id="shop-themed" aria-label="${T("Packs thématiques")}"><header class="cg-bh"><h3>${T("Packs thématiques")}</h3><span class="cg-sub">${T("temporaires · 3 voitures du thème, dont 1 rare ou mieux")}</span></header>
+    const sum = act.length ? act.length + " " + T(act.length > 1 ? "en cours" : "en cours") + (soon.length ? " · " + soon.length + " " + T("à venir") : "") : T("aucun en ce moment");
+    return `${window.MAAcc.o("themed", T("Packs thématiques"), esc(sum), false, "cg-block", T("Packs thématiques"), 'id="shop-themed"')}
       ${act.length ? `<div class="cg-packgrid">${act.map(tile).join("")}</div>` : `<p class="tcg-hint">${T("Aucun pack thématique en ce moment.")}</p>`}
-      ${soon.length ? `<p class="tcg-hint">${soon.map((x) => `${x.t.icon} ${esc(T(x.t.name))} — ${T("dans")} ${x.d} ${T(x.d > 1 ? "jours" : "jour")}`).join(" · ")}</p>` : ""}</section>`;
+      ${soon.length ? `<p class="tcg-hint">${soon.map((x) => `${x.t.icon} ${esc(T(x.t.name))} — ${T("dans")} ${x.d} ${T(x.d > 1 ? "jours" : "jour")}`).join(" · ")}</p>` : ""}${window.MAAcc.c}`;
   }
   function inject() {
     const root = document.getElementById("cards-root"), doc = M() && M().mine && M().mine();
@@ -50,7 +51,7 @@
       const cur = free.querySelector("[data-daycard],[data-daydone]");
       if (!cur) free.insertAdjacentHTML("beforeend", giftHtml(doc));
       else if (cur.dataset.sig !== giftSig(doc)) cur.outerHTML = giftHtml(doc);
-      const grid = root.querySelector(".cg-block .cg-packgrid"), anchor = root.querySelector('section[aria-label="Packs par pays"]') || (grid && grid.closest("section"));   // le libellé est traduit : on retrouve la section par sa grille
+      const anchor = root.querySelector('details[data-acc="packs"]');   // menu « Packs par pays » (clé stable, le libellé est traduit)
       if (anchor && !root.querySelector("#shop-themed")) anchor.insertAdjacentHTML("beforebegin", packsHtml(doc));
     }
   }

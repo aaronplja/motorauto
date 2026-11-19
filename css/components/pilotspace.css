@@ -4,8 +4,8 @@ nav[data-section="pilotes"].play-bar:not(.inner) {
   display: grid; gap: 4px; margin: .2rem 0 1.2rem; padding: 6px;
   border-radius: 26px; border: 1px solid var(--stroke-line); background: var(--bg-surface);
   box-shadow: 0 10px 28px -20px rgba(0, 0, 0, .55);
-  /* la carte entière reste collée en haut (et non chaque rangée séparément, ce qui les faisait se chevaucher) */
-  position: sticky; top: calc(var(--safe-top, 0px) + 4px); z-index: 20;
+  /* la carte défile avec la page : pas de barre collée qui en recouvre une autre */
+  position: static;
 }
 html nav[data-section="pilotes"].play-bar:not(.inner) .page-tabs {
   position: static; margin: 0; border: 0 !important; box-shadow: none !important; background: transparent !important; padding: 0 !important;

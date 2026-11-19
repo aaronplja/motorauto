@@ -22,3 +22,12 @@ details.acc.cg-block > .acc-body { padding: .9rem 1.1rem 1.1rem; }
 .cg-tools.cg-tools-sel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (min-width: 720px) { .cg-tools.cg-tools-sel { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 details.acc.cg-filters { margin-top: .6rem; }
+/* catalogue : « Plus de filtres » */
+details.acc .acc-count { flex: none; padding: .15rem .6rem; border-radius: 999px; background: var(--accent); color: var(--on-accent, #fff); font-size: .75rem; font-weight: 700; }
+html .toolbar-cluster details.cat-acc { margin: 0; border-radius: 18px; background: transparent; }
+html .toolbar-cluster details.cat-acc > summary { min-height: 48px; padding: .4rem .9rem; }
+html .toolbar-cluster details.cat-acc > .acc-body { display: grid; gap: .5rem; padding: .7rem .6rem .8rem; }
+/* fiche voiture : le titre de la section est dans le menu, on masque l'ancien intitulé */
+details.fiche-acc .sheet-section-head { display: none; }
+details.fiche-acc { margin-top: .6rem; }
+details.fiche-acc .acc-body > :first-child { margin-top: 0; }

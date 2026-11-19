@@ -72,3 +72,21 @@
   }
   (window.MAModules = window.MAModules || []).push(function () { setTimeout(start, 600); });
 })();
+
+/* catalogue : pastille « N actifs » sur le menu « Plus de filtres » (époque, marque, tri, filtres avancés) */
+(function () {
+  "use strict";
+  let q = 0;
+  function count() {
+    q = 0;
+    const b = document.getElementById("cat-acc-count"); if (!b) return;
+    const g = (id) => document.getElementById(id);
+    const adv = g("adv-count") && !g("adv-count").hidden ? parseInt(g("adv-count").textContent, 10) || 0 : 0;
+    const n = document.querySelectorAll("#era-chips .filter-pill.active, #era-chips .filter-pill[aria-pressed='true']").length + (g("brand-select") && g("brand-select").value !== "all" ? 1 : 0) + (g("sort-select") && g("sort-select").value !== "name-asc" ? 1 : 0) + adv;
+    b.hidden = !n; b.textContent = n + (n > 1 ? " actifs" : " actif");
+  }
+  const later = () => { if (!q) q = requestAnimationFrame(count); };
+  document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("#main-catalog-view")) setTimeout(later, 60); });
+  document.addEventListener("change", (e) => { if (e.target.closest && e.target.closest("#main-catalog-view")) setTimeout(later, 60); });
+  document.addEventListener("DOMContentLoaded", () => { const rc = document.getElementById("results-count"); if (rc) new MutationObserver(later).observe(rc, { childList: true, characterData: true, subtree: true }); later(); });
+})();
