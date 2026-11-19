@@ -60,5 +60,11 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/(a-propos|admin|annonces|catalogue|chat|circuit|classement|club|clubs|communaute|comparer|contact|duel|frise|fusion|garage|jouer|legal|marche|moteur|nouveautes|pass|pilote|pilotes|plusmoins|pro|quiz|reglages|souhaits|succes|voiture-pilote)(/.*)?",
+      "destination": "/index.html"
+    }
   ]
 }
