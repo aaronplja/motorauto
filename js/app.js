@@ -40,6 +40,8 @@
 
   // ------------------------------------------------------------------ état
   let currentUser = null;
+  /** pseudo de secours tiré de l'e-mail ; l'e-mail relais d'Apple (ou l'absence d'e-mail) donne « Pilote » */
+  const mailName = (u) => { const e = (u && u.email) || ""; return !e || /privaterelay\.appleid\.com$/i.test(e) ? "Pilote" : e.split("@")[0]; };
   let isAdmin = false;
   let isSuper = false; // admin principal : peut nommer / retirer les autres admins
   let profile = defaultProfile();
@@ -125,7 +127,7 @@
   document.addEventListener("ma:auth", () => { if (currentUser && authWanted) { const p = authWanted; authWanted = null; Router.go(p); } });
 
   function pilotName() {
-    return profile.username || (currentUser && (currentUser.displayName || currentUser.email.split("@")[0])) || "Pilote";
+    return profile.username || (currentUser && (currentUser.displayName || mailName(currentUser))) || "Pilote";
   }
 
   function avatarImg(url, cls, extra = "") {
@@ -688,7 +690,7 @@
       if (uSnap.exists) {
         const d = uSnap.data();
         profile = {
-          username: d.username || currentUser.email.split("@")[0],
+          username: d.username || mailName(currentUser),
           currentCar: d.currentCar || "Projet Principal",
           avatar: d.avatar || "",
           bio: d.bio || "",
@@ -719,7 +721,7 @@
       } else {
         const reg = pendingRegistration;
         profile = {
-          username: (reg && reg.username) || currentUser.displayName || currentUser.email.split("@")[0],
+          username: (reg && reg.username) || currentUser.displayName || mailName(currentUser),
           currentCar: (reg && reg.car) || "Projet Principal",
           avatar: currentUser.photoURL || "",
           bio: "",
@@ -3123,6 +3125,18 @@
         pendingRegistration = null;
         errBox.textContent = authErrorMessage(err);
       } finally { MA.busy(rbtn, false); }
+    });
+
+    $("apple-login-btn").addEventListener("click", async () => {
+      if (window.MANative && window.MANative.isNative) return;
+      try {
+        const prov = new firebase.auth.OAuthProvider("apple.com");
+        prov.addScope("email"); prov.addScope("name");
+        await auth.signInWithPopup(prov);
+        closeModal($("auth-modal"));
+      } catch (err) {
+        if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request") MA.toast(authErrorMessage(err), "err");
+      }
     });
 
     $("google-login-btn").addEventListener("click", async () => {

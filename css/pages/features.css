@@ -67,7 +67,7 @@
 .tcg-dup { position: absolute; bottom: .4rem; right: .4rem; padding: .05rem .4rem; border-radius: 999px; font-size: .75rem; font-weight: 800; background: #000a; color: #fff; }
 .tcg.locked { filter: grayscale(1) brightness(.75); border-style: dashed; } .tcg.locked .tcg-foil { display: none; }
 .tcg-mini { width: 108px; font-size: .8em; } .tcg-strip { display: flex; gap: .6rem; overflow-x: auto; padding-bottom: .4rem; } .tcg-mini-link { flex: none; text-decoration: none; color: inherit; }
-.tcg-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,.82); display: grid; place-items: center; overflow: auto; padding: 1rem; }
+.tcg-overlay { position: fixed; inset: 0; z-index: var(--z-overlay); background: rgba(0,0,0,.82); display: grid; place-items: center; overflow: auto; padding: 1rem; }
 .tcg-overlay.flash { animation: flash .9s ease-out; } @keyframes flash { 0% { background: rgba(245,158,11,.95); } }
 .tcg-stage { display: grid; gap: .8rem; justify-items: center; text-align: center; color: #fff; max-width: 900px; } .tcg-stage h2 { margin: 0; }
 .tcg-flips { display: flex; gap: .8rem; flex-wrap: wrap; justify-content: center; }

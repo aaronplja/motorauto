@@ -80,3 +80,8 @@ html section[aria-label="Collection"] > header.cg-bh .ui-more-btn { border: 1px 
 
 /* boutons : une seule forme, la pilule, quelle que soit la famille de classe */
 html :is(.cta-btn, .fill-btn, .btn-ghost, .seg-btn, .page-btn, .fs-btn, .link-more, .ui-more-btn, .secondary-destructive-btn, .telemetry-trash-btn, .btn, .follow-btn) { border-radius: 999px; }
+
+/* Jouer : tous les onglets ont la même hauteur minimale, la page ne saute plus quand on passe de l'un à l'autre */
+html #page-play > .tab-panel:not([hidden]), html #page-play .tab-panel:not([hidden]) { min-height: calc(100vh - var(--hdr-h, 76px) - 11rem); }
+/* images sans dimensions connues : espace réservé et fondu à l'arrivée (jamais de saut) */
+img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, transparent); }

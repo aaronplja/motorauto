@@ -17,7 +17,7 @@
 .tcg-big .tcg-foil,.tcg-grid .tcg:hover .tcg-foil,.flip.on .tcg .tcg-foil{animation-duration:5.2s!important}
 
 /* ---- échanges : voile « en cours d'envoi » ---- */
-.tr-sending{position:fixed;inset:0;z-index:3500;display:grid;place-items:center;background:rgba(4,6,14,.72);backdrop-filter:blur(6px);opacity:0;transition:opacity .2s}
+.tr-sending{position:fixed;inset:0;z-index:var(--z-sending);display:grid;place-items:center;background:rgba(4,6,14,.72);backdrop-filter:blur(6px);opacity:0;transition:opacity .2s}
 .tr-sending.on{opacity:1}
 .tr-send-box{display:grid;justify-items:center;gap:14px;padding:26px 30px;border-radius:24px;background:var(--bg-surface,#12151f);border:1px solid var(--stroke-line,rgba(255,255,255,.12));box-shadow:0 24px 60px rgba(0,0,0,.55);transform:translateY(8px) scale(.97);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
 .tr-sending.on .tr-send-box{transform:none}

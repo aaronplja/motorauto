@@ -26,7 +26,7 @@
 /* plein écran sombre (packs, roue, cartes, visionneuse) : rond sombre, croix claire, collé au coin sûr de l'écran */
 .ov-x, .lightbox-x, .lightbox-close {
   position: fixed !important; top: calc(var(--xb-gap) + var(--safe-top, 0px)) !important; right: calc(var(--xb-gap) + env(safe-area-inset-right, 0px)) !important; left: auto !important; bottom: auto !important;
-  z-index: 3200;
+  z-index: var(--z-overlay-3);
   background: rgba(20, 22, 26, .62) !important; color: #fff !important; border-color: rgba(255, 255, 255, .22) !important;
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 8px 22px -12px rgba(0, 0, 0, .7);
 }

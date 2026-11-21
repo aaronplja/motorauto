@@ -244,3 +244,10 @@ body:has(#chat-app:not([data-view="list"])) #mobile-touch-bar { display: none !i
 /* la liste et le bouton « dernier message » accompagnent la saisie avec la même courbe */
 #chat-messages-container, .msg-scroll { transition: padding-bottom .3s cubic-bezier(.2, .8, .2, 1); }
 .jump-latest { transition: bottom .3s cubic-bezier(.2, .8, .2, 1), opacity .2s; }
+
+/* Photos du chat : la boîte a sa taille avant le chargement (4/3, largeur fixée par l'écran), donc rien ne bouge quand l'image arrive */
+.photo { width: min(260px, 62vw); max-width: none; height: auto; aspect-ratio: 4 / 3; background: color-mix(in srgb, var(--color-ink) 8%, transparent); }
+.bubble > .photo:first-child { width: calc(min(260px, 62vw) + 1.3rem); max-width: none; }
+.avatar, .msg > .avatar { flex: none; }
+/* le défilement est déjà recalé à la main à chaque rendu : on coupe l'ancrage automatique du navigateur, qui corrigeait une seconde fois et faisait trembler la liste */
+#chat-messages-container, .msg-scroll { overflow-anchor: none; }

@@ -62,7 +62,7 @@
    ========================================================================== */
 @media (max-width: 999px) {
   /* la proposition de notifications passe au-dessus de la barre */
-  #push-ask { bottom: calc(var(--bar-h, 84px) + var(--safe-bottom, 0px) + 22px) !important; z-index: 700 !important; }
+  #push-ask { bottom: calc(var(--bar-h, 84px) + var(--safe-bottom, 0px) + 22px) !important; z-index: var(--z-push) !important; }
 }
 /* menu « Moi » : verre plus dense, toujours lisible */
 .me-sheet { background: color-mix(in srgb, var(--bg-surface) 92%, transparent) !important; -webkit-backdrop-filter: blur(24px) saturate(1.4) !important; backdrop-filter: blur(24px) saturate(1.4) !important; }

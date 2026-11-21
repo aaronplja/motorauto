@@ -2,6 +2,14 @@
 
 > Fichier généré par `node scripts/build.js` depuis `js/news-seed.js` : ne pas le modifier à la main.
 
+## 2026-11-21 — Accueil visiteur, jeu plus lisible, profils et chat plus stables
+
+Les visiteurs découvrent un nouvel accueil façon magazine : l'archive, le jeu, ton garage et le salon des pilotes, avec un accès direct à la connexion. Dans Jouer, les albums, les packs et la roue sont redessinés, les défis se replient en menus animés, la barre de recherche de la collection est bien délimitée et les barres d'onglets restent à leur place pendant le défilement. La carte du jour gagnée s'affiche aussi à l'ouverture. Les profils de pilotes se chargent à nouveau correctement depuis la liste, la communauté et les conversations. Le chat ne clignote plus à l'ouverture, les photos y gardent leur place avant de se charger et la liste ne tremble plus. Partout, les boutons sont en pastille, les coins arrondis et les polices sont harmonisés, et la page ne bouge plus quand la barre de défilement apparaît.
+
+## 2026-11-20 — Plus de 140 voitures, de nouveaux styles, fiches techniques et biographies
+
+Le catalogue accueille plus de 140 nouvelles voitures et de nouveaux styles : SUV, électrique, cabriolet, pick-up et youngtimer. Chaque fiche gagne une fiche technique et une biographie rédigée, les notes de 0 à 100 sont harmonisées et le catalogue est nettoyé des doublons. Le quiz passe à plus de 300 questions et les points mensuels n'ont plus de plafond.
+
 ## 2026-11-19 — Plus rapide, plus sûr : annulation des suppressions, mode hors connexion, Mon année
 
 Le site charge plus vite : polices hébergées chez nous, logos de marques chargés au fur et à mesure, banque de quiz chargée seulement sur la page Quiz. Tu peux maintenant annuler la suppression d'une dépense, d'une photo du journal ou d'une ligne du carnet pendant 7 secondes. Un bandeau t'avertit quand tu perds la connexion, et ce que tu écris dans Contact, Réglages et les sorties est gardé en brouillon. « Mon année » (Réglages) résume tes chronos, circuits, voitures et cartes, avec une image à partager. Tu choisis aussi quels e-mails recevoir (bon retour, inscriptions à tes événements), un bandeau t'aide à vérifier ton adresse, et les Nouveautés ont maintenant un flux RSS. Côté accessibilité : titres de page mieux structurés, focus sur le titre après un changement de page, textes plus lisibles et claviers mobiles adaptés à chaque champ.

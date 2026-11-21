@@ -238,7 +238,7 @@
       clearInterval(tick);
       setTimeout(paintShopDot, 80);
       if (p.tab === "cartes" || p.tab === "minijeux" || p.tab === "troc" || p.tab === "communaute") renderHub(p.tab);
-      else if (p.tab === "defis") { renderChallenges(); await Promise.all([loadWeekly(true), loadCardCh(true)]); renderChallenges(); paintChalDot(); tick = setInterval(() => { const el = document.getElementById("chal-left"); if (el && weekly) el.textContent = remaining(weekly.endsAt - Date.now()); else clearInterval(tick); }, 30000); }
+      else if (p.tab === "defis" || p.tab === "concours") { renderChallenges(); await Promise.all([loadWeekly(true), loadCardCh(true)]); renderChallenges(); paintChalDot(); tick = setInterval(() => { const el = document.getElementById("chal-left"); if (el && weekly) el.textContent = remaining(weekly.endsAt - Date.now()); else clearInterval(tick); }, 30000); }
     } });
     document.addEventListener("ma:auth", () => { weekly = null; weeklyAt = 0; const cur = ["cartes", "minijeux", "troc", "communaute"].find((k) => ctx.Router.is("play", { tab: k })); if (cur) renderHub(cur); else if (ctx.Router.is("play", { tab: "defis" })) { renderChallenges(); loadWeekly(true).then(renderChallenges).catch(() => {}); } });
     document.addEventListener("click", (e) => { const c = e.target.closest("[data-chal-claim]"); if (c) claim(c.dataset.chalClaim); const k = e.target.closest("[data-cc-claim]"); if (k) claimCard(k.dataset.ccClaim); });

@@ -67,6 +67,7 @@
     play: { page: "play", items: [["apercu", "Jouer"], ["cartes", "Cartes"], ["echanges", "Échanges"], ["defis", "Défis"], ["concours", "Concours"]] },
     community: { page: "community", items: [["fil", "Fil"], ["pilotes", "Pilotes"], ["voitures", "Garages"], ["evenements", "Sorties"], ["clubs", "Clubs", "/clubs", ["clubs", "club"]], ["classement", "Classement", "/classement", ["leaderboard", "circuit"]]] },
     leaderboard: { page: "leaderboard", items: [["chronos", "Chronos"], ["circuits", "Circuits"], ["voitures", "Modèles"], ["pilotes", "Pilotes"], ["collection", "Cartes"]] },
+    infos: { page: "about", items: [["about", "À propos", "/a-propos", ["about"]], ["news", "Nouveautés", "/nouveautes", ["news"]], ["contact", "Contact", "/contact", ["contact"]], ["legal", "Légal", "/legal/mentions", ["legal"]]] },
     garage: { page: "garage", items: [["apercu", "Aperçu"], ["voitures", "Mes voitures"], ["suivi", "Suivi"]] },
     settings: { page: "settings", items: [["profil", "Compte"], ["ambiance", "Ambiance"], ["notifications", "Notifications"], ["carte", "Carte & vie privée"]] },
     admin: { page: "admin", items: [["tableau", "Vue d'ensemble"], ["moderation", "Modération"], ["catalogue", "Catalogue"], ["jeu", "Jeu"], ["pro", "PRO"], ["journal", "Journal"], ["erreurs", "Erreurs"]] },
@@ -170,13 +171,13 @@
   const PLAY_HREF = { minijeux: "#/jouer/minijeux", cartes: "#/jouer/collection", troc: "#/jouer/echanges", communaute: "#/jouer/communaute" };
   const PLAY_SUBS = {
     cartes: [["Collection", "#/jouer/collection", (r) => r.name === "play" && r.params.tab === "collection"], ["Boutique", "#/jouer/boutique", (r) => r.name === "play" && r.params.tab === "boutique"]],
-    minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Bataille", "#/jouer/minijeux", () => false, "data-battle-tile"]],
+    minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Frise", "#/frise", (r) => r.name === "timeline"], ["Bataille", "#/jouer/minijeux", () => false, "data-battle-tile"]],
     troc: [],
-    communaute: [["Semaine", "#/jouer/defis", (r) => r.name === "play" && r.params.tab === "defis"], ["Concours photo", "#/jouer/concours", (r) => r.name === "play" && r.params.tab === "concours"], ["Succès", "#/succes", (r) => r.name === "achievements"]]
+    communaute: [["Défis", "#/jouer/defis", (r) => r.name === "play" && (r.params.tab === "defis" || r.params.tab === "concours")], ["Succès", "#/succes", (r) => r.name === "achievements"]]
   };
   function playGroup(r) {
     if (r.name === "play") return { collection: "cartes", boutique: "cartes", echanges: "troc", minijeux: "minijeux", communaute: "communaute", defis: "communaute", concours: "communaute" }[r.params.tab] || "cartes";
-    return { fusion: "cartes", cardmarket: "troc", wishfeed: "troc", plusmoins: "minijeux", quizgame: "minijeux", duel: "minijeux", achievements: "communaute" }[r.name] || "cartes";
+    return { fusion: "cartes", cardmarket: "troc", wishfeed: "troc", plusmoins: "minijeux", quizgame: "minijeux", duel: "minijeux", timeline: "minijeux", achievements: "communaute" }[r.name] || "cartes";
   }
   // ---- Pilotes : le grand espace des profils. 4 onglets (Profil · Garage · Communauté · Classement) et, dessous, les sous-onglets du groupe.
   //      Un visiteur ne voit que Communauté et Classement ; le profil et le garage demandent un compte.

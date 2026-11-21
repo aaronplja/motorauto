@@ -121,7 +121,7 @@ body.modal-open { overflow: hidden; }
 }
 
 /* ---- croix de fermeture des surcouches plein écran ---- */
-.ov-x { position: fixed; top: calc(.7rem + var(--safe-top, 0px)); right: .7rem; z-index: 3200; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--stroke-line); background: rgba(0,0,0,.55); color: #fff; font-size: 1.7rem; line-height: 1; display: grid; place-items: center; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.ov-x { position: fixed; top: calc(.7rem + var(--safe-top, 0px)); right: .7rem; z-index: var(--z-overlay-3); width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--stroke-line); background: rgba(0,0,0,.55); color: #fff; font-size: 1.7rem; line-height: 1; display: grid; place-items: center; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .ov-x:hover { border-color: var(--accent); }
 
 /* clavier mobile ouvert : on libère le bas de l'écran */

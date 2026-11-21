@@ -251,7 +251,10 @@
       "auth/too-many-requests": "Trop de tentatives. Réessayez dans quelques minutes.",
       "auth/network-request-failed": "Problème de connexion réseau.",
       "auth/popup-closed-by-user": "Fenêtre de connexion fermée.",
-      "auth/popup-blocked": "Le navigateur a bloqué la fenêtre de connexion Google."
+      "auth/popup-blocked": "Le navigateur a bloqué la fenêtre de connexion Google.",
+      "auth/account-exists-with-different-credential": "Un compte existe déjà avec cette adresse e-mail : connecte-toi avec ta première méthode (Google ou e-mail).",
+      "auth/operation-not-allowed": "Cette méthode de connexion n'est pas encore activée.",
+      "auth/unauthorized-domain": "Ce site n'est pas encore autorisé pour cette connexion."
     };
     return (err && map[err.code]) || "Une erreur est survenue. Réessayez.";
   }

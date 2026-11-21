@@ -130,7 +130,7 @@
 .hall { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
 .hall-card { display: grid; gap: .5rem; padding: .9rem; border-radius: var(--corner-md); background: var(--bg-surface); border: 1px solid var(--stroke-line); }
 .hall-card .photo-open { border-radius: 12px; }
-.lightbox { position: fixed; inset: 0; z-index: 3100; display: grid; place-items: center; align-content: center; gap: .6rem; padding: 1rem; background: rgba(0,0,0,.9); color: #fff; animation: ovin .2s; }
+.lightbox { position: fixed; inset: 0; z-index: var(--z-overlay-2); display: grid; place-items: center; align-content: center; gap: .6rem; padding: 1rem; background: rgba(0,0,0,.9); color: #fff; animation: ovin .2s; }
 .lightbox img { max-width: min(96vw, 1200px); max-height: 80vh; border-radius: 12px; object-fit: contain; }
 .lightbox-x { position: absolute; top: calc(.8rem + var(--safe-top)); right: .8rem; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.15); color: #fff; font-size: 1.6rem; cursor: pointer; }
 

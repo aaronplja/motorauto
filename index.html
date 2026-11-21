@@ -43,16 +43,16 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=8af02d5c9d","quiz":"js/lazy-quiz.min.js?v=8b63385a7d","quizbank":"js/lazy-quizbank.min.js?v=957b116121"};</script>
-  <script defer src="js/bundle1.min.js?v=1f8d87da13"></script>
+  <script defer src="js/bundle1.min.js?v=4e12e04601"></script>
   <script defer src="js/bundle2.min.js?v=93952a7671"></script>
-  <script defer src="js/bundle3.min.js?v=404b58c696"></script>
+  <script defer src="js/bundle3.min.js?v=b7649b3004"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
   <link rel="preload" href="fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/hanken-grotesk-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/bundle.min.css?v=81071e9f50">
+  <link rel="stylesheet" href="css/bundle.min.css?v=6ee64a4ca2">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -671,8 +671,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <section class="tab-panel" data-tab="echanges" hidden><div id="trades-root"></div><div id="cardmarket-root" hidden></div><div id="wishfeed-root" hidden></div></section>
     <section class="tab-panel" data-tab="minijeux" hidden><div id="play-hub-minijeux"></div></section>
         <section class="tab-panel" data-tab="communaute" hidden><div id="play-hub-communaute"></div></section>
-    <section class="tab-panel" data-tab="defis" hidden><div id="challenges-root"></div></section>
-    <section class="tab-panel" data-tab="concours" hidden><div id="contest-root"></div></section>
+    <section class="tab-panel" data-tab="defis concours" hidden><div id="challenges-root"></div><div id="contest-root"></div></section>
   </div>
   </div>
 
@@ -860,6 +859,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-about" data-page="about">
   <div class="stage-shell page-wrap">
+    <nav data-section="infos"></nav>
     <a class="back-link" href="#/" data-back="#/">← Accueil</a>
     <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">À propos</span><h1 class="page-title">MOTORAUTO</h1><p class="page-sub">L'archive des sportives de route, écrite par ceux qui les conduisent.</p></div></header>
     <dl class="about-stats" aria-label="Le site en chiffres">
@@ -890,6 +890,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-legal" data-page="legal">
   <div class="stage-shell page-wrap">
+    <nav data-section="infos"></nav>
     <a class="back-link" href="#/" data-back="#/">← Accueil</a>
     <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Informations légales</span><h1 class="page-title" id="legal-title">Mentions légales</h1></div></header>
     <nav class="page-tabs legal-nav" id="legal-nav" aria-label="Documents légaux"></nav>
@@ -957,6 +958,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-timeline" data-page="timeline">
   <div class="stage-shell page-wrap">
+    <nav data-section="play"></nav>
     <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Catalogue</span><h1 class="page-title">Frise chronologique</h1><p class="page-sub">Toute l'histoire de l'automobile sur une ligne.</p></div></header>
     <a class="back-link" href="#/catalogue" data-back="#/catalogue">← Catalogue</a>
     <div id="timeline-root"></div>
@@ -974,6 +976,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page page-layer" id="page-news" data-page="news">
   <div class="stage-shell page-wrap">
+    <nav data-section="infos"></nav>
     <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Accueil</span><h1 class="page-title">Nouveautés</h1><p class="page-sub">Le journal des mises à jour de MOTORAUTO.</p></div></header>
     <a class="back-link" href="#/" data-back="#/">← Accueil</a>
     <div id="news-root"></div>
@@ -986,6 +989,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div class="page" id="page-contact" data-page="contact">
   <section class="stage-shell page-wrap contact-section" id="contact">
+    <nav data-section="infos"></nav>
     <div class="contact-card">
       <div class="contact-intro">
         <span class="contact-kicker">Contact</span>
@@ -1101,6 +1105,10 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <button type="button" class="google-auth-btn" id="google-login-btn">
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.14v3.15C3.15 21.32 7.21 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.14C.41 8.09 0 9.77 0 12s.41 3.91 1.14 5.39l4.13-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.21 0 3.15 2.68 1.14 6.61l4.13 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/></svg>
           <span>Continuer avec Google</span>
+        </button>
+        <button type="button" class="google-auth-btn apple-auth-btn" id="apple-login-btn" hidden style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.2.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-1-2.5-3.9zM14.1 5.8c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1.1.1 2.1-.5 2.7-1.3z"/></svg>
+          <span>Continuer avec Apple</span>
         </button>
         <div class="divider-or"><span>ou avec ton e-mail</span></div>
 

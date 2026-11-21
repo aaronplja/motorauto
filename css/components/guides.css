@@ -1,5 +1,5 @@
 /* ============ Popups d'aide (tour22-28) ============ */
-.guide-ov { position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.62); opacity: 0; transition: opacity .2s var(--ease-out); }
+.guide-ov { position: fixed; inset: 0; z-index: var(--z-top); display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.62); opacity: 0; transition: opacity .2s var(--ease-out); }
 .guide-ov.on { opacity: 1; }
 .guide-card { position: relative; width: min(100%, 440px); max-height: calc(100dvh - 2rem); overflow-y: auto; display: grid; gap: .9rem; padding: 1.6rem 1.4rem 1.3rem; border-radius: 28px; background: var(--bg-surface); border: 1px solid var(--stroke-line); box-shadow: 0 30px 70px -30px rgba(0,0,0,.8); transform: translateY(14px) scale(.98); transition: transform .3s cubic-bezier(.2,.9,.3,1); }
 .guide-ov.on .guide-card { transform: none; }

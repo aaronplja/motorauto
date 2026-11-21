@@ -200,7 +200,7 @@
 .ssn-how2 li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius: 12px;background:color-mix(in srgb,var(--color-ink) 4%,transparent);font-size:.86rem}
 .ssn-how2 li span{flex:1;min-width:0}.ssn-how2 li b{color:var(--gold)}
 .ssn-note{opacity:.65;font-size:.75rem}
-.ssn-pick{position:fixed;inset:0;z-index:3200;display:grid;place-items:center;padding:16px;background:rgba(3,5,12,.86);backdrop-filter:blur(8px);opacity:0;transition:opacity .3s;overflow:auto}
+.ssn-pick{position:fixed;inset:0;z-index:var(--z-overlay-3);display:grid;place-items:center;padding:16px;background:rgba(3,5,12,.86);backdrop-filter:blur(8px);opacity:0;transition:opacity .3s;overflow:auto}
 .ssn-pick.on{opacity:1}
 .ssn-pick-box{width:min(760px,100%);display:grid;gap:12px;text-align:center;transform:translateY(14px) scale(.98);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
 .ssn-pick.on .ssn-pick-box{transform:none}

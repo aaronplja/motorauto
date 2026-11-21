@@ -206,7 +206,7 @@ button.pro-stat{cursor:pointer}button.pro-stat:hover{border-color:var(--accent)}
 @media (max-width:720px){.toolbar-cluster{top:76px}}
 
 /* catalogue : suggestions de recherche + boutons comparer / favori qui ne se chevauchent plus */
-.catalog-search{position:relative;z-index:70}
+.catalog-search{position:relative;z-index:var(--z-pop-low)}
 .catalog-search .search-suggestions-dropdown{top:calc(100% - 4px)}
 .suggestion-empty a{color:var(--accent);text-decoration:underline}
 .btn-bookmark-action{right:.6rem}
@@ -284,7 +284,7 @@ button.pro-stat{cursor:pointer}button.pro-stat:hover{border-color:var(--accent)}
 .combo{position:relative;width:100%}
 .combo-input{width:100%;box-sizing:border-box;padding:11px 14px;border-radius: 12px;font:inherit;color:inherit;background:var(--glass-bg,rgba(255,255,255,.06));border:1px solid var(--glass-line,rgba(255,255,255,.12))}
 .combo-input:focus{outline:2px solid var(--accent);outline-offset:1px}
-.combo-pop{position:absolute;z-index:60;left:0;right:0;top:calc(100% + 6px);max-height:min(50vh,340px);overflow:auto;padding:6px;border-radius: 16px;background:var(--bg-2,#15171c);border:1px solid var(--glass-line,rgba(255,255,255,.14));box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.combo-pop{position:absolute;z-index:var(--z-sticky);left:0;right:0;top:calc(100% + 6px);max-height:min(50vh,340px);overflow:auto;padding:6px;border-radius: 16px;background:var(--bg-2,#15171c);border:1px solid var(--glass-line,rgba(255,255,255,.14));box-shadow:0 18px 40px rgba(0,0,0,.45)}
 .combo-opt{display:flex;justify-content:space-between;gap:10px;align-items:center;width:100%;text-align:left;padding:10px 12px;border:0;border-radius: 12px;background:none;color:inherit;font:inherit;cursor:pointer}
 .combo-opt.on,.combo-opt:hover{background:rgba(255,255,255,.08)}
 .combo-opt small{opacity:.55;font-size:.75rem;white-space:nowrap}

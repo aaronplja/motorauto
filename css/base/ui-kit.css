@@ -19,11 +19,11 @@
 .ui-more-btn { display: inline-flex; align-items: center; gap: .35rem; min-height: 36px; padding: 6px 13px; border: 1px solid var(--ui-line); border-radius: 999px; background: var(--ui-raised); color: var(--ui-ink); font: inherit; font-size: .82rem; font-weight: 600; line-height: 1.2; cursor: pointer; }
 .ui-more-btn[aria-expanded="true"] { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-on-accent); }
 .qz-tabs .ui-more-btn { padding: .45rem .95rem; font-size: .88rem; }
-.ui-more-pop { position: fixed; z-index: 1300; min-width: 230px; max-width: min(92vw, 340px); display: flex; flex-direction: column; gap: 2px; padding: 6px; background: var(--ui-surface); color: var(--ui-ink); border: 1px solid var(--ui-line); border-radius: var(--ui-r-md); box-shadow: var(--ui-shadow); }
+.ui-more-pop { position: fixed; z-index: var(--z-more); min-width: 230px; max-width: min(92vw, 340px); display: flex; flex-direction: column; gap: 2px; padding: 6px; background: var(--ui-surface); color: var(--ui-ink); border: 1px solid var(--ui-line); border-radius: var(--ui-r-md); box-shadow: var(--ui-shadow); }
 .ui-more-pop[hidden] { display: none; }
 .ui-more-pop > * { display: flex; align-items: center; gap: .55rem; width: 100%; min-height: var(--ui-tap); margin: 0; padding: 10px 14px; border: 0; border-radius: var(--ui-r-sm); background: transparent; color: var(--ui-ink); font: inherit; font-size: .95rem; font-weight: 600; text-align: left; cursor: pointer; box-shadow: none; }
 .ui-more-pop > *:hover, .ui-more-pop > *:focus-visible { background: var(--ui-raised); }
-.ui-more-back { position: fixed; inset: 0; z-index: 1290; background: rgba(0, 0, 0, .42); }
+.ui-more-back { position: fixed; inset: 0; z-index: var(--z-more-back); background: rgba(0, 0, 0, .42); }
 @media (max-width: 720px) {
   .ui-more-pop { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important; max-width: none; min-width: 0; border-radius: var(--ui-r-lg) var(--ui-r-lg) 0 0; padding: 14px 10px calc(10px + env(safe-area-inset-bottom, 0px)); animation: uiSheet .22s ease-out; }
   .ui-more-pop::before { content: ""; display: block; width: 40px; height: 4px; margin: 0 auto 8px; border-radius: 4px; background: var(--ui-line); }

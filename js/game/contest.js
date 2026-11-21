@@ -172,12 +172,12 @@
     C = Object.create(ctx);
     ctx.Router.register("home", { enter: () => { homeBanner(); } });
     ctx.Router.register("play", { enter: async (p) => {
-      if (p.tab !== "concours") return;
+      if (p.tab !== "concours" && p.tab !== "defis") return;
       render();
       try { await load(true); } catch (e) { err = "Concours indisponible : " + e.message; loadedAt = Date.now(); }
       render();
     } });
-    document.addEventListener("ma:auth", () => { loadedAt = 0; mine = null; if (ctx.Router.is("play", { tab: "concours" })) { render(); load(true).then(render); } });
+    document.addEventListener("ma:auth", () => { loadedAt = 0; mine = null; if (ctx.Router.is("play", { tab: "concours" }) || ctx.Router.is("play", { tab: "defis" })) { render(); load(true).then(render); } });
     document.addEventListener("submit", (e) => { if (e.target.id === "contest-form") submit(e); });
     document.addEventListener("click", async (e) => {
       const t = e.target;
