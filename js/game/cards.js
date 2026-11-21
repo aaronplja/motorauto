@@ -417,6 +417,8 @@
   function markSeen(id) { const s = seenSet(); if (!s.has(id)) { s.add(id); saveSeen(); } }
 
   // ------------------------------------------------------------------ ouverture d'un pack
+  /** couleur de halo à l'ouverture : celle de l'IC de la carte (voitures), sinon celle de l'échelon */
+  const flipCol = (car) => { const x = G.indexOf(car.id); return x && IC_COL[x.ic] ? ";--ring:" + IC_COL[x.ic] + ";--ring2:" + IP_COL[x.ip] : ""; };
   const BURST = { rare: "#3b82f6", epic: "#a855f7", legendary: "#f59e0b", shiny: "#ff7ad9", mythic: "#fde047", special: "#cbd5e1" };
   const buzz = () => {};   // vibrations supprimées
   function sparks(el, n) {
@@ -442,7 +444,7 @@
     function stage() {
       const box = o.querySelector("#pk3"); if (!box || overlay !== o) return;
       box.innerHTML = `<h2>Ton pack</h2><p class="tcg-hint" id="tcg-hint">Touche chaque carte pour la révéler</p>
-        <div class="tcg-flips">${results.map((r, i) => `<div class="flip deal" style="--i:${i}" data-i="${i}" data-r="${rarityOf(r.car)}" role="button" tabindex="0" aria-label="Révéler la carte ${i + 1}"><div class="flip-in"><div class="flip-face flip-back"><span class="fb-frame" aria-hidden="true"></span><svg class="fb-mark" viewBox="180 280 660 466" aria-hidden="true"><polygon points="415,288 544,288 320,736 192,736"/><polygon points="703,288 832,288 608,736 480,736"/></svg><b>MOTOR<span>AUTO</span></b><small>Révéler</small><i class="fb-shine" aria-hidden="true"></i></div><div class="flip-face flip-front">${cardHtml(r.car, r.newPic ? { image: r.image } : null)}<span class="tcg-tag ${r.fresh || r.newPic ? "new" : "dup"}">${r.fresh ? "NOUVELLE" : r.newPic ? "NOUVELLE IMAGE " + r.picN + "/" + r.picTotal + (r.reward ? " · +" + r.reward : "") : "DOUBLON +" + RAR[rarityOf(r.car)].dust}</span></div></div><i class="flip-ring" aria-hidden="true"></i></div>`).join("")}</div>
+        <div class="tcg-flips">${results.map((r, i) => `<div class="flip deal" style="--i:${i}${flipCol(r.car)}" data-i="${i}" data-r="${rarityOf(r.car)}" role="button" tabindex="0" aria-label="Révéler la carte ${i + 1}"><div class="flip-in"><div class="flip-face flip-back"><span class="fb-frame" aria-hidden="true"></span><svg class="fb-mark" viewBox="180 280 660 466" aria-hidden="true"><polygon points="415,288 544,288 320,736 192,736"/><polygon points="703,288 832,288 608,736 480,736"/></svg><b>MOTOR<span>AUTO</span></b><small>Révéler</small><i class="fb-shine" aria-hidden="true"></i></div><div class="flip-face flip-front">${cardHtml(r.car, r.newPic ? { image: r.image } : null)}<span class="tcg-tag ${r.fresh || r.newPic ? "new" : "dup"}">${r.fresh ? "NOUVELLE" : r.newPic ? "NOUVELLE IMAGE " + r.picN + "/" + r.picTotal + (r.reward ? " · +" + r.reward : "") : "DOUBLON +" + RAR[rarityOf(r.car)].dust}</span></div></div><i class="flip-ring" aria-hidden="true"></i></div>`).join("")}</div>
         <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" id="tcg-all">Tout révéler</button></div>
         <div class="pk3-sum" id="tcg-sum" hidden></div>
         <div class="tcg-actions" id="tcg-end" hidden><button type="button" class="cta-btn fill-btn" id="tcg-done">Terminer</button></div>`;
@@ -464,7 +466,7 @@
         if (rr === "rare") buzz(15);
         else if (rr === "epic") { sparks(el, 10); buzz([20, 30, 20]); }
         else if (rr === "legendary" || rr === "shiny" || rr === "special" || rr === "mythic") { sparks(el, 18); buzz([30, 40, 60]); }
-        if (BURST[rr] && rr !== "rare") { o.style.setProperty("--burst", BURST[rr]); o.classList.remove("flash"); void o.offsetWidth; o.classList.add("flash"); }
+        if (BURST[rr] && rr !== "rare") { { const bx = G.indexOf(results[+(el && el.dataset ? el.dataset.i : 0)] ? results[+(el.dataset.i)].car.id : ""); o.style.setProperty("--burst", bx && IC_COL[bx.ic] ? IC_COL[bx.ic] : BURST[rr]); } o.classList.remove("flash"); void o.offsetWidth; o.classList.add("flash"); }
         if (shown === results.length) finish();
       };
       const finish = () => {
