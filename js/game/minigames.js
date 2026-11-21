@@ -114,7 +114,8 @@
     if (!C.user) { root.innerHTML = loginNote(T("jouer au quiz")) + lb; return; }
     if (qz.err) { root.innerHTML = `<div class="empty-note error">${C.esc(qz.err)}</div><button type="button" class="cta-btn btn-ghost" data-qz-menu>${T("Retour")}</button>`; return; }
     if (qz.state === "menu") {
-      const tabs = `<div class="qz-tabs" role="tablist">${[["quiz", "Quiz"], ["train", "Entraînement"], ["chrono", "Chrono"], ["devine", "Devine la voiture"], ["vf", "Vrai ou faux"], ["intrus", "L'intrus"]].map(([k, l]) => `<button type="button" role="tab" aria-selected="${qz.mode === k}" class="${qz.mode === k ? "on" : ""}" data-qz-mode="${k}">${T(l)}</button>`).join("")}</div>`;
+      const solo = qz.mode === "devine" || qz.mode === "vf";   // Devine la voiture et Vrai ou faux ont leur propre tuile dans Jeux : pas d'onglets ici
+      const tabs = solo ? "" : `<div class="qz-tabs" role="tablist">${[["quiz", "Quiz"], ["train", "Entraînement"], ["chrono", "Chrono"], ["intrus", "L'intrus"]].map(([k, l]) => `<button type="button" role="tab" aria-selected="${qz.mode === k}" class="${qz.mode === k ? "on" : ""}" data-qz-mode="${k}">${T(l)}</button>`).join("")}</div>`;
       const LV = [1, 2, 3, 4];
       if (qz.mode === "devine") { dvRender(root, tabs); return; }
       if (qz.mode === "vf" || qz.mode === "intrus") {
@@ -264,7 +265,17 @@
     } catch (e) { qz.err = e.message; qz.state = "menu"; }
     qzRender();
   }
-  async function qzEnter() {
+  const ctxRouter = () => (C && C.Router) || window.Router;
+  async function qzEnter(p) {
+    // Devine la voiture et Vrai ou faux sont des jeux à part (#/quiz/devine, #/quiz/vraifaux) ; le reste reste dans le quiz
+    const rt = p ? { params: p } : (ctxRouter() && ctxRouter().current && ctxRouter().current()), md = rt && rt.params && rt.params.mode;
+    qz.mode = md === "devine" ? "devine" : md === "vraifaux" ? "vf" : (qz.mode === "devine" || qz.mode === "vf" ? "quiz" : qz.mode);
+    const pg = document.getElementById("page-quizgame");
+    if (pg) {
+      const h = pg.querySelector(".page-title"), sub = pg.querySelector(".page-sub");
+      if (h) h.textContent = T(qz.mode === "devine" ? "Devine la voiture" : qz.mode === "vf" ? "Vrai ou faux" : "Quiz");
+      if (sub) sub.textContent = T(qz.mode === "devine" ? "Une voiture mystère par jour : six essais, un indice de plus après chaque erreur." : qz.mode === "vf" ? "Dix affirmations : vraies ou fausses ?" : "Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.");
+    }
     dv.s = null; dv.err = ""; dv.msg = ""; dv.pool = null;
     qz.err = ""; qz.rows = null; qz.cRows = null; if (ch.timer) { clearInterval(ch.timer); ch.timer = 0; } if (qz.state !== "play") qz.state = "menu";
     const g = await myStats(); qz.best = g && g.quizBest ? g.quizBest : {}; qz.cBest = g && g.chronoBest ? g.chronoBest : {};
@@ -386,7 +397,7 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     ctx.Router.register("plusmoins", { enter: () => pmEnter() });
-    ctx.Router.register("quizgame", { enter: () => qzEnter() });
+    ctx.Router.register("quizgame", { enter: (p) => qzEnter(p) });
     ctx.Router.register("achievements", { enter: () => acEnter(), leave: () => { const r = rootOf("achievements"); if (r) r.innerHTML = ""; } });
     document.addEventListener("click", (e) => {
       const t = e.target; let b;

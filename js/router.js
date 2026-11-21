@@ -32,7 +32,7 @@
     { name: "cardmarket", re: /^\/marche\/?$/, keys: [] },
     { name: "wishfeed", re: /^\/souhaits\/?$/, keys: [] },
     { name: "plusmoins", re: /^\/plusmoins\/?$/, keys: [] },
-    { name: "quizgame", re: /^\/quiz\/?$/, keys: [] },
+    { name: "quizgame", re: /^\/quiz(?:\/(devine|vraifaux))?\/?$/, keys: ["mode"] },
     { name: "achievements", re: /^\/succes\/?$/, keys: [] },
     { name: "pass", re: /^\/pass\/?$/, keys: [] },
     { name: "timeline", re: /^\/frise\/?$/, keys: [] },
@@ -136,7 +136,7 @@
       case "cardmarket": return "/marche";
       case "wishfeed": return "/souhaits";
       case "plusmoins": return "/plusmoins";
-      case "quizgame": return "/quiz";
+      case "quizgame": return "/quiz" + (params.mode ? "/" + e(params.mode) : "");
       case "achievements": return "/succes";
       case "pass": return "/pass";
       case "timeline": return "/frise";
@@ -169,7 +169,7 @@
   // ----- Jouer : trois onglets (Cartes / Mini-jeux / Communauté) et, dessous, les sous-onglets du groupe ; la même barre est posée sur chaque sous-page
   const PLAY_SUBS = {
     cartes: [],
-    minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Frise", "#/frise", (r) => r.name === "timeline"], ["Bataille", "#/jouer/minijeux", () => false, "data-battle-tile"]],
+    minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame" && !r.params.mode], ["Devine", "#/quiz/devine", (r) => r.name === "quizgame" && r.params.mode === "devine", "", "Devine la voiture"], ["Vrai ou faux", "#/quiz/vraifaux", (r) => r.name === "quizgame" && r.params.mode === "vraifaux"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Frise", "#/frise", (r) => r.name === "timeline"], ["Bataille", "#/jouer/minijeux", () => false, "data-battle-tile"]],
     troc: [],
     communaute: [["Défis", "#/jouer/defis", (r) => r.name === "play" && (r.params.tab === "defis" || r.params.tab === "concours")], ["Succès", "#/succes", (r) => r.name === "achievements"]]
   };
