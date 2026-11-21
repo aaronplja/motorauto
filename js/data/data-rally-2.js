@@ -3,7 +3,7 @@
   "use strict";
   const { X, push } = MAKIT;
   push([
-    X("rally-celica-st165", "Toyota", "Celica GT-Four ST165", "Coupé", "1986 - 1989", "A:C", "La première Celica à quatre roues motrices : 2.0 turbo 3S-GTE de 185 ch, victorieuse du Safari Rally et du championnat 1990.",
+    X("rally-celica-st165", "Toyota", "Celica GT-Four ST165 (version rallye)", "Coupé", "1986 - 1989", "A:C", "La première Celica à quatre roues motrices : 2.0 turbo 3S-GTE de 185 ch, victorieuse du Safari Rally et du championnat 1990.",
       [["Celica GT-Four ST165 (1986 - 1989)", "2.0 litres turbo 3S-GTE, transmission intégrale.", ["2.0 L4 turbo 3S-GTE|185|245|220|7.5|Manuelle 5|3S-GTE", "Group A 2.0 L4 turbo|290|0|0|0|Manuelle 5|3S-GTE compétition"], ["Celica GT-Four Group A (Safari 1988)"]]],
       { h: "La ST165 est la première Celica à transmission intégrale. Elle gagne le Safari Rally 1988 et sert de base à la ST185 qui offre à Carlos Sainz son titre mondial 1990.", rel: ["toyota-celica-st185-st205"] }),
     X("rally-nissan-pulsar-gtir", "Nissan", "Pulsar GTI-R / Sunny GTI-R", "Berline", "1990 - 1994", "A:C", "La Nissan compacte à moteur 2.0 turbo de 227 ch et 4x4 : engagée en WRC, devenue culte au Japon.",

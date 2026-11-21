@@ -725,7 +725,7 @@ const MOTORAUTO_DATABASE = [
      ========================================================================== */
   {
     id: "fiat-1000tipla",
-    brand: "Vilebrequin & W Auto Sport",
+    brand: "Fiat",
     model: "Fiat 1000Tipla (Corvette V8 1300ch)",
     category: "Supercar",
     years: "2020 - 2023",
@@ -750,7 +750,7 @@ const MOTORAUTO_DATABASE = [
      ========================================================================== */
   {
     id: "nissan-s30-240z-280z",
-    brand: "Nissan / Datsun",
+    brand: "Nissan",
     model: "Datsun / Nissan Fairlady Z (S30 / 240Z)",
     category: "Coupé",
     years: "1969 - 1978",
@@ -1562,7 +1562,7 @@ const MOTORAUTO_DATABASE = [
   },
   {
     id: "peugeot-406-coupe",
-    brand: "Peugeot / Pininfarina",
+    brand: "Peugeot",
     model: "406 Coupé (Pininfarina)",
     category: "Coupé",
     years: "1997 - 2004",
