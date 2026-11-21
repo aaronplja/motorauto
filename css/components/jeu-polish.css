@@ -69,10 +69,8 @@ details.acc.chal-acc .feat-head { margin: 0; }
 details.acc.chal-acc .sec-lead { margin: 0; }
 details.acc.chal-acc .cc-grid { margin-top: .3rem; }
 
-/* ---------- barre Jouer / Pilotes : les deux rangées d'onglets ne se superposent plus (la barre entière reste collée, pas chaque rangée) ---------- */
-html .play-bar { position: sticky; top: calc(var(--hdr-h, 76px) + 6px) !important; z-index: 20; transition: none !important; }
-html .hdr-hidden .play-bar { top: calc(var(--hdr-h, 76px) + 6px) !important; }   /* les barres ne bougent pas, même quand l'en-tête se range pendant le défilement */
-html .play-bar .page-tabs { position: static !important; top: auto !important; margin-left: 0; margin-right: 0; }
+/* ---------- barre Jouer / Pilotes : elle reste à sa place dans la page et défile avec elle (plus collée en haut, plus de superposition) ---------- */
+html .play-bar, html .play-bar .page-tabs { position: static !important; top: auto !important; transform: none !important; }
 
 /* ---------- recherche de cartes et bouton « Plus » : contours bien visibles ---------- */
 html #cards-search { border: 1.5px solid color-mix(in srgb, var(--color-ink) 24%, transparent) !important; background: var(--bg-surface) !important; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .05) !important; }

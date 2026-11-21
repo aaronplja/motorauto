@@ -11,7 +11,7 @@
   const clear = (ids) => ids.forEach((id) => { const el = document.getElementById(id); if (el && el.childNodes.length) el.innerHTML = ""; });
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     ctx.Router.register("catalog", { leave: () => clear(["vehicles-grid", "pagination-container"]) });
-    ctx.Router.register("pilot", { leave: () => clear(["pub-profile-cars", "pub-profile-telemetry", "pub-profile-favorites", "pub-profile-public-content"]) });
+    ctx.Router.register("pilot", { leave: () => clear(["pub-profile-cars", "pub-profile-telemetry", "pub-profile-favorites"]) });
     ctx.Router.register("garage", { leave: () => clear(["my-gauge", "costs-root", "journal-root"]) });
   });
 })();
