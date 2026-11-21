@@ -128,3 +128,6 @@ img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, 
 .cg-hubbtns .cg-fusbtn .cg-sb-ico { background: var(--bg-soft, rgba(0, 0, 0, .06)); color: var(--accent-ink, var(--accent)); }
 .cg-hubbtns .cg-fusbtn .cg-sb-t b { font-size: 1.45rem; }
 .cg-hubbtns .cg-fusbtn:hover, .cg-hubbtns .cg-fusbtn:focus-visible { border-color: var(--accent); }
+.cg-hubbtns .cg-shopbtn { min-height: 64px; }
+.cg-hubbtns .cg-shopbtn .cg-sb-t b { font-size: 1.6rem; }
+.cg-shopbtn.has-pack::after { top: 50%; right: 52px; margin-top: -6px; width: 12px; height: 12px; background: #e5322d; box-shadow: 0 0 0 3px rgba(255, 255, 255, .85); }
