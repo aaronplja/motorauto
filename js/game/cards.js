@@ -764,9 +764,9 @@
       <a class="cg-hb" href="#/jouer/albums">${ICN('<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 9h16M9 9v11"/>')}<b>Albums</b><small>${full} / ${sets.length} complets</small></a>
       <a class="cg-hb" href="#/jouer/raretes">${ICN('<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>')}<b>Raretés</b><small>${nRar} niveaux</small></a>
       <a class="cg-hb" href="#/jouer/vitrine">${ICN('<path d="M5 4h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 9h14M9 21h6"/>')}<b>Ma vitrine</b><small>${nShow} / 6 exposées</small></a>
-    </div>
     <a class="cg-shopbtn${packReady ? " has-pack" : ""}" href="#/jouer/boutique"><span class="cg-sb-ico">${ICN('<path d="M5 8h14l-1.2 11H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>')}</span><span class="cg-sb-t"><b>Boutique</b><small>${packReady ? "Ton pack du jour t'attend !" : "Packs, offres et roue"}</small></span><span class="cg-sb-go" aria-hidden="true">›</span></a>
-    <p class="cg-hubmore"><a href="#/jouer/collection">Voir toutes mes cartes</a> · <a href="#/fusion">Fusionner mes doublons</a></p>`;
+    <a class="cg-shopbtn cg-fusbtn" href="#/fusion"><span class="cg-sb-ico">${ICN('<circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M7 10v2c0 2 5 2 5 6M17 10v2c0 2-5 2-5 6"/><circle cx="12" cy="20" r="1.4"/>')}</span><span class="cg-sb-t"><b>Fusion</b><small>5 doublons → 1 carte au-dessus</small></span><span class="cg-sb-go" aria-hidden="true">›</span></a>
+    </div>`;
   }
   /** page Raretés : un bouton par rareté ; un clic affiche les cartes de cette rareté */
   function raretesHtml() {
@@ -1064,14 +1064,14 @@
       <button type="button" class="cg-dust" data-dust-log title="Historique des cristaux"><span class="cg-di">${window.MA.dustIcon(22)}</span><b>${doc.dust}</b><small>cristaux${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></button>`;
     document.querySelectorAll("#cards-root [data-ctab]").forEach((b) => { const on = b.dataset.ctab === ctab; b.classList.toggle("active", on); b.setAttribute("aria-selected", String(on)); });
     const shop = document.getElementById("cg-shop"), mine = document.getElementById("cg-mine"), hub = document.getElementById("cg-hub");
-    shop.hidden = cview !== "shop"; hub.hidden = cview !== "hub"; mine.hidden = cview === "shop" || cview === "hub";
-    const gridOn = cview === "all" || (cview === "raretes" && !!rarSel), blk = mine.querySelector('section[aria-label="Collection"]'); if (blk) blk.hidden = !gridOn;
+    shop.hidden = cview !== "shop"; hub.hidden = cview !== "hub"; mine.hidden = cview === "shop";
+    const gridOn = cview === "all" || cview === "hub" || (cview === "raretes" && !!rarSel), blk = mine.querySelector('section[aria-label="Collection"]'); if (blk) blk.hidden = !gridOn;
     if (cview === "shop") shop.innerHTML = (notice ? `<p class="tcg-alert" role="status">⚠ ${C.esc(notice)}</p>` : "") + shopHtml();
-    else if (cview === "hub") hub.innerHTML = hubHtml();
     else {
+      if (cview === "hub") hub.innerHTML = hubHtml();
       const t = document.getElementById("cg-mine-top");
       if (t) {
-        t.innerHTML = cview === "albums" ? albumsHtml() : cview === "vitrine" ? `${showcaseHtml()}${myCarsHtml()}` : cview === "raretes" ? raretesHtml() : "";
+        t.innerHTML = cview === "hub" ? "" : cview === "albums" ? albumsHtml() : cview === "vitrine" ? `${showcaseHtml()}${myCarsHtml()}` : cview === "raretes" ? raretesHtml() : "";
         if (cview === "albums" || cview === "vitrine") t.querySelectorAll("details.acc").forEach((d) => window.MAAcc.quiet(d, true));
       }
     }
@@ -1101,7 +1101,7 @@
               <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"], ["binder", "Classeur"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>${window.MAAcc.c}
             <div class="tcg-grid" id="tcg-grid"></div></section></div></div>`;
     }
-    syncToolbar(); renderHero(); if (cview === "all" || (cview === "raretes" && rarSel)) renderGrid();
+    syncToolbar(); renderHero(); if (cview === "all" || cview === "hub" || (cview === "raretes" && rarSel)) renderGrid();
     fillTitles();
   }
 
@@ -1149,7 +1149,7 @@
       if (!CARD_TABS[p.tab]) { if (selMode) atOff(); return; }
       cview = CARD_TABS[p.tab]; ctab = cview === "shop" ? "shop" : "mine";
       if (cview !== "raretes" && rarSel) { rarSel = ""; rarFilter = "all"; }
-      if (cview !== "all" && cview !== "raretes" && selMode) atOff();
+      if (cview !== "all" && cview !== "hub" && cview !== "raretes" && selMode) atOff();
       const hint = p.tab === "collection" ? window.MAHint : ""; if (hint) window.MAHint = "";
       render();
       await load().catch(() => {});

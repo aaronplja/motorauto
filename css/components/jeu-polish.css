@@ -120,3 +120,11 @@ img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, 
 .cg-rarhead { display: flex; align-items: center; gap: .7rem; margin: .8rem 0; }
 .cg-rarhead em { margin-left: auto; font-style: normal; color: var(--color-secondary); font-weight: 700; }
 @media (min-width: 760px) { .cg-rargrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Cartes : les cinq tuiles sur une seule grille (3 colonnes, mêmes espacements) */
+.cg-hubbtns { margin: .9rem 0 1.2rem; }
+.cg-hubbtns .cg-shopbtn { grid-column: 1 / -1; }
+.cg-hubbtns .cg-fusbtn { min-height: 68px; color: var(--color-ink); background: var(--bg-surface); border: 1px solid var(--stroke-line); box-shadow: none; }
+.cg-hubbtns .cg-fusbtn .cg-sb-ico { background: var(--bg-soft, rgba(0, 0, 0, .06)); color: var(--accent-ink, var(--accent)); }
+.cg-hubbtns .cg-fusbtn .cg-sb-t b { font-size: 1.45rem; }
+.cg-hubbtns .cg-fusbtn:hover, .cg-hubbtns .cg-fusbtn:focus-visible { border-color: var(--accent); }
