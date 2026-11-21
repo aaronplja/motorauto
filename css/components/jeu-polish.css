@@ -139,3 +139,6 @@ img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, 
 .pilot-chip .chip-avatar svg { width: 62%; height: 62%; }
 .app-header .pilot-chip.has-avatar.is-gear { padding: 2px; overflow: visible; border-radius: 50%; }
 .app-header .pilot-chip.has-avatar.is-gear .chip-avatar { width: 100%; height: 100%; }
+/* le cadre équipé entoure la photo du compte : rien ne doit le rogner */
+.app-header .pilot-chip.has-avatar.is-gear, .pilot-chip .chip-avatar { overflow: visible; }
+.pilot-chip .chip-avatar > img, .pilot-chip .chip-avatar > svg { border-radius: 50%; }

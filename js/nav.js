@@ -122,10 +122,14 @@
     if (!u) { if (img) img.remove(); return; }
     if (!img) { img = document.createElement("span"); img.className = "chip-avatar"; img.setAttribute("aria-hidden", "true"); chip.insertBefore(img, chip.firstChild); }
     const key = url || "-";
+    if (c.user && img.dataset.uid !== c.user.uid) { img.dataset.uid = c.user.uid; img.dataset.cosmF = "x"; }
     if (img.dataset.k !== key) { img.dataset.k = key; img.innerHTML = url ? `<img src="${esc(url)}" alt="" data-fallback="avatar">` : ico("user"); }
+    // cadre débloqué et équipé : il entoure la photo
+    try { if (window.MACosm && window.MACosm.decorate) window.MACosm.decorate(chip); } catch (_) { /* rien */ }
   }
   document.addEventListener("ma:auth", () => setTimeout(syncChip, 0));
-  ["ma:profile-ready", "ma:profile-garage"].forEach((n) => document.addEventListener(n, () => setTimeout(syncChip, 0)));
-  setTimeout(syncChip, 300); setTimeout(syncChip, 1500);
+  ["ma:profile-ready", "ma:profile-garage", "ma:cosm"].forEach((n) => document.addEventListener(n, () => setTimeout(syncChip, 0)));
+  setTimeout(syncChip, 300); setTimeout(syncChip, 1500); setTimeout(syncChip, 3500);
+  window.addEventListener("hashchange", () => setTimeout(syncChip, 400));
   window.MANav = { open, close };
 })();

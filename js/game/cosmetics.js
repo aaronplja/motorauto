@@ -40,7 +40,7 @@
   /** applique cadres et titres aux avatars et noms du bloc donné */
   function decorate(root) {
     root = root || document;
-    const imgs = root.querySelectorAll ? root.querySelectorAll("img.pilot-row-avatar, img.avatar[data-uid], img.avatar[data-action='profile'], #pub-profile-avatar") : [];
+    const imgs = root.querySelectorAll ? root.querySelectorAll("img.pilot-row-avatar, img.avatar[data-uid], img.avatar[data-action='profile'], #pub-profile-avatar, .chip-avatar[data-uid]") : [];
     const want = [];
     imgs.forEach((im) => { const u = uidOf(im); if (u) { want.push(u); const c = cache.get(u); if (c) paint(im, c, u); } });
     const rows = root.querySelectorAll ? root.querySelectorAll("a.rank-row") : [];
