@@ -829,7 +829,7 @@
       <a class="cg-hb" href="#/jouer/vitrine">${ICN('<path d="M5 4h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 9h14M9 21h6"/>')}<b>Ma vitrine</b><small>${nShow} / 6 exposées</small></a>
     <a class="cg-shopbtn${packReady ? " has-pack" : ""}" href="#/jouer/boutique"><span class="cg-sb-ico">${ICN('<path d="M5 8h14l-1.2 11H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>')}</span><span class="cg-sb-t"><b>Boutique</b></span><span class="cg-sb-go" aria-hidden="true">›</span></a>
     <a class="cg-shopbtn cg-fusbtn" href="#/fusion"><span class="cg-sb-ico">${ICN('<circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M7 10v2c0 2 5 2 5 6M17 10v2c0 2-5 2-5 6"/><circle cx="12" cy="20" r="1.4"/>')}</span><span class="cg-sb-t"><b>Fusion</b><small>5 doublons → 1 carte au-dessus</small></span><span class="cg-sb-go" aria-hidden="true">›</span></a>
-    <button type="button" class="cg-shopbtn cg-guidebtn" data-card-guide><span class="cg-sb-ico">${ICN('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><circle cx="12" cy="17" r=".6"/>')}</span><span class="cg-sb-t"><b>Comprendre les cartes</b><small>IC, IP, échelons, couleurs</small></span><span class="cg-sb-go" aria-hidden="true">›</span></button>
+    <button type="button" class="cg-shopbtn cg-fusbtn cg-guidebtn" data-card-guide><span class="cg-sb-ico">${ICN('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><circle cx="12" cy="17" r=".6"/>')}</span><span class="cg-sb-t"><b>Comprendre les cartes</b><small>IC, IP, échelons, couleurs</small></span><span class="cg-sb-go" aria-hidden="true">›</span></button>
     </div>`;
   }
   /** page Raretés : un bouton par rareté ; un clic affiche les cartes de cette rareté */

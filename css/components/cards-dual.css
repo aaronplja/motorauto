@@ -61,7 +61,7 @@
 .gd-pips { display: flex; gap: 4px; min-width: 38px; }
 .gd-pips i { width: 8px; height: 8px; border-radius: 50%; background: rgba(127,127,127,.35); }
 .gd-pips i.on { background: #9ec9ac; }
-button.cg-shopbtn { width: 100%; font: inherit; color: inherit; text-align: left; cursor: pointer; appearance: none; }
+button.cg-shopbtn { width: 100%; font: inherit; text-align: left; cursor: pointer; appearance: none; }
 
 /* fondu de la photo : l'image reste pleine, ses bords se fondent dans sa couleur dominante (--pc) pour s'intégrer à la carte */
 .tcg-dual .tcg-art::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
