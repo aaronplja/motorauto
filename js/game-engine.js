@@ -237,7 +237,7 @@
       const uid = caller.uid, id = str(data && data.id, 90), pool = await getPool(), today = core.dayKey(now());
       if (!pool.byId.has(id)) fail("not-found", "Cette carte n'existe pas.");
       const rar = pool.rar.get(id);
-      if (rar === "mythic") fail("failed-precondition", "Une carte Légende se gagne en complétant un album : elle ne se fabrique pas.");
+      if (rar === "mythic") fail("failed-precondition", "Une carte Héritage se gagne en complétant un album : elle ne se fabrique pas.");
       return db.runTransaction(async (tx) => {
         const d = await readCol(tx, uid);
         let cost = core.RAR[rar].craft, offerUsed = false;
@@ -289,7 +289,7 @@
           if (done[st.id] || !st.ids.every((id) => (d.owned[id] || 0) > 0)) return;
           done[st.id] = now(); won.push({ id: st.id, name: st.name, reward: st.reward, legend: st.legend || "" });
           if (st.legend && pool.byId.has(st.legend)) {
-            if ((d.owned[st.legend] || 0) > 0) dustMove(d, core.RAR.mythic.dust, "Légende déjà possédée");
+            if ((d.owned[st.legend] || 0) > 0) dustMove(d, core.RAR.mythic.dust, "Héritage déjà possédé");
             else { d.owned[st.legend] = 1; core.histAdd(d, st.legend, "album", now()); legends.push(st.legend); }
           }
         });
@@ -942,13 +942,13 @@
       }
       if (action === "cardStats") return Object.assign({ ok: true }, await computeCardStats());
       if (action === "revokeLegend") {
-        // retire une carte Légende à un pilote ; reopen = le pilote pourra de nouveau réclamer l'album (et regagner sa Légende)
+        // retire une carte Héritage à un pilote ; reopen = le pilote pourra de nouveau réclamer l'album (et regagner son Héritage)
         const cardId = str(data && data.cardId, 90), reopen = !!(data && data.reopen);
-        if (core.LEGEND_IDS.indexOf(cardId) < 0) fail("invalid-argument", "Ce n'est pas une carte Légende.");
+        if (core.LEGEND_IDS.indexOf(cardId) < 0) fail("invalid-argument", "Ce n'est pas une carte Héritage.");
         if (!(await nameOf(uid))) fail("not-found", "Pilote introuvable.");
         return db.runTransaction(async (tx) => {
           const d = await readCol(tx, uid), ref = col("set_claims").doc(uid), cs = reopen ? await tx.get(ref) : null;
-          if (!(d.owned[cardId] > 0)) fail("failed-precondition", "Ce pilote ne possède pas cette carte Légende.");
+          if (!(d.owned[cardId] > 0)) fail("failed-precondition", "Ce pilote ne possède pas cette carte Héritage.");
           delete d.owned[cardId]; if (d.lv) delete d.lv[cardId]; if (d.locked) delete d.locked[cardId];
           let reopened = "";
           if (reopen && cs && cs.exists) {
@@ -959,7 +959,7 @@
           return { ok: true, reopened, doc: view(d) };
         }).then(async (res) => {
           // le joueur est prévenu : sans cela il croirait à un bug
-          await notify(uid, { uid: "motorauto", name: "MOTORAUTO" }, "Une carte Légende a été retirée de ta collection par l'administration." + (res.reopened ? " Ton album peut être réclamé de nouveau." : ""), "#/jouer/collection", "game");
+          await notify(uid, { uid: "motorauto", name: "MOTORAUTO" }, "Une carte Héritage a été retirée de ta collection par l'administration." + (res.reopened ? " Ton album peut être réclamé de nouveau." : ""), "#/jouer/collection", "game");
           return res;
         });
       }
@@ -1380,7 +1380,7 @@
       const uid = caller.uid, cardId = str(data && data.cardId, 90), price = Math.floor(Number(data && data.price)), pool = await getPool();
       if (!pool.byId.has(cardId)) fail("not-found", "Cette carte n'existe pas.");
       const rar = pool.rar.get(cardId);
-      if (rar === "mythic") fail("failed-precondition", "Une carte Légende ne se vend pas.");
+      if (rar === "mythic") fail("failed-precondition", "Une carte Héritage ne se vend pas.");
       const b = core.marketBounds(rar);
       if (!(price >= b.min && price <= b.max)) fail("invalid-argument", "Prix autorisé pour cette carte : de " + b.min + " à " + b.max + " cristaux.");
       if (await isMuted(uid)) fail("permission-denied", "Tu es en sourdine : le marché est suspendu pour toi.");

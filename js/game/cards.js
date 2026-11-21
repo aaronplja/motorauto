@@ -77,6 +77,14 @@
     const key = k && pi.have.indexOf(k) >= 0 ? k : pi.have[0], i = pi.keys.indexOf(key);
     return pi.urls[i >= 0 ? i : 0];
   }
+  /** double indice : couleurs de la maquette validée (IC en haut à gauche, IP en bas à droite) */
+  const IC_COL = { F: "#5d6773", E: "#8c97a6", D: "#4f7fa8", C: "#8359b8", B: "#b8693a", A: "#d4a62a", Z: "#a9e4ee" };
+  const IP_COL = { I: "#aeb7bd", II: "#6fa8d6", III: "#22b5b0", IV: "#1f9d64", V: "#e6c619", VI: "#f0a020", VII: "#ee7a1c", VIII: "#d9362c", IX: "#a8153a", X: "#c2189a" };
+  function dualOf(car) {
+    if (!car || car.circuit || car.livery || car.special || car.mine || !G.indexOf) return null;
+    const x = G.indexOf(car.id); return x && IC_COL[x.ic] && IP_COL[x.ip] ? x : null;
+  }
+  const pipsHtml = (n) => `<span class="tcg-pips" aria-hidden="true">${[0, 1, 2, 3, 4].map((j) => `<i${j <= n ? ' class="on"' : ""}></i>`).join("")}</span>`;
   function cardHtml(car, o) {
     o = o || {};
     const esc = C.esc, r = rarityOf(car), R = RAR[r] || { label: "Ma voiture" }, owned = o.owned !== false, sp = car.special, lv = Math.max(1, Math.min(5, Number(o.lv) || 1));
@@ -96,10 +104,13 @@
       : `<p class="tcg-note">${owned ? esc(sp.text || "") : ""}</p>`;
     const no = car.mine ? "MA" : circ ? circNo(car) : car.livery ? "LV" : sp ? "★" : "#" + String(numberOf(car)).padStart(3, "0");
     const color = sp && sp.color ? " tcg-c-" + esc(sp.color) : "";
-    return `<div class="tcg tcg-${r}${color}${lv > 1 ? " has-lv lvl" + lv : ""} ${owned ? "" : "locked"} ${o.cls || ""}" data-card="${esc(car.id)}" role="button" tabindex="0" aria-label="${owned ? esc(car.brand + " " + model) : "Carte non débloquée " + no}, ${R.label}">
+    const dx = owned ? dualOf(car) : null;
+    const dual = dx ? `<i class="tcg-diag" aria-hidden="true"></i><span class="tcg-pill" title="Indice de Collection ${dx.ic} · Indice de Performance ${dx.ip}"><span class="tcg-pic ic-${dx.ic}"><small>IC</small><b>${dx.ic}</b></span><span class="tcg-pip"><small>IP</small><b>${dx.ip}</b></span></span>` : "";
+    const ech = r === "mythic" || sp || circ || car.livery || car.mine ? "" : pipsHtml(dx ? dx.ech : ["common", "rare", "epic", "legendary", "shiny"].indexOf(r));
+    return `<div class="tcg tcg-${r}${color}${dx ? " tcg-dual" : ""}${lv > 1 ? " has-lv lvl" + lv : ""} ${owned ? "" : "locked"} ${o.cls || ""}" ${dx ? ` style="--ic:${IC_COL[dx.ic]};--ip:${IP_COL[dx.ip]}"` : ""} data-card="${esc(car.id)}" role="button" tabindex="0" aria-label="${owned ? esc(car.brand + " " + model) : "Carte non débloquée " + no}, ${R.label}">
       <div class="tcg-art ${mosaic ? "tcg-mosaic m" + mosaic.length : ""}${circ && !(cardImage && owned) ? " tcg-circ" : ""}">${circ && !(cardImage && owned) ? (owned ? traceSvg(car) : `<span class="tcg-q" aria-hidden="true">?</span>`) : mosaic ? mosaic.map((u) => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback="car">`).join("") : img}<i class="tcg-foil" aria-hidden="true"></i>${owned && isLk(car.id) ? `<i class="tcg-lk" aria-hidden="true">🔒</i>` : ""}${owned && !sp && car.drives && car.drives[0] && window.MATrack ? `<span class="tcg-drv" title="${esc(window.MATrack.DRIVES[car.drives[0]][0])}">${window.MATrack.driveIcon(car.drives[0], 14)}</span>` : ""}</div><i class="tcg-holo" aria-hidden="true"></i>
       <div class="tcg-body"><span class="tcg-brand">${owned || sp ? esc(car.brand) : "—"}</span><b class="tcg-name">${owned || sp ? esc(model) : "Carte à débloquer"}</b>${stats}</div>
-      ${lv > 1 ? `<i class="tcg-frame lv${lv}" aria-hidden="true"></i>` : ""}<span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span>${car.livery ? `<span class="tcg-livtag" title="Livrée célèbre">🎨</span>` : ""}<span class="tcg-no">${no}</span>
+      ${lv > 1 ? `<i class="tcg-frame lv${lv}" aria-hidden="true"></i>` : ""}<span class="tcg-rar">${sp ? "✦ " : ""}${R.label}</span>${ech}${dual}${car.livery ? `<span class="tcg-livtag" title="Livrée célèbre">🎨</span>` : ""}<span class="tcg-no">${no}</span>
       ${pi ? `<span class="tcg-pics" title="Images débloquées : ${pi.have.length} sur ${pi.keys.length}"><i></i>${pi.have.length}/${pi.keys.length}</span>` : ""}
       ${o.count > 1 ? `<span class="tcg-dup">×${o.count}</span>` : ""}${o.isNew ? `<span class="tcg-new-pill">NEW</span>` : ""}${o.wish ? `<span class="tcg-wish" title="Dans ta wishlist" aria-label="Dans ta wishlist">★</span>` : ""}
     </div>`;

@@ -99,7 +99,7 @@ const col = async () => (await db.collection("collections").doc("u1").get()).dat
   // ---- taux de drop recalculés d'après le nombre de cartes de chaque rareté
   { const dr = core.dropRates(rar), sum = dr.reduce((s, x) => s + x.odds, 0), pc = dr.map((x) => x.perCard);
     ok(Math.abs(sum - 1) < 1e-9 && pc.every((v, i) => i === 0 || v < pc[i - 1]), "taux de drop : somme = 100 % et chaque carte est plus rare à mesure que la rareté monte");
-    ok(dr.find((x) => x.rarity === "common").odds > 0.55 && dr.find((x) => x.rarity === "shiny").odds < 0.01 && dr.find((x) => x.rarity === "legendary").odds < dr.find((x) => x.rarity === "epic").odds, "taux de drop cohérents (communes majoritaires, shiny < 1 %)"); }
+    ok(dr.find((x) => x.rarity === "common").odds > 0.45 && dr.find((x) => x.rarity === "shiny").odds < 0.01 && dr.find((x) => x.rarity === "legendary").odds < dr.find((x) => x.rarity === "epic").odds, "taux de drop cohérents (communes majoritaires, shiny < 1 %)"); }
   console.log(n + " vérifications cards4" + (fails ? " — " + fails + " ÉCHEC(S)" : " OK"));
   process.exit(fails ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

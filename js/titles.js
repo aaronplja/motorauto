@@ -13,7 +13,7 @@
   const KIND = { country: "Collectionneur", decade: "Collectionneur", brand: "Fan", cat: "Spécialiste" };
 
   function label(key) {
-    if (key === "legends") return "Maître des Légendes";
+    if (key === "legends") return "Maître des Héritages";
     if (key === "master") return "Grand Collectionneur";
     const m = /^(country|decade|brand|cat):(.+)$/.exec(String(key || "")); if (!m) return "";
     let name = m[2];

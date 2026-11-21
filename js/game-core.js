@@ -107,12 +107,12 @@
 
   // ------------------------------------------------------------------ cartes
   const RAR = {
-    common: { id: "common", label: "Commune", dust: 10, craft: 30, odds: 0.615 },
-    rare: { id: "rare", label: "Rare", dust: 30, craft: 90, odds: 0.26 },
-    epic: { id: "epic", label: "Épique", dust: 80, craft: 240, odds: 0.09 },
-    legendary: { id: "legendary", label: "Légendaire", dust: 200, craft: 600, odds: 0.03 },
-    shiny: { id: "shiny", label: "Shiny", dust: 800, craft: 2400, odds: 0.005 },
-    mythic: { id: "mythic", label: "Légende", dust: 600, craft: 0, odds: 0 },
+    common: { id: "common", label: "Série", dust: 10, craft: 30, odds: 0.615 },
+    rare: { id: "rare", label: "Sport", dust: 30, craft: 90, odds: 0.26 },
+    epic: { id: "epic", label: "Élite", dust: 80, craft: 240, odds: 0.09 },
+    legendary: { id: "legendary", label: "Prestige", dust: 200, craft: 600, odds: 0.03 },
+    shiny: { id: "shiny", label: "Apex", dust: 800, craft: 2400, odds: 0.005 },
+    mythic: { id: "mythic", label: "Héritage", dust: 600, craft: 0, odds: 0 },
     special: { id: "special", label: "Édition limitée", dust: 150, craft: 0, odds: 0 }
   };
   const ORDER = ["mythic", "shiny", "legendary", "epic", "rare", "common"];          // raretés tirables, de la plus haute à la plus basse
@@ -159,6 +159,38 @@
    * Score de prestige d'une voiture (0 à ~100) : performances relatives (puissance, vitesse, 0 à 100) + catégorie + marque + version sportive + âge de collection.
    * Une Ferrari 250 GTO ou une Delta Integrale ne finit donc plus « commune » parce que sa puissance est modeste.
    */
+
+  // ------------------------------------------------------------------ double indice : IP (performance), IC (collection), échelon
+  /** IP : chiffres romains de I (citadine) à X (hypercar) ; IC : lettres de F (très courant) à Z (mythe) */
+  const IP_LEVELS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"], IC_LEVELS = ["F", "E", "D", "C", "B", "A", "Z"];
+  const ECH_NAMES = ["Série", "Sport", "Élite", "Prestige", "Apex"], ECH_RAR = ["common", "rare", "epic", "legendary", "shiny"];
+  const IP_CUTS = [95, 131, 176, 231, 301, 401, 521, 681, 901];       // premiers chevaux de chaque palier II à X
+  const ipFromPower = (p) => { let n = 0; IP_CUTS.forEach((c) => { if (p >= c) n++; }); return n; };
+  const ipFromZero = (z) => (z < 2.8 ? 9 : z < 3.2 ? 8 : z < 3.8 ? 7 : z < 4.6 ? 6 : z < 5.6 ? 5 : z < 6.8 ? 4 : z < 8.2 ? 3 : z < 10 ? 2 : z < 11.5 ? 1 : 0);
+  /** niveau IP (0 à 9) : d'abord la puissance ; le 0 à 100 corrige seulement une donnée manifestement incohérente (écart de 3 paliers ou plus) */
+  function ipOf(c) {
+    const pw = Number(c.power) || 0, z = Number(c.zero) || 0;
+    if (pw <= 0) return z > 0 ? ipFromZero(z) : 2;
+    const a = ipFromPower(pw);
+    if (z > 0) { const b = ipFromZero(z); if (Math.abs(a - b) >= 3) return Math.round((a + b) / 2); }
+    return a;
+  }
+  /** icônes fixées à la main (valident l'échantillon présenté) : IC exact */
+  const IC_FIX = { "renault-clio-1": "F", "vw-golf-gti-mk1": "B", "peugeot-205-gti": "B", "mazda-mx-5-miata-rf": "D", "honda-s2000-ap1": "C", "bmw-m3-e46": "B", "porsche-911-gt3-rs-997": "B",
+    "nissan-skyline-gtr-r34": "A", "nissan-gt-r-r35": "B", "ferrari-250-gto": "Z", "ferrari-f40": "A", "mclaren-f1": "Z", "lm-porsche-917k": "A", "peugeot-205-t16": "A", "bugatti-chiron": "A",
+    "bugatti-type-57sc-atlantic": "Z", "bugatti-type-41-royale": "Z", "lm-ferrari-250lm": "Z", "lm-ford-gt40": "A", "lm-porsche-956": "A", "lm-mclaren-f1-gtr": "A" };
+  /** niveau IC (0 à 6) : rang de prestige calculé (p = 0 pour la plus prestigieuse), relevé par les icônes épinglées, ou valeur fixée à la main */
+  function icOf(c, p) {
+    const fix = IC_FIX[c.id]; if (fix) return IC_LEVELS.indexOf(fix);
+    let n = p < 0.03 ? 5 : p < 0.10 ? 4 : p < 0.22 ? 3 : p < 0.42 ? 2 : p < 0.70 ? 1 : 0;
+    if (SHINY.indexOf(c.id) >= 0) n = Math.max(n, 4); else if (PIN_LEGENDARY.indexOf(c.id) >= 0) n = Math.max(n, 3); else if (PIN_EPIC.indexOf(c.id) >= 0) n = Math.max(n, 2);
+    return n;
+  }
+  /** échelon (0 à 4) : 65 % IC, 35 % IP, un palier tous les 20 % */
+  const echOf = (ic, ip) => { const sc = 0.65 * (ic / 6) + 0.35 * (ip / 9); return sc < 0.2 ? 0 : sc < 0.4 ? 1 : sc < 0.6 ? 2 : sc < 0.8 ? 3 : 4; };
+  let lastIdx = new Map();
+  /** { ic, ip, ech, ... } d'une carte voiture, d'après le dernier calcul des raretés ; null pour une carte sans indices (circuit, livrée, édition) */
+  function indexOf(id) { const x = lastIdx.get(id); return x ? { ic: IC_LEVELS[x.ic], ip: IP_LEVELS[x.ip], ech: x.e, echName: ECH_NAMES[x.e], icN: x.ic, ipN: x.ip } : null; }
   const EPIC_P = 0.10;   // part (par score) des cartes épiques « calculées » ; les cartes épinglées (PIN_EPIC) s'ajoutent
   function computeRarities(list) {
     const pw = list.map(rankPower).sort((a, b) => a - b), sp = list.map((c) => Number(c.speed) || 0).filter((v) => v > 0).sort((a, b) => a - b), zr = list.map((c) => Number(c.zero) || 0).filter((v) => v > 0).sort((a, b) => a - b);
@@ -173,10 +205,15 @@
     };
     const sorted = list.map((c) => ({ id: c.id, s: score(c), p: rankPower(c) })).sort((a, b) => (b.s - a.s) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const map = new Map();
+    const byId = new Map(list.map((c) => [c.id, c]));
+    const idx = new Map();
     sorted.forEach((c, i) => {
-      const p = i / Math.max(1, sorted.length - 1);
-      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : SHINY.indexOf(c.id) >= 0 ? "shiny" : PIN_LEGENDARY.indexOf(c.id) >= 0 ? "legendary" : p < 0.06 ? "legendary" : (p < EPIC_P || PIN_EPIC.indexOf(c.id) >= 0) ? "epic" : p < 0.55 ? "rare" : "common");
+      const p = i / Math.max(1, sorted.length - 1), car = byId.get(c.id) || {}, ic = icOf(car, p), ip = ipOf(car), e = Math.max(echOf(ic, ip), SHINY.indexOf(c.id) >= 0 ? 4 : PIN_LEGENDARY.indexOf(c.id) >= 0 ? 3 : PIN_EPIC.indexOf(c.id) >= 0 ? 2 : 0);
+      idx.set(c.id, { ic, ip, e });
+      // l'échelon (0 à 4) reprend les identifiants historiques de rareté : toute l'économie (cristaux, fusion, marché, packs) continue de fonctionner
+      map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : ECH_RAR[e]);
     });
+    lastIdx = idx;
     return map;
   }
   /** poids d'UNE carte de chaque rareté : plus la rareté est haute, moins chaque carte sort. Les probabilités par rareté sont calculées d'après le NOMBRE de cartes de chaque rareté (voir oddsOf), donc elles suivent le catalogue */
@@ -549,7 +586,7 @@
     // saison 2 : défis liés aux nouveaux packs, aux raretés et aux albums (comptés par le serveur)
     { id: "theme1", icon: "🎯", label: "Ouvre un pack thématique ou Prestige", goal: 1, src: "log:theme", reward: { dust: 60 } },
     { id: "epic2", icon: "💜", label: "Pioche 2 cartes épiques ou mieux dans des packs", goal: 2, src: "log:epic", reward: { dust: 50 } },
-    { id: "album1", icon: "📚", label: "Termine un album de collection (et gagne sa Légende)", goal: 1, src: "log:album", reward: { dust: 80 } }
+    { id: "album1", icon: "📚", label: "Termine un album de collection (et gagne son Héritage)", goal: 1, src: "log:album", reward: { dust: 80 } }
   ];
   /** défi du jour (1 par jour, identique pour tous) : actions simples comptées depuis minuit (heure de Paris) */
   const DAILY = [
@@ -607,7 +644,7 @@
   const yearOf = (c) => { if (c && Number(c.year) > 1800) return Number(c.year); const m = String((c && c.years) || "").match(/\d{4}/); return m ? Number(m[0]) : 0; };
   const decadeOf = (c) => { const y = yearOf(c); return !y ? 0 : y < 1950 ? 1940 : Math.floor(y / 10) * 10; };
   const decadeLabel = (d) => d === 1940 ? "Avant 1950" : "Années " + d;
-  /** albums : un par pays, par décennie (avec une carte « Légende » à la clé), par marque et par carrosserie ; récompense en cristaux selon la taille */
+  /** albums : un par pays, par décennie (avec une carte « Héritage » à la clé), par marque et par carrosserie ; récompense en cristaux selon la taille */
   function setReward(n) { return Math.min(600, 20 + n * 10); }
   /** collections thématiques : [identifiant, nom, marque (regex) ou "", modèle (regex), bonus de cristaux]. Au moins 3 voitures du catalogue sont nécessaires. */
   const THEMED_SETS = [
@@ -856,7 +893,7 @@
     let id = base; for (let k = 1; k <= TIER_MAX; k++) if (cosm.indexOf(kind + ":" + variantId(base, k)) >= 0) id = variantId(base, k);
     return id;
   }
-  const passLabel = (r, cosm, got) => [r.dust ? r.dust + " cristaux" : "", r.bonus ? (r.bonus > 1 ? r.bonus + " packs bonus" : "1 pack bonus") : "", r.freeze ? "1 gel de série" : "", r.epic ? "1 carte Épique" : "", r.circuit ? "1 carte Circuit" : "", r.choice ? "1 Légendaire au choix" : "", r.frame ? "cadre " + FRAMES[shownVariant(cosm, "f", r.frame, got)].name : "", r.title ? "titre « " + TITLES[shownVariant(cosm, "t", r.title, got)].name + " »" : ""].filter(Boolean).join(" + ");
+  const passLabel = (r, cosm, got) => [r.dust ? r.dust + " cristaux" : "", r.bonus ? (r.bonus > 1 ? r.bonus + " packs bonus" : "1 pack bonus") : "", r.freeze ? "1 gel de série" : "", r.epic ? "1 carte Élite" : "", r.circuit ? "1 carte Circuit" : "", r.choice ? "1 Prestige au choix" : "", r.frame ? "cadre " + FRAMES[shownVariant(cosm, "f", r.frame, got)].name : "", r.title ? "titre « " + TITLES[shownVariant(cosm, "t", r.title, got)].name + " »" : ""].filter(Boolean).join(" + ");
   /** trois Légendaires proposées (de préférence que le joueur n'a pas), identiques pour un joueur donné pendant toute la saison */
   function legendOffer(ids, rar, owned, uid, n) {
     const leg = ids.filter((id) => rar.get(id) === "legendary").sort(), fresh = leg.filter((id) => !(owned[id] > 0)), pool = (fresh.length >= 3 ? fresh : fresh.concat(leg.filter((id) => owned[id] > 0))).slice();
@@ -1719,15 +1756,15 @@ Le Cheval cabré|Ferrari|2
   };
   const BRAND_BADGES = [["Peugeot", "🦁", "Fan du Lion"], ["Renault", "◆", "Ça roule en Losange"], ["BMW", "🌀", "Hélice bavaroise"], ["Mercedes", "⭐", "Étoile à trois branches"], ["Audi", "⭕", "Quatre anneaux"], ["Alfa Romeo", "🐍", "Biscione"], ["Toyota", "🌅", "Soleil levant"], ["Nissan", "🗾", "Samouraï"], ["Ford", "🔵", "Ovale bleu"], ["Porsche", "🏁", "Cap sur Stuttgart"], ["Citroën", "⚙️", "Double chevron"]];
   const EXTRA = [
-    ["epic1", "💜", "Première Épique", "Posséder une carte Épique ou mieux", (s) => rarAtLeast(s, "epic"), 1, ""],
-    ["epic10", "💎", "Pile d'Épiques", "Posséder 10 cartes Épique ou mieux", (s) => rarAtLeast(s, "epic"), 10, "silver"],
-    ["leg1", "🟡", "Première Légendaire", "Posséder une carte Légendaire ou mieux", (s) => rarAtLeast(s, "legendary"), 1, "silver"],
-    ["leg5", "👑", "Cinq Légendaires", "Posséder 5 cartes Légendaire ou mieux", (s) => rarAtLeast(s, "legendary"), 5, "gold"],
-    ["shiny1", "🌈", "Premier Shiny", "Posséder une carte Shiny", (s) => rarAtLeast(s, "shiny"), 1, "gold"],
-    ["shiny5", "✨", "Chasseur de Shiny", "Posséder 5 cartes Shiny ou mieux", (s) => rarAtLeast(s, "shiny"), 5, "gold"],
-    ["mythic1", "🔱", "Légende vivante", "Posséder une carte Légende (album complété)", (s) => _n(s.rar && s.rar.mythic), 1, "gold"],
-    ["mythic5", "🏵️", "Cinq Légendes", "Posséder 5 cartes Légende (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 5, "gold"],
-    ["mythic10", "🏛️", "Dix Légendes", "Posséder 10 cartes Légende (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 10, "gold"],
+    ["epic1", "💜", "Première Élite", "Posséder une carte Élite ou mieux", (s) => rarAtLeast(s, "epic"), 1, ""],
+    ["epic10", "💎", "Pile d'Élites", "Posséder 10 cartes Élite ou mieux", (s) => rarAtLeast(s, "epic"), 10, "silver"],
+    ["leg1", "🟡", "Premier Prestige", "Posséder une carte Prestige ou mieux", (s) => rarAtLeast(s, "legendary"), 1, "silver"],
+    ["leg5", "👑", "Cinq Prestiges", "Posséder 5 cartes Prestige ou mieux", (s) => rarAtLeast(s, "legendary"), 5, "gold"],
+    ["shiny1", "🌈", "Premier Apex", "Posséder une carte Apex", (s) => rarAtLeast(s, "shiny"), 1, "gold"],
+    ["shiny5", "✨", "Chasseur d'Apex", "Posséder 5 cartes Apex ou mieux", (s) => rarAtLeast(s, "shiny"), 5, "gold"],
+    ["mythic1", "🔱", "Héritier", "Posséder une carte Héritage (album complété)", (s) => _n(s.rar && s.rar.mythic), 1, "gold"],
+    ["mythic5", "🏵️", "Cinq Héritages", "Posséder 5 cartes Héritage (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 5, "gold"],
+    ["mythic10", "🏛️", "Dix Héritages", "Posséder 10 cartes Héritage (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 10, "gold"],
     ["sets50", "📚", "Grand archiviste", "Compléter 50 albums", (s) => _n(s.sets), 50, "gold"],
     ["card100", "💯", "Centenaire", "Posséder 100 cartes différentes", (s) => s.cards, 100, "silver"],
     ["card250", "📚", "Bibliothécaire", "Posséder 250 cartes différentes", (s) => s.cards, 250, "gold"],
@@ -1778,9 +1815,9 @@ Le Cheval cabré|Ferrari|2
   // badges rares (palier « diamant ») : 4 familles — collection, performance, communauté, jeu
   [
     ["r-col1", "💎", "Collection quasi complète", "Posséder 580 cartes différentes", (s) => s.cards, 580, "collection"],
-    ["r-col2", "🔱", "Triple Légende", "Posséder 3 cartes Légende (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 3, "collection"],
-    ["r-col5", "🌟", "Panthéon des Légendes", "Posséder 25 cartes Légende (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 25, "collection"],
-    ["r-col6", "👑", "Toutes les Légendes", "Posséder toutes les cartes Légende", (s) => _n(s.rar && s.rar.mythic), () => LEGEND_IDS.length, "collection"],
+    ["r-col2", "🔱", "Triple Héritage", "Posséder 3 cartes Héritage (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 3, "collection"],
+    ["r-col5", "🌟", "Panthéon des Héritages", "Posséder 25 cartes Héritage (albums complétés)", (s) => _n(s.rar && s.rar.mythic), 25, "collection"],
+    ["r-col6", "👑", "Tous les Héritages", "Posséder toutes les cartes Héritage", (s) => _n(s.rar && s.rar.mythic), () => LEGEND_IDS.length, "collection"],
     ["r-col3", "✦", "Gardien des éditions limitées", "Posséder 5 cartes d'édition limitée", (s) => _n(s.specials), 5, "collection"],
     ["r-col4", "📦", "Pack infini", "Ouvrir 5000 packs", (s) => _n(s.opened), 5000, "collection"],
     ["r-perf1", "🏆", "Maître des records", "Détenir 10 records de circuits", (s) => s.records, 10, "perf"],
@@ -1808,6 +1845,6 @@ Le Cheval cabré|Ferrari|2
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, SURVIVAL, survivalSecs, survivalQuestions, survivalPlay, chronoQuestions, chronoField, quizField, GENRES, genresOf, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, hashStr, PACKS, THEME_PACKS, themeMatch, themePackActive, themePacksNow, themePackNext, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     ensureBank, FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QSPECIAL, QLEVELS, QUIZ_N, DEVINE, devineCar, devineHints, devineFeedback, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, ROMAN, TIER_MAX, romanOf, variantId, nextVariant, grantVariant, shownVariant, seasonRank, questList, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
-    SHINY, CARD_WEIGHT, oddsOf, dropRates, PIN_EPIC, PIN_LEGENDARY, PRESTIGE_PACK_RX, isPrestige, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
+    IP_LEVELS, IC_LEVELS, ECH_NAMES, ECH_RAR, indexOf, ipOf, icOf, echOf, SHINY, CARD_WEIGHT, oddsOf, dropRates, PIN_EPIC, PIN_LEGENDARY, PRESTIGE_PACK_RX, isPrestige, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

@@ -246,7 +246,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     await rejects(G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: "peugeot-205-gti" }), "invalid-argument", "retrait : seules les Légendes");
     await rejects(G.adminGameTool({ uid: "pas-admin" }, { action: "revokeLegend", uid: "u1", cardId: LG }), "permission-denied", "retrait Légende réservé à l'admin");
     r = await G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: LG });
-    ok(Array.from(db._col("users/u1/notifications").values()).some((n) => /Légende a été retirée/.test(n.text || "")), "le joueur reçoit une notification de retrait");
+    ok(Array.from(db._col("users/u1/notifications").values()).some((n) => /Héritage a été retirée/.test(n.text || "")), "le joueur reçoit une notification de retrait");
     ok(!db.raw("collections", "u1").owned[LG] && db.raw("collections", "u1").owned["peugeot-205-gti"] === 1 && !db.raw("collections", "u1").lv[LG] && db.raw("set_claims", "u1").done["country:fr"] === 1 && !r.reopened, "Légende retirée, autres cartes et album intacts");
     await rejects(G.adminGameTool(ADM, { action: "revokeLegend", uid: "u1", cardId: LG }), "failed-precondition", "retrait : carte non possédée");
     db.seed("collections", "u1", Object.assign(core.blankCollection(), { owned: { [LG]: 1 } }));

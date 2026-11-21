@@ -21,7 +21,7 @@
     "Le nom « GT » vient de « Gran Turismo » : une voiture faite pour avaler les kilomètres vite et confortablement.",
     "Sur circuit, freiner tard n'est pas toujours rapide : c'est la vitesse en sortie de virage qui compte.",
     "Les pneus froids adhèrent moins : quelques tours de chauffe changent tout.",
-    "Une carte Légende ne se fabrique pas : elle se gagne.",
+    "Une carte Héritage ne se fabrique pas : elle se gagne.",
     "Ta série de connexions peut être protégée par un gel si tu rates un jour.",
     "Ajoute des cartes à ta wishlist : tu es prévenu quand un pilote la propose à l'échange.",
     "Plus tu améliores une carte, plus elle pèse lourd en bataille.",
