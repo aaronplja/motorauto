@@ -63,9 +63,8 @@
 .gd-pips i.on { background: #9ec9ac; }
 button.cg-shopbtn { width: 100%; font: inherit; color: inherit; text-align: left; cursor: pointer; appearance: none; }
 
-/* fondu de la photo : ses bords se dissolvent dans les couleurs IC / IP pour s'intégrer à la carte */
-.tcg-dual .tcg-art img:not(.tcg-ghost) {
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 68%, transparent 100%), linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 68%, transparent 100%), linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
-  -webkit-mask-composite: source-in; mask-composite: intersect;
-}
+/* fondu de la photo : l'image reste pleine, ses bords se fondent dans sa couleur dominante (--pc) pour s'intégrer à la carte */
+.tcg-dual .tcg-art::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background:
+    linear-gradient(180deg, var(--pc, #0e1320) 0, transparent 14%, transparent 62%, var(--pc, #0e1320) 100%),
+    linear-gradient(90deg, var(--pc, #0e1320) 0, transparent 12%, transparent 88%, var(--pc, #0e1320) 100%); }
