@@ -27,7 +27,7 @@
 
   // ====================================================================== FUSION
   const FZ_ORDER = ["common", "rare", "epic"];
-  let fz = { doc: null, r: "", ids: [], busy: false, open: "" };
+  let fz = { doc: null, r: "", ids: [], busy: false, open: "", tab: "" };
   function fzDups(doc, r) {
     const sp = spareMap(doc);
     return Object.keys(sp).filter((id) => rarOf(id) === r).map((id) => ({ id, spare: sp[id] })).sort((a, b) => b.spare - a.spare || (a.id < b.id ? -1 : 1));
@@ -39,7 +39,9 @@
     if (!fz.doc) { root.innerHTML = `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
     const RAR = MC().RAR;
     root.innerHTML = `<div class="fz2"><p class="fz2-intro">${T("Seuls tes doublons apparaissent ici. Choisis")} <b>${G.FUSE_COUNT}</b> ${T("cartes d'un même échelon, ou lance la fusion au hasard : tu obtiens une carte de l'échelon au-dessus.")}</p>` +
-      FZ_ORDER.map((r) => {
+      (() => { if (!fz.tab) fz.tab = FZ_ORDER.find((r) => fzDups(fz.doc, r).reduce((t, d) => t + d.spare, 0) >= G.FUSE_COUNT) || FZ_ORDER[0];
+        return `<div class="tr-tabs fz2-tabs" role="tablist" aria-label="${T("Échelon")}">${FZ_ORDER.map((r) => { const n = fzDups(fz.doc, r).reduce((t, d) => t + d.spare, 0); return `<button type="button" role="tab" class="tr-tab${fz.tab === r ? " active" : ""}" aria-selected="${fz.tab === r}" data-fz-tab="${r}">${RAR[r].label}${n ? `<i>${n}</i>` : ""}</button>`; }).join("")}</div>`; })() +
+      FZ_ORDER.filter((r) => r === fz.tab).map((r) => {
         const dups = fzDups(fz.doc, r), total = dups.reduce((t, d) => t + d.spare, 0), mine = fz.r === r ? fz.ids : [];
         const next = G.FUSE_NEXT[r], can = total >= G.FUSE_COUNT, picked = mine.length;
         return `<section class="fz2-step${can ? " ready" : ""}" data-r="${r}">
@@ -220,6 +222,7 @@
         else C.toast(`${G.FUSE_COUNT} ${T("cartes au maximum.")}`, "err");
         fzRender(); return;
       }
+      b = t.closest("[data-fz-tab]"); if (b) { fz.tab = b.dataset.fzTab; fz.ids = []; fz.r = ""; fzRender(); return; }
       b = t.closest("[data-fz-open]"); if (b) { fz.open = fz.open === b.dataset.fzOpen ? "" : b.dataset.fzOpen; fzRender(); return; }
       if (t.closest("[data-fz-reset]")) { fz.ids = []; fz.r = ""; fzRender(); return; }
       b = t.closest("[data-fz-go]"); if (b) { fzGo(b.dataset.fzGo); return; }
