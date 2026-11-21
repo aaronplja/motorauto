@@ -5,8 +5,14 @@
    ========================================================================== */
 .tcg-dual::before { padding: 4px; background: linear-gradient(135deg, var(--ic) 0 48.6%, rgba(255, 255, 255, .95) 48.6% 51.4%, var(--ip) 51.4% 100%); }
 .tcg-dual { background: linear-gradient(165deg, #0b0f19, #0a0d16 62%); }
-.tcg-diag { position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--ic) 38%, transparent) 0 49.4%, rgba(255, 255, 255, .55) 49.4% 50.6%, color-mix(in srgb, var(--ip) 38%, transparent) 50.6% 100%); }
+.tcg-diag { position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ic) 82%, #000) 0 49.4%, rgba(255, 255, 255, .8) 49.4% 50.6%, color-mix(in srgb, var(--ip) 82%, #000) 50.6% 100%); }
+/* la photo et les textes passent par-dessus les couleurs */
+.tcg-dual .tcg-art { z-index: 1; background: transparent; }
+.tcg-dual .tcg-body { z-index: 2; background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .55) 45%, rgba(0, 0, 0, .7)); }
+/* plus de rareté sur les cartes voitures : le numéro prend sa place (haut gauche) */
+.tcg-dual:not(.tcg-mythic) .tcg-rar { display: none; }
+.tcg-mythic.tcg-dual .tcg-no { top: 14.5cqw; }
 .tcg-pill { position: absolute; top: 5cqw; right: 5cqw; z-index: 6; display: flex; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .45)); pointer-events: none; }
 .tcg-pill > span { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
 .tcg-pill small { font-size: max(5px, 3.2cqw); font-weight: 700; letter-spacing: .14em; opacity: .8; }
@@ -15,14 +21,14 @@
 .tcg-pip { margin-left: -1.2cqw; padding: 2.2cqw 3.6cqw 2.2cqw 4.6cqw; border-radius: 0 999px 999px 0; clip-path: polygon(2.6cqw 0, 100% 0, 100% 100%, 0 100%); background: var(--ip); color: #fff; }
 .tcg-pic.ic-Z { background: linear-gradient(135deg, #bff3ff, #f4d9ff 50%, #b8ffe9); }
 .tcg-pic.ic-Z, .tcg-pic.ic-A, .tcg-pic.ic-E { color: #16231c; }
-.tcg-dual .tcg-no { top: 19cqw; }
+.tcg-dual .tcg-no { top: 5cqw; left: 5cqw; right: auto; z-index: 6; }
 .tcg-pips { position: absolute; top: 14.5cqw; left: 5cqw; z-index: 5; display: flex; gap: 1.2cqw; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .7)); }
 .tcg-pips i { width: 2.4cqw; height: 2.4cqw; border-radius: 50%; background: rgba(255, 255, 255, .3); }
 .tcg-pips i.on { background: #9ec9ac; }
 .tcg.locked .tcg-pips { display: none; }
-/* Héritage : double filet or brossé et carbone, reflet discret (les deux indices restent affichés) */
+/* Héritage : double filet or brossé et carbone, reflet discret (les deux indices restent affichés ; seule carte à garder son étiquette « Héritage ») */
 .tcg-mythic.tcg-dual { box-shadow: 0 0 0 2px #d9b24a, 0 0 0 4.5px #1b1b1b, 0 0 0 6px #c99a2e, 0 0 22px rgba(212, 166, 42, .4); }
-.tcg-mythic.tcg-dual .tcg-diag { background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, .16) 48%, rgba(255, 255, 255, .05) 54%, transparent 62%), linear-gradient(135deg, color-mix(in srgb, var(--ic) 30%, transparent) 0 49.4%, rgba(255, 255, 255, .45) 49.4% 50.6%, color-mix(in srgb, var(--ip) 30%, transparent) 50.6% 100%); }
+.tcg-mythic.tcg-dual .tcg-diag { background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, .16) 48%, rgba(255, 255, 255, .05) 54%, transparent 62%), linear-gradient(135deg, color-mix(in srgb, var(--ic) 70%, #000) 0 49.4%, rgba(255, 255, 255, .6) 49.4% 50.6%, color-mix(in srgb, var(--ip) 70%, #000) 50.6% 100%); }
 
 /* taux de drop (boutique) */
 .dr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
