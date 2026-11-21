@@ -43,8 +43,8 @@
   function cardChHtml() {
     if (!cardCh || !cardCh.posters.length) return "";
     const won = cardCh.posters.filter((p) => p.claimed).length;
-    return `<section class="cc-sec"><div class="chal-head"><div><h3 class="sec-title nomargin">Défis à cartes</h3><p class="lap-meta">Relève tous les défis d'une affiche pour gagner la carte de la voiture · nouvelles affiches chaque mois</p></div><div class="chal-score"><b>${won}</b>/${cardCh.posters.length}</div></div>
-      <div class="cc-grid">${cardCh.posters.map(posterHtml).join("")}</div></section>`;
+    return chalAcc("chal-cards", "Défis à cartes", `${won} / ${cardCh.posters.length} cartes gagnées · nouvelles affiches chaque mois`, false, `<p class="lap-meta">Relève tous les défis d'une affiche pour gagner la carte de la voiture.</p>
+      <div class="cc-grid">${cardCh.posters.map(posterHtml).join("")}</div>`);
   }
   async function claimCard(id) {
     if (ccBusy) return; ccBusy = id; renderChallenges();
@@ -65,26 +65,27 @@
   }
 
   // ------------------------------------------------------------------ défis
+  /** un bloc repliable (l'état ouvert / fermé est retenu par appareil) */
+  const chalAcc = (key, title, sum, def, body) => window.MAAcc ? window.MAAcc.o(key, title, sum, def, "chal-acc") + body + window.MAAcc.c : `<section class="chal-acc"><h3 class="sec-title">${title}</h3>${body}</section>`;
   function renderChallenges() {
     const root = document.getElementById("challenges-root"); if (!root) return;
     if (!C.user) { delete root.dataset.h; root.innerHTML = `<div class="empty-note">Connecte-toi pour relever les défis de la semaine.<br><button type="button" class="cta-btn fill-btn mt" data-action="open-auth">Me connecter</button></div>`; return; }
     if (!weekly) { delete root.dataset.h; root.innerHTML = weeklyErr ? `<div class="empty-note error">${C.esc(weeklyErr)}</div>` : `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
     const esc = C.esc, done = weekly.items.filter((x) => x.claimed).length;
     const dl = weekly.daily, dpct = dl ? Math.round((dl.value / dl.goal) * 100) : 0;
-    const dailyHtml = dl ? `<section class="chal-daily"><div class="chal-head"><div><h3 class="sec-title nomargin">Défi du jour</h3><p class="lap-meta">1 nouveau défi chaque jour, à minuit</p></div></div>
+    const dailyHtml = dl ? chalAcc("chal-daily", "Défi du jour", dl.claimed ? "Récupéré · un nouveau demain" : dl.done ? "Prêt à récupérer" : "1 nouveau défi chaque jour, à minuit", true, `
       <article class="chal ${dl.claimed ? "claimed" : dl.done ? "ready" : ""}"><span class="chal-ico" aria-hidden="true">${dl.icon}</span>
         <div class="chal-main"><b>${esc(dl.label)}</b><div class="xp-bar small" aria-hidden="true"><i style="width:${dpct}%"></i></div><small>${dl.value} / ${dl.goal} · récompense ${rewardText(dl.reward)}</small></div>
-        ${dl.claimed ? `<span class="chal-done">✓ Récupéré</span>` : dl.done ? `<button type="button" class="cta-btn fill-btn compact-btn${busyId === dl.id ? " ma-busy" : ""}" data-chal-claim="${esc(dl.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="${hintOf(dl.id)}">Y aller</a>`}</article></section>` : "";
+        ${dl.claimed ? `<span class="chal-done">✓ Récupéré</span>` : dl.done ? `<button type="button" class="cta-btn fill-btn compact-btn${busyId === dl.id ? " ma-busy" : ""}" data-chal-claim="${esc(dl.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="${hintOf(dl.id)}">Y aller</a>`}</article>`) : "";
     const ft = weekly.featured, fc = ft && ft.car && (C.carsById || new Map()).get ? C.carsById.get(ft.car.id) : null;
     const fImg = fc ? (C.safeUrl ? C.safeUrl(fc.image || fc.img || "") : (fc.image || fc.img || "")) : "";
     const chalRow = (x) => { const pct = Math.round((x.value / x.goal) * 100); return `<article class="chal ${x.claimed ? "claimed" : x.done ? "ready" : ""}"><span class="chal-ico" aria-hidden="true">${x.icon}</span>
           <div class="chal-main"><b>${esc(x.label)}</b><div class="xp-bar small" aria-hidden="true"><i style="width:${pct}%"></i></div><small>${x.value} / ${x.goal} · récompense ${rewardText(x.reward)}</small></div>
           ${x.claimed ? `<span class="chal-done">✓ Récupéré</span>` : x.done ? `<button type="button" class="cta-btn fill-btn compact-btn${busyId === x.id ? " ma-busy" : ""}" data-chal-claim="${esc(x.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="#/voiture/${encodeURIComponent(ft.car.id)}">Y aller</a>`}</article>`; };
-    const featHtml = ft && ft.car && ft.car.id ? `<section class="chal-feat"><div class="feat-head">${fImg ? `<img class="feat-img" src="${esc(fImg)}" alt="" loading="lazy" data-fallback="car">` : ""}<div><span class="status-tag-verified">Voiture de la semaine</span><h3 class="sec-title nomargin">${esc(ft.car.name)}</h3>
+    const featHtml = ft && ft.car && ft.car.id ? chalAcc("chal-feat", "Voiture de la semaine", esc(ft.car.name) + " · 3 défis", true, `<div class="feat-head">${fImg ? `<img class="feat-img" src="${esc(fImg)}" alt="" loading="lazy" data-fallback="car">` : ""}<div><h3 class="sec-title nomargin">${esc(ft.car.name)}</h3>
       <p class="lap-meta">3 défis sur cette voiture · ${ft.next && ft.next.name ? `la semaine prochaine : <b>${esc(ft.next.name)}</b>` : "nouvelle voiture chaque lundi"}</p></div></div>
-      <div class="chal-list">${ft.items.map(chalRow).join("")}</div></section>` : "";
-    const html = dailyHtml + featHtml + `<div class="chal-head chal-week-head"><div><h3 class="sec-title nomargin">Défis de la semaine</h3><p class="lap-meta">Nouveaux défis chaque lundi · <b id="chal-left">${remaining(weekly.endsAt - Date.now())}</b> restantes</p></div>
-        <div class="chal-score" aria-label="${done} défis sur ${weekly.items.length} récupérés"><b>${done}</b>/${weekly.items.length}</div></div>
+      <div class="chal-list">${ft.items.map(chalRow).join("")}</div>`) : "";
+    const html = dailyHtml + featHtml + chalAcc("chal-week", "Défis de la semaine", `${done} / ${weekly.items.length} récupérés · <b id="chal-left">${remaining(weekly.endsAt - Date.now())}</b> restantes`, true, `
       <div class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${weekly.items.length}" aria-valuenow="${done}"><i style="width:${(done / weekly.items.length) * 100}%"></i></div>
       <div class="chal-list">${weekly.items.map((x) => {
         const pct = Math.round((x.value / x.goal) * 100);
@@ -92,7 +93,7 @@
           <div class="chal-main"><b>${esc(x.label)}</b><div class="xp-bar small" aria-hidden="true"><i style="width:${pct}%"></i></div><small>${x.value} / ${x.goal} · récompense ${rewardText(x.reward)}</small></div>
           ${x.claimed ? `<span class="chal-done">✓ Récupéré</span>` : x.done ? `<button type="button" class="cta-btn fill-btn compact-btn${busyId === x.id ? " ma-busy" : ""}" data-chal-claim="${esc(x.id)}" ${busy ? "disabled" : ""}>Récupérer</button>` : `<a class="cta-btn btn-ghost compact-btn" href="${hintOf(x.id)}">Y aller</a>`}</article>`;
       }).join("")}</div>
-      <p class="sec-lead">🎁 Les ${weekly.items.length} défis validés dans la semaine rapportent <b>${weekly.perfectBonus} pack bonus</b> en plus.</p>` + cardChHtml();
+      <p class="sec-lead">Les ${weekly.items.length} défis validés dans la semaine rapportent <b>${weekly.perfectBonus} pack bonus</b> en plus.</p>`) + cardChHtml();
     if (root.dataset.h === html) return;   // contenu identique : on ne redessine pas (évite le clignotement)
     root.dataset.h = html; root.innerHTML = html;
   }

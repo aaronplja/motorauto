@@ -50,8 +50,8 @@
 .cg-bh{flex-direction:column;align-items:flex-start;gap:.2rem}
 .cg-bh .cta-btn{margin-left:0;align-self:flex-start}
 .cg-sub{flex:none;width:100%}
-.cg-seg{justify-self:stretch!important;display:grid!important;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}
-.cg-seg button{padding:.55rem .2rem!important;font-size:.78rem!important;min-width:0;white-space:nowrap}
+.cg-seg{justify-self:stretch;display:flex;flex-wrap:wrap;gap:.45rem;width:100%}
+.cg-seg button{min-width:0;white-space:nowrap}
 .ab2 .ab-top b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2}
 .ab2 .ab-top{align-items:flex-start}
 @media (min-width:720px){.cg-bh{flex-direction:row;align-items:baseline}.cg-bh .cta-btn{margin-left:auto}.cg-sub{flex:1 1 160px;width:auto}}

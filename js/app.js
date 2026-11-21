@@ -1634,8 +1634,13 @@
   }
 
   function openPublicProfile(userId) { Router.go("/pilote/" + encodeURIComponent(userId)); }
+  let pubTok = 0;
   async function renderPublicProfile(userId) {
+    const tok = ++pubTok, stale = () => tok !== pubTok;   // seule la dernière demande peint la page (un clic sur un autre pilote annule la précédente)
+    pubUid = userId; pubName = ""; pubAvatar = "";
     $("pub-profile-name").textContent = "Chargement...";
+    $("pub-profile-avatar").removeAttribute("src");
+    $("pub-profile-car").textContent = "";
     $("pub-profile-bio").textContent = "";
     $("pub-profile-telemetry").innerHTML = "";
     $("pub-profile-favorites").innerHTML = "";
@@ -1647,12 +1652,13 @@
     $("pub-admin-btn").hidden = true;
 
     try {
-      const doc = await db.collection("users").doc(userId).get();
+      const doc = await Promise.race([db.collection("users").doc(userId).get(), new Promise((_, no) => setTimeout(() => no(new Error("délai dépassé")), 12000))]);
+      if (stale()) return;
       if (!doc.exists) { $("pub-profile-name").textContent = "Pilote introuvable"; $("pub-profile-public-content").style.display = "none"; return; }
-      if (Router.current() && Router.current().params.uid !== userId) return;
       const data = doc.data();
-      pubUid = userId; pubName = data.username || "Pilote"; pubAvatar = data.avatar || "";
-      await MA.admins.load(db);
+      pubName = data.username || "Pilote"; pubAvatar = data.avatar || "";
+      await Promise.race([MA.admins.load(db), new Promise((r) => setTimeout(r, 3000))]);
+      if (stale()) return;
       $("pub-profile-name").innerHTML = esc(pubName) + MA.admins.tag(userId) + (window.MATitles ? window.MATitles.slot(userId) : "");
       refreshPubAdminBtn(userId);
       renderUserCars(userId);
@@ -1697,7 +1703,7 @@
       document.dispatchEvent(new CustomEvent("ma:profile-garage", { detail: { uid: userId, favorites: g.favorites || [] } }));
     } catch (err) {
       console.error("Erreur profil public :", err);
-      $("pub-profile-name").textContent = "Erreur de chargement";
+      if (!stale()) $("pub-profile-name").innerHTML = `Profil indisponible <button type="button" class="cta-btn btn-ghost compact-btn" data-action="retry-profile" data-uid="${esc(userId)}">Réessayer</button>`;
     }
   }
 
@@ -2730,6 +2736,7 @@
     "submit-telemetry": (d) => submitTelemetry(d.id),
     "remove-telemetry": (d) => removeTelemetry(Number(d.idx)),
     "open-profile": (d) => openPublicProfile(d.uid),
+    "retry-profile": (d) => renderPublicProfile(d.uid),
     "open-profile-from-list": (d) => { closeModal($("follow-modal")); openPublicProfile(d.uid); },
     "show-follow-list": (d) => showFollowList(d.uid, d.kind),
     "toggle-follow": (d, node) => toggleFollow(d.uid, node),
@@ -2871,7 +2878,7 @@
     Router.register("community", { enter: (p) => { if (p.tab === "voitures") loadCommunity(); else if (p.tab === "pilotes") loadPilotsRegistry(); } });
     // « Pilotes » : connecté → mon profil ; visiteur → la communauté (le profil et le garage demandent un compte)
     Router.register("pilotes", { guard: async () => { await authReady; return currentUser ? "/pilote/" + encodeURIComponent(currentUser.uid) : "/communaute/fil"; } });
-    Router.register("pilot", { enter: (p) => renderPublicProfile(p.uid) });
+    Router.register("pilot", { enter: (p) => { renderPublicProfile(p.uid); } });
     Router.register("admin", { guard: needAdmin, enter: (p) => { loadAdminPage(p.tab); } });
     Router.register("contact", { enter: () => prefillContact() });
   }

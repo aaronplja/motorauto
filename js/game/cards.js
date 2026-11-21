@@ -1131,7 +1131,7 @@
         if (cardObj(want)) showDetail(want, [], { peek: true }); else C.toast("Cette carte n'existe plus.", "err");
       }
     } });
-    ctx.Router.register("pilot", { enter: (p) => renderProfile(p.uid) });
+    ctx.Router.register("pilot", { enter: (p) => { renderProfile(p.uid); } });
     window.addEventListener("hashchange", () => { setTimeout(() => { if (selMode && !isCardsRoute()) atOff(); }, 80); });
     document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (isCardsRoute()) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {

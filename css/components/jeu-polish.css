@@ -1,0 +1,70 @@
+/* Jeu de cartes : onglets d'albums, en-tête de collection, tuiles de packs, roue du jour, défis repliables.
+   Chargée en dernier : elle ne touche ni à la barre de navigation ni au dock. */
+
+/* ---------- onglets d'albums : des pastilles, pas un grand cadre ---------- */
+html .cg .seg.cg-seg { display: flex; flex-wrap: wrap; gap: .5rem; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+html .cg .seg.cg-seg button { flex: 0 0 auto; min-height: 40px; padding: 0 1.05rem; border: 1px solid var(--stroke-line); border-radius: 999px; background: var(--bg-surface); color: var(--color-ink); font-size: .86rem; font-weight: 600; box-shadow: none; transition: background-color .18s, color .18s, border-color .18s; }
+html .cg .seg.cg-seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent, #fff); }
+
+/* ---------- en-tête de la collection : titre + compteur, puis les actions alignées ---------- */
+html section[aria-label="Collection"] > header.cg-bh { display: flex; flex-flow: row wrap; align-items: center; gap: .6rem; }
+html section[aria-label="Collection"] > header.cg-bh > h3 { order: 0; flex: 1 1 auto; margin: 0; }
+html section[aria-label="Collection"] > header.cg-bh > .tcg-count { order: 1; flex: none; margin: 0; padding: .22rem .7rem; border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink, var(--accent)); font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+html section[aria-label="Collection"] > header.cg-bh > .tcg-count:empty { display: none; }
+html section[aria-label="Collection"] > header.cg-bh::before { content: ""; order: 2; flex: 0 0 100%; height: 0; }
+html section[aria-label="Collection"] > header.cg-bh > .cg-recycle,
+html section[aria-label="Collection"] > header.cg-bh .ui-more-btn { order: 3; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 40px; margin: 0; padding: 0 1.05rem; border: 1px solid var(--stroke-line); border-radius: 999px; background: var(--bg-elevated); color: var(--color-ink); font: inherit; font-size: .86rem; font-weight: 600; box-shadow: none; }
+html section[aria-label="Collection"] > header.cg-bh > .ui-more { order: 3; margin: 0; }
+html section[aria-label="Collection"] > header.cg-bh > .cg-recycle.on,
+html section[aria-label="Collection"] > header.cg-bh > .cg-recycle[aria-pressed="true"],
+html section[aria-label="Collection"] > header.cg-bh .ui-more-btn[aria-expanded="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent, #fff); }
+html #cards-search { width: 100%; min-height: 46px; padding: 0 1.1rem; border: 1px solid var(--stroke-line); border-radius: 999px; background: var(--bg-elevated); box-shadow: none; }
+html #cards-search:focus { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent) 30%, transparent); outline-offset: 1px; }
+
+/* ---------- tuiles de packs : trois tuiles régulières, icône dans une pastille ---------- */
+html .cg-free { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+html .cg-free .cg-gift { padding: 1rem .6rem; border-radius: 20px; border: 1px solid var(--stroke-line); background: var(--bg-surface); box-shadow: none; gap: .2rem; }
+html .cg-free .cg-gift.ready { border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 7%, var(--bg-surface)); }
+html .cg-free .cg-gift.ready:hover { box-shadow: 0 12px 24px -16px var(--accent); }
+html .cg-free .cg-gift .cg-gi { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: .3rem; border-radius: 50%; background: color-mix(in srgb, var(--accent) 12%, transparent); font-size: 1.4rem; }
+html .cg-free .cg-gift .cg-gi > * { max-width: 26px; max-height: 26px; }
+html .cg-free .cg-gift.adv { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; text-align: left; column-gap: 1rem; padding: .85rem 1.1rem; border-color: color-mix(in srgb, #16a34a 40%, var(--stroke-line)); }
+html .cg-free .cg-gift.adv .cg-gi { grid-row: 1 / span 2; margin: 0; background: color-mix(in srgb, #16a34a 14%, transparent); }
+html .cg-free .cg-gift.adv small { display: block; font-size: .78rem; }
+html .cg-free .cg-gift.adv.ready { background: color-mix(in srgb, #16a34a 8%, var(--bg-surface)); }
+@media (min-width: 720px) { html .cg-free { grid-template-columns: repeat(3, minmax(0, 1fr)); } html .cg-free .cg-gift.adv { grid-column: auto; grid-template-columns: 1fr; justify-items: center; text-align: center; } html .cg-free .cg-gift.adv .cg-gi { grid-row: auto; margin-bottom: .3rem; } }
+/* carte du jour offerte */
+html .cg-free .cg-gift.cg-daycard { padding: 1rem 1.2rem; background: color-mix(in srgb, var(--accent) 6%, var(--bg-surface)); }
+html .cg-daycard .cg-gback { box-shadow: 0 8px 16px -12px var(--accent); }
+html .cg-daycard .cg-gk { letter-spacing: .12em; font-size: .72rem; }
+
+/* ---------- roue du jour : couleurs du site, rayons fins, moyeu central ---------- */
+html .wh-box { gap: 1rem; padding: 1.4rem 1.2rem 1.2rem; border-radius: 28px; max-width: 380px; }
+html .wh-box h2 { margin: 0; font-size: 1.35rem; }
+html .wh-wrap { width: min(280px, 72vw); margin: .6rem 0 .2rem; }
+html .wh-wrap::after { content: ""; position: absolute; left: 50%; top: 50%; z-index: 2; width: 46px; height: 46px; translate: -50% -50%; border-radius: 50%; background: var(--bg-surface); border: 5px solid var(--accent); box-shadow: 0 4px 12px -4px rgba(0, 0, 0, .35); }
+html .wh-wheel { border: 0; box-shadow: 0 0 0 6px var(--accent), 0 0 0 9px var(--bg-surface), 0 22px 40px -18px rgba(0, 0, 0, .5);
+  background: conic-gradient(#cfe3d2 0 36deg, #f0d58c 0 72deg, #cfe3d2 0 108deg, #d8cdea 0 144deg, #cfe3d2 0 180deg, #c5e6ee 0 216deg, #cfe3d2 0 252deg, #f0d58c 0 288deg, #d8cdea 0 324deg, #f0b9a8 0 360deg); }
+html .wh-wheel::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(20, 50, 30, .22) 0 .8deg, transparent .8deg 36deg); pointer-events: none; }
+html .wh-wheel span { font-size: 1.6rem; color: #1b2a20; translate: -50% -50%; transform: rotate(var(--a)) translateY(-98px) rotate(calc(var(--a) * -1)); }
+html .wh-pin { top: -18px; color: var(--accent); font-size: 1.7rem; }
+html .wh-res { margin: 0; min-height: 1.4em; font-size: 1rem; text-align: center; }
+html .wh-box .tcg-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .7rem; }
+html .wh-box .cta-btn { min-width: 128px; min-height: 46px; justify-content: center; }
+html .wh-box .btn-ghost { background: var(--bg-elevated); border: 1px solid var(--stroke-line); box-shadow: none; color: var(--color-ink); }
+html .wh-box .fill-btn { background: var(--accent); border-color: var(--accent); color: var(--on-accent, #fff); box-shadow: 0 10px 22px -12px var(--accent); }
+html .wh-box .fill-btn:disabled { opacity: .55; }
+/* le bloc de la roue dans la boutique */
+html .cg-wheelblk .wh-row { gap: .9rem; }
+html .cg-wheelblk .wh-mini { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 12%, transparent); font-size: 1.6rem; }
+
+/* ---------- défis : menus repliables ---------- */
+details.acc.chal-acc { display: block; margin: 0 0 .8rem; border-radius: 20px; }
+details.acc.chal-acc > summary { min-height: 60px; padding: .7rem 1.1rem; }
+details.acc.chal-acc .acc-t small b { color: var(--color-ink); }
+details.acc.chal-acc > .acc-body { gap: .7rem; padding: .9rem 1.1rem 1.1rem; }
+details.acc.chal-acc .chal-list { margin: .2rem 0 0; }
+details.acc.chal-acc .xp-bar { margin: 0; }
+details.acc.chal-acc .feat-head { margin: 0; }
+details.acc.chal-acc .sec-lead { margin: 0; }
+details.acc.chal-acc .cc-grid { margin-top: .3rem; }
