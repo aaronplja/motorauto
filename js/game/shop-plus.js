@@ -58,7 +58,7 @@
   function reveal(r) {
     const car = M().cardObj(r.card.id); if (!car) return;
     const o = document.createElement("div"); o.className = "tcg-overlay on"; o.setAttribute("role", "dialog"); o.setAttribute("aria-modal", "true"); o.setAttribute("aria-label", T("Carte du jour offerte"));
-    o.innerHTML = `<div class="tcg-stage"><div class="pk3" style="text-align:center"><h2>🃏 ${T("Ta carte du jour")}</h2><div style="display:flex;justify-content:center;margin:12px 0">${M().cardHtml(car, { owned: true, count: 1, lv: 1 })}</div>
+    o.innerHTML = `<div class="tcg-stage"><div class="pk3" style="text-align:center"><h2>🃏 ${T("Ta carte du jour")}</h2><div style="display:flex;justify-content:center;margin:12px 0"><div style="width:min(240px,64vw)">${M().cardHtml(car, { owned: true, count: 1, lv: 1 })}</div></div>
       <p class="tcg-hint">${esc(car.brand + " " + String(car.model).replace(/\s*\(.*$/, ""))} · ${r.card.fresh ? T("nouvelle dans ta collection !") : T("déjà possédée : +") + r.card.dust + " " + T("cristaux")}</p>
       <div class="tcg-actions"><button type="button" class="cta-btn fill-btn" data-x>${T("Super")}</button></div></div></div>`;
     document.body.appendChild(o); document.body.classList.add("tcg-open");

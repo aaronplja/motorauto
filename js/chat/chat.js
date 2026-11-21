@@ -363,9 +363,9 @@
   function closeConversation() { stopSub(); state.conv = null; MA.unread.setActive(null); MA.notif.activeLink = null; renderLists(); }
 
   async function openConversation(c) {
-    if (state.conv && state.conv.type === c.type && state.conv.id === c.id && state.unsub) { setView("conv"); return; }
+    if (state.conv && state.conv.type === c.type && state.conv.id === c.id && (state.unsub || state.opening === MA.chatKey(c))) { setView("conv"); return; }   // déjà ouverte ou en cours d'ouverture : pas de second chargement (clignotement)
     stopSub();
-    state.conv = c;
+    state.conv = c; state.opening = MA.chatKey(c);
     state.msgs = new Map(); state.lastCount = 0; state.firstRender = true; state.newBelow = 0;
     clearReply(); clearPhoto(); hideEmoji();
     $("jump-latest").hidden = true;
@@ -378,6 +378,8 @@
         if (!p && !state.convs.has(c.id)) { MA.toast("Ce pilote est introuvable.", "err"); state.conv = null; location.hash = desktop() ? "#global" : ""; return; }
       }
     }
+    if (!state.conv || state.conv.type !== c.type || state.conv.id !== c.id) return;
+    state.opening = "";
     updateHeader();
     MA.unread.setActive(MA.chatKey(c));
     MA.notif.activeLink = "chat.html" + hashFor(c);
@@ -393,6 +395,7 @@
     const key = MA.chatKey(c);
     state.unsub = collection(c).orderBy("timestamp", "desc").limit(150).onSnapshot((snap) => {
       if (!state.conv || MA.chatKey(state.conv) !== key) return;
+      if (snap.metadata && snap.metadata.fromCache && snap.empty && navigator.onLine !== false) return;   // premier instantané vide du cache : on attend le serveur (évite « Aucun message » puis les messages)
       const list = snap.docs.map((d) => Object.assign({ id: d.id }, d.data({ serverTimestamps: "estimate" }))).reverse();
       const foreign = list.filter((m) => m.uid !== state.user.uid).length;
       const prevForeign = state.lastCount;
