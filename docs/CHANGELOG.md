@@ -2,6 +2,10 @@
 
 > Fichier généré par `node scripts/build.js` depuis `js/news-seed.js` : ne pas le modifier à la main.
 
+## 2026-11-21 — Jouer en tuiles, Communauté refaite, ta photo dans la barre du haut
+
+Jouer s'ouvre sur cinq grandes tuiles : Cartes, Boutique, Jeux, Échanges et Défis. Dans Cartes, tu vois ta progression, puis trois boutons (Albums, Raretés avec un bouton par rareté, Ma vitrine), un bouton Boutique qui s'allume d'un point rouge quand un pack, un bonus ou la roue t'attend, un bouton Fusion et ta collection en dessous. La Communauté a aussi son écran de tuiles : Fil, Membres, Garages, Clubs, Sorties et Classement. En haut à droite, la roue crantée laisse la place à ta photo de profil, entourée du cadre que tu as débloqué ; elle ouvre ton menu, avec « Mon espace » en premier. Sur ton profil, « Suivi de ma voiture » rejoint « Caractéristiques », et les barres Profil, Aperçu et Mes voitures disparaissent. Les visiteurs retrouvent les quatre rubriques de l'accueil sous forme de tuiles, alignées sur les boutons de connexion. Les événements en cours et le parrainage s'affichent maintenant sur l'écran d'entrée de Jouer.
+
 ## 2026-11-21 — Accueil visiteur, jeu plus lisible, profils et chat plus stables
 
 Les visiteurs découvrent un nouvel accueil façon magazine : l'archive, le jeu, ton garage et le salon des pilotes, avec un accès direct à la connexion. Dans Jouer, les albums, les packs et la roue sont redessinés, les défis se replient en menus animés, la barre de recherche de la collection est bien délimitée et les barres d'onglets restent à leur place pendant le défilement. La carte du jour gagnée s'affiche aussi à l'ouverture. Les profils de pilotes se chargent à nouveau correctement depuis la liste, la communauté et les conversations. Le chat ne clignote plus à l'ouverture, les photos y gardent leur place avant de se charger et la liste ne tremble plus. Partout, les boutons sont en pastille, les coins arrondis et les polices sont harmonisés, et la page ne bouge plus quand la barre de défilement apparaît.
