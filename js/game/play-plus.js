@@ -38,17 +38,15 @@
     if (!C.user) { root.innerHTML = loginNote(T("fusionner tes doublons")); return; }
     if (!fz.doc) { root.innerHTML = `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
     const RAR = MC().RAR;
-    root.innerHTML = `<div class="fz2"><p class="fz2-intro">${T("Rassemble")} <b>${G.FUSE_COUNT}</b> ${T("doublons du même échelon pour obtenir une carte de l'échelon au-dessus. Tu gardes toujours un exemplaire de chaque carte.")}</p>` +
+    root.innerHTML = `<div class="fz2"><p class="fz2-intro">${T("Seuls tes doublons apparaissent ici. Choisis")} <b>${G.FUSE_COUNT}</b> ${T("cartes d'un même échelon, ou lance la fusion au hasard : tu obtiens une carte de l'échelon au-dessus.")}</p>` +
       FZ_ORDER.map((r) => {
         const dups = fzDups(fz.doc, r), total = dups.reduce((t, d) => t + d.spare, 0), mine = fz.r === r ? fz.ids : [];
-        const next = G.FUSE_NEXT[r], can = total >= G.FUSE_COUNT, picked = mine.length, open = fz.open === r;
-        const btnLabel = picked === G.FUSE_COUNT ? T("Fusionner ma sélection") : picked ? `${picked} / ${G.FUSE_COUNT}` : T("Fusionner");
+        const next = G.FUSE_NEXT[r], can = total >= G.FUSE_COUNT, picked = mine.length;
         return `<section class="fz2-step${can ? " ready" : ""}" data-r="${r}">
-          <div class="fz2-head"><span class="fz2-from">${RAR[r].label}</span><span class="fz2-arrow" aria-hidden="true">→</span><span class="fz2-to">${RAR[next].label}</span></div>
-          <div class="fz2-meter"><span class="fz2-dots" aria-hidden="true">${[0, 1, 2, 3, 4].map((i) => `<i${i < Math.min(total, G.FUSE_COUNT) ? ' class="on"' : ""}></i>`).join("")}</span><small>${total} ${T(total > 1 ? "doublons" : "doublon")} · ${can ? T("prêt à fusionner") : T("il en faut") + " " + G.FUSE_COUNT}</small></div>
-          <div class="fz2-act"><button type="button" class="cta-btn fill-btn" data-fz-go="${r}" ${can && !fz.busy && (!picked || picked === G.FUSE_COUNT) ? "" : "disabled"}>${btnLabel}</button>${dups.length ? `<button type="button" class="cta-btn btn-ghost" data-fz-open="${r}" aria-expanded="${open ? "true" : "false"}">${open ? T("Masquer") : T("Choisir mes cartes")}</button>` : ""}${picked ? `<button type="button" class="cta-btn btn-ghost" data-fz-reset>${T("Vider")}</button>` : ""}</div>
-          ${open && dups.length ? `<div class="fz-grid">${dups.map((d) => { const n = mine.filter((x) => x === d.id).length; return `<button type="button" class="fz-pick${n ? " on" : ""}" data-fz-pick="${C.esc(d.id)}" data-r="${r}" aria-pressed="${n ? "true" : "false"}" aria-label="${C.esc(label(d.id))}">${mini(d.id)}<span class="fz-x">×${d.spare}</span>${n ? `<span class="fz-sel">${n}</span>` : ""}</button>`; }).join("")}</div>` : ""}</section>`;
-      }).join("") + `<p class="fz2-note">${T("Les échelons Apex et Héritage ne se fusionnent pas : ils se gagnent en packs et en albums.")}</p></div>`;
+          <div class="fz2-head"><span class="fz2-from">${RAR[r].label}</span><span class="fz2-arrow" aria-hidden="true">→</span><span class="fz2-to">${RAR[next].label}</span><small class="fz2-count">${picked ? picked + " / " + G.FUSE_COUNT + " choisies" : total + " " + T(total > 1 ? "doublons" : "doublon")}</small></div>
+          ${dups.length ? `<div class="fz-grid">${dups.map((d) => { const n = mine.filter((x) => x === d.id).length; return `<button type="button" class="fz-pick${n ? " on" : ""}" data-fz-pick="${C.esc(d.id)}" data-r="${r}" aria-pressed="${n ? "true" : "false"}" aria-label="${C.esc(label(d.id))}">${mini(d.id)}<span class="fz-x">×${d.spare}</span>${n ? `<span class="fz-sel">${n}</span>` : ""}</button>`; }).join("")}</div>` : `<p class="fz2-none">${T("Aucun doublon dans cet échelon.")}</p>`}
+          <div class="fz2-act">${picked === G.FUSE_COUNT ? `<button type="button" class="cta-btn fill-btn" data-fz-go="${r}" ${fz.busy ? "disabled" : ""}>${T("Fusionner la sélection")}</button>` : `<button type="button" class="cta-btn fill-btn" data-fz-go="${r}" ${can && !fz.busy && !picked ? "" : "disabled"}>${T("Fusion aléatoire")}</button>`}${picked ? `<button type="button" class="cta-btn btn-ghost" data-fz-reset>${T("Vider la sélection")}</button>` : ""}${!can ? `<small class="fz2-need">${T("Il en faut")} ${G.FUSE_COUNT}</small>` : ""}</div></section>`;
+      }).join("") + `<p class="fz2-note">${T("Tu gardes toujours un exemplaire de chaque carte. Les échelons Apex et Héritage ne se fusionnent pas : ils se gagnent en packs et en albums.")}</p></div>`;
   }
   function fzOverlay(res, usedIds) {
     return new Promise((resolve) => {

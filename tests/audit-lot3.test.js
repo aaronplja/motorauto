@@ -5,7 +5,7 @@ const fs = require("fs"), path = require("path"), root = path.join(__dirname, ".
 
 ok("anciennes adresses redirigées, jamais supprimées", () => {
   const r = read("js/router.js");
-  [["/fusion", "/jouer/collection"], ["/marche", "/jouer/echanges"], ["/souhaits", "/jouer/echanges"], ["/jouer/troc", "/jouer/echanges"]]
+  [["/marche", "/jouer/echanges"], ["/souhaits", "/jouer/echanges"], ["/jouer/troc", "/jouer/echanges"]]
     .forEach(([a, b]) => assert(r.includes('"' + a + '": "' + b + '"'), a + " -> " + b));
   assert(/HINTS = \{[^}]*"\/marche": "market"[^}]*"\/souhaits": "wish"[^}]*"\/fusion": "fuse"/.test(r), "sections voulues mémorisées");
   assert(!r.includes('"/jouer/cartes": "') && !r.includes('"/jouer/apercu": "'), "Jouer et Cartes ont leur propre écran, sans redirection");

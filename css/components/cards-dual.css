@@ -93,3 +93,5 @@ button.cg-shopbtn { width: 100%; font: inherit; text-align: left; cursor: pointe
 .tr-mine { display: flex; flex-direction: column; gap: 1rem; }
 .tr-sec .empty-note { padding: .9rem 1rem; border-radius: 22px; font-size: .88rem; }
 @media (max-width: 520px) { .tr-steps { grid-template-columns: 1fr; } .tr-steps li { flex-direction: row; align-items: center; } }
+.fz2-count { margin-left: auto; font-size: .8rem; font-weight: 600; opacity: .7; }
+.fz2-none, .fz2-need { margin: 0; font-size: .85rem; opacity: .7; }
