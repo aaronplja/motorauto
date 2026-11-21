@@ -76,7 +76,6 @@
   function route() {
     if (!state.user) return;
     const c = parseHash();
-    if (c && state.view === "list") cameFromList = true;
     if (!c) {
       cameFromList = false;
       if (desktop()) { location.replace("#global"); return; }
@@ -921,7 +920,7 @@
           const c = { type: d.type, id: d.id, name: d.name };
           if (c.type === "private") state.showPicker = false;
           const h = hashFor(c);
-          if (location.hash === h) openConversation(c); else location.hash = h;
+          if (location.hash === h) openConversation(c); else { cameFromList = true; location.hash = h; }
           break;
         }
         case "trade-accept": tradeAct(t, "respondTrade", { id: d.trade, accept: true }, "Échange réalisé 🎉 Les cartes sont dans ta collection."); break;
@@ -958,8 +957,10 @@
 
     $("back-to-list").addEventListener("click", () => {
       // pas d'entrée d'historique en plus : le bouton « retour » du téléphone ne ramène plus dans la conversation
-      if (cameFromList) history.back();
-      else { history.replaceState(null, "", location.pathname + location.search); route(); }
+      // « retour » ne remonte l'historique que si la conversation a été ouverte depuis la liste de CETTE page ;
+      // sinon (ouverte depuis un profil, une notification, un lien) on affiche la liste sans quitter la page
+      if (cameFromList) { cameFromList = false; history.back(); }
+      else { history.replaceState(null, "", location.pathname + location.search); route(); tell({ ma: "chat-nav", hash: "#/chat" }); }
     });
     $("side-filter").addEventListener("input", (e) => { state.filter = e.target.value; renderLists(); });
     $("jump-latest").addEventListener("click", () => { toBottom(true); state.newBelow = 0; $("jump-latest").hidden = true; });
