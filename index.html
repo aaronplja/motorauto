@@ -43,16 +43,16 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=8af02d5c9d","quiz":"js/lazy-quiz.min.js?v=8b63385a7d","quizbank":"js/lazy-quizbank.min.js?v=957b116121"};</script>
-  <script defer src="js/bundle1.min.js?v=f0fa6fb550"></script>
+  <script defer src="js/bundle1.min.js?v=44f42316b8"></script>
   <script defer src="js/bundle2.min.js?v=93952a7671"></script>
-  <script defer src="js/bundle3.min.js?v=10c0c8ba43"></script>
+  <script defer src="js/bundle3.min.js?v=402aad07a2"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
   <link rel="preload" href="fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/hanken-grotesk-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/bundle.min.css?v=ce64b3ba34">
+  <link rel="stylesheet" href="css/bundle.min.css?v=a88bd86b09">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -91,7 +91,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <a class="nav-link" href="#/catalogue" data-nav="catalog" title="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg><span>Catalogue</span></a>
         <a class="nav-link" href="#/jouer" data-nav="play" title="Jouer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/><path d="m7.5 12.5 2 2 3.5-4"/></svg><span>Jouer</span></a>
         <a class="nav-link" href="#/chat" data-nav="chat" title="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span><span id="header-chat-badge" class="unread-dot-indicator" style="display:none"></span></a>
-        <a class="nav-link" href="#/pilotes" data-nav="pilotes" title="Pilotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 14.2V21M3.4 10.5l6.4 1M20.6 10.5l-6.4 1"/></svg><span>Pilotes</span></a>
+        <a class="nav-link" href="#/communaute" data-nav="pilotes" title="Communauté"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M17 14.2c2.6.2 4.5 2 4.5 5"/></svg><span>Communauté</span></a>
       </nav>
 
       <div class="header-actions">
@@ -367,6 +367,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <div class="page-head-actions"><a class="cta-btn fill-btn compact-btn" href="#/chat"><span class="mi-w"><i class="mi mi-chat" data-e="💬" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 5.5h16v11H11l-4.5 3.5v-3.5H4z" fill="currentColor" fill-opacity=".16"/></svg><b class="mi-t">💬</b></i> Ouvrir le salon</span></a></div>
       </header>
     <nav data-section="pilotes"></nav>
+    <section class="tab-panel" data-tab="apercu" hidden><div id="comm-hub-apercu"></div></section>
     <section class="tab-panel" data-tab="hub-pilotes" hidden><div id="comm-hub-pilotes"></div></section>
     <section class="tab-panel" data-tab="hub-clubs" hidden><div id="comm-hub-clubs"></div></section>
     <section class="tab-panel" data-tab="hub-classements" hidden><div id="comm-hub-classements"></div></section>
@@ -1073,7 +1074,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <a class="touch-bar-item" href="#/catalogue" data-touch="catalog" aria-label="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg><span>Catalogue</span></a>
     <a class="touch-bar-item touch-bar-highlight" href="#/jouer" data-touch="play" aria-label="Jouer"><i class="touch-dot" id="touch-play-dot" hidden></i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="12" height="16" rx="2" transform="rotate(-8 9 13)"/><path d="M9 3.5h8a2 2 0 0 1 2 2V17"/><path d="m7.5 12.5 2 2 3.5-4"/></svg><span>Jouer</span></a>
     <a class="touch-bar-item" href="#/chat" data-touch="chat" aria-label="Chat"><i class="touch-dot" id="touch-chat-dot" hidden></i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a>
-    <a class="touch-bar-item" href="#/pilotes" data-touch="pilotes" aria-label="Pilotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 14.2V21M3.4 10.5l6.4 1M20.6 10.5l-6.4 1"/></svg><span>Pilotes</span></a>
+    <a class="touch-bar-item" href="#/communaute" data-touch="pilotes" aria-label="Communauté"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M17 14.2c2.6.2 4.5 2 4.5 5"/></svg><span>Communauté</span></a>
   </nav>
 
   <!-- ============ FENÊTRES ============ -->

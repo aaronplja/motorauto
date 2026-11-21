@@ -90,7 +90,7 @@ ok("navigation : Chat remplace Communauté, « Moi » devient Pilotes (profil ·
   assert(!/data-touch="community"|data-touch="me"|id="touch-me-btn"|id="nav-me-btn"|id="open-chat-btn"/.test(h), "anciens boutons supprimés");
   assert.strictEqual((h.match(/class="touch-bar-item/g) || []).length, 5, "5 entrées dans le dock");
   assert(/name: "pilotes", re:/.test(rt) && /PILOT_GROUPS = \[\["espace"[\s\S]*?\["communaute"[\s\S]*?\["classement"/.test(rt));
-  ["community", "leaderboard", "garage", "settings", "pilot", "clubs"].forEach((r) => assert(new RegExp(r + ': "pilotes"').test(rt.match(/const NAV_OF = \{[^\n]*/)[0]), r + " → Pilotes"));
+  ["community", "leaderboard", "pilot", "clubs"].forEach((r) => assert(new RegExp(r + ': "pilotes"').test(rt.match(/const NAV_OF = \{[^\n]*/)[0]), r + " → Pilotes"));
   ["hub-pilotes", "hub-clubs", "hub-classements"].forEach((x) => assert(rt.indexOf('"/communaute/' + x + '"') >= 0, "ancienne adresse " + x + " redirigée"));
   assert(/id="pub-settings-btn"[^>]*href="#\/reglages\/profil"/.test(h) && /pub-settings-btn/.test(read("js/social/profile-edit.js")), "engrenage Réglages dans le profil");
   assert(!/nav-me-btn|touch-me-btn/.test(nv));
@@ -116,7 +116,8 @@ ok("barre du haut : plus de bouton Nouveautés (elles sont dans les notification
   assert(/MA\.notif\.setExtra/.test(nw) && /function setExtra/.test(cm) && /notif-news/.test(cm + nw), "nouveautés injectées dans le panneau");
   assert(/chip-gear/.test(h) && /is-gear/.test(nv), "roue crantée sur le bouton du compte");
   ["#/admin", "#/reglages/profil", "#/contact"].forEach((x) => assert(nv.indexOf(x) >= 0, "entrée " + x));
-  assert(!/#\/pilote|#\/garage|#\/classement/.test(nv.slice(nv.indexOf("function build"), nv.indexOf("function build") + 1800)), "le reste du menu est ailleurs");
+  assert(!/#\/pilote\/|#\/garage|#\/classement/.test(nv.slice(nv.indexOf("function build"), nv.indexOf("function build") + 1800)), "le reste du menu est ailleurs");
+  assert(nv.indexOf("#/pilotes") >= 0 && /chip-avatar/.test(nv), "Mon espace en tête du menu, photo de profil sur le bouton du compte");
   assert(/const inner = !!backTo && !landing/.test(rt), "pages internes de Jouer : retour au lieu de la barre des univers");
 });
 ok("chat : nouvelle interface (chat3.css) avec onglets Tout / Canaux / Privés, ids conservés", () => {

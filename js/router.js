@@ -12,7 +12,7 @@
     { name: "catalog", re: /^\/catalogue\/?$/, keys: [] },
     { name: "car", re: /^\/voiture\/([^/]+)\/?$/, keys: ["id"] },
     { name: "commcar", re: /^\/voiture-pilote\/([^/]+)\/?$/, keys: ["id"] },
-    { name: "community", re: /^\/communaute(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["fil", "voitures", "pilotes", "evenements", "carte"] },
+    { name: "community", re: /^\/communaute(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["apercu", "fil", "voitures", "pilotes", "evenements", "carte"] },
     { name: "play", re: /^\/jouer(?:\/([^/]+))?\/?$/, keys: ["tab"], tabs: ["apercu", "cartes", "albums", "raretes", "vitrine", "collection", "boutique", "echanges", "minijeux", "communaute", "defis", "concours"] },
     { name: "pilotes", re: /^\/pilotes\/?$/, keys: [] },
     { name: "chat", re: /^\/chat(?:\/(.+?))?\/?$/, keys: ["sub"] },
@@ -51,16 +51,16 @@
     fusion: "page-fusion", cardmarket: "page-cardmarket", wishfeed: "page-wishfeed", plusmoins: "page-plusmoins", quizgame: "page-quizgame", achievements: "page-achievements", pass: "page-pass", timeline: "page-timeline", news: "page-news"
   };
   // entrée de menu mise en avant pour chaque page
-  const NAV_OF = { about: "home", notfound: "home", compare: "catalog", home: "home", catalog: "catalog", car: "catalog", engine: "catalog", brand: "catalog", commcar: "pilotes", community: "pilotes", pilot: "pilotes", pilotes: "pilotes", chat: "chat", leaderboard: "pilotes", circuit: "pilotes", garage: "pilotes", settings: "pilotes", duel: "play", quiz: "play", play: "play", club: "pilotes", clubs: "pilotes", market: "pilotes", fusion: "play", cardmarket: "play", wishfeed: "play", plusmoins: "play", quizgame: "play", achievements: "play", pass: "play", timeline: "catalog", news: "home" };
+  const NAV_OF = { about: "home", notfound: "home", compare: "catalog", home: "home", catalog: "catalog", car: "catalog", engine: "catalog", brand: "catalog", commcar: "pilotes", community: "pilotes", pilot: "pilotes", chat: "chat", leaderboard: "pilotes", circuit: "pilotes", duel: "play", quiz: "play", play: "play", club: "pilotes", clubs: "pilotes", market: "pilotes", fusion: "play", cardmarket: "play", wishfeed: "play", plusmoins: "play", quizgame: "play", achievements: "play", pass: "play", timeline: "catalog", news: "home" };
   const TITLES = {
     about: "À propos | MOTORAUTO", notfound: "Page introuvable | MOTORAUTO", home: "MOTORAUTO | Archive automobile & communauté de pilotes", catalog: "Catalogue | MOTORAUTO", community: "Communauté | MOTORAUTO",
     play: "Jouer | MOTORAUTO", chat: "Chat | MOTORAUTO", leaderboard: "Classements | MOTORAUTO", circuit: "Circuit | MOTORAUTO", pilot: "Pilote | MOTORAUTO", garage: "Mon garage | MOTORAUTO", settings: "Réglages | MOTORAUTO",
     admin: "Administration | MOTORAUTO", pro: "MOTORAUTO PRO | Modifications voiture par voiture", legal: "Informations légales | MOTORAUTO", engine: "Moteur | MOTORAUTO", brand: "Marque | MOTORAUTO", contact: "Contact | MOTORAUTO", commcar: "Voiture de pilote | MOTORAUTO", compare: "Comparateur | MOTORAUTO", duel: "Duel | MOTORAUTO", quiz: "Quiz | MOTORAUTO", club: "Club | MOTORAUTO", clubs: "Clubs | MOTORAUTO", market: "Annonces | MOTORAUTO", car: "Fiche véhicule | MOTORAUTO",
     pass: "Pass de saison | MOTORAUTO", fusion: "Fusion de cartes | MOTORAUTO", cardmarket: "Marché de cartes | MOTORAUTO", wishfeed: "Souhaits et échanges | MOTORAUTO", plusmoins: "Plus ou moins | MOTORAUTO", quizgame: "Quiz | MOTORAUTO", achievements: "Succès | MOTORAUTO", timeline: "Frise chronologique | MOTORAUTO", news: "Nouveautés | MOTORAUTO"
   };
-  const DEFAULT_TAB = { settings: "profil", community: "fil", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "apercu" };
+  const DEFAULT_TAB = { settings: "profil", community: "apercu", leaderboard: "chronos", garage: "apercu", admin: "tableau", play: "apercu" };
   // anciennes adresses (liens partagés, favoris) → adresse actuelle
-  const REDIRECTS = { "/apropos": "/a-propos", "/plan": "/a-propos", "/circuits": "/classement/circuits", "/annonces": "/communaute", "/pro/offre": "/pro", "/pro/explorer": "/pro", "/pro/abonnement": "/pro", "/communaute/hub-pilotes": "/communaute/fil", "/communaute/hub-clubs": "/clubs", "/communaute/hub-classements": "/classement/chronos", "/jouer/troc": "/jouer/echanges", "/fusion": "/jouer/collection", "/marche": "/jouer/echanges", "/souhaits": "/jouer/echanges", "/garage/parametres": "/reglages/profil", "/garage/cartes": "/jouer/collection", "/garage/entretien": "/garage/suivi", "/garage/budget": "/garage/suivi", "/garage/projets": "/garage/suivi", "/admin/traiter": "/admin/tableau" };
+  const REDIRECTS = { "/apropos": "/a-propos", "/plan": "/a-propos", "/circuits": "/classement/circuits", "/annonces": "/communaute", "/pro/offre": "/pro", "/pro/explorer": "/pro", "/pro/abonnement": "/pro", "/communaute/hub-pilotes": "/communaute/fil", "/communaute/hub-clubs": "/clubs", "/communaute/hub-classements": "/classement/chronos", "/jouer/troc": "/jouer/echanges", "/fusion": "/jouer/collection", "/marche": "/jouer/echanges", "/souhaits": "/jouer/echanges", "/garage": "/pilotes", "/garage/apercu": "/pilotes", "/garage/voitures": "/pilotes", "/garage/parametres": "/reglages/profil", "/garage/cartes": "/jouer/collection", "/garage/entretien": "/garage/suivi", "/garage/budget": "/garage/suivi", "/garage/projets": "/garage/suivi", "/admin/traiter": "/admin/tableau" };
   // barres d'onglets : une seule définition, dessinée dans chaque page de la section (nav[data-section])
   const SECTIONS = {
     pilotes: { page: "pilotes", items: [] },
@@ -95,7 +95,7 @@
       if (d.tabs) {
         if (!params.tab || !d.tabs.includes(params.tab)) {
           // adresse de section sans onglet : on rouvre le dernier onglet consulté (par section), sinon l'onglet par défaut
-          let last = null; if (!params.tab && d.name !== "play") { try { last = localStorage.getItem("ma.tab." + d.name); } catch (_) { /* ignoré */ } }
+          let last = null; if (!params.tab && d.name !== "play" && d.name !== "community") { try { last = localStorage.getItem("ma.tab." + d.name); } catch (_) { /* ignoré */ } }
           params.tab = last && d.tabs.includes(last) ? last : DEFAULT_TAB[d.name];
         }
       }
@@ -182,7 +182,7 @@
   const PILOT_GROUPS = [["espace", "Mon espace"], ["communaute", "Communauté"], ["classement", "Classement"]];
   const PILOT_HREF = { espace: "#/pilotes", communaute: "#/communaute/fil", classement: "#/classement/chronos" };
   const PILOT_SUBS = {
-    espace: [["Profil", "#/pilotes", (r) => r.name === "pilotes" || (r.name === "pilot" && r.params.uid === me())], ["Aperçu", "#/garage/apercu", (r) => r.name === "garage" && r.params.tab === "apercu"], ["Mes voitures", "#/garage/voitures", (r) => r.name === "garage" && r.params.tab === "voitures", "", "Voitures"], ["Suivi", "#/garage/suivi", (r) => r.name === "garage" && r.params.tab === "suivi"], ["Réglages", "#/reglages/profil", (r) => r.name === "settings"]],
+    espace: [["Profil", "#/pilotes", (r) => r.name === "pilotes" || (r.name === "pilot" && r.params.uid === me())], ["Suivi", "#/garage/suivi", (r) => r.name === "garage" && r.params.tab === "suivi"]],
     communaute: [["Fil", "#/communaute/fil", (r) => r.name === "community" && r.params.tab === "fil"], ["Membres", "#/communaute/pilotes", (r) => r.name === "community" && r.params.tab === "pilotes"], ["Garages", "#/communaute/voitures", (r) => r.name === "community" && r.params.tab === "voitures" || r.name === "commcar"], ["Clubs", "#/clubs", (r) => r.name === "clubs" || r.name === "club"], ["Sorties", "#/communaute/evenements", (r) => r.name === "community" && (r.params.tab === "evenements" || r.params.tab === "carte")]],
     classement: [["Chronos", "#/classement/chronos", (r) => r.name === "leaderboard" && r.params.tab === "chronos"], ["Circuits", "#/classement/circuits", (r) => r.name === "leaderboard" && r.params.tab === "circuits" || r.name === "circuit"], ["Modèles", "#/classement/voitures", (r) => r.name === "leaderboard" && r.params.tab === "voitures"], ["Pilotes", "#/classement/pilotes", (r) => r.name === "leaderboard" && r.params.tab === "pilotes"], ["Cartes", "#/classement/collection", (r) => r.name === "leaderboard" && r.params.tab === "collection"]]
   };
@@ -191,9 +191,15 @@
     if (r.name === "pilot") return r.params.uid && r.params.uid === me() ? "espace" : "communaute";
     return { pilotes: "espace", settings: "espace", garage: "espace", leaderboard: "classement", circuit: "classement" }[r.name] || "communaute";
   }
+  /** Communauté : l'entrée (#/communaute) n'a que des tuiles ; les pages dessous ont un lien de retour et leurs sous-onglets. Mon espace n'a que ses sous-onglets. */
   function renderPilotBar(nav, route) {
-    const g = pilotGroup(route), logged = !!me(), groups = PILOT_GROUPS.filter(([k]) => logged || k !== "espace");
-    groupBar(nav, route, "Pilotes", groups, PILOT_SUBS, g, false, (k) => PILOT_HREF[k]);
+    const g = pilotGroup(route), logged = !!me(), t = route.name === "community" ? route.params.tab : "";
+    nav.removeAttribute("aria-label"); nav.removeAttribute("role"); nav.classList.add("play-bar", "inner"); nav.classList.remove("page-tabs", "fit");
+    const subs = PILOT_SUBS[g] || [];
+    if (t === "apercu" || (g === "espace" && !logged)) { nav.innerHTML = ""; nav.style.display = "none"; return; }
+    nav.style.display = "";
+    const back = g === "espace" ? "" : `<a class="play-back" href="#/communaute" aria-label="Communauté"><span aria-hidden="true">‹</span> <span class="pb-l">Communauté</span></a>`;
+    nav.innerHTML = back + (subs.length ? `<div class="page-tabs fit play-subtabs" role="tablist" aria-label="${g === "espace" ? "Mon espace" : g === "classement" ? "Classement" : "Communauté"}" style="--n:${subs.length}">${subs.map((x) => { const on = !!x[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${x[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}><span class="tl" data-s="${x[4] || x[0]}">${x[0]}</span></a>`; }).join("")}</div>` : "");
   }
 
   function groupBar(nav, route, label, groups, subs, g, landing, hrefOf, backTo) {

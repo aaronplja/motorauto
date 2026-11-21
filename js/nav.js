@@ -36,6 +36,7 @@
       ? `<div class="me-card"><span class="me-avatar">${av ? `<img src="${esc(av)}" alt="" data-fallback="avatar">` : ico("user")}</span><div class="me-who"><b>${esc(p.username || user.displayName || "Pilote")}</b><small>${c.isAdmin ? "Administrateur" : "Pilote connecté"}</small></div></div>`
       : `<div class="me-card guest"><div class="me-who"><b>Bienvenue sur MOTORAUTO</b><small>Connecte-toi pour ton garage, tes cartes et le salon.</small></div><button type="button" class="cta-btn me-login" data-me="login">Connexion</button></div>`;
     const rows = [
+      user ? row("#/pilotes", "user", "Mon espace") : "",
       c.isAdmin ? row("#/admin", "shield", "Administration", (window.MAAdminTodo && MAAdminTodo.count() ? `<span class="me-badge">${MAAdminTodo.count()}</span>` : "")) : "",
       row("#/reglages/profil", "cog", "Réglages", "", 'data-me-link'),
       row("#/nouveautes", "news", "Nouveautés"),
@@ -110,12 +111,21 @@
   // connecté : le bouton du compte devient une simple roue crantée ; visiteur : « Connexion »
   function syncChip() {
     const chip = $("user-profile-btn"); if (!chip) return;
-    const u = !!ctx().user;
+    const c = ctx(), u = !!c.user;
     chip.classList.toggle("is-gear", u);
-    chip.setAttribute("aria-label", u ? "Réglages et compte" : "Espace compte pilote");
-    chip.setAttribute("title", u ? "Réglages et compte" : "Connexion");
+    chip.setAttribute("aria-label", u ? "Mon compte" : "Espace compte pilote");
+    chip.setAttribute("title", u ? "Mon compte" : "Connexion");
+    // connecté : la photo de profil remplace la roue crantée (à défaut, une silhouette)
+    let img = chip.querySelector(".chip-avatar");
+    const url = u && window.MA && MA.safeUrl ? MA.safeUrl((c.profile || {}).avatar) : "";
+    chip.classList.toggle("has-avatar", u);
+    if (!u) { if (img) img.remove(); return; }
+    if (!img) { img = document.createElement("span"); img.className = "chip-avatar"; img.setAttribute("aria-hidden", "true"); chip.insertBefore(img, chip.firstChild); }
+    const key = url || "-";
+    if (img.dataset.k !== key) { img.dataset.k = key; img.innerHTML = url ? `<img src="${esc(url)}" alt="" data-fallback="avatar">` : ico("user"); }
   }
   document.addEventListener("ma:auth", () => setTimeout(syncChip, 0));
+  ["ma:profile-ready", "ma:profile-garage"].forEach((n) => document.addEventListener(n, () => setTimeout(syncChip, 0)));
   setTimeout(syncChip, 300); setTimeout(syncChip, 1500);
   window.MANav = { open, close };
 })();

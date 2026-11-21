@@ -131,3 +131,11 @@ img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, 
 .cg-hubbtns .cg-shopbtn { min-height: 64px; }
 .cg-hubbtns .cg-shopbtn .cg-sb-t b { font-size: 1.6rem; }
 .cg-shopbtn.has-pack::after { top: 50%; right: 52px; margin-top: -6px; width: 12px; height: 12px; background: #e5322d; box-shadow: 0 0 0 3px rgba(255, 255, 255, .85); }
+
+/* Compte (en haut à droite) : la photo de profil remplace la roue crantée */
+.pilot-chip.has-avatar .chip-gear { display: none !important; }
+.pilot-chip .chip-avatar { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; color: var(--color-ink); }
+.pilot-chip .chip-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.pilot-chip .chip-avatar svg { width: 62%; height: 62%; }
+.app-header .pilot-chip.has-avatar.is-gear { padding: 2px; overflow: visible; border-radius: 50%; }
+.app-header .pilot-chip.has-avatar.is-gear .chip-avatar { width: 100%; height: 100%; }
