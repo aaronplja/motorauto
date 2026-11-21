@@ -42,17 +42,17 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
-  <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=8af02d5c9d","quiz":"js/lazy-quiz.min.js?v=8b63385a7d","quizbank":"js/lazy-quizbank.min.js?v=957b116121"};</script>
-  <script defer src="js/bundle1.min.js?v=429445ee12"></script>
+  <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=1c1afba2e2","quiz":"js/lazy-quiz.min.js?v=8b63385a7d","quizbank":"js/lazy-quizbank.min.js?v=957b116121"};</script>
+  <script defer src="js/bundle1.min.js?v=75a1070ab6"></script>
   <script defer src="js/bundle2.min.js?v=3b96c14e63"></script>
-  <script defer src="js/bundle3.min.js?v=6b7b53731d"></script>
+  <script defer src="js/bundle3.min.js?v=4ee8769606"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
   <link rel="preload" href="fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/hanken-grotesk-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/bundle.min.css?v=7f6523d87f">
+  <link rel="stylesheet" href="css/bundle.min.css?v=4b053ee985">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -311,7 +311,9 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
             <option value="year-asc">Plus anciennes</option>
             <option value="likes-desc">Les plus aimées</option>
             <option value="rating-desc">Les mieux notées</option>
-            <option value="rarity-desc">Rareté de la carte</option>
+            <option value="rarity-desc">Échelon de la carte</option>
+            <option value="ic-desc">IC (collection)</option>
+            <option value="ip-desc">IP (performance)</option>
           </select>
         </label>
         <button type="button" class="cta-btn btn-ghost adv-toggle" id="adv-toggle" aria-expanded="false" aria-controls="adv-panel">
@@ -330,8 +332,12 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
           <select id="adv-verdict" class="custom-select"><option value="all">Tous</option><option value="ideal">Idéale</option><option value="correct">Correcte</option><option value="watch">À surveiller</option><option value="avoid">Déconseillée</option><option value="race">Voiture de course</option></select></label>
         <label class="adv-field"><span>Moteur</span>
           <select id="adv-turbo" class="custom-select"><option value="all">Tous</option><option value="turbo">Turbo / compresseur</option><option value="atmo">Atmosphérique</option></select></label>
-        <label class="adv-field"><span>Rareté de la carte</span>
-          <select id="adv-rarity" class="custom-select"><option value="all">Toutes</option><option value="common">Commune</option><option value="rare">Rare</option><option value="epic">Épique</option><option value="legendary">Légendaire</option><option value="shiny">Shiny</option><option value="mythic">Légende</option></select></label>
+        <label class="adv-field"><span>Échelon de la carte</span>
+          <select id="adv-rarity" class="custom-select"><option value="all">Toutes</option><option value="common">Série</option><option value="rare">Sport</option><option value="epic">Élite</option><option value="legendary">Prestige</option><option value="shiny">Apex</option><option value="mythic">Héritage</option></select></label>
+        <label class="adv-field"><span>IC (collection)</span>
+          <select id="adv-ic" class="custom-select"><option value="all">Tous</option><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="Z">Z</option></select></label>
+        <label class="adv-field"><span>IP (performance)</span>
+          <select id="adv-ip" class="custom-select"><option value="all">Tous</option><option value="I">I</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option><option value="VI">VI</option><option value="VII">VII</option><option value="VIII">VIII</option><option value="IX">IX</option><option value="X">X</option></select></label>
         <label class="adv-field"><span>Puissance min. (ch)</span><input type="number" id="adv-pmin" min="0" max="2000" inputmode="numeric" placeholder="ex. 150"></label>
         <label class="adv-field"><span>Puissance max. (ch)</span><input type="number" id="adv-pmax" min="0" max="2000" inputmode="numeric" placeholder="ex. 300"></label>
         <label class="adv-field"><span>0-100 km/h max. (s)</span><input type="number" id="adv-zero" min="1" max="30" step="0.1" inputmode="decimal" placeholder="ex. 6.5"></label>

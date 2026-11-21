@@ -25,7 +25,7 @@
   function restoreFilters() {
     try { const o = JSON.parse(sessionStorage.getItem("ma.filters") || "null"); if (!o) return false; let any = false; FILTER_KEYS.forEach((k) => { if (k in o && o[k] !== filters[k]) { filters[k] = o[k]; any = true; } }); return any; } catch (_) { return false; }
   }
-  function advHasFilters() { return ["drive", "verdict", "turbo", "rarity"].some((k) => filters[k] !== "all") || ["pmin", "pmax", "zero", "vmax", "yfrom", "yto"].some((k) => filters[k] != null); }
+  function advHasFilters() { return ["drive", "verdict", "turbo", "rarity", "ic", "ip"].some((k) => filters[k] !== "all") || ["pmin", "pmax", "zero", "vmax", "yfrom", "yto"].some((k) => filters[k] != null); }
   function syncFiltersUi() {
     const pills = $("body-filter-chips"); if (pills) pills.querySelectorAll(".filter-pill:not(#noimg-pill)").forEach((b) => b.classList.toggle("active", b.dataset.filterType === filters.category));
     const gp = $("genre-filter-chips"); if (gp) gp.querySelectorAll(".filter-pill").forEach((b) => b.classList.toggle("active", b.dataset.genre === filters.genre));
@@ -54,7 +54,7 @@
   let cloudIds = new Set();
   let cloudCars = [];
 
-  const filters = { noimg: false, category: "all", genre: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", verdict: "all", turbo: "all", rarity: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
+  const filters = { noimg: false, category: "all", genre: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", verdict: "all", turbo: "all", rarity: "all", ic: "all", ip: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
 
   let modalStack = [];
   let allLaps = [];
@@ -229,6 +229,7 @@
     if (filters.noimg) renderCatalog();
   }
   const RARK = { mythic: 0, shiny: 1, legendary: 2, epic: 3, rare: 4, common: 5 };
+  const carIx = (c) => { try { return window.MAGameCore && window.MAGameCore.indexOf ? window.MAGameCore.indexOf(c.id) : null; } catch (_) { return null; } };
   const carRarity = (c) => (window.MACards && window.MACards.rarityOf ? window.MACards.rarityOf(c) : "common");
   // « style » d'une voiture (SUV, électrique, cabriolet, pick-up, youngtimer) : même calcul que dans le jeu (game-core)
   const GENRE_NAMES = { suv: "SUV", ev: "Électrique", cabrio: "Cabriolet", pickup: "Pick-up", young: "Youngtimer" }, genreMemo = new Map();
@@ -260,6 +261,8 @@
     if (filters.drive !== "all") result = result.filter((c) => (c.drives || []).includes(filters.drive));
     if (filters.verdict !== "all") result = result.filter((c) => c.track && c.track.verdict === filters.verdict);
     if (filters.turbo !== "all") result = result.filter((c) => MA.inCategory(c, filters.turbo));
+    if (filters.ic !== "all") result = result.filter((c) => { const x = carIx(c); return x && x.ic === filters.ic; });
+    if (filters.ip !== "all") result = result.filter((c) => { const x = carIx(c); return x && x.ip === filters.ip; });
     if (filters.rarity !== "all") result = result.filter((c) => carRarity(c) === filters.rarity);
     if (filters.pmin != null) result = result.filter((c) => c.stats.power >= filters.pmin);
     if (filters.pmax != null) result = result.filter((c) => c.stats.power > 0 && c.stats.power <= filters.pmax);
@@ -276,6 +279,7 @@
     else if (filters.sort === "year-desc") sorted.sort((a, b) => (b.yearRange ? b.yearRange[0] : 0) - (a.yearRange ? a.yearRange[0] : 0));
     else if (filters.sort === "year-asc") sorted.sort((a, b) => (a.yearRange ? a.yearRange[0] : 9999) - (b.yearRange ? b.yearRange[0] : 9999));
     else if (filters.sort === "likes-desc") sorted.sort((a, b) => socStat(b.id).likes - socStat(a.id).likes || COLL_NUM.compare(a.model, b.model));
+    else if (filters.sort === "ic-desc" || filters.sort === "ip-desc") { const k = filters.sort === "ic-desc" ? "icN" : "ipN", o = filters.sort === "ic-desc" ? "ipN" : "icN"; sorted.sort((a, b) => ((carIx(b) || {})[k] ?? -1) - ((carIx(a) || {})[k] ?? -1) || ((carIx(b) || {})[o] ?? -1) - ((carIx(a) || {})[o] ?? -1) || b.stats.power - a.stats.power); }
     else if (filters.sort === "rarity-desc") sorted.sort((a, b) => (RARK[carRarity(a)] ?? 9) - (RARK[carRarity(b)] ?? 9) || b.stats.power - a.stats.power);
     else if (filters.sort === "rating-desc") sorted.sort((a, b) => socStat(b.id).avg - socStat(a.id).avg || socStat(b.id).votes - socStat(a.id).votes);
     else sorted.sort((a, b) => COLL_NUM.compare(a.model, b.model));
@@ -3005,7 +3009,7 @@
     // filtres avancés
     const numOrNull = (v) => { const n = parseFloat(String(v).replace(",", ".")); return Number.isFinite(n) ? n : null; };
     const advMap = { "adv-pmin": "pmin", "adv-pmax": "pmax", "adv-zero": "zero", "adv-vmax": "vmax", "adv-yfrom": "yfrom", "adv-yto": "yto" };
-    const advActive = () => ["drive", "verdict", "turbo", "rarity"].filter((k) => filters[k] !== "all").length + Object.values(advMap).filter((k) => filters[k] != null).length;
+    const advActive = () => ["drive", "verdict", "turbo", "rarity", "ic", "ip"].filter((k) => filters[k] !== "all").length + Object.values(advMap).filter((k) => filters[k] != null).length;
     const advRefresh = () => {
       const n = advActive();
       $("adv-count").hidden = !n; $("adv-count").textContent = n;
@@ -3019,11 +3023,12 @@
     Object.entries(advMap).forEach(([id, key]) => $(id).addEventListener("input", (e) => { filters[key] = numOrNull(e.target.value); advRefresh(); }));
     $("adv-drive").addEventListener("change", (e) => { filters.drive = e.target.value; advRefresh(); });
     $("adv-turbo").addEventListener("change", (e) => { filters.turbo = e.target.value; advRefresh(); });
+    ["ic", "ip"].forEach((k) => $("adv-" + k).addEventListener("change", async (e) => { filters[k] = e.target.value; if (e.target.value !== "all" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) { /* tolérant */ } } advRefresh(); }));
     $("adv-rarity").addEventListener("change", async (e) => { filters.rarity = e.target.value; if (filters.rarity !== "all" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) { if (window.MAErrors) window.MAErrors.report("silencieux", _); } } advRefresh(); });
     $("adv-verdict").addEventListener("change", (e) => { filters.verdict = e.target.value; advRefresh(); });
     $("adv-reset").addEventListener("click", () => {
       Object.entries(advMap).forEach(([id, key]) => { $(id).value = ""; filters[key] = null; });
-      $("adv-drive").value = "all"; $("adv-turbo").value = "all"; $("adv-verdict").value = "all"; $("adv-rarity").value = "all"; filters.drive = "all"; filters.turbo = "all"; filters.verdict = "all"; filters.rarity = "all";
+      $("adv-drive").value = "all"; $("adv-turbo").value = "all"; $("adv-verdict").value = "all"; $("adv-rarity").value = "all"; $("adv-ic").value = "all"; $("adv-ip").value = "all"; filters.ic = "all"; filters.ip = "all"; filters.drive = "all"; filters.turbo = "all"; filters.verdict = "all"; filters.rarity = "all";
       advRefresh();
     });
 
@@ -3036,7 +3041,7 @@
     });
     if (restoreFilters()) { syncFiltersUi(); renderCatalog(); }
     $("brand-select").addEventListener("change", (e) => { filters.brand = e.target.value; filters.page = 1; renderCatalog(); });
-    $("sort-select").addEventListener("change", async (e) => { filters.sort = e.target.value; filters.page = 1; if (filters.sort === "rarity-desc" && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) { if (window.MAErrors) window.MAErrors.report("silencieux", _); } } renderCatalog(); });
+    $("sort-select").addEventListener("change", async (e) => { filters.sort = e.target.value; filters.page = 1; if ((filters.sort === "rarity-desc" || filters.sort === "ic-desc" || filters.sort === "ip-desc") && window.MACards && window.MACards.loadRarOv) { try { await window.MACards.loadRarOv(); } catch (_) { if (window.MAErrors) window.MAErrors.report("silencieux", _); } } renderCatalog(); });
     $("noimg-pill").addEventListener("click", () => {
       filters.noimg = !filters.noimg; filters.page = 1;
       $("noimg-pill").classList.toggle("active", filters.noimg); $("noimg-pill").setAttribute("aria-pressed", String(filters.noimg));

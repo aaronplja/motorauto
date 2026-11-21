@@ -2,6 +2,10 @@
 
 > Fichier généré par `node scripts/build.js` depuis `js/news-seed.js` : ne pas le modifier à la main.
 
+## 2026-11-21 — Cartes : double indice IC / IP et échelons
+
+Fini Commune, Rare, Épique, Légendaire et Shiny. Chaque voiture a maintenant deux indices : l'IC (collection, de F à Z) et l'IP (performance, de I à X), coupés en diagonale sur la carte. Un échelon calculé à partir des deux (Série, Sport, Élite, Prestige, Apex) donne la valeur de la carte. Les cartes Légende deviennent Héritage : elles se gagnent en complétant un album et ne sortent jamais d'un pack. Les taux de drop sont visibles dans la Boutique, et tu peux filtrer et trier par IC et IP dans ta collection et dans le Catalogue.
+
 ## 2026-11-21 — Jouer en tuiles, Communauté refaite, ta photo dans la barre du haut
 
 Jouer s'ouvre sur cinq grandes tuiles : Cartes, Boutique, Jeux, Échanges et Défis. Dans Cartes, tu vois ta progression, puis trois boutons (Albums, Raretés avec un bouton par rareté, Ma vitrine), un bouton Boutique qui s'allume d'un point rouge quand un pack, un bonus ou la roue t'attend, un bouton Fusion et ta collection en dessous. La Communauté a aussi son écran de tuiles : Fil, Membres, Garages, Clubs, Sorties et Classement. En haut à droite, la roue crantée laisse la place à ta photo de profil, entourée du cadre que tu as débloqué ; elle ouvre ton menu, avec « Mon espace » en premier. Sur ton profil, « Suivi de ma voiture » rejoint « Caractéristiques », et les barres Profil, Aperçu et Mes voitures disparaissent. Les visiteurs retrouvent les quatre rubriques de l'accueil sous forme de tuiles, alignées sur les boutons de connexion. Les événements en cours et le parrainage s'affichent maintenant sur l'écran d'entrée de Jouer.

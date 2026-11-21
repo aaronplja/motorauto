@@ -6,7 +6,7 @@
  *    en connaissant la carte et la caractéristique. Le meneur change à chaque manche (le premier meneur est tiré au sort) ;
  *  - chaque carte ne sert qu'une fois ; l'adversaire répond avec la carte la plus économe qui bat la tienne, sinon il sacrifie sa plus faible.
  * Avant la partie : niveau de l'IA (facile / normal / difficile), main aléatoire ou choisie (5 cartes), fond d'arène, défi du jour.
- * Le résultat est enregistré côté serveur (historique, séries, trophées 5-0 / 10 d'affilée / victoire d'une Commune) ; seul le défi
+ * Le résultat est enregistré côté serveur (historique, séries, trophées 5-0 / 10 d'affilée / victoire d'une Série) ; seul le défi
  * quotidien rapporte une récompense fixe (une fois par jour). Les parties d'entraînement ne rapportent ni carte ni cristaux.
  */
 (function () {
@@ -141,7 +141,7 @@
       if (r && r.doc && window.MACards && window.MACards.applyDoc) window.MACards.applyDoc(r.doc);
       const bits = [];
       if (r && r.reward) bits.push(`+${r.reward} cristaux (défi du jour)`);
-      const T = { flawless: "Trophée : victoire 5-0 !", streak10: "Trophée : 10 victoires d'affilée !", giant: "Trophée : une Commune a battu une carte Épique ou Légendaire !" };
+      const T = { flawless: "Trophée : victoire 5-0 !", streak10: "Trophée : 10 victoires d'affilée !", giant: "Trophée : une carte Série a battu une carte Élite ou Prestige !" };
       ((r && r.trophies) || []).forEach((t) => { if (T[t]) bits.push(T[t]); });
       g.prize = bits.join(" · "); if (g === st && ov) view();
     } catch (_) { /* hors ligne ou fonctions non déployées : la partie reste jouable, elle n'est simplement pas enregistrée */ }
@@ -174,7 +174,7 @@
     if (deckCars.length !== cfg.deck.length) cfg.deck = deckCars.map((c) => c.id);
     const q = pickQ.trim().toLowerCase();
     const list = picking ? mine.filter((c) => !q || (c.brand + " " + c.model).toLowerCase().includes(q)).sort((a, b) => (a.brand + a.model).localeCompare(b.brand + b.model)).slice(0, 60) : [];
-    const RL = { common: "Commune", rare: "Rare", epic: "Épique", legendary: "Légendaire" };
+    const RL = { common: "Série", rare: "Sport", epic: "Élite", legendary: "Prestige", shiny: "Apex", mythic: "Héritage" };
     const last = (bt.last || []).slice(0, 15).map((x) => { const d = new Date(x.t); const dt = d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }); return `<div><span>${esc(dt)} · IA ${esc((LEVELS[x.lv] || LEVELS.normal).label.toLowerCase())}${x.dl ? " · défi du jour" : ""}</span><b class="${x.r === "w" ? "w" : x.r === "l" ? "l" : ""}">${x.me} – ${x.ai} ${x.r === "w" ? "Victoire" : x.r === "l" ? "Défaite" : "Nul"}</b></div>`; }).join("");
     ov.querySelector(".bt").innerHTML = `<div class="bts">
       <div class="bts-sec"><h3>Niveau de l'IA</h3><div class="seg" role="group" aria-label="Niveau de l'IA">${Object.keys(LEVELS).map((k) => `<button type="button" data-su-level="${k}" class="${cfg.level === k ? "on" : ""}">${LEVELS[k].label}</button>`).join("")}</div>

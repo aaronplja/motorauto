@@ -241,7 +241,7 @@
     if (!doc || !C.user) return "";
     const ready = doc.wheelDay !== day();
     return `<section class="cg-block cg-wheelblk" aria-label="Roue du jour"><header class="cg-bh"><h3>Roue du jour</h3><span class="cg-sub">1 tour gratuit par jour · ${ready ? "prêt !" : "reviens dans <b data-nextday>" + leftToday() + "</b>"}</span></header>
-      <div class="wh-row"><span class="wh-mini" aria-hidden="true">🎡</span><p class="tcg-hint">Cristaux, pack bonus, gel de série, points de saison… et parfois une carte rare ou épique.</p><button type="button" class="cta-btn fill-btn" data-wheel ${ready && !busy ? "" : "disabled"}>${ready ? "Tourner la roue" : "Déjà tournée"}</button></div></section>`;
+      <div class="wh-row"><span class="wh-mini" aria-hidden="true">🎡</span><p class="tcg-hint">Cristaux, pack bonus, gel de série, points de saison… et parfois une carte Sport ou Élite.</p><button type="button" class="cta-btn fill-btn" data-wheel ${ready && !busy ? "" : "disabled"}>${ready ? "Tourner la roue" : "Déjà tournée"}</button></div></section>`;
   }
   function wheelOpen() {
     if (busy || !C.requireLogin()) return;
@@ -357,7 +357,7 @@
   async function craft(id) {
     if (busy || !C.requireLogin()) return;
     const car = cardObj(id); if (!car) return;
-    const cost = RAR[rarityOf(car)].craft; if (!cost) { C.toast("Une carte Légende se gagne en complétant un album.", "err"); return; }
+    const cost = RAR[rarityOf(car)].craft; if (!cost) { C.toast("Une carte Héritage se gagne en complétant un album.", "err"); return; }
     if (!await window.MA.confirm(`Fabriquer « ${car.brand} ${car.model} » pour ${cost} cristaux ?`, { ok: "Confirmer", danger: false })) return;
     busy = true;
     try {
@@ -626,7 +626,7 @@
   }
 
   // ------------------------------------------------------------------ page « Cartes » : deux onglets (Boutique / Mes cartes)
-  let cview = "all", rarSel = "", ctab = "mine", albumKind = store.get("ma_cards_albums", "country"), countryFilter = "all", minPower = 0;
+  let cview = "all", rarSel = "", ctab = "mine", albumKind = store.get("ma_cards_albums", "country"), countryFilter = "all", minPower = 0, icFilter = "all", ipFilter = "all";
   let claims = null, claimsUid = "", showcase = null, showcaseUid = "", setsSig = "", setsList = [];
   const dust$ = (n) => `${n} ${window.MA.dustIcon(14)}`;
   const lvOf = (id) => (doc && doc.lv && doc.lv[id]) || 1;
@@ -675,7 +675,7 @@
     const dust = doc.dust, cost = free ? 0 : o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
     const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
     const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>3 cartes</em>
-</span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : p.id === "prestige" ? "épique ou mieux" : "");
+</span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : p.id === "prestige" ? "Élite ou mieux" : "");
     const lack = dust < cost, price = free ? `<b>Offert ×${doc.prestigeFree}</b> 🎄` : o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
     return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}${o.cost != null ? " promo" : ""}" data-pack="shop" data-shop="${p.id}"${o.offer ? ` data-offer="1"` : ""} ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${cost} cristaux">
       ${o.cost != null ? `<span class="cg-ribbon">-${G.OFFER_PCT} %</span>` : ""}<span class="cg-art" ${st}>${art}</span>
@@ -729,9 +729,18 @@
     const kinds = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté" };
     const bar = (n, tot, lbl, cls) => `<div class="pity ${cls}"><div class="pity-t"><b>${n === 1 ? "Le prochain pack" : "Plus que " + n + " packs"}</b><small>${lbl}</small></div><span class="pity-bar" aria-hidden="true"><u style="width:${Math.round(100 * (tot - n) / tot)}%"></u></span></div>`;
     return `${window.MAAcc.o("pity", "Chance garantie", "sur les packs du jour et les packs bonus", false, "cg-block cg-pity", "Chance garantie et historique")}
-      ${bar(toRare, G.PITY.rare, "contient une carte rare ou mieux, garantie", "rare")}${bar(toEpic, G.PITY.epic, "contient une carte épique ou mieux, garantie", "epic")}${bar(toLeg, G.PITY.legend, "contient une carte légendaire ou mieux, garantie", "legendary")}
+      ${bar(toRare, G.PITY.rare, "contient une carte Sport ou mieux, garantie", "rare")}${bar(toEpic, G.PITY.epic, "contient une carte Élite ou mieux, garantie", "epic")}${bar(toLeg, G.PITY.legend, "contient une carte légendaire ou mieux, garantie", "legendary")}
       <div class="pity-stats"><div><b>${all}</b><small>packs ouverts</small></div>${bc && br ? `<div class="pity-best"><b class="${best[1]}">${br.label}</b><small>meilleure pioche : ${C.esc((bc.brand || "") + " " + (bc.model || ""))}</small></div>` : `<div><b>–</b><small>meilleure pioche</small></div>`}</div>
       ${log.length ? `<details class="pity-log"><summary>Historique des derniers packs</summary><ul>${log.map((l) => { const c = cardObj(l.id), rr = RAR[l.r]; return `<li><span class="pl-d">${C.esc(String(l.t || "").slice(5).split("-").reverse().join("/"))}</span><span class="pl-k">${kinds[l.k] || "Pack"}</span><span class="pl-r tcg-rar-chip ${l.r}">${rr ? rr.label : l.r}</span><span class="pl-c">${c ? C.esc((c.brand || "") + " " + (c.model || "")) : ""}</span></li>`; }).join("")}</ul></details>` : ""}${window.MAAcc.c}`;
+  }
+  /** taux de drop réels d'un pack (mêmes calculs que le tirage), par IC et par IP */
+  function dropRatesHtml() {
+    if (!rarityMap || !G.dropTable) return "";
+    let t; try { t = G.dropTable(rarityMap, C.cars.map((c) => c.id), 1); } catch (e) { return ""; }
+    const pc = (v) => (v * 100 >= 10 ? (v * 100).toFixed(0) : (v * 100).toFixed(1)).replace(".", ",") + " %";
+    const max = (a) => Math.max.apply(null, a.map((x) => x.p)) || 1;
+    const rows = (a, col, cls) => a.map((x) => `<div class="dr-row"><span class="dr-chip ${cls}" style="background:${col[x.k] || "#888"}">${x.k}</span><i class="dr-bar"><b style="width:${Math.max(2, Math.round((x.p / max(a)) * 100))}%;background:${col[x.k] || "#888"}"></b></i><em>${pc(x.p)}</em></div>`).join("");
+    return `${window.MAAcc.o("droprates", "Taux de drop", "Chaque carte tire un IC et un IP séparément · les cartes Héritage ne sortent jamais d'un pack", false, "cg-block", "Taux de drop")}<div class="dr-grid"><section><h4>IC · Collection</h4>${rows(t.ic, IC_COL, "ic")}</section><section><h4>IP · Performance</h4>${rows(t.ip, IP_COL, "ip")}</section></div>${window.MAAcc.c}`;
   }
   function shopHtml() {
     const rows = packRows(), canDaily = doc.lastPack !== day();
@@ -740,7 +749,7 @@
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
         ${adventBtnHtml()}
       </div>${wheelHtml()}${adventHtml()}${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
-      ${window.MAAcc.o("packs", "Packs par pays", "3 voitures du pays, dont 1 rare ou mieux · Circuit : 3 circuits · Prestige : épique ou mieux · les doublons rapportent des cristaux", true, "cg-block", "Packs par pays")}<div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div>${window.MAAcc.c}`;
+      ${dropRatesHtml()}${window.MAAcc.o("packs", "Packs par pays", "3 voitures du pays, dont 1 Sport ou mieux · Circuit : 3 circuits · Prestige : Élite ou mieux · les doublons rapportent des cristaux", true, "cg-block", "Packs par pays")}<div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div>${window.MAAcc.c}`;
   }
 
   // ----- Mes cartes
@@ -794,7 +803,7 @@
         <span class="ab-top"><b>${C.esc(s.name)}</b><em class="ab-pct">${p}<small>%</small></em></span>
         <span class="ab-track" aria-hidden="true"><u style="width:${p}%"></u></span>
         <span class="ab-sub"><span>${s.have} / ${s.ids.length}</span><span>${s.done ? "✓ Terminé" : s.full ? "À récupérer !" : "encore " + left}</span></span>
-        <span class="ab-foot"><span>${s.done ? "" : "+" + s.reward + " ◆"}</span>${leg ? `<span class="ab-leg${got ? " got" : ""}" title="Carte Légende : ${got ? C.esc(leg.brand + " " + leg.model) : "à découvrir"}">${got ? "Légende obtenue" : "Légende à gagner"}</span>` : ""}</span></button>`;
+        <span class="ab-foot"><span>${s.done ? "" : "+" + s.reward + " ◆"}</span>${leg ? `<span class="ab-leg${got ? " got" : ""}" title="Carte Héritage : ${got ? C.esc(leg.brand + " " + leg.model) : "à découvrir"}">${got ? "Légende obtenue" : "Légende à gagner"}</span>` : ""}</span></button>`;
     };
     return `${ready.length ? `<div class="cg-acc-act"><button type="button" class="cta-btn fill-btn compact-btn" data-set-claim ${busy ? "disabled" : ""}>Récupérer ${dust$(ready.reduce((t, s) => t + s.reward, 0))}</button></div>` : ""}${window.MAAcc.o("albums", "Albums", sets.filter((s) => s.done).length + " / " + sets.length + " terminés" + (ready.length ? " · " + ready.length + " à récupérer" : ""), ready.length > 0, "cg-block cg-albums", "Albums")}
       <div class="seg cg-seg" role="group" aria-label="Type d'album">${Object.keys(kindLabel).map((k) => `<button type="button" data-akind="${k}" aria-pressed="${k === albumKind}">${kindLabel[k]}</button>`).join("")}</div>
@@ -813,7 +822,7 @@
     return `<div class="ab3-hero"><div class="ab3-ring" style="--p:${p}%"><b>${p}<small>%</small></b><span>${have} / ${cars.length}</span></div>
       <div class="ab3-info">${state}
         <span class="ab3-meter" aria-hidden="true"><u style="width:${p}%"></u>${marks}</span>
-        <div class="ab3-rewards"><span class="ab3-rw">◆ ${s.reward} cristaux</span>${leg ? `<span class="ab3-rw leg">★ Carte Légende</span>` : ""}</div></div></div>
+        <div class="ab3-rewards"><span class="ab3-rw">◆ ${s.reward} cristaux</span>${leg ? `<span class="ab3-rw leg">★ Carte Héritage</span>` : ""}</div></div></div>
       <div class="ab3-rars" role="group" aria-label="Raretés">${rows}</div>
       <div class="ab3-filt" role="group" aria-label="Filtrer">${[["all", "Toutes", cars.length], ["missing", "Manquantes", left], ["owned", "Possédées", have]].map(([k, l, n]) => `<button type="button" class="${albumFilt === k ? "on" : ""}" data-afilt="${k}" aria-pressed="${albumFilt === k}">${l} <em>${n}</em></button>`).join("")}</div>`;
   }
@@ -832,7 +841,7 @@
       <header class="ab3-bar"><button type="button" class="ab3-back" data-close aria-label="Retour">‹</button><div><small>${C.esc(kindLabel[s.kind] || "Album")}</small><h2>${C.esc(s.name)}</h2></div></header>
       <div id="ab-head">${albumHead(cars, s, done, leg)}</div>
       <div class="ab3-grid" id="cg-album-grid">${albumPage(cars)}</div>
-      ${leg ? `<section class="ab3-legend"><h3>★ Récompense : carte Légende</h3><p>${countOf(leg.id) > 0 ? "Tu l'as déjà obtenue." : "Termine l'album pour l'obtenir."}</p><div class="cg-legend-slot">${cardHtml(leg, { owned: countOf(leg.id) > 0, count: 0, lv: lvOf(leg.id) })}</div></section>` : ""}
+      ${leg ? `<section class="ab3-legend"><h3>★ Récompense : carte Héritage</h3><p>${countOf(leg.id) > 0 ? "Tu l'as déjà obtenue." : "Termine l'album pour l'obtenir."}</p><div class="cg-legend-slot">${cardHtml(leg, { owned: countOf(leg.id) > 0, count: 0, lv: lvOf(leg.id) })}</div></section>` : ""}
       <div class="ab3-dock">${full && !done ? `<button type="button" class="cta-btn fill-btn" data-set-claim>Récupérer la récompense</button>` : ""}<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div>`);
     const redraw = () => { const g = o.querySelector("#cg-album-grid"), h = o.querySelector("#ab-head"); if (g) g.innerHTML = albumPage(cars); if (h) h.innerHTML = albumHead(cars, s, done, leg); };
     o.addEventListener("click", (e) => {
@@ -850,7 +859,7 @@
       const r = await API("claimSets", {});
       claims = r.done || claims; applyDoc(r.doc);
       if (r.claimed && r.claimed.length) {
-        C.toast("Album complété : " + r.claimed.map((x) => x.name).join(", ") + " · +" + r.total + " cristaux" + (r.legends && r.legends.length ? " · carte Légende obtenue !" : ""), "ok");
+        C.toast("Album complété : " + r.claimed.map((x) => x.name).join(", ") + " · +" + r.total + " cristaux" + (r.legends && r.legends.length ? " · carte Héritage obtenue !" : ""), "ok");
         if (r.legends && r.legends.length) { buzz([30, 40, 60]); const lg = cardObj(r.legends[0]); if (lg) { busy = false; if (fromOverlay) closeOverlay(); showDetail(lg.id, [], {}); return; } }
       } else C.toast("Aucun album à récupérer.", "ok");
       if (fromOverlay) closeOverlay();
@@ -907,6 +916,7 @@
   let sortBy = store.get("ma_cards_sort", "num"), view = store.get("ma_cards_view", "grid");
   const zeroKey = (c) => Number(c.stats.zero) || 99;
   const COLL_FR = new Intl.Collator("fr");
+  const ixN = (c, k) => { const x = G.indexOf(c.id); return x ? x[k] : -1; };
   function sortList(list) {
     const byNum = (a, b) => (numberOf(a) || (a.circuit ? 9000 : 0)) - (numberOf(b) || (b.circuit ? 9000 : 0)) || String(a.id).localeCompare(String(b.id));
     const cmp = {
@@ -916,6 +926,8 @@
       speed: (a, b) => b.stats.speed - a.stats.speed || byNum(a, b),
       zero: (a, b) => zeroKey(a) - zeroKey(b) || byNum(a, b),
       brand: (a, b) => COLL_FR.compare(a.brand, b.brand) || COLL_FR.compare(a.model, b.model) || byNum(a, b),
+      ic: (a, b) => ixN(b, "icN") - ixN(a, "icN") || ixN(b, "ipN") - ixN(a, "ipN") || byNum(a, b),
+      ip: (a, b) => ixN(b, "ipN") - ixN(a, "ipN") || ixN(b, "icN") - ixN(a, "icN") || byNum(a, b),
       owned: (a, b) => countOf(b.id) - countOf(a.id) || byNum(a, b),
       level: (a, b) => lvOf(b.id) - lvOf(a.id) || byNum(a, b),
       year: (a, b) => (G.yearOf(a) || 9999) - (G.yearOf(b) || 9999) || byNum(a, b),
@@ -934,6 +946,7 @@
       if (filter === "dups" && n < 2) return false;
       if (filter === "wish" && !(wish || []).includes(c.id)) return false;
       if (rarFilter !== "all" && rarityOf(c) !== rarFilter) return false;
+      if (icFilter !== "all" || ipFilter !== "all") { const x = G.indexOf(c.id); if (!x || (icFilter !== "all" && x.ic !== icFilter) || (ipFilter !== "all" && x.ip !== ipFilter)) return false; }
       if (countryFilter !== "all" && !c.circuit && G.countryOf(c.brand) !== countryFilter) return false;
       if (minPower && !c.circuit && c.stats.power < minPower) return false;
       return !q || C.normalize(c.brand + " " + c.model).includes(q);
@@ -958,12 +971,12 @@
   function renderGrid() {
     const el = document.getElementById("tcg-grid"); if (!el || !doc) return;
     curList = visibleList();
-    const sig = [filter, rarFilter, countryFilter, minPower, sortBy, query, view].join("|");
+    const sig = [filter, rarFilter, icFilter, ipFilter, countryFilter, minPower, sortBy, query, view].join("|");
     if (sig !== gridSig) { gridSig = sig; gridPage = 0; }
     if (gridPage * PAGE >= curList.length) gridPage = Math.max(0, Math.ceil(curList.length / PAGE) - 1);
     const cnt = document.getElementById("tcg-count"); if (cnt) cnt.textContent = curList.length + " carte" + (curList.length > 1 ? "s" : "");
     el.className = "tcg-grid" + (view === "compact" ? " compact" : view === "binder" ? " binder" : "");
-    const sp = Array.from(specials.values()).filter((s) => (filter === "all" ? (countOf(s.id) > 0 || (s.claimable && s.active !== false)) : filter === "owned" ? countOf(s.id) > 0 : false) && rarFilter === "all" && countryFilter === "all" && !minPower && sortBy === "num");
+    const sp = Array.from(specials.values()).filter((s) => (filter === "all" ? (countOf(s.id) > 0 || (s.claimable && s.active !== false)) : filter === "owned" ? countOf(s.id) > 0 : false) && rarFilter === "all" && icFilter === "all" && ipFilter === "all" && countryFilter === "all" && !minPower && sortBy === "num");
     const sn = seenSet();
     el.innerHTML = sp.length && !query ? `<div class="tcg-sec">✦ Éditions limitées</div>${sp.map((s) => cardHtml(cardObj(s.id), { owned: countOf(s.id) > 0, count: countOf(s.id), isNew: countOf(s.id) > 0 && !sn.has(s.id), lv: lvOf(s.id) })).join("")}<div class="tcg-sec">Catalogue</div>` : "";
     if (!curList.length) { el.insertAdjacentHTML("beforeend", `<div class="empty-note tcg-empty">Aucune carte pour ce filtre.</div>`); return; }
@@ -975,9 +988,10 @@
     const c = document.getElementById("cards-country"); if (c) c.value = countryFilter;
     const m = document.getElementById("cards-minp"); if (m) m.value = String(minPower);
     const r = document.getElementById("cards-rar"); if (r) r.value = rarFilter;
+    const ci = document.getElementById("cards-ic"); if (ci) ci.value = icFilter; const cp = document.getElementById("cards-ip"); if (cp) cp.value = ipFilter;
     document.querySelectorAll("#cards-root [data-cf]").forEach((b) => { const on = b.dataset.cf === filter; b.classList.toggle("active", on); b.setAttribute("aria-pressed", String(on)); });
     const fs = document.querySelector('#cards-root details[data-acc="filters"] .acc-t small');
-    if (fs) { const n = (rarFilter !== "all") + (countryFilter !== "all") + (minPower > 0) + (sortBy !== "num") + (filter !== "all"); fs.textContent = n ? n + " actif" + (n > 1 ? "s" : "") + " · rareté, pays, puissance, tri, affichage" : "rareté, pays, puissance, tri, affichage"; }
+    if (fs) { const n = (rarFilter !== "all") + (icFilter !== "all") + (ipFilter !== "all") + (countryFilter !== "all") + (minPower > 0) + (sortBy !== "num") + (filter !== "all"); fs.textContent = n ? n + " actif" + (n > 1 ? "s" : "") + " · rareté, pays, puissance, tri, affichage" : "échelon, IC, IP, pays, puissance, tri, affichage"; }
   }
 
   // ------------------------------------------------------------------ Atelier : on choisit des cartes, la barre du bas propose les actions possibles
@@ -1103,11 +1117,13 @@
         <div id="cg-mine" role="tabpanel" hidden><div id="cg-mine-top"></div>
           <section class="cg-block" aria-label="Collection"><header class="cg-bh"><h3>Collection</h3><button type="button" class="cg-recycle at-toggle" data-atelier-toggle aria-pressed="false">Sélectionner</button><button type="button" class="cg-recycle" data-recycle>♻️ Recycler</button><span class="tcg-count" id="tcg-count" aria-live="polite"></span></header>
             <div class="cg-tools"><input type="search" id="cards-search" placeholder="Rechercher une carte…" aria-label="Rechercher une carte" value="${C.esc(query)}" autocomplete="off"></div>
-            ${window.MAAcc.o("filters", "Trier et filtrer", "rareté, pays, puissance, tri, affichage", false, "cg-filters")}<div class="cg-tools cg-tools-sel">
-              <select id="cards-rar" aria-label="Rareté"><option value="all">Toutes raretés</option>${ORDER.map((r) => `<option value="${r}">${RAR[r].label}</option>`).join("")}</select>
+            ${window.MAAcc.o("filters", "Trier et filtrer", "échelon, IC, IP, pays, puissance, tri, affichage", false, "cg-filters")}<div class="cg-tools cg-tools-sel">
+              <select id="cards-rar" aria-label="Échelon"><option value="all">Tous échelons</option>${ORDER.map((r) => `<option value="${r}">${RAR[r].label}</option>`).join("")}</select>
+              <select id="cards-ic" aria-label="Indice de collection"><option value="all">Tous IC</option>${G.IC_LEVELS.map((k) => `<option value="${k}">IC ${k}</option>`).join("")}</select>
+              <select id="cards-ip" aria-label="Indice de performance"><option value="all">Tous IP</option>${G.IP_LEVELS.map((k) => `<option value="${k}">IP ${k}</option>`).join("")}</select>
               <select id="cards-country" aria-label="Pays"><option value="all">Tous pays</option>${countries}</select>
               <select id="cards-minp" aria-label="Puissance minimale">${[[0, "Toute puissance"], [150, "150 ch et +"], [300, "300 ch et +"], [500, "500 ch et +"], [800, "800 ch et +"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
-              <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : rareté"], ["owned", "Tri : doublons d'abord"], ["level", "Tri : niveau"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"], ["year", "Tri : année (anciennes)"], ["yeard", "Tri : année (récentes)"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
+              <select id="cards-sort" aria-label="Trier par">${[["num", "Tri : numéro"], ["rar", "Tri : échelon"], ["ic", "Tri : IC"], ["ip", "Tri : IP"], ["owned", "Tri : doublons d'abord"], ["level", "Tri : niveau"], ["power", "Tri : puissance"], ["speed", "Tri : vitesse"], ["zero", "Tri : 0 à 100"], ["brand", "Tri : marque"], ["year", "Tri : année (anciennes)"], ["yeard", "Tri : année (récentes)"]].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select></div>
             <div class="chip-row" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["owned", "Possédées"], ["missing", "Manquantes"], ["dups", "Doublons"], ["wish", "★ Wishlist"], ["circuits", "🏁 Circuits et livrées"]].map(([k, l]) => `<button type="button" class="chip" data-cf="${k}">${l}</button>`).join("")}
               <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"], ["binder", "Classeur"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>${window.MAAcc.c}
             <div class="tcg-grid" id="tcg-grid"></div></section></div></div>`;
@@ -1231,7 +1247,9 @@
     document.addEventListener("toggle", (e) => { const d = e.target; if (d && d.matches && d.matches(".tcg-album") && d.open) fillAlbum(d); }, true);
     document.addEventListener("input", (e) => { if (e.target.id === "cards-search") { query = e.target.value; renderGrid(); } });
     document.addEventListener("change", (e) => {
-      if (e.target.id === "cards-rar") { rarFilter = e.target.value; renderGrid(); }
+      if (e.target.id === "cards-ic") { icFilter = e.target.value; renderGrid(); }
+      else if (e.target.id === "cards-ip") { ipFilter = e.target.value; renderGrid(); }
+      else if (e.target.id === "cards-rar") { rarFilter = e.target.value; renderGrid(); }
       else if (e.target.id === "cards-country") { countryFilter = e.target.value; renderGrid(); }
       else if (e.target.id === "cards-minp") { minPower = Number(e.target.value) || 0; renderGrid(); }
       else if (e.target.id === "cards-sort") { sortBy = e.target.value; store.set("ma_cards_sort", sortBy); renderGrid(); }

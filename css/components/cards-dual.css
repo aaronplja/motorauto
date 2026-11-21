@@ -23,3 +23,13 @@
 /* Héritage : double filet or brossé et carbone, reflet discret (les deux indices restent affichés) */
 .tcg-mythic.tcg-dual { box-shadow: 0 0 0 2px #d9b24a, 0 0 0 4.5px #1b1b1b, 0 0 0 6px #c99a2e, 0 0 22px rgba(212, 166, 42, .4); }
 .tcg-mythic.tcg-dual .tcg-diag { background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, .16) 48%, rgba(255, 255, 255, .05) 54%, transparent 62%), linear-gradient(135deg, color-mix(in srgb, var(--ic) 30%, transparent) 0 49.4%, rgba(255, 255, 255, .45) 49.4% 50.6%, color-mix(in srgb, var(--ip) 30%, transparent) 50.6% 100%); }
+
+/* taux de drop (boutique) */
+.dr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.dr-grid section{background:var(--surface,#fffdf8);border:1px solid var(--line,rgba(22,35,28,.14));border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:7px}
+.dr-grid h4{margin:0 0 2px;font-size:14px}
+.dr-row{display:flex;align-items:center;gap:10px}
+.dr-chip{min-width:30px;height:20px;padding:0 6px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.dr-bar{flex:1;height:7px;border-radius:999px;background:rgba(127,127,127,.18);overflow:hidden;display:block}
+.dr-bar b{display:block;height:100%;border-radius:999px}
+.dr-row em{width:46px;text-align:right;font-style:normal;font-size:12px;font-weight:600}

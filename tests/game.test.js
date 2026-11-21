@@ -42,7 +42,12 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
   const draws = { common: 0, rare: 0, epic: 0, legendary: 0 }; const ids = pool.map((c) => c.id); let tot = 0;
   for (let i = 0; i < 20000; i++) core.drawPack(r1, ids, rng, false).forEach((id) => { draws[r1.get(id)]++; tot++; });
   const eo = core.oddsOf(r1);   // les probabilités suivent le nombre de cartes de chaque rareté
-  ok(Math.abs(draws.common / tot - eo.common) < 0.02 && Math.abs(draws.rare / tot - eo.rare) < 0.02 && Math.abs(draws.epic / tot - eo.epic) < 0.015 && Math.abs(draws.legendary / tot - eo.legendary) < 0.01, "probabilités de tirage " + JSON.stringify({ c: (draws.common / tot).toFixed(3), r: (draws.rare / tot).toFixed(3), e: (draws.epic / tot).toFixed(3), l: (draws.legendary / tot).toFixed(3) }));
+  { const tb = core.dropTable(r1, ids, 1), ic = {}, ip = {}; let t2 = 0;
+    for (let i = 0; i < 20000; i++) core.drawPack(r1, ids, rng, false, false, false).forEach((id) => { const x = core.indexOf(id); ic[x.ic] = (ic[x.ic] || 0) + 1; ip[x.ip] = (ip[x.ip] || 0) + 1; t2++; });
+    ok(tb.ic.every((x, k) => Math.abs((ic[x.k] || 0) / t2 - x.p) < 0.012) && tb.ip.every((x, k) => Math.abs((ip[x.k] || 0) / t2 - x.p) < 0.012), "les tirages suivent le tableau des taux IC / IP annoncé");
+    ok(Math.abs(tb.ic.reduce((s, x) => s + x.p, 0) - 1) < 1e-9 && Math.abs(tb.ip.reduce((s, x) => s + x.p, 0) - 1) < 1e-9, "taux IC et IP : somme = 100 %");
+    ok(draws.common / tot > 0.4 && (draws.legendary / tot) < 0.08, "échelons tirés : majorité de Série, Prestige rare"); }
+  { let her = 0; for (let i = 0; i < 3000; i++) core.drawPack(r1, ids, rng, true, true, true).forEach((id) => { if (r1.get(id) === "mythic") her++; }); ok(her === 0, "aucune carte Héritage ne sort d'un pack"); }
   let pityBad = 0; for (let i = 0; i < 3000; i++) if (!core.drawPack(r1, ids, rng, true).some((id) => r1.get(id) !== "common")) pityBad++;
   ok(pityBad === 0, "le 10e pack contient toujours une carte au moins rare");
 

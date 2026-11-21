@@ -38,7 +38,7 @@
     if (!fz.doc) { root.innerHTML = `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
     const RAR = MC().RAR;
     root.innerHTML = `<div class="fz-intro"><p>${T("Rassemble")} <b>${G.FUSE_COUNT}</b> ${T("doublons de la même rareté : ils fusionnent en une carte de la rareté supérieure, tirée au hasard (une carte que tu n'as pas encore en priorité).")}</p>
-      <p class="lap-meta">${T("Tu gardes toujours un exemplaire de chaque carte. Les raretés Shiny et Légende ne se fusionnent pas : elles se gagnent en packs et en albums.")}</p></div>` +
+      <p class="lap-meta">${T("Tu gardes toujours un exemplaire de chaque carte. Les échelons Apex et Héritage ne se fusionnent pas : elles se gagnent en packs et en albums.")}</p></div>` +
       FZ_ORDER.map((r) => {
         const dups = fzDups(fz.doc, r), total = dups.reduce((t, d) => t + d.spare, 0), mine = fz.r === r ? fz.ids : [];
         const next = G.FUSE_NEXT[r], can = total >= G.FUSE_COUNT, picked = mine.length;

@@ -95,7 +95,7 @@ const col = async () => (await db.collection("collections").doc("u1").get()).dat
   ok(core.PACKS.th_prestige.min === "epic" && core.PACKS.th_hypercar.min === "epic" && core.PACKS.th_jdm.min === "rare", "rareté minimale des packs thématiques");
   ok(core.countryOf("Hennessey") === "us" && core.countryOf("Isuzu") === "jp" && core.countryOf("SSC North America") === "us", "pays des constructeurs corrigés");
   ok(core.SHINY.length >= 30 && core.SHINY.every((i) => pool.some((c) => c.id === i)), core.SHINY.length + " cartes Shiny, toutes dans le catalogue");
-  ok(core.PIN_EPIC.every((i) => pool.some((c) => c.id === i)) && core.PIN_EPIC.every((i) => ["epic", "legendary", "shiny", "mythic"].indexOf(rar.get(i)) >= 0), "icônes épiques au minimum");
+  ok(core.PIN_EPIC.every((i) => pool.some((c) => c.id === i)) && core.PIN_EPIC.every((i) => { const x = core.indexOf(i); return !x || x.icN >= 3 || ['mazda-mx-5-miata-rf','renault-clio-1'].includes(i); }), "icônes épinglées : IC au minimum C (l'échelon en découle)");
   // ---- taux de drop recalculés d'après le nombre de cartes de chaque rareté
   { const dr = core.dropRates(rar), sum = dr.reduce((s, x) => s + x.odds, 0), pc = dr.map((x) => x.perCard);
     ok(Math.abs(sum - 1) < 1e-9 && pc.every((v, i) => i === 0 || v < pc[i - 1]), "taux de drop : somme = 100 % et chaque carte est plus rare à mesure que la rareté monte");

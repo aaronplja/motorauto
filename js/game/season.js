@@ -20,7 +20,7 @@
   function tierHtml(t, sn, tier) {
     const r0 = G.passReward(t), cs = (doc() && doc().cosm) || [], got = sn.claimed.indexOf(t) >= 0, r = Object.assign({}, r0, { frame: r0.frame ? G.shownVariant(cs, "f", r0.frame, got) : "", title: r0.title ? G.shownVariant(cs, "t", r0.title, got) : "" }), can = !got && tier >= t, big = r.frame || r.title || r.bonus || r.freeze || r.epic || r.circuit || r.choice;
     const icons = (r.choice ? "★ " : "") + (r.epic ? "💜 " : "") + (r.circuit ? "🏁 " : "") + (r.bonus ? "🎁 " : "") + (r.freeze ? "❄ " : "") + (r.frame ? "🖼 " : "") + (r.title ? "🎖 " : "") + (r.dust ? "◆ " : "");
-    const head = r.choice ? T("Légendaire au choix") : r.epic ? T("Carte Épique") : r.circuit ? T("Carte Circuit") : r.bonus ? (r.bonus > 1 ? r.bonus + " " + T("packs bonus") : T("Pack bonus")) : r.freeze ? T("Gel de série") : r.frame ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : r.title ? T("Titre") : "+" + r.dust + " " + T("cristaux");
+    const head = r.choice ? T("Prestige au choix") : r.epic ? T("Carte Élite") : r.circuit ? T("Carte Circuit") : r.bonus ? (r.bonus > 1 ? r.bonus + " " + T("packs bonus") : T("Pack bonus")) : r.freeze ? T("Gel de série") : r.frame ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : r.title ? T("Titre") : "+" + r.dust + " " + T("cristaux");
     const more = [r.dust && (r.choice || r.epic || r.bonus || r.freeze || r.frame || r.title) ? "+" + r.dust + " " + T("cristaux") : "", r.choice && r.frame ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : "", r.epic && r.title ? T("Titre") + " « " + T(G.TITLES[r.title].name) + " »" : "", r.choice && r.title ? T("Titre") + " « " + T(G.TITLES[r.title].name) + " »" : "", !r.choice && !r.epic && r.frame && r.bonus ? T("Cadre") + " " + T(G.FRAMES[r.frame].name) : "", r.title && !r.choice && !r.epic ? "« " + T(G.TITLES[r.title].name) + " »" : ""].filter(Boolean).join(" · ");
     return `<button type="button" class="ssn-tier ${got ? "got" : can ? "can" : "lock"}${big ? " big" : ""}" ${can ? `data-ssn-claim="${t}"` : "disabled"} title="${C.esc(T("Palier") + " " + t + " : " + G.passLabel(r0, cs, got))}">
       <i>${t}</i><span class="ssn-rw"><b>${C.esc(head)}</b>${more ? `<small>${C.esc(more)}</small>` : ""}</span><em>${got ? "✓" : can ? T("Récupérer") : icons.trim() ? "🔒" : "🔒"}</em></button>`;
@@ -54,11 +54,11 @@
       ${row("📅", "Visite du jour", P.visit, 1)}${row("🎯", "Valider un défi de la semaine", P.challenge, 1)}${row("📚", "Compléter un album", P.album, 1)}</ul>
       <small class="ssn-note">★ ${T("hors plafond quotidien")} · ${T("Les quêtes ne sont jamais plafonnées.")}</small></div>`;
   }
-  /** choix d'une Légendaire parmi trois (palier 30) */
+  /** choix d'une Prestige parmi trois (palier 30) */
   function pickLegend(tier, offer) {
     return new Promise((resolve) => {
       const M = window.MACards, ov = document.createElement("div"); ov.className = "ssn-pick";
-      ov.innerHTML = `<div class="ssn-pick-box" role="dialog" aria-modal="true" aria-label="${T("Choisis ta Légendaire")}"><h3>★ ${T("Choisis ta Légendaire")}</h3><p>${T("Une seule carte à garder parmi ces trois. Ton choix est définitif.")}</p>
+      ov.innerHTML = `<div class="ssn-pick-box" role="dialog" aria-modal="true" aria-label="${T("Choisis ta carte Prestige")}"><h3>★ ${T("Choisis ta carte Prestige")}</h3><p>${T("Une seule carte à garder parmi ces trois. Ton choix est définitif.")}</p>
         <div class="ssn-pick-grid">${offer.map((id) => { const c = M.cardObj(id); return c ? `<button type="button" class="ssn-pick-card" data-pick-id="${C.esc(id)}" aria-label="${C.esc((c.brand || "") + " " + (c.model || ""))}"><span>${M.cardHtml(c, { owned: true, count: 0, lv: 1 })}</span></button>` : ""; }).join("")}</div>
         <button type="button" class="cta-btn btn-ghost" data-pick-cancel>${T("Plus tard")}</button></div>`;
       document.body.appendChild(ov); requestAnimationFrame(() => ov.classList.add("on"));

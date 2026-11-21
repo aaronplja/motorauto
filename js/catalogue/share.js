@@ -50,7 +50,7 @@
   async function shareCard(car, rarityLabel, no) {
     const W = 1080, H = 1500, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const ctx = cv.getContext("2d"), accent = css("--accent", "#ef4444");
-    const rc = { Commune: "#94a3b8", Rare: "#3b82f6", "Épique": "#a855f7", "Légendaire": "#f59e0b", "Édition limitée": "#fbbf24" }[rarityLabel] || accent;
+    const rc = { Commune: "#94a3b8", Rare: "#3b82f6", "Épique": "#a855f7", "Légendaire": "#f59e0b", "Série": "#94a3b8", "Sport": "#3b82f6", "Élite": "#a855f7", "Prestige": "#f59e0b", "Apex": "#ec4899", "Héritage": "#fbbf24", "Édition limitée": "#fbbf24" }[rarityLabel] || accent;
     const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#0b0f19"); g.addColorStop(1, "#1f2937"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     ctx.lineWidth = 14; ctx.strokeStyle = rc; rr(ctx, 70, 70, W - 140, H - 280, 36); ctx.stroke();
     ctx.save(); rr(ctx, 84, 84, W - 168, 700, 28); ctx.clip();

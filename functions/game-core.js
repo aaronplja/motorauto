@@ -183,7 +183,7 @@
   function icOf(c, p) {
     const fix = IC_FIX[c.id]; if (fix) return IC_LEVELS.indexOf(fix);
     let n = p < 0.03 ? 5 : p < 0.10 ? 4 : p < 0.22 ? 3 : p < 0.42 ? 2 : p < 0.70 ? 1 : 0;
-    if (SHINY.indexOf(c.id) >= 0) n = Math.max(n, 4); else if (PIN_LEGENDARY.indexOf(c.id) >= 0) n = Math.max(n, 3); else if (PIN_EPIC.indexOf(c.id) >= 0) n = Math.max(n, 2);
+    if (SHINY.indexOf(c.id) >= 0) n = Math.max(n, 5); else if (PIN_LEGENDARY.indexOf(c.id) >= 0) n = Math.max(n, 4); else if (PIN_EPIC.indexOf(c.id) >= 0) n = Math.max(n, 3);
     return n;
   }
   /** échelon (0 à 4) : 65 % IC, 35 % IP, un palier tous les 20 % */
@@ -208,7 +208,7 @@
     const byId = new Map(list.map((c) => [c.id, c]));
     const idx = new Map();
     sorted.forEach((c, i) => {
-      const p = i / Math.max(1, sorted.length - 1), car = byId.get(c.id) || {}, ic = icOf(car, p), ip = ipOf(car), e = Math.max(echOf(ic, ip), SHINY.indexOf(c.id) >= 0 ? 4 : PIN_LEGENDARY.indexOf(c.id) >= 0 ? 3 : PIN_EPIC.indexOf(c.id) >= 0 ? 2 : 0);
+      const p = i / Math.max(1, sorted.length - 1), car = byId.get(c.id) || {}, ic = icOf(car, p), ip = ipOf(car), e = echOf(ic, ip);
       idx.set(c.id, { ic, ip, e });
       // l'échelon (0 à 4) reprend les identifiants historiques de rareté : toute l'économie (cristaux, fusion, marché, packs) continue de fonctionner
       map.set(c.id, LEGEND_IDS.indexOf(c.id) >= 0 ? "mythic" : ECH_RAR[e]);
@@ -242,15 +242,66 @@
   }
   /** tire un pack de 3 cartes ; tous les 10 packs une carte au moins « rare » est garantie, tous les 15 une « épique », et une « légendaire » après 30 packs sans légendaire */
   const PITY = { rare: 10, epic: 15, legend: 30 };
+  // ------------------------------------------------------------------ tirage par double indice (IC puis IP)
+  /** poids d'apparition (en %) de chaque niveau d'IC (F à Z) et d'IP (I à X) pour un pack standard */
+  const DROP_IC = [38, 26, 17, 10, 6, 2.6, 0.4], DROP_IP = [14, 17, 19, 18, 14, 9, 5, 2.5, 1, 0.5];
+  const ECH_MIN = { common: 0, rare: 1, epic: 2, legendary: 3, shiny: 4 };
+  /** poids d'un pack : « boost » > 1 favorise les niveaux élevés (packs Prestige et Hypercars) */
+  function dropWeights(boost) {
+    const b = boost || 1, w = (arr) => { const o = arr.map((v, i) => v * Math.pow(b, i)), t = o.reduce((x, y) => x + y, 0); return o.map((v) => v / t); };
+    return { ic: w(DROP_IC), ip: w(DROP_IP) };
+  }
+  /** voitures tirables rangées par case (IC, IP) ; les Héritage et les cartes sans indices n'y figurent jamais */
+  function dropGrid(rarities, ids, boost) {
+    const cells = {}, all = [];
+    ids.forEach((id) => {
+      if (rarities.get(id) === "mythic") return;
+      const x = lastIdx.get(id); if (!x) return;
+      (cells[x.ic + "_" + x.ip] = cells[x.ic + "_" + x.ip] || []).push(id); all.push(id);
+    });
+    const keys = Object.keys(cells).map((k) => k.split("_").map(Number));
+    const near = {};
+    /** voitures de la case visée, sinon des cases les plus proches (l'IC compte davantage que l'IP) */
+    const resolve = (ic, ip) => {
+      const k = ic + "_" + ip; if (near[k]) return near[k];
+      if (cells[k]) return (near[k] = cells[k]);
+      let best = 1e9, set = [];
+      keys.forEach(([c, p]) => { const d = (c > ic ? 3 : 1) * Math.abs(c - ic) + (p > ip ? 1.8 : 0.6) * Math.abs(p - ip); if (d < best - 1e-9) { best = d; set = [cells[c + "_" + p]]; } else if (Math.abs(d - best) < 1e-9) set.push(cells[c + "_" + p]); });
+      return (near[k] = [].concat.apply([], set));
+    };
+    return { cells, all, resolve, w: dropWeights(boost) };
+  }
+  const pickW = (rng, w) => { let x = rng(), i = 0; for (; i < w.length - 1; i++) { x -= w[i]; if (x < 0) break; } return i; };
+  /** une carte : IC puis IP tirés séparément ; si un échelon minimum est exigé, on retire (puis on prend au hasard parmi les cartes assez hautes) */
+  function drawOne(rarities, grid, rng, minEch, avoid) {
+    for (let k = 0; k < 24; k++) {
+      const set = grid.resolve(pickW(rng, grid.w.ic), pickW(rng, grid.w.ip));
+      if (!set.length) break;
+      const id = set[Math.floor(rng() * set.length)];
+      if ((ECH_MIN[rarities.get(id)] || 0) < (minEch || 0)) continue;
+      if (avoid && avoid.indexOf(id) >= 0 && k < 6) continue;
+      return id;
+    }
+    const high = grid.all.filter((id) => (ECH_MIN[rarities.get(id)] || 0) >= (minEch || 0));
+    const list = high.length ? high : grid.all;
+    return list[Math.floor(rng() * list.length)];
+  }
+  /** taux réels d'un pack, par IC et par IP (somme = 100 %), en tenant compte des cases vides ; sert à l'affichage */
+  function dropTable(rarities, ids, boost) {
+    const g = dropGrid(rarities, ids, boost), ic = IC_LEVELS.map(() => 0), ip = IP_LEVELS.map(() => 0);
+    for (let a = 0; a < 7; a++) for (let b = 0; b < 10; b++) {
+      const w = g.w.ic[a] * g.w.ip[b], set = g.resolve(a, b); if (!set.length) continue;
+      set.forEach((id) => { const x = lastIdx.get(id); ic[x.ic] += w / set.length; ip[x.ip] += w / set.length; });
+    }
+    const t = ic.reduce((x, y) => x + y, 0) || 1;
+    return { ic: IC_LEVELS.map((k, i) => ({ k, p: ic[i] / t })), ip: IP_LEVELS.map((k, i) => ({ k, p: ip[i] / t })) };
+  }
   function drawPack(rarities, ids, rng, pity, epicPity, legendPity) {
     ids = ids.filter((id) => rarities.get(id) !== "mythic");
-    const by = {}; ORDER.forEach((r) => { by[r] = []; });
-    ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
-    const pick = (r) => { const list = by[r].length ? by[r] : (r === "shiny" && by.legendary.length ? by.legendary : ids); return list[Math.floor(rng() * list.length)]; };
+    const grid = dropGrid(rarities, ids, 1);
+    if (!grid.all.length) { const out0 = []; for (let i = 0; i < 3; i++) out0.push(ids[Math.floor(rng() * ids.length)]); return out0; }
     const out = [];
-    const od = oddsOf(rarities);
-    for (let i = 0; i < 3; i++) out.push(pick(pickRarity(rng, i === 2 ? (legendPity ? "legendary" : epicPity ? "epic" : pity ? "rare" : null) : null, od)));
-    if (pity && !out.some((id) => rarities.get(id) !== "common")) out[2] = pick("rare");
+    for (let i = 0; i < 3; i++) out.push(drawOne(rarities, grid, rng, i === 2 ? (legendPity ? 3 : epicPity ? 2 : pity ? 1 : 0) : 0, out));
     return out;
   }
 
@@ -469,21 +520,11 @@
   const SHOP_PACK = { cost: PACKS.world.cost, cards: 3 };
   function drawShopPack(rarities, ids, rng, min, n) {
     ids = ids.filter((id) => rarities.get(id) !== "mythic");
-    const by = {}; ORDER.forEach((r) => { by[r] = []; });
-    ids.forEach((id) => { const r = rarities.get(id); if (by[r]) by[r].push(id); });
-    const pick = (r) => { const list = by[r] && by[r].length ? by[r] : ids; return list[Math.floor(rng() * list.length)]; };
-    // rareté minimale : si le pays n'a aucune carte assez rare, on prend la meilleure rareté disponible
-    const od = oddsOf(rarities);
-    let first = pick(pickRarity(rng, min || "rare", od));
-    if ((rarities.get(first) === "common") && ids.some((id) => rarities.get(id) !== "common")) {
-      const better = ids.filter((id) => rarities.get(id) !== "common"); first = better[Math.floor(rng() * better.length)];
-    }
-    const out = [first];
-    while (out.length < (n || 2)) {
-      let nx = pick(pickRarity(rng, null, od));
-      for (let k = 0; k < 6 && out.indexOf(nx) >= 0 && ids.length > out.length; k++) nx = pick(pickRarity(rng, null, od));   // évite le doublon dans le même pack quand c'est possible
-      out.push(nx);
-    }
+    const me = ECH_MIN[min || "rare"] || 0, grid = dropGrid(rarities, ids, me >= 2 ? 1.8 : 1);
+    if (!grid.all.length) { const out0 = []; for (let i = 0; i < (n || 2); i++) out0.push(ids[Math.floor(rng() * ids.length)]); return out0; }
+    // échelon minimal : si le pays n'a aucune carte assez haute, on prend la meilleure disponible (drawOne)
+    const out = [drawOne(rarities, grid, rng, me, [])];
+    while (out.length < (n || 2)) out.push(drawOne(rarities, grid, rng, 0, out));
     return out;
   }
 
@@ -1845,6 +1886,6 @@ Le Cheval cabré|Ferrari|2
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
     ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, SURVIVAL, survivalSecs, survivalQuestions, survivalPlay, chronoQuestions, chronoField, quizField, GENRES, genresOf, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, hashStr, PACKS, THEME_PACKS, themeMatch, themePackActive, themePacksNow, themePackNext, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     ensureBank, FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QSPECIAL, QLEVELS, QUIZ_N, DEVINE, devineCar, devineHints, devineFeedback, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, ROMAN, TIER_MAX, romanOf, variantId, nextVariant, grantVariant, shownVariant, seasonRank, questList, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
-    IP_LEVELS, IC_LEVELS, ECH_NAMES, ECH_RAR, indexOf, ipOf, icOf, echOf, SHINY, CARD_WEIGHT, oddsOf, dropRates, PIN_EPIC, PIN_LEGENDARY, PRESTIGE_PACK_RX, isPrestige, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
+    DROP_IC, DROP_IP, dropTable, IP_LEVELS, IC_LEVELS, ECH_NAMES, ECH_RAR, indexOf, ipOf, icOf, echOf, SHINY, CARD_WEIGHT, oddsOf, dropRates, PIN_EPIC, PIN_LEGENDARY, PRESTIGE_PACK_RX, isPrestige, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

@@ -62,7 +62,7 @@
     if (!ids.length) { vit.innerHTML = `<div class="empty-note">Ce pilote n'a pas encore ouvert de pack.</div>`; return; }
     ids.sort((a, b) => (WEIGHT[window.MACards.rarityOf(b)] - WEIGHT[window.MACards.rarityOf(a)]) || ((b.stats && b.stats.power) || 0) - ((a.stats && a.stats.power) || 0));
     const best = ids.slice(0, 6);
-    const RAR = [["mythic", "Légende"], ["special", "Édition limitée"], ["shiny", "Shiny"], ["legendary", "Légendaire"], ["epic", "Épique"], ["rare", "Rare"], ["common", "Commune"]], cnt = {};
+    const RAR = [["mythic", "Héritage"], ["special", "Édition limitée"], ["shiny", "Apex"], ["legendary", "Prestige"], ["epic", "Élite"], ["rare", "Sport"], ["common", "Série"]], cnt = {};
     ids.forEach((c) => { const r = window.MACards.rarityOf(c); cnt[r] = (cnt[r] || 0) + 1; });
     const nCat = Math.max(1, ((C.cars || []).length) || 1), pct = Math.min(100, Math.round((ids.length / nCat) * 100));
     const dist = `<div class="pv2-coll"><div class="pv2-ring" style="--p:${pct}%"><b>${pct}%</b><small>collection</small></div>
