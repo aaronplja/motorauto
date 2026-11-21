@@ -22,7 +22,7 @@
 #pub-socials{display:flex;justify-content:center}
 .pv3 .badge-row{justify-content:center}
 .pv3-stats{grid-template-columns:repeat(4,1fr)!important;gap:.4rem!important}
-.pv3-stats .pro-stat{padding:.7rem .15rem;border-radius:16px;background:var(--bg-elevated);min-width:0}
+.pv3-stats .pro-stat{padding:.7rem .15rem;border-radius: 16px;background:var(--bg-elevated);min-width:0}
 .pv3-stats .pro-stat b{font-size:1.25rem;font-variant-numeric:tabular-nums}
 .pv3-stats .pro-stat span{max-width:100%;white-space:nowrap}
 .pv3-level{padding:.9rem 1rem}
@@ -83,7 +83,7 @@
 .pe-prev .pe-av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .pe-prev b{display:block;font-size:1.05rem}
 .pe-tabs{display:flex;gap:.3rem;padding:.4rem 1.1rem;overflow-x:auto;scrollbar-width:none}
-.pe-tabs button{flex:1 0 auto;border:0;border-radius:99px;padding:.55rem .9rem;background:transparent;color:var(--color-muted);font-weight:800;font-size:.85rem;cursor:pointer;min-height:40px;transition:background .2s,color .2s}
+.pe-tabs button{flex:1 0 auto;border:0;border-radius: 999px;padding:.55rem .9rem;background:transparent;color:var(--color-muted);font-weight:800;font-size:.85rem;cursor:pointer;min-height:40px;transition:background .2s,color .2s}
 .pe-tabs button.on{background:var(--accent);color:var(--on-accent,#fff)}
 .pe-body{overflow-y:auto;padding:.4rem 1.1rem 1.2rem;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .pe-body .settings-box{border:0;padding:0;background:none;box-shadow:none;max-height:none}

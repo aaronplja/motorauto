@@ -10,6 +10,8 @@ details.acc .acc-t b { font-size: 1rem; font-weight: 700; }
 details.acc .acc-t small { font-size: .78rem; font-weight: 400; color: var(--color-muted); line-height: 1.35; }
 details.acc .acc-chev { flex: none; transition: transform .2s ease; color: var(--color-ink); }
 details.acc[open] > summary .acc-chev { transform: rotate(180deg); }
+details.acc.acc-closing > summary .acc-chev { transform: none; }
+details.acc > .acc-body { will-change: auto; }
 details.acc > .acc-body { display: grid; gap: .8rem; padding: .25rem 1rem 1rem; border-top: 1px solid var(--stroke-line); padding-top: .9rem; min-width: 0; }
 @media (prefers-reduced-motion: reduce) { details.acc .acc-chev { transition: none; } }
 /* sections de cartes : le menu garde l'aspect d'un bloc */
@@ -24,7 +26,7 @@ details.acc.cg-block > .acc-body { padding: .9rem 1.1rem 1.1rem; }
 details.acc.cg-filters { margin-top: .6rem; }
 /* catalogue : « Plus de filtres » */
 details.acc .acc-count { flex: none; padding: .15rem .6rem; border-radius: 999px; background: var(--accent); color: var(--on-accent, #fff); font-size: .75rem; font-weight: 700; }
-html .toolbar-cluster details.cat-acc { margin: 0; border-radius: 18px; background: transparent; }
+html .toolbar-cluster details.cat-acc { margin: 0; border-radius: 16px; background: transparent; }
 html .toolbar-cluster details.cat-acc > summary { min-height: 48px; padding: .4rem .9rem; }
 html .toolbar-cluster details.cat-acc > .acc-body { display: grid; gap: .5rem; padding: .7rem .6rem .8rem; }
 /* fiche voiture : le titre de la section est dans le menu, on masque l'ancien intitulé */

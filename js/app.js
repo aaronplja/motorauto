@@ -1702,6 +1702,7 @@
         ? `<div class="empty-note" style="grid-column: 1/-1;">Aucun favori dans l'écurie.</div>`
         : favCars.map(carCard).join("");
       document.dispatchEvent(new CustomEvent("ma:profile-garage", { detail: { uid: userId, favorites: g.favorites || [] } }));
+      document.dispatchEvent(new CustomEvent("ma:profile-ready", { detail: { uid: userId } }));
     } catch (err) {
       console.error("Erreur profil public :", err);
       if (!stale()) $("pub-profile-name").innerHTML = `Profil indisponible <small class="lap-meta" style="display:block;font:inherit;font-size:.7rem">${esc(String((err && (err.code || err.message)) || "erreur"))} · ${esc(step)} · ${esc(String(userId).slice(0, 6))}</small> <button type="button" class="cta-btn btn-ghost compact-btn" data-action="retry-profile" data-uid="${esc(userId)}">Réessayer</button>`;

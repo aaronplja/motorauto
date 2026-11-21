@@ -17,6 +17,31 @@
   document.addEventListener("toggle", function (e) {
     var d = e.target; if (d && d.matches && d.matches("details.acc[data-acc]")) { if (d.dataset.accQuiet) { delete d.dataset.accQuiet; return; } set(d.getAttribute("data-acc"), d.open); }
   }, true);
+  /** animation d'ouverture / de fermeture : hauteur + fondu du contenu (désactivée si l'appareil réduit les animations) */
+  var reduce = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  function frame(h, pt, pb, op) { return { height: h + "px", paddingTop: pt + "px", paddingBottom: pb + "px", opacity: op }; }
+  document.addEventListener("click", function (e) {
+    var sm = e.target && e.target.closest ? e.target.closest("details.acc > summary") : null;
+    if (!sm || e.defaultPrevented || !window.Element.prototype.animate || (reduce && reduce.matches)) return;
+    var d = sm.parentNode, body = d.querySelector(":scope > .acc-body");
+    if (!body || getComputedStyle(sm).pointerEvents === "none") return;
+    e.preventDefault();
+    if (d._accAnim) { d._accAnim.cancel(); d._accAnim = null; }
+    var opening = !d.open;
+    if (opening) d.open = true;
+    var cs = getComputedStyle(body), h = body.getBoundingClientRect().height, pt = parseFloat(cs.paddingTop) || 0, pb = parseFloat(cs.paddingBottom) || 0;
+    var from = opening ? frame(0, 0, 0, 0) : frame(h, pt, pb, 1), to = opening ? frame(h, pt, pb, 1) : frame(0, 0, 0, 0);
+    body.style.overflow = "hidden"; body.style.boxSizing = "border-box";
+    if (!opening) d.classList.add("acc-closing");
+    var a = body.animate([from, to], { duration: opening ? 260 : 220, easing: "cubic-bezier(.3,.7,.2,1)" });
+    d._accAnim = a;
+    var end = function () {
+      if (d._accAnim !== a) return;
+      d._accAnim = null; body.style.overflow = ""; body.style.boxSizing = ""; d.classList.remove("acc-closing");
+      if (!opening) d.open = false;
+    };
+    a.onfinish = end; a.oncancel = function () { if (d._accAnim === a) { d._accAnim = null; body.style.overflow = ""; body.style.boxSizing = ""; d.classList.remove("acc-closing"); } };
+  });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { apply(); }); else apply();
   /** ouvre / ferme sans retenir le choix (état par défaut posé par le site, pas par le pilote) */
   function quiet(d, on) { if (d.open === !!on) return; d.dataset.accQuiet = "1"; d.open = !!on; }

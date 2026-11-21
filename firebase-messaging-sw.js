@@ -27,7 +27,7 @@ self.addEventListener("notificationclick", (event) => {
   }));
 });
 // ---- Mode hors-ligne (ADD-103) : coquille de l'app + pages déjà vues, mises en cache à la volée.
-const CACHE = "ma-offline-8f752be1ae";
+const CACHE = "ma-offline-e5bfcfac14";
 const SHELL = ["/", "/index.html", "/css/bundle.min.css", "/manifest.webmanifest"];
 self.addEventListener("install", (e) => {
   self.skipWaiting();

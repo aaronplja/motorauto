@@ -55,7 +55,8 @@
     const load = async () => { if (C.user) { mine = Object.assign({ dreamCar: "", firstCar: "", city: "" }, await get(C.user.uid)); } else { mine = { dreamCar: "", firstCar: "", city: "" }; } form(); };
     Promise.resolve(C.authReady).then(load); document.addEventListener("ma:auth", () => { cache.clear(); load(); });
     let q = 0; new MutationObserver(() => { if (q) return; q = requestAnimationFrame(() => { q = 0; form(); }); }).observe(document.body, { childList: true, subtree: true });
-    C.Router.register("pilot", { enter: (p) => { setTimeout(() => paint(p.uid), 600); setTimeout(() => paint(p.uid), 1800); } });
+    C.Router.register("pilot", { enter: (p) => { paint(p.uid); } });
+    document.addEventListener("ma:profile-ready", (e) => paint(e.detail.uid));
   });
   window.MAProfileExtra = { get, mine: () => mine };
 })();

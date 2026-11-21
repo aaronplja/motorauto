@@ -14,7 +14,7 @@
 .page-head-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .back-link { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 44px; margin-bottom: 0.5rem; color: var(--color-secondary); font-weight: 600; text-decoration: none; }
 .back-link:hover, .back-link:focus-visible { color: var(--accent); }
-.page-box { background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 18px; overflow: hidden; }
+.page-box { background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 16px; overflow: hidden; }
 .sheet-wrap .vehicle-sheet { max-width: none; }
 .home-section { margin-block: clamp(2rem, 5vw, 3.5rem); }
 .home-cols { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 3vw, 2rem); }
@@ -43,7 +43,7 @@
 
 /* ---------- fil d'actualité ---------- */
 .feed-list { display: flex; flex-direction: column; gap: 0.6rem; }
-.feed-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.75rem 0.9rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 14px; color: inherit; text-decoration: none; min-width: 0; }
+.feed-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.75rem 0.9rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 16px; color: inherit; text-decoration: none; min-width: 0; }
 a.feed-item:hover { border-color: var(--glow); transform: translateY(-1px); }
 .feed-ico { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--glow-soft); font-size: 1.15rem; }
 .feed-avatar { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
@@ -106,19 +106,19 @@ a.mini-row:hover { border-color: var(--glow); }
 .timeline li::before { content: ""; position: absolute; left: -1.5rem; top: 0.35rem; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
 .timeline li b { display: block; }
 .gallery-strip { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; scroll-snap-type: x proximity; }
-.gallery-strip button { flex: none; width: 92px; height: 64px; padding: 0; border: 2px solid transparent; border-radius: 10px; overflow: hidden; cursor: pointer; scroll-snap-align: start; background: var(--bg-surface); }
+.gallery-strip button { flex: none; width: 92px; height: 64px; padding: 0; border: 2px solid transparent; border-radius: 12px; overflow: hidden; cursor: pointer; scroll-snap-align: start; background: var(--bg-surface); }
 .gallery-strip button.on { border-color: var(--accent); }
 .gallery-strip img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ---------- classement : voitures et circuits ---------- */
 .rank-list { display: flex; flex-direction: column; gap: 0.5rem; }
-.rank-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 0.9rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 14px; color: inherit; text-decoration: none; min-width: 0; }
+.rank-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 0.9rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 16px; color: inherit; text-decoration: none; min-width: 0; }
 a.rank-row:hover { border-color: var(--glow); }
 .rank-pos { flex: none; width: 2rem; text-align: center; font-family: var(--font-display); font-weight: 900; font-size: 1.3rem; color: var(--accent); }
 .rank-main { min-width: 0; flex: 1; overflow-wrap: anywhere; } .rank-main small { display: block; color: var(--color-muted); }
 .rank-score { flex: none; text-align: right; font-weight: 800; } .rank-score small { display: block; font-weight: 500; color: var(--color-muted); }
 .circuit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 0.8rem; }
-.circuit-card { display: flex; flex-direction: column; gap: 0.25rem; padding: 1rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 14px; color: inherit; text-decoration: none; min-width: 0; }
+.circuit-card { display: flex; flex-direction: column; gap: 0.25rem; padding: 1rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 16px; color: inherit; text-decoration: none; min-width: 0; }
 .circuit-card:hover { border-color: var(--accent); transform: translateY(-2px); }
 .circuit-card b { overflow-wrap: anywhere; } .circuit-card .rec { font-family: var(--font-tech); color: var(--accent); font-size: 1.15rem; font-weight: 700; }
 .chart-box { margin: 1rem 0; padding: 1rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 16px; }
@@ -133,17 +133,17 @@ a.rank-row:hover { border-color: var(--glow); }
 
 /* ---------- tableau de bord admin ---------- */
 .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.7rem; margin-bottom: 1.25rem; }
-.dash-card { padding: 0.9rem 1rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 14px; }
+.dash-card { padding: 0.9rem 1rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 16px; }
 .dash-card b { display: block; font-family: var(--font-display); font-size: 1.9rem; line-height: 1.1; } .dash-card span { font-size: 0.78rem; color: var(--color-secondary); }
 .dash-card.alert b { color: #f87171; }
 .dash-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .bars { display: flex; align-items: flex-end; gap: 4px; height: 120px; padding-top: 0.5rem; }
 .bars i { flex: 1; min-width: 3px; background: var(--accent); border-radius: 3px 3px 0 0; opacity: 0.85; position: relative; }
 .bars-legend { display: flex; justify-content: space-between; font-size: .75rem; color: var(--color-muted); margin-top: 0.3rem; }
-.log-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; padding: 0.55rem 0.8rem; border: 1px solid var(--stroke-line); border-radius: 10px; background: var(--bg-surface); font-size: 0.85rem; overflow-wrap: anywhere; }
+.log-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; padding: 0.55rem 0.8rem; border: 1px solid var(--stroke-line); border-radius: 12px; background: var(--bg-surface); font-size: 0.85rem; overflow-wrap: anywhere; }
 .log-row time { color: var(--color-muted); font-size: 0.75rem; }
 .mute-tag { display: inline-block; padding: 0.05rem 0.45rem; border-radius: 6px; font-size: .75rem; font-weight: 800; background: #7f1d1d; color: #fecaca; margin-left: 0.3rem; }
-.mute-banner { padding: 0.7rem 0.9rem; margin: 0.6rem 0; border-radius: 10px; background: #7f1d1d33; border: 1px solid #ef4444; color: #fecaca; font-size: 0.85rem; }
+.mute-banner { padding: 0.7rem 0.9rem; margin: 0.6rem 0; border-radius: 12px; background: #7f1d1d33; border: 1px solid #ef4444; color: #fecaca; font-size: 0.85rem; }
 
 /* ---------- garage : entretien ---------- */
 .maint-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.7rem; padding: 1rem; background: var(--bg-surface); border: 1px solid var(--stroke-line); border-radius: 16px; margin-bottom: 1rem; }
@@ -153,7 +153,7 @@ a.rank-row:hover { border-color: var(--glow); }
 .maint-row .m-main { flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; } .maint-row small { color: var(--color-muted); display: block; }
 .due { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: .75rem; font-weight: 800; background: var(--glow-soft); color: var(--accent); }
 .due.late { background: #7f1d1d; color: #fecaca; } .due.soon { background: #78350f; color: #fde68a; }
-.reminder-box { margin-top: 1rem; padding: 0.9rem 1rem; border-radius: 14px; border: 1px solid #f59e0b; background: #f59e0b14; }
+.reminder-box { margin-top: 1rem; padding: 0.9rem 1rem; border-radius: 16px; border: 1px solid #f59e0b; background: #f59e0b14; }
 
 /* ---------- carte voiture : V-max / 0-100 ne se chevauchent plus ---------- */
 .specs-trio { column-gap: 0; }
@@ -208,7 +208,7 @@ a.rank-row:hover { border-color: var(--glow); }
 .feed-entry { display: grid; gap: .25rem; }
 .feed-soc { padding: 0 .35rem; }
 .fs-bar { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; }
-.fs-btn { display: inline-flex; align-items: center; gap: .3rem; min-height: 32px; padding: .2rem .6rem; border-radius: 99px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-ink); font: inherit; font-size: .82rem; cursor: pointer; }
+.fs-btn { display: inline-flex; align-items: center; gap: .3rem; min-height: 32px; padding: .2rem .6rem; border-radius: 999px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-ink); font: inherit; font-size: .82rem; cursor: pointer; }
 .fs-btn b { font-weight: 700; font-variant-numeric: tabular-nums; }
 .fs-btn:hover { border-color: var(--accent); }
 .fs-btn.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--bg-surface)); }
@@ -218,7 +218,7 @@ a.rank-row:hover { border-color: var(--glow); }
 .fs-cmt small { color: var(--color-muted); margin-left: .3rem; }
 .fs-del { border: 0; background: none; color: var(--color-muted); cursor: pointer; padding: 0 .3rem; }
 .fs-form { display: flex; gap: .4rem; }
-.fs-form input { flex: 1; min-width: 0; padding: .45rem .7rem; border-radius: 99px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-ink); font: inherit; font-size: .85rem; }
+.fs-form input { flex: 1; min-width: 0; padding: .45rem .7rem; border-radius: 999px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-ink); font: inherit; font-size: .85rem; }
 
 /* fil : alertes de souhaits (« Pour toi »), signalement et formulaire de motif */
 .feed-wish { display: grid; gap: .4rem; margin-bottom: .9rem; }
@@ -227,7 +227,7 @@ a.rank-row:hover { border-color: var(--glow); }
 .fs-flag { opacity: .7; }
 .fs-flag.on { opacity: 1; color: var(--accent); border-color: var(--accent); }
 .fs-report { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: .4rem 0; padding: .5rem .7rem; border-radius: 12px; border: 1px solid var(--stroke-line); background: var(--bg-elevated, var(--bg-surface)); font-size: .85rem; }
-.fs-report select { padding: .3rem .5rem; border-radius: 10px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-ink); font: inherit; }
+.fs-report select { padding: .3rem .5rem; border-radius: 12px; border: 1px solid var(--stroke-line); background: var(--bg-surface); color: var(--color-ink); font: inherit; }
 
 /* petits écrans (320 px) : les boutons compacts à icône + libellé long (ES, DE, EN) ne doivent plus être rognés */
 @media (max-width: 400px) { .cta-btn.compact-btn { padding-inline: min(16px, 2.6vw) !important; gap: .3rem; overflow-wrap: anywhere; } }

@@ -24,7 +24,7 @@
 .app-header > * { position: relative; }
 .app-header { transition: transform .4s cubic-bezier(.22,.9,.3,1) !important; will-change: transform; }
 .app-header.hide-up { transform: translateY(-110%); }
-.page-tabs { border-radius: 18px; padding-inline: .35rem !important; border-bottom: 1px solid var(--glass-line) !important; position: sticky; top: calc(var(--safe-top) + 4px); z-index: 20; }
+.page-tabs { border-radius: 16px; padding-inline: .35rem !important; border-bottom: 1px solid var(--glass-line) !important; position: sticky; top: calc(var(--safe-top) + 4px); z-index: 20; }
 .modal-layer { background: rgba(10,12,18,.38) !important; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .modal-dialog { border: 1px solid var(--glass-line); }
 @media (min-width: 1000px) { .app-header.hide-up { transform: translateY(-110%); } }

@@ -67,8 +67,9 @@
     ctx.Router.register("pilot", { enter: (p) => {
       ensure("pub-honors", "#pub-profile-bio", "afterend", "ph-honors").hidden = true;
       ensure("pub-cosm-slot", "#pub-badges-slot", "afterend", "ph-cosm");
-      setTimeout(() => render(p.uid), 250);
+      render(p.uid);
     } });
+    document.addEventListener("ma:profile-ready", (e) => render(e.detail.uid));
     document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-pt-go]"); if (b) { const t = document.querySelector('#pub-tabs .pro-tab[data-pt="' + b.dataset.ptGo + '"]'); if (t) { t.click(); t.scrollIntoView({ block: "center", behavior: "smooth" }); } } });
   });
 })();

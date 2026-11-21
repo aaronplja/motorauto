@@ -140,7 +140,7 @@ html.on-chat .chat-embed { top: var(--hdr-h, 66px); }
 /* ---------- menu de la roue crantée : même verre que le reste ---------- */
 html .me-sheet { background: color-mix(in srgb, var(--bg-surface) 58%, transparent) !important; border: 1px solid var(--fl-line) !important; box-shadow: var(--fl-shadow) !important; -webkit-backdrop-filter: var(--fl-blur) !important; backdrop-filter: var(--fl-blur) !important; }
 html .me-backdrop { background: rgba(8,10,16,.22) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-html .me-sheet .me-row { background: var(--fl-bg-soft); border: 1px solid var(--fl-line); border-radius: 18px; box-shadow: var(--fl-shadow-sm); }
+html .me-sheet .me-row { background: var(--fl-bg-soft); border: 1px solid var(--fl-line); border-radius: 16px; box-shadow: var(--fl-shadow-sm); }
 html .me-sheet .me-row:hover { background: var(--fl-on); }
 html .me-sheet .me-close { background: var(--fl-bg) !important; border: 1px solid var(--fl-line) !important; border-radius: 50% !important; box-shadow: var(--fl-shadow-sm); }
 html .me-sheet .me-ico { border-radius: 50%; }

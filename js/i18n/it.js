@@ -74,7 +74,7 @@
 "Ajoute la tienne !": "Aggiungi la tua!",
 "Ton garage, tes chronos, ta place au classement.": "Il tuo garage, i tuoi tempi, il tuo posto in classifica.",
 "Enregistre tes tours, garde tes favoris et discute avec les autres pilotes dans le salon.": "Registra i tuoi giri, tieni i preferiti e chatta con gli altri piloti nel salotto.",
-"Créer mon compte": "Crea il mio account",
+"Créer un compte": "Crea il mio account",
 "Ouvrir le salon": "Apri il salotto",
 "Le catalogue": "Il catalogo",
 "Rechercher un modèle, un moteur, une génération…": "Cerca un modello, un motore, una generazione…",

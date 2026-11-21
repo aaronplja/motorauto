@@ -40,7 +40,7 @@
   function visitorCta() {
     const st = document.querySelector("#page-home .hero-stats"); if (!st || document.getElementById("hero-cta")) return;
     const d = document.createElement("div"); d.id = "hero-cta"; d.className = "hero-cta";
-    d.innerHTML = `<button type="button" class="cta-btn fill-btn" data-action="open-auth">${T("Créer mon compte")}</button><a class="cta-btn btn-ghost" href="#/catalogue">${T("Parcourir le catalogue")}</a>`;
+    d.innerHTML = `<button type="button" class="cta-btn fill-btn" data-action="open-auth">${T("Créer un compte")}</button><a class="cta-btn btn-ghost" href="#/catalogue">${T("Parcourir le catalogue")}</a>`;
     st.insertAdjacentElement("afterend", d);
   }
   /** compte à rebours jusqu'au prochain pack du jour (minuit, heure de Paris) */

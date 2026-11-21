@@ -45,7 +45,7 @@ html, body.chat-page { background: var(--bg-core); }
 .conv-item.active { background: var(--glow-soft); box-shadow: none; }
 .conv-item.active::before { display: block; left: 0; top: 16px; bottom: 16px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); box-shadow: none; }
 .conv-item.has-unread { background: color-mix(in srgb, var(--accent) 5%, transparent); }
-.conv-ico { width: 40px; height: 40px; border-radius: 14px; border: 0; background: var(--bg-elevated); font-size: 1.05rem; }
+.conv-ico { width: 40px; height: 40px; border-radius: 16px; border: 0; background: var(--bg-elevated); font-size: 1.05rem; }
 .conv-item.active .conv-ico { background: var(--accent); color: var(--on-accent); }
 .conv-name { font-weight: 700; font-size: .95rem; }
 .conv-item.has-unread .conv-name { font-weight: 800; color: var(--color-ink); }
@@ -159,7 +159,7 @@ html, body.chat-page { background: var(--bg-core); }
 .empty-ico { width: 64px; height: 64px; }
 .seen-receipt { margin-right: .5rem; }
 .trade-card { border: 0; border-radius: 16px; box-shadow: 0 0 0 1px var(--glow); background: var(--bg-core); color: var(--color-ink); }
-.car-share { background: var(--bg-core); color: var(--color-ink); border-radius: 14px; }
+.car-share { background: var(--bg-core); color: var(--color-ink); border-radius: 16px; }
 .msg.mine .car-share small { opacity: .7; }
 .chat-app .bubble:has(> .trade-card:only-child), .chat-app .bubble:has(> .car-share:only-child) { padding: 0; background: none; box-shadow: none; }
 
@@ -169,7 +169,7 @@ html, body.chat-page { background: var(--bg-core); }
 body.kb-open .compose-wrap, .chat-page:focus-within .compose-wrap { padding-bottom: .5rem; }
 .compose-bar { margin: 0; padding: .45rem .7rem; border-radius: 22px; gap: .7rem; }
 .compose-bar[hidden] { display: none; }
-.compose-bar img { border-radius: 10px; }
+.compose-bar img { border-radius: 12px; }
 .bar-text small { font-weight: 700; }
 .bar-close { width: 34px; height: 34px; border-radius: 50%; display: inline-grid; place-items: center; padding: 0; line-height: 1; }
 .composer { align-items: center; gap: .1rem; padding: 4px; min-height: 56px; border-radius: 999px; }

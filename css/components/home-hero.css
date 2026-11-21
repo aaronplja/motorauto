@@ -12,7 +12,7 @@ html.ma-garage .gh-head .gh-title { flex: 1 1 auto; min-width: 0; font-size: var
 /* bouton rond de la série : sa hauteur suit celle des deux lignes du titre */
 .gh-streak { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: calc(var(--gh-fs) * 2); height: calc(var(--gh-fs) * 2); border-radius: 50%; background: color-mix(in srgb, var(--accent) 12%, var(--bg-surface)); color: var(--accent-ink, var(--accent)); text-decoration: none; }
 .gh-streak svg { width: calc(var(--gh-fs) * .5); height: calc(var(--gh-fs) * .5); }
-.gh-streak b { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: calc(var(--gh-fs) * .75); line-height: 1; }
+.gh-streak b { font-family: var(--font-serif, 'Instrument Serif', Georgia, serif); font-weight: 400; font-size: calc(var(--gh-fs) * .75); line-height: 1; }
 .gh-streak small { font-size: max(.58rem, calc(var(--gh-fs) * .2)); letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
 .gh-streak:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 html.ma-garage .gh-title em { overflow-wrap: anywhere; }
@@ -25,7 +25,7 @@ html.ma-garage #cod-home .cod-card::before { content: ""; position: absolute; in
 html.ma-garage #cod-home .cod-card::after { content: "\2197"; position: absolute; right: 16px; bottom: 16px; z-index: 2; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--color-ink); color: var(--bg-surface); font-weight: 700; }
 html.ma-garage #cod-home .cod-txt { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 1.1rem 4.4rem 1.2rem 1.2rem; gap: .25rem; }
 html.ma-garage #cod-home .cod-txt small { color: var(--accent-ink, var(--accent)); letter-spacing: .12em; }
-html.ma-garage #cod-home .cod-txt b { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 2.1rem; line-height: 1.05; color: var(--color-ink); }
+html.ma-garage #cod-home .cod-txt b { font-family: var(--font-serif, 'Instrument Serif', Georgia, serif); font-weight: 400; font-size: 2.1rem; line-height: 1.05; color: var(--color-ink); }
 html.ma-garage #cod-home .cod-txt em { color: var(--color-secondary); opacity: 1; font-size: .9rem; }
 html.ma-garage #cod-home .cod-k { display: none; }
 html:not(.ma-garage) .cod-heart { display: none; }
@@ -42,7 +42,7 @@ html.ma-garage .gh-rest .gh-tile small { font-size: .72rem; }
 
 /* menus de l'accueil */
 html.ma-garage #page-home>section:has(details.home-acc) { margin-block: .6rem; }
-details.home-acc .acc-t b { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 1.5rem; line-height: 1.1; }
+details.home-acc .acc-t b { font-family: var(--font-serif, 'Instrument Serif', Georgia, serif); font-weight: 400; font-size: 1.5rem; line-height: 1.1; }
 details.home-acc > .acc-body { gap: .7rem; }
 details.home-acc .link-more { justify-self: start; }
 html:not(.ma-garage) details.home-acc { border: 0; background: none; border-radius: 0; overflow: visible; }

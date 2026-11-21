@@ -41,7 +41,7 @@
 .trade-composer { padding: .3rem 1rem 1.1rem; gap: 1.1rem; border-top: 1px solid var(--stroke-line); }
 .comp-col h4 { font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; }
 .comp-send input { border-radius: 999px; padding: 0 1.1rem; }
-.pick { border-radius: 18px; }
+.pick { border-radius: 16px; }
 .trade-why { margin: .7rem 0 0; padding-left: 1.1rem; text-align: left; display: grid; gap: .4rem; font-size: .86rem; }
 @media (max-width: 460px) { .tr-tab { padding: 0 .65rem; font-size: .8rem; gap: .25rem; } }
 @media (max-width: 380px) { .tr-stat b { font-size: 1.5rem; } .tr-tab { padding: 0 .75rem; } }

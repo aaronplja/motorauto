@@ -74,7 +74,7 @@
 "Ajoute la tienne !": "Add yours!",
 "Ton garage, tes chronos, ta place au classement.": "Your garage, your lap times, your place in the ranking.",
 "Enregistre tes tours, garde tes favoris et discute avec les autres pilotes dans le salon.": "Record your laps, keep your favourites and chat with other drivers in the lounge.",
-"Créer mon compte": "Create my account",
+"Créer un compte": "Create an account",
 "Ouvrir le salon": "Open the lounge",
 "Le catalogue": "The catalogue",
 "Rechercher un modèle, un moteur, une génération…": "Search a model, an engine, a generation…",

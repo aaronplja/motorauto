@@ -77,3 +77,6 @@ html #cards-search { border: 1.5px solid color-mix(in srgb, var(--color-ink) 24%
 html #cards-search:focus { border-color: var(--accent) !important; }
 html .cg-tools { padding: 0; background: none; box-shadow: none; border: 0; }
 html section[aria-label="Collection"] > header.cg-bh .ui-more-btn { border: 1px solid var(--stroke-line) !important; background: var(--bg-elevated) !important; box-shadow: none !important; }
+
+/* boutons : une seule forme, la pilule, quelle que soit la famille de classe */
+html :is(.cta-btn, .fill-btn, .btn-ghost, .seg-btn, .page-btn, .fs-btn, .link-more, .ui-more-btn, .secondary-destructive-btn, .telemetry-trash-btn, .btn, .follow-btn) { border-radius: 999px; }

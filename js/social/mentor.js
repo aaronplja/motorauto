@@ -52,7 +52,8 @@
   }
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = ctx;
-    ctx.Router.register("pilot", { enter: () => { setTimeout(paint, 900); setTimeout(paint, 2400); } });
+    ctx.Router.register("pilot", { enter: () => { paint(); } });
+    document.addEventListener("ma:profile-ready", () => paint());
     document.addEventListener("click", (e) => {
       const t = e.target.closest("[data-mentor-toggle]"); if (t) { toggle(t.dataset.mentorToggle === "on"); return; }
       const a = e.target.closest("[data-mentor-ask]"); if (a) { ask(a.dataset.mentorAsk); return; }

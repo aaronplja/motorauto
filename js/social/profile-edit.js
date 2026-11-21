@@ -70,7 +70,8 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     document.addEventListener("ma:auth", () => { const r = ctx.Router.current(); if (r && r.name === "pilot") showBtn(r.params.uid); });
-    ctx.Router.register("pilot", { enter: (p) => { if (layer) close(false); showBtn(p.uid); setTimeout(() => showBtn(p.uid), 900); } });
+    ctx.Router.register("pilot", { enter: (p) => { if (layer) close(false); showBtn(p.uid); } });
+    document.addEventListener("ma:profile-ready", (e) => showBtn(e.detail.uid));
     document.addEventListener("click", async (e) => {
       const t = e.target;
       if (t.closest && t.closest("#pub-edit-btn")) { open(); return; }
