@@ -4,7 +4,7 @@
 
 ## 2026-11-21 — Cartes : double indice IC / IP et échelons
 
-Fini Commune, Rare, Épique, Légendaire et Shiny. Chaque voiture a maintenant deux indices : l'IC (collection, de F à Z) et l'IP (performance, de I à X), coupés en diagonale sur la carte. Un échelon calculé à partir des deux (Série, Sport, Élite, Prestige, Apex) donne la valeur de la carte. Les cartes Légende deviennent Héritage : elles se gagnent en complétant un album et ne sortent jamais d'un pack. Les taux de drop sont visibles dans la Boutique, et tu peux filtrer et trier par IC et IP dans ta collection et dans le Catalogue.
+Fini Commune, Rare, Épique, Légendaire et Shiny. Chaque voiture a maintenant deux indices : l'IC (collection, de F à Z) et l'IP (performance, de I à X), séparés par une diagonale sur la carte, avec le numéro de la carte à la place de l'ancienne rareté. Un échelon calculé à partir des deux (Série, Sport, Élite, Prestige, Apex) donne la valeur de la carte. Les cartes Légende deviennent Héritage : elles se gagnent en complétant un album et ne sortent jamais d'un pack. Les photos se fondent dans les couleurs de la carte et l'ouverture des packs reprend ces couleurs. Les taux de drop sont visibles dans la Boutique, une page « Comprendre les cartes » explique chaque couleur, et tu peux filtrer et trier par IC et IP dans ta collection et dans le Catalogue.
 
 ## 2026-11-21 — Jouer en tuiles, Communauté refaite, ta photo dans la barre du haut
 
