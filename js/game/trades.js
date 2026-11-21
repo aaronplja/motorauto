@@ -56,7 +56,7 @@
       : `<button type="button" class="cta-btn fill-btn compact-btn" data-trade-yes="${esc(t.id)}">Accepter</button><button type="button" class="cta-btn btn-ghost compact-btn" data-trade-no="${esc(t.id)}">Décliner</button>`) : "";
     return `<article class="trade-row ${t.status}"><div class="trade-head">${C.avatarImg((users.get(other) || {}).avatar, "tr-av")}<b>${esc(mineSent ? "Pour " + (t.toName || who(other)) : "De " + (t.fromName || who(other)))}</b><span class="trade-st ${t.status}">${st}</span></div>
       <div class="trade-swap"><div><small>${mineSent ? "Tu donnes" : "Il te donne"}</small>${mini(t.give)}${own(t.give, !mineSent)}</div><i aria-hidden="true">⇄</i><div><small>${mineSent ? "Tu reçois" : "Tu donnes"}</small>${mini(t.want)}${own(t.want, mineSent)}</div></div>
-      ${t.message ? `<p class="trade-msg">« ${esc(t.message)} »</p>` : ""}<div class="trade-actions">${actions}<a class="cta-btn btn-ghost compact-btn" href="${dm(other)}">💬 Discuter</a></div></article>`;
+      ${t.message ? `<p class="trade-msg">« ${esc(t.message)} »</p>` : ""}<div class="trade-actions">${actions}<a class="cta-btn btn-ghost compact-btn" href="${dm(other)}">Discuter</a></div></article>`;
   }
 
   const lotMode = {};      // uid -> true quand l'échange en lot est ouvert
@@ -78,12 +78,12 @@
   }
   function pilotRow(o, m) {
     const esc = C.esc, u = users.get(o.uid) || {}, open = openRow === o.uid;
-    const tags = [m.theyWantMine.length ? `<span class="match-tag">⭐ cherche ta ${esc(name(m.theyWantMine[0]))}</span>` : "", m.iWantTheirs.length ? `<span class="match-tag me">⭐ a ta ${esc(name(m.iWantTheirs[0]))}</span>` : ""].join("");
-    return `<article class="pilot-trade ${open ? "open" : ""}"><button type="button" class="pt-head" data-trade-open="${esc(o.uid)}" aria-expanded="${open}">${C.avatarImg(u.avatar, "pilot-row-avatar")}<span class="pt-main"><b>${esc(u.username || "Pilote")}</b><small>${m.want.length} doublon${m.want.length > 1 ? "s" : ""} pour toi · ${m.give.length} de ton côté</small>${tags}</span><span class="pt-go" aria-hidden="true">${open ? "−" : "+"}</span></button>${open ? composer(o, m) : `<button type="button" class="cta-btn fill-btn compact-btn pt-quick" data-trade-quick="${esc(o.uid)}" title="Propose automatiquement un de tes doublons contre un des siens">⚡ Échange rapide : ta ${esc(name(quickPair(m).give))} contre sa ${esc(name(quickPair(m).want))}</button>`}</article>`;
+    const tags = [m.theyWantMine.length ? `<span class="match-tag">Cherche ta ${esc(name(m.theyWantMine[0]))}</span>` : "", m.iWantTheirs.length ? `<span class="match-tag me">A ta ${esc(name(m.iWantTheirs[0]))}</span>` : ""].join("");
+    return `<article class="pilot-trade ${open ? "open" : ""}"><button type="button" class="pt-head" data-trade-open="${esc(o.uid)}" aria-expanded="${open}">${C.avatarImg(u.avatar, "pilot-row-avatar")}<span class="pt-main"><b>${esc(u.username || "Pilote")}</b><small>${m.want.length} doublon${m.want.length > 1 ? "s" : ""} pour toi · ${m.give.length} de ton côté</small>${tags}</span><span class="pt-go" aria-hidden="true">${open ? "−" : "+"}</span></button>${open ? composer(o, m) : `<button type="button" class="cta-btn fill-btn compact-btn pt-quick" data-trade-quick="${esc(o.uid)}" title="Propose automatiquement un de tes doublons contre un des siens">Échange rapide : ta ${esc(name(quickPair(m).give))} contre sa ${esc(name(quickPair(m).want))}</button>`}</article>`;
   }
 
   // un seul onglet Échanges : Pilotes, Marché, Souhaits, Reçues, Envoyées, Historique (le marché et les souhaits sont rendus par play-plus.js dans leurs propres conteneurs)
-  const SECS = [["pilots", "Pilotes"], ["market", "Marché"], ["wish", "Souhaits"], ["in", "Reçues"], ["out", "Envoyées"], ["done", "Historique"]];
+  const SECS = [["pilots", "Pilotes"], ["market", "Marché"], ["wish", "Souhaits"], ["mine", "Mes échanges"]];
   const secBar = (cnt) => SECS.map((t) => { const n = cnt && cnt[t[0]]; return `<button type="button" role="tab" class="tr-tab${tab === t[0] ? " active" : ""}" aria-selected="${tab === t[0]}" data-trtab="${t[0]}">${t[1]}${n ? `<i>${n}</i>` : ""}</button>`; }).join("");
   function openSection(k) {
     tab = k; render();
@@ -108,16 +108,16 @@
     else if (!lackable.length) whyNone.push("Les doublons des autres pilotes sont des cartes que tu possèdes déjà.");
     if (myDups && lackable.length) whyNone.push("Il y a des pilotes avec des doublons qui te manquent, mais il faut aussi un de <b>tes</b> doublons à leur donner.");
     const rows = others.map((o) => ({ o, m: matchFor(o) })).filter((x) => x.m.give.length && x.m.want.length).sort((a, b) => b.m.score - a.m.score).slice(0, 30);
-    const cnt = { pilots: rows.length, in: incoming.length, out: sent.length, done: done.length };
-    if (!tab || !SECS.some((t) => t[0] === tab)) tab = incoming.length ? "in" : "pilots";
+    const cnt = { pilots: rows.length, mine: incoming.length };
+    if (tab === "in" || tab === "out" || tab === "done") tab = "mine";
+    if (!tab || !SECS.some((t) => t[0] === tab)) tab = incoming.length ? "mine" : "pilots";
     const empty = (t) => `<div class="empty-note">${t}</div>`;
-    const body = tab === "in" ? (incoming.length ? `<div class="trade-list">${incoming.map(tradeRow).join("")}</div>` : empty("Aucune proposition reçue pour l'instant."))
-      : tab === "out" ? (sent.length ? `<div class="trade-list">${sent.map(tradeRow).join("")}</div>` : empty("Tu n'as aucune proposition en attente."))
-      : tab === "done" ? (done.length ? `<div class="trade-list compact">${done.map(tradeRow).join("")}</div>` : empty("Aucun échange terminé pour l'instant."))
+    const body = tab === "mine" ? `<div class="tr-mine"><section class="tr-sec"><h3>À répondre</h3>${incoming.length ? `<div class="trade-list">${incoming.map(tradeRow).join("")}</div>` : empty("Aucune proposition reçue pour l'instant.")}</section><section class="tr-sec"><h3>En attente de réponse</h3>${sent.length ? `<div class="trade-list">${sent.map(tradeRow).join("")}</div>` : empty("Tu n'as aucune proposition en attente.")}</section><section class="tr-sec"><h3>Terminés</h3>${done.length ? `<div class="trade-list">${done.map(tradeRow).join("")}</div>` : empty("Aucun échange terminé pour l'instant.")}</section></div>`
       : (rows.length ? `<div class="pilot-trades">${rows.map((x) => pilotRow(x.o, x.m)).join("")}</div>` : `<div class="empty-note">Aucun échange possible pour l'instant.<ul class="trade-why">${whyNone.map((x) => `<li>${x}</li>`).join("")}</ul></div>`);
     root.innerHTML = `<div class="tr">${error ? `<p class="tcg-alert">⚠ ${C.esc(error)}</p>` : ""}
       <div class="tr-hero"><div class="tr-stat"><b>${myDups}</b><span>doublon${myDups > 1 ? "s" : ""}</span></div><div class="tr-stat"><b>${rows.length}</b><span>pilote${rows.length > 1 ? "s" : ""} à contacter</span></div><div class="tr-stat${incoming.length ? " hot" : ""}"><b>${incoming.length}</b><span>proposition${incoming.length > 1 ? "s" : ""} reçue${incoming.length > 1 ? "s" : ""}</span></div></div>
-      <p class="tr-lead">On n'échange que des <b>doublons</b> : un exemplaire en trop contre un exemplaire en trop d'un autre pilote.${prefillGive ? ` Tu proposes : <b>${C.esc(name(prefillGive))}</b>.` : ""}</p>
+      <ol class="tr-steps"><li><b>1</b><span>Choisis un pilote</span></li><li><b>2</b><span>Choisis ta carte et la sienne</span></li><li><b>3</b><span>Il accepte : les cartes changent de main</span></li></ol>
+      <p class="tr-lead">On n'échange que des <b>doublons</b>, un exemplaire en trop contre un autre.${prefillGive ? ` Tu proposes : <b>${C.esc(name(prefillGive))}</b>.` : ""}</p>
       <div class="tr-tabs" role="tablist" aria-label="Échanges">${secBar(cnt)}</div>
       ${body}</div>`;
   }

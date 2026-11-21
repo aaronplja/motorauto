@@ -48,6 +48,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     ok(Math.abs(tb.ic.reduce((s, x) => s + x.p, 0) - 1) < 1e-9 && Math.abs(tb.ip.reduce((s, x) => s + x.p, 0) - 1) < 1e-9, "taux IC et IP : somme = 100 %");
     ok(draws.common / tot > 0.4 && (draws.legendary / tot) < 0.08, "échelons tirés : majorité de Série, Prestige rare"); }
   { let her = 0; for (let i = 0; i < 3000; i++) core.drawPack(r1, ids, rng, true, true, true).forEach((id) => { if (r1.get(id) === "mythic") her++; }); ok(her === 0, "aucune carte Héritage ne sort d'un pack"); }
+  { let ap = 0; for (let i = 0; i < 1000; i++) if (!core.drawPack(r1, ids, rng, true, true, true, true).some((id) => r1.get(id) === "shiny")) ap++; ok(ap === 0 && core.PITY.apex === 150, "garantie Apex : la 3e carte est au moins Apex"); }
   let pityBad = 0; for (let i = 0; i < 3000; i++) if (!core.drawPack(r1, ids, rng, true).some((id) => r1.get(id) !== "common")) pityBad++;
   ok(pityBad === 0, "le 10e pack contient toujours une carte au moins rare");
 

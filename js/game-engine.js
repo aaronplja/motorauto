@@ -51,7 +51,7 @@
     async function isKnownCard(pool, id) { return pool.byId.has(id) || (core.isSpecial(id) && !!(await specialCard(id))); }
 
     // ---------------------------------------------------------------- petits utilitaires
-    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, circuits: d.circuits || 0, liveries: d.liveries || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, bt: d.bt || null, bdDay: d.bdDay || "", dcDay: d.dcDay || "", season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, prestigeFree: d.prestigeFree || 0, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
+    const view = (d) => ({ owned: d.owned, count: d.count, specials: d.specials || 0, circuits: d.circuits || 0, liveries: d.liveries || 0, dust: d.dust, lastPack: d.lastPack, bonus: d.bonus, claimed: d.claimed, opened: d.opened, dustLog: d.dustLog || [], trades: d.trades || 0, chal: d.chal || 0, pics: d.pics || {}, picClaims: d.picClaims || {}, lv: d.lv || {}, mis: d.mis || { day: "", p: {}, done: [] }, offers: d.offers || { day: "", pack: 0, card: 0 }, log: d.log || [], packsAll: d.packsAll || 0, best: d.best || "", welcome: !!d.welcome, bt: d.bt || null, bdDay: d.bdDay || "", dcDay: d.dcDay || "", season: core.seasonOf(d, now()) && d.season, cosm: core.seasonCosm(d, now()), locked: d.locked || {}, hist: d.hist || {}, pity: d.pity || 0, pityApex: d.pityApex || 0, wheelDay: d.wheelDay || "", wheelN: d.wheelN || 0, advent: d.advent || null, prestigeFree: d.prestigeFree || 0, offerToday: poolCache.list ? Object.assign({ day: core.dayKey(now()) }, core.dailyOffers(core.dayKey(now()), poolCache.list, poolCache.rar)) : null });
     /** historique des cristaux (40 dernières lignes) : [{t: date, n: variation, w: motif}] */
     function dustMove(d, n, why) {
       if (!n) return;
@@ -185,7 +185,7 @@
             dustMove(d, -def.cost, def.country || def.circuit || def.theme || def.prestige ? def.label + " acheté" : "Pack acheté");
           }
         }
-        const ids = kind === "shop" ? core.drawShopPack(pool.rar, src, rng, def.min, def.cards) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % core.PITY.rare === 0, (d.opened + 1) % core.PITY.epic === 0, (d.pity || 0) + 1 >= core.PITY.legend);
+        const ids = kind === "shop" ? core.drawShopPack(pool.rar, src, rng, def.min, def.cards) : core.drawPack(pool.rar, pool.ids, rng, (d.opened + 1) % core.PITY.rare === 0, (d.opened + 1) % core.PITY.epic === 0, (d.pity || 0) + 1 >= core.PITY.legend, (d.pityApex || 0) + 1 >= core.PITY.apex);
         let dust = 0, bonus = 0;
         d.pics = d.pics || {}; d.picClaims = d.picClaims || {};
         const cards = ids.map((id) => {
@@ -212,6 +212,7 @@
           const m1 = bump(d, "open"), m2 = kind === "shop" ? bump(d, "shop", def.circuit ? "world" : def.country || "world") : { gain: 0, names: [] }, m3 = offerUsed ? bump(d, "offer") : { gain: 0, names: [] };
           missions = { gain: m1.gain + m2.gain + m3.gain, names: m1.names.concat(m2.names, m3.names) };
         }
+        if (kind === "daily" || kind === "bonus") d.pityApex = cards.some((c) => c.rarity === "shiny" || c.rarity === "mythic") ? 0 : (d.pityApex || 0) + 1;
         if (kind === "daily" || kind === "bonus") d.pity = cards.some((c) => c.rarity === "legendary" || c.rarity === "shiny" || c.rarity === "mythic") ? 0 : (d.pity || 0) + 1;
         if (kind !== "test") packLog(d, kind, cards, today);
         // défis de la semaine : cartes épiques ou mieux piochées, packs thématiques / Prestige ouverts

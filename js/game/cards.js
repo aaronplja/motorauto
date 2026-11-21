@@ -770,9 +770,10 @@
     const best = String(doc.best || "").split("|"), bc = best[0] && cardObj(best[0]), br = best[1] && RAR[best[1]];
     const log = (doc.log || []).slice(-8).reverse();
     const kinds = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté" };
-    const bar = (n, tot, lbl, cls) => `<div class="pity ${cls}"><div class="pity-t"><b>${n === 1 ? "Le prochain pack" : "Plus que " + n + " packs"}</b><small>${lbl}</small></div><span class="pity-bar" aria-hidden="true"><u style="width:${Math.round(100 * (tot - n) / tot)}%"></u></span></div>`;
-    return `${window.MAAcc.o("pity", "Chance garantie", "sur les packs du jour et les packs bonus", false, "cg-block cg-pity", "Chance garantie et historique")}
-      ${bar(toRare, G.PITY.rare, "contient une carte Sport ou mieux, garantie", "rare")}${bar(toEpic, G.PITY.epic, "contient une carte Élite ou mieux, garantie", "epic")}${bar(toLeg, G.PITY.legend, "contient une carte légendaire ou mieux, garantie", "legendary")}
+    const toApex = Math.max(1, G.PITY.apex - (doc.pityApex || 0));
+    const bar = (n, tot, name, cls) => `<div class="pity ${cls}"><div class="pity-t"><b>${name} ou mieux</b><small>${n === 1 ? "garanti dans le prochain pack" : "garanti dans " + n + " packs au plus"}</small></div><span class="pity-bar" aria-hidden="true"><u style="width:${Math.round(100 * (tot - n) / tot)}%"></u></span></div>`;
+    return `${window.MAAcc.o("pity", "Chance garantie", "packs du jour et packs bonus · de Sport à Apex", false, "cg-block cg-pity", "Chance garantie et historique")}
+      ${bar(toRare, G.PITY.rare, "Sport", "rare")}${bar(toEpic, G.PITY.epic, "Élite", "epic")}${bar(toLeg, G.PITY.legend, "Prestige", "legendary")}${bar(toApex, G.PITY.apex, "Apex", "shiny")}
       <div class="pity-stats"><div><b>${all}</b><small>packs ouverts</small></div>${bc && br ? `<div class="pity-best"><b class="${best[1]}">${br.label}</b><small>meilleure pioche : ${C.esc((bc.brand || "") + " " + (bc.model || ""))}</small></div>` : `<div><b>–</b><small>meilleure pioche</small></div>`}</div>
       ${log.length ? `<details class="pity-log"><summary>Historique des derniers packs</summary><ul>${log.map((l) => { const c = cardObj(l.id), rr = RAR[l.r]; return `<li><span class="pl-d">${C.esc(String(l.t || "").slice(5).split("-").reverse().join("/"))}</span><span class="pl-k">${kinds[l.k] || "Pack"}</span><span class="pl-r tcg-rar-chip ${l.r}">${rr ? rr.label : l.r}</span><span class="pl-c">${c ? C.esc((c.brand || "") + " " + (c.model || "")) : ""}</span></li>`; }).join("")}</ul></details>` : ""}${window.MAAcc.c}`;
   }

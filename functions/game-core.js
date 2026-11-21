@@ -241,7 +241,7 @@
     return "common";
   }
   /** tire un pack de 3 cartes ; tous les 10 packs une carte au moins « rare » est garantie, tous les 15 une « épique », et une « légendaire » après 30 packs sans légendaire */
-  const PITY = { rare: 10, epic: 15, legend: 30 };
+  const PITY = { rare: 10, epic: 15, legend: 30, apex: 150 };
   // ------------------------------------------------------------------ tirage par double indice (IC puis IP)
   /** poids d'apparition (en %) de chaque niveau d'IC (F à Z) et d'IP (I à X) pour un pack standard */
   const DROP_IC = [38, 26, 17, 10, 6, 2.6, 0.4], DROP_IP = [14, 17, 19, 18, 14, 9, 5, 2.5, 1, 0.5];
@@ -296,12 +296,12 @@
     const t = ic.reduce((x, y) => x + y, 0) || 1;
     return { ic: IC_LEVELS.map((k, i) => ({ k, p: ic[i] / t })), ip: IP_LEVELS.map((k, i) => ({ k, p: ip[i] / t })) };
   }
-  function drawPack(rarities, ids, rng, pity, epicPity, legendPity) {
+  function drawPack(rarities, ids, rng, pity, epicPity, legendPity, apexPity) {
     ids = ids.filter((id) => rarities.get(id) !== "mythic");
     const grid = dropGrid(rarities, ids, 1);
     if (!grid.all.length) { const out0 = []; for (let i = 0; i < 3; i++) out0.push(ids[Math.floor(rng() * ids.length)]); return out0; }
     const out = [];
-    for (let i = 0; i < 3; i++) out.push(drawOne(rarities, grid, rng, i === 2 ? (legendPity ? 3 : epicPity ? 2 : pity ? 1 : 0) : 0, out));
+    for (let i = 0; i < 3; i++) out.push(drawOne(rarities, grid, rng, i === 2 ? (apexPity ? 4 : legendPity ? 3 : epicPity ? 2 : pity ? 1 : 0) : 0, out));
     return out;
   }
 

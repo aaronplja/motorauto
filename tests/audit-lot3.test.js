@@ -26,9 +26,9 @@ ok("Atelier : sélection, barre d'actions, fusion et ancienne adresse #/fusion",
   ["data-atelier-toggle", "atelier-bar", "atActions", "atPreselectFuse", "isCardsRoute", 'MAExchange.fuse' ].forEach((k) => assert(c.includes(k), k));
   assert(/Fusionner " \+ FN \+ " doublons/.test(c), "libellé de fusion");
 });
-ok("Échanges : Pilotes, Marché, Souhaits, Reçues, Envoyées, Historique dans un seul onglet", () => {
+ok("Échanges : Pilotes, Marché, Souhaits, Mes échanges dans un seul onglet", () => {
   const t = read("js/game/trades.js"), p = read("js/game/play-plus.js");
-  ["pilots", "market", "wish", "in", "out", "done"].forEach((k) => assert(t.includes('["' + k + '"'), k));
+  ["pilots", "market", "wish", "mine"].forEach((k) => assert(t.includes('["' + k + '"'), k));
   assert(/window\.MAExchange = \{/.test(p) && /fuse:/.test(p) && /sell:/.test(p));
 });
 ok("Atelier : styles présents et nouveaux textes traduits", () => {

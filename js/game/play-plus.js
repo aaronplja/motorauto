@@ -27,26 +27,28 @@
 
   // ====================================================================== FUSION
   const FZ_ORDER = ["common", "rare", "epic"];
-  let fz = { doc: null, r: "", ids: [], busy: false };
+  let fz = { doc: null, r: "", ids: [], busy: false, open: "" };
   function fzDups(doc, r) {
     const sp = spareMap(doc);
     return Object.keys(sp).filter((id) => rarOf(id) === r).map((id) => ({ id, spare: sp[id] })).sort((a, b) => b.spare - a.spare || (a.id < b.id ? -1 : 1));
   }
+  const FZ_STEPS = [["common", "rare"], ["rare", "epic"], ["epic", "legendary"]];
   function fzRender() {
     const root = rootOf("fusion"); if (!root) return;
     if (!C.user) { root.innerHTML = loginNote(T("fusionner tes doublons")); return; }
     if (!fz.doc) { root.innerHTML = `<div class="tcg-skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
     const RAR = MC().RAR;
-    root.innerHTML = `<div class="fz-intro"><p>${T("Rassemble")} <b>${G.FUSE_COUNT}</b> ${T("doublons de la même rareté : ils fusionnent en une carte de la rareté supérieure, tirée au hasard (une carte que tu n'as pas encore en priorité).")}</p>
-      <p class="lap-meta">${T("Tu gardes toujours un exemplaire de chaque carte. Les échelons Apex et Héritage ne se fusionnent pas : elles se gagnent en packs et en albums.")}</p></div>` +
+    root.innerHTML = `<div class="fz2"><p class="fz2-intro">${T("Rassemble")} <b>${G.FUSE_COUNT}</b> ${T("doublons du même échelon pour obtenir une carte de l'échelon au-dessus. Tu gardes toujours un exemplaire de chaque carte.")}</p>` +
       FZ_ORDER.map((r) => {
         const dups = fzDups(fz.doc, r), total = dups.reduce((t, d) => t + d.spare, 0), mine = fz.r === r ? fz.ids : [];
-        const next = G.FUSE_NEXT[r], can = total >= G.FUSE_COUNT, picked = mine.length;
-        const btnLabel = picked === G.FUSE_COUNT ? T("Fusionner la sélection") : picked ? `${picked} / ${G.FUSE_COUNT}` : T("Fusionner automatiquement");
-        return `<section class="cg-block fz-block rar-${r}" data-r="${r}"><header class="cg-bh"><h3>${RAR[r].label} <span class="fz-arrow">→</span> ${RAR[next].label}</h3><span class="cg-sub">${total} ${T(total > 1 ? "doublons" : "doublon")} · ${T("il en faut")} ${G.FUSE_COUNT}</span></header>
-          ${dups.length ? `<div class="fz-grid">${dups.map((d) => { const n = mine.filter((x) => x === d.id).length; return `<button type="button" class="fz-pick${n ? " on" : ""}" data-fz-pick="${C.esc(d.id)}" data-r="${r}" aria-pressed="${n ? "true" : "false"}" aria-label="${C.esc(label(d.id))}">${mini(d.id)}<span class="fz-x">×${d.spare}</span>${n ? `<span class="fz-sel">${n}</span>` : ""}</button>`; }).join("")}</div>` : `<p class="empty-note small">${T("Aucun doublon de cette rareté pour l'instant.")}</p>`}
-          <div class="fz-actions"><button type="button" class="cta-btn fill-btn" data-fz-go="${r}" ${can && !fz.busy && (!picked || picked === G.FUSE_COUNT) ? "" : "disabled"}>${btnLabel}</button>${picked ? `<button type="button" class="cta-btn btn-ghost" data-fz-reset>${T("Vider la sélection")}</button>` : ""}</div></section>`;
-      }).join("");
+        const next = G.FUSE_NEXT[r], can = total >= G.FUSE_COUNT, picked = mine.length, open = fz.open === r;
+        const btnLabel = picked === G.FUSE_COUNT ? T("Fusionner ma sélection") : picked ? `${picked} / ${G.FUSE_COUNT}` : T("Fusionner");
+        return `<section class="fz2-step${can ? " ready" : ""}" data-r="${r}">
+          <div class="fz2-head"><span class="fz2-from">${RAR[r].label}</span><span class="fz2-arrow" aria-hidden="true">→</span><span class="fz2-to">${RAR[next].label}</span></div>
+          <div class="fz2-meter"><span class="fz2-dots" aria-hidden="true">${[0, 1, 2, 3, 4].map((i) => `<i${i < Math.min(total, G.FUSE_COUNT) ? ' class="on"' : ""}></i>`).join("")}</span><small>${total} ${T(total > 1 ? "doublons" : "doublon")} · ${can ? T("prêt à fusionner") : T("il en faut") + " " + G.FUSE_COUNT}</small></div>
+          <div class="fz2-act"><button type="button" class="cta-btn fill-btn" data-fz-go="${r}" ${can && !fz.busy && (!picked || picked === G.FUSE_COUNT) ? "" : "disabled"}>${btnLabel}</button>${dups.length ? `<button type="button" class="cta-btn btn-ghost" data-fz-open="${r}" aria-expanded="${open ? "true" : "false"}">${open ? T("Masquer") : T("Choisir mes cartes")}</button>` : ""}${picked ? `<button type="button" class="cta-btn btn-ghost" data-fz-reset>${T("Vider")}</button>` : ""}</div>
+          ${open && dups.length ? `<div class="fz-grid">${dups.map((d) => { const n = mine.filter((x) => x === d.id).length; return `<button type="button" class="fz-pick${n ? " on" : ""}" data-fz-pick="${C.esc(d.id)}" data-r="${r}" aria-pressed="${n ? "true" : "false"}" aria-label="${C.esc(label(d.id))}">${mini(d.id)}<span class="fz-x">×${d.spare}</span>${n ? `<span class="fz-sel">${n}</span>` : ""}</button>`; }).join("")}</div>` : ""}</section>`;
+      }).join("") + `<p class="fz2-note">${T("Les échelons Apex et Héritage ne se fusionnent pas : ils se gagnent en packs et en albums.")}</p></div>`;
   }
   function fzOverlay(res, usedIds) {
     return new Promise((resolve) => {
@@ -220,6 +222,7 @@
         else C.toast(`${G.FUSE_COUNT} ${T("cartes au maximum.")}`, "err");
         fzRender(); return;
       }
+      b = t.closest("[data-fz-open]"); if (b) { fz.open = fz.open === b.dataset.fzOpen ? "" : b.dataset.fzOpen; fzRender(); return; }
       if (t.closest("[data-fz-reset]")) { fz.ids = []; fz.r = ""; fzRender(); return; }
       b = t.closest("[data-fz-go]"); if (b) { fzGo(b.dataset.fzGo); return; }
       b = t.closest("[data-mk-tab]"); if (b) { mk.tab = b.dataset.mkTab; mk.confirm = ""; mkRender(); return; }
