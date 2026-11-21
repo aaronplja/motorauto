@@ -20,7 +20,7 @@
 
   const ITEMS_PER_PAGE = 20;
   // filtres du catalogue gardés pour la session : on retrouve sa recherche en revenant d'une fiche (UX-105)
-  const FILTER_KEYS = ["category", "brand", "sort", "query", "page"];
+  const FILTER_KEYS = ["category", "genre", "brand", "sort", "query", "page"];
   function saveFilters() { try { const o = {}; FILTER_KEYS.forEach((k) => { o[k] = filters[k]; }); sessionStorage.setItem("ma.filters", JSON.stringify(o)); } catch (_) { /* facultatif */ } }
   function restoreFilters() {
     try { const o = JSON.parse(sessionStorage.getItem("ma.filters") || "null"); if (!o) return false; let any = false; FILTER_KEYS.forEach((k) => { if (k in o && o[k] !== filters[k]) { filters[k] = o[k]; any = true; } }); return any; } catch (_) { return false; }
@@ -28,6 +28,7 @@
   function advHasFilters() { return ["drive", "verdict", "turbo", "rarity"].some((k) => filters[k] !== "all") || ["pmin", "pmax", "zero", "vmax", "yfrom", "yto"].some((k) => filters[k] != null); }
   function syncFiltersUi() {
     const pills = $("body-filter-chips"); if (pills) pills.querySelectorAll(".filter-pill:not(#noimg-pill)").forEach((b) => b.classList.toggle("active", b.dataset.filterType === filters.category));
+    const gp = $("genre-filter-chips"); if (gp) gp.querySelectorAll(".filter-pill").forEach((b) => b.classList.toggle("active", b.dataset.genre === filters.genre));
     const bs = $("brand-select"); if (bs && [...bs.options].some((o) => o.value === filters.brand)) bs.value = filters.brand;
     const ss = $("sort-select"); if (ss && [...ss.options].some((o) => o.value === filters.sort)) ss.value = filters.sort;
     const ci = $("catalog-search-input"); if (ci) ci.value = filters.query || "";
@@ -51,7 +52,7 @@
   let cloudIds = new Set();
   let cloudCars = [];
 
-  const filters = { noimg: false, category: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", verdict: "all", turbo: "all", rarity: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
+  const filters = { noimg: false, category: "all", genre: "all", brand: "all", sort: "name-asc", query: "", page: 1, drive: "all", verdict: "all", turbo: "all", rarity: "all", pmin: null, pmax: null, zero: null, vmax: null, yfrom: null, yto: null };
 
   let modalStack = [];
   let allLaps = [];
@@ -227,11 +228,32 @@
   }
   const RARK = { mythic: 0, shiny: 1, legendary: 2, epic: 3, rare: 4, common: 5 };
   const carRarity = (c) => (window.MACards && window.MACards.rarityOf ? window.MACards.rarityOf(c) : "common");
+  // « style » d'une voiture (SUV, électrique, cabriolet, pick-up, youngtimer) : même calcul que dans le jeu (game-core)
+  const GENRE_NAMES = { suv: "SUV", ev: "Électrique", cabrio: "Cabriolet", pickup: "Pick-up", young: "Youngtimer" }, genreMemo = new Map();
+  function carGenres(c) {
+    if (!c) return [];
+    let g = genreMemo.get(c.id);
+    if (!g) { g = window.MAGameCore && window.MAGameCore.genresOf ? window.MAGameCore.genresOf({ id: c.id, category: c.category, years: c.years }) : []; genreMemo.set(c.id, g); }
+    return g;
+  }
+  /** fiche technique complète : poids, rapport poids-puissance, cylindrée, exemplaires, prix neuf, consommation (champ « specs » facultatif) */
+  function specsHtml(car) {
+    const x = car.specs; if (!x) return "";
+    const nf = (n) => Number(n).toLocaleString("fr-FR"), it = [];
+    if (x.w) it.push([nf(x.w) + " kg", "poids"]);
+    if (x.w && car.stats && car.stats.power) it.push([nf(Math.round(car.stats.power * 1000 / x.w)) + " ch/t", "rapport poids-puissance"]);
+    if (x.d) it.push([nf(x.d) + " cm³", "cylindrée"]);
+    if (x.n) it.push([nf(x.n), x.n > 1 ? "exemplaires construits" : "exemplaire construit"]);
+    if (x.p) it.push([esc(x.p), "prix neuf"]);
+    if (x.c) it.push([esc(x.c), "consommation"]);
+    return it.length ? `<div class="sheet-kpis sheet-specs" aria-label="Fiche technique">${it.map((k) => `<div><b>${k[0]}</b><small>${k[1]}</small></div>`).join("")}</div>` : "";
+  }
   function getFilteredCars() {
     let result = CATALOGUE;
     if (filters.query.trim()) result = result.filter((c) => matchesQuery(c, filters.query));
     if (filters.noimg && isAdmin) result = result.filter((c) => noImageIds.has(c.id));
     if (filters.category !== "all") result = result.filter((c) => c.category === filters.category);
+    if (filters.genre !== "all") result = result.filter((c) => carGenres(c).indexOf(filters.genre) >= 0);
     if (filters.brand !== "all") result = result.filter((c) => c.group === filters.brand);
     if (filters.drive !== "all") result = result.filter((c) => (c.drives || []).includes(filters.drive));
     if (filters.verdict !== "all") result = result.filter((c) => c.track && c.track.verdict === filters.verdict);
@@ -412,7 +434,7 @@
 
     updateGauge(heroMatches());
     saveFilters();
-    const filtered = filters.category !== "all" || filters.brand !== "all" || !!filters.query || advHasFilters();
+    const filtered = filters.category !== "all" || filters.genre !== "all" || filters.brand !== "all" || !!filters.query || advHasFilters();
     grid.innerHTML = pageItems.length === 0
       ? `<div class="empty-state"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><b>Aucun véhicule ne correspond</b><p>${filtered ? "Essaie avec moins de filtres ou une autre orthographe." : "Le catalogue est vide pour le moment."}</p>${filtered ? `<button type="button" class="btn btn-primary" data-action="reset-all-filters">Réinitialiser les filtres</button>` : ""}<a class="empty-link" href="#/contact">Proposer ce véhicule</a></div>`
       : pageItems.map(carCard).join("");
@@ -579,9 +601,10 @@
           <div><b>${s.speed || "—"}</b><small>km/h en pointe</small></div>
           <div><b>${s.zero || "—"}</b><small>secondes de 0 à 100</small></div>
           <div><b>${esc(String(car.years || "—").replace(/\s*-\s*/, "–"))}</b><small>production</small></div>
-          <div><b>${esc(car.category || "—")}</b><small>catégorie</small></div>
+          <div><b>${esc(car.category || "—")}${carGenres(car).length ? ` · ${carGenres(car).map((k) => esc(GENRE_NAMES[k])).join(" · ")}` : ""}</b><small>catégorie</small></div>
           <div><b>${nEng || "—"}</b><small>${nEng > 1 ? "motorisations" : "motorisation"}</small></div>
         </div>
+        ${specsHtml(car)}
 
         ${car.approx ? `<p class="sheet-approx">Chiffres de référence arrondis (indicatifs) : ils varient selon l'année, le marché et le règlement.</p>` : ""}
         ${window.MACards && window.MACards.sheetBadge ? window.MACards.sheetBadge(car) : ""}
@@ -2809,13 +2832,14 @@
     const q = new URLSearchParams(location.search);
     const car = q.get("car"), pilot = q.get("pilot"), login = q.get("login"), search = q.get("q");
     // filtres du catalogue dans l'adresse : ?categorie=Coupé&marque=bmw&tri=power-desc&de=1980&a=1999 (liens partageables ; valeurs inconnues ignorées)
-    const fcat = q.get("categorie"), fbrand = q.get("marque"), fsort = q.get("tri"), fde = Number(q.get("de")), fa = Number(q.get("a"));
+    const fgenre = q.get("style"), fcat = q.get("categorie"), fbrand = q.get("marque"), fsort = q.get("tri"), fde = Number(q.get("de")), fa = Number(q.get("a"));
     const sortOk = (v) => { const ss = $("sort-select"); return !!v && !!ss && [...ss.options].some((o) => o.value === v); };
-    const hasF = !!(fcat || fbrand || sortOk(fsort) || fde || fa);
+    const hasF = !!(fcat || fgenre || fbrand || sortOk(fsort) || fde || fa);
     if (!car && !pilot && !login && !search && !hasF) return;
     history.replaceState(null, "", location.pathname + location.hash);
     if (hasF) {
       if (fcat && /^[\p{L}\p{N} &'-]{1,30}$/u.test(fcat)) filters.category = fcat;
+      if (fgenre && GENRE_NAMES[fgenre]) filters.genre = fgenre;
       if (fbrand && /^[\p{L}\p{N} .&'-]{1,40}$/u.test(fbrand)) filters.brand = fbrand;
       if (sortOk(fsort)) filters.sort = fsort;
       if (fde >= 1880 && fde <= 2100) filters.yfrom = fde;
@@ -2995,7 +3019,7 @@
     $("vehicles-grid").addEventListener("click", (e) => {
       if (!e.target.closest('[data-action="reset-all-filters"]')) return;
       $("adv-reset").click();
-      filters.category = "all"; filters.brand = "all"; filters.query = ""; filters.page = 1;
+      filters.category = "all"; filters.genre = "all"; filters.brand = "all"; filters.query = ""; filters.page = 1;
       syncFiltersUi(); searchInput.value = ""; renderCatalog();
     });
     if (restoreFilters()) { syncFiltersUi(); renderCatalog(); }
@@ -3005,6 +3029,9 @@
       filters.noimg = !filters.noimg; filters.page = 1;
       $("noimg-pill").classList.toggle("active", filters.noimg); $("noimg-pill").setAttribute("aria-pressed", String(filters.noimg));
       if (filters.noimg && !noImageIds.size) scanNoImage(); else renderCatalog();
+    });
+    $("genre-filter-chips").querySelectorAll(".filter-pill").forEach((btn) => {
+      btn.addEventListener("click", () => { filters.genre = btn.dataset.genre; filters.page = 1; syncFiltersUi(); renderCatalog(); });
     });
     $("body-filter-chips").querySelectorAll(".filter-pill:not(#noimg-pill)").forEach((btn) => {
       btn.addEventListener("click", () => {

@@ -1,0 +1,75 @@
+marque;modele;categorie;annees;puissance;couple;vmax;zero;moteur;transmission;description;poids;cylindree;exemplaires
+Hyundai;Ioniq 5 N;Break;2023 - ;650;770;260;3,4;Électrique double moteur 84 kWh;Monovitesse;Le crossover électrique qui simule une boîte et un son de moteur.;2230;;
+Kia;EV6 GT;Break;2022 - ;585;740;260;3,5;Électrique double moteur 77 kWh;Monovitesse;Le crossover électrique le plus rapide de la marque coréenne.;2185;;
+Ford;Mustang Mach-E GT;Break;2021 - ;487;860;200;3,7;Électrique double moteur 88 kWh;Monovitesse;Le nom Mustang sur un crossover électrique.;2220;;
+Lucid;Air Sapphire;Berline;2023 - ;1234;1430;330;1,9;Électrique triple moteur 118 kWh;Monovitesse;Une berline électrique de plus de 1 200 ch et plus de 800 km d'autonomie.;2360;;
+Pininfarina;Battista;Supercar;2021 - 2023;1900;2340;350;1,9;Électrique quadruple moteur 120 kWh;Monovitesse;L'hypercar électrique de Pininfarina, dessinée à Turin.;2200;;150
+Volkswagen;ID.R;Le Mans;2018 - 2018;680;650;;2,3;Électrique double moteur;Monovitesse;La prototype électrique qui a battu le record de Pikes Peak en 2018.;1100;;1
+Mini;Cooper SE;Coupé;2020 - ;184;270;150;7,3;Électrique 32,6 kWh;Monovitesse;La Mini 100 % électrique, petite et vive.;1365;;
+Tesla;Model Y Performance;Break;2020 - ;460;660;250;3,7;Électrique double moteur;Monovitesse;Le crossover le plus vendu au monde en 2023.;1997;;
+Tesla;Model X Plaid;Break;2021 - ;1020;1420;262;2,6;Électrique triple moteur;Monovitesse;Un SUV de sept places aussi rapide qu'une supercar.;2459;;
+Lotus;Eletre R;Break;2023 - ;905;985;265;2,95;Électrique double moteur 112 kWh;Monovitesse;Le premier SUV de l'histoire de Lotus, 100 % électrique.;2650;;
+Aston Martin;DBX 707;Break;2022 - ;707;900;310;3,3;V8 4.0 L biturbo;Automatique 9;Le SUV le plus puissant de sa catégorie en 2022.;2245;3982;
+Bentley;Bentayga Speed;Break;2019 - ;635;900;306;3,9;W12 6.0 L biturbo;Automatique 8;Un SUV de luxe qui dépasse 300 km/h.;2530;5950;
+Rolls-Royce;Cullinan;Break;2018 - ;571;850;250;5,2;V12 6.75 L biturbo;Automatique 8;Le premier SUV de l'histoire de Rolls-Royce.;2660;6749;
+Land Rover;Range Rover Sport SVR;Break;2015 - 2022;575;700;280;4,5;V8 5.0 L compresseur;Automatique 8;Le SUV britannique au son de V8 américain.;2310;4999;
+Mercedes-Benz;AMG G 63 (W463);Break;2018 - ;585;850;220;4,5;V8 4.0 L biturbo;Automatique 9;Le tout-terrain militaire devenu icône du luxe.;2560;3982;
+Mercedes-Benz;G 500 4x4²;Break;2015 - 2018;422;610;210;5,5;V8 4.0 L biturbo;Automatique 7;Un G à portiques et garde au sol extrême.;;;
+Maserati;Grecale Trofeo;Break;2022 - ;530;620;285;3,8;V6 3.0 L biturbo Nettuno;Automatique 8;Un SUV italien avec le V6 de la MC20.;1990;2992;
+Alfa Romeo;Stelvio Quadrifoglio;Break;2017 - ;510;600;283;3,8;V6 2.9 L biturbo;Automatique 8;Le SUV qui a battu les records du Nürburgring.;1830;2891;
+Audi;RS Q8;Break;2019 - ;600;800;305;3,8;V8 4.0 L biturbo;Automatique 8;Le SUV coupé de la gamme RS.;2315;3996;
+BMW;X5 M Competition (F95);Break;2019 - ;625;750;290;3,8;V8 4.4 L biturbo;Automatique 8;Un SUV familial de 625 ch.;2310;4395;
+BMW;XM;Break;2022 - ;653;800;250;4,3;V8 4.4 L biturbo + hybride;Automatique 8;Le premier modèle M autonome depuis la M1 de 1978.;2710;4395;
+Jeep;Grand Cherokee Trackhawk;Break;2018 - 2021;710;868;289;3,5;V8 6.2 L compresseur;Automatique 8;Le SUV familial le plus puissant du moment, avec le Hellcat.;2433;6166;
+Jeep;Wrangler Rubicon 392;Break;2021 - ;470;637;180;4,5;V8 6.4 L Hemi;Automatique 8;Un 4x4 d'aventure avec un V8 de muscle car.;2130;6417;
+Lamborghini;LM002;Break;1986 - 1993;455;500;210;7,7;V12 5.2 L;Manuelle 5;Le « Rambo Lambo », le SUV du taureau avant l'heure.;2700;5167;301
+Ram;1500 TRX;Break;2021 - ;702;880;190;4,5;V8 6.2 L compresseur Hellcat;Automatique 8;Un pick-up de 700 ch fait pour sauter dans les dunes.;;6166;
+Chevrolet;SSR;Coupé;2003 - 2006;300;460;210;7,0;V8 5.3 L;Automatique 4;Un pick-up rétro avec un toit rigide rétractable.;2000;5328;24150
+Chevrolet;El Camino SS 454;Coupé;1970 - 1970;360;650;190;6,5;V8 7.4 L;Manuelle 4;Le pick-up coupé de style muscle car.;1700;7440;
+Volkswagen;Amarok V6;Break;2016 - 2022;258;580;193;7,9;V6 3.0 L TDI;Automatique 8;Un pick-up allemand pour la ville et le chantier.;2100;2967;
+Jaguar;F-Type R Convertible;Coupé;2014 - 2020;550;680;300;3,9;V8 5.0 L compresseur;Automatique 8;Le cabriolet le plus expressif de Jaguar.;1730;4999;
+Audi;R8 Spyder V10;Coupé;2010 - 2015;540;540;318;3,7;V10 5.2 L;Double embrayage 7;Un V10 atmosphérique à l'air libre.;1700;5204;
+Fiat;124 Spider;Coupé;1966 - 1985;90;120;180;11,0;4 cylindres 1.4 L;Manuelle 5;Le petit roadster italien dessiné par Pininfarina.;940;1438;
+Mercedes-AMG;GT Roadster;Coupé;2017 - 2021;476;630;304;4,0;V8 4.0 L biturbo;Automatique 7;Le roadster V8 de Mercedes-AMG.;1645;3982;
+Porsche;911 Targa (993);Coupé;1995 - 1998;272;330;270;5,6;Flat-6 3.6 L;Manuelle 6;Le toit en verre coulissant remplace le toit ouvrant.;1420;3600;
+Maserati;GranCabrio Sport;Coupé;2012 - 2019;460;520;289;4,8;V8 4.7 L;Automatique 6;Le cabriolet italien à quatre places.;1980;4691;
+Lamborghini;Huracán EVO Spyder;Supercar;2019 - 2022;640;600;325;3,1;V10 5.2 L;Double embrayage 7;La toile qui laisse chanter le V10.;1509;5204;
+Aston Martin;DB11 Volante;Coupé;2018 - 2023;510;675;300;4,1;V8 4.0 L biturbo;Automatique 8;Le cabriolet de grand tourisme d'Aston Martin.;1870;3982;
+McLaren;570S Spider;Supercar;2017 - 2021;570;600;328;3,2;V8 3.8 L biturbo;Double embrayage 7;Une supercar à toit rétractable en une quinzaine de secondes.;1359;3799;
+Honda;Civic Type R EK9;Coupé;1997 - 2000;185;160;220;6,7;4 cylindres 1.6 L VTEC;Manuelle 5;La première Civic Type R, légère et acrobatique.;1050;1595;
+Honda;Integra Type R DC2;Coupé;1995 - 2001;190;178;230;6,2;4 cylindres 1.8 L VTEC;Manuelle 5;Une traction de 190 ch considérée comme la meilleure de sa génération.;1100;1797;
+Subaru;Impreza 22B STi;Coupé;1998 - 1998;280;363;248;5,0;Flat-4 2.2 L turbo;Manuelle 5;La série limitée à 424 exemplaires célébrant les 40 ans de Subaru.;1270;2212;424
+Mitsubishi;Lancer Evolution VI Tommi Mäkinen Edition;Berline;1999 - 2000;280;373;250;4,6;4 cylindres 2.0 L turbo;Manuelle 5;La Lancer hommage au quadruple champion du monde.;1360;1997;
+Toyota;Celica GT-Four ST205;Coupé;1994 - 1999;255;304;245;5,9;4 cylindres 2.0 L turbo;Manuelle 5;La dernière Celica de rallye, victorieuse en WRC.;1470;1998;
+Renault;21 Turbo;Berline;1987 - 1994;175;265;225;7,3;4 cylindres 2.0 L turbo;Manuelle 5;Une berline familiale devenue mythique en Groupe N.;1260;1995;
+Renault;5 GT Turbo;Coupé;1985 - 1991;115;163;195;7,5;4 cylindres 1.4 L turbo;Manuelle 5;La petite bombe turbo, star des années 80.;840;1397;
+Citroën;AX GTi;Coupé;1992 - 1996;100;124;190;8,4;4 cylindres 1.4 L;Manuelle 5;Une citadine de 100 ch pesant moins de 800 kg.;800;1360;
+Opel;Omega Lotus;Berline;1990 - 1992;377;568;283;5,2;6 cylindres 3.6 L biturbo;Manuelle 6;La berline la plus rapide du monde en 1990, retouchée par Lotus.;1650;3615;950
+BMW;M3 E30 Sport Evolution;Coupé;1990 - 1990;238;240;248;6,5;4 cylindres 2.5 L;Manuelle 5;La version limitée la plus extrême de la M3 DTM.;1200;2467;600
+Mercedes-Benz;190 E 2.5-16 Evolution II;Berline;1990 - 1990;235;245;250;7,1;4 cylindres 2.5 L;Manuelle 5;La berline à aileron massif pour le DTM.;1340;2463;502
+Porsche;944 Turbo S;Coupé;1988 - 1991;250;350;260;5,9;4 cylindres 2.5 L turbo;Manuelle 5;La 944 la plus rapide jamais construite.;1350;2479;
+Porsche;968 Club Sport;Coupé;1993 - 1995;240;305;252;6,1;4 cylindres 3.0 L;Manuelle 6;Une Porsche allégée à 1 300 kg pour la piste.;1320;2990;
+Nissan;Pulsar GTI-R;Coupé;1990 - 1994;227;292;232;5,6;4 cylindres 2.0 L turbo;Manuelle 5;La petite Nissan à quatre roues motrices pour le rallye.;1200;1998;
+Alpine;GTA V6 Turbo;Coupé;1985 - 1991;200;285;245;6,9;V6 2.8 L turbo;Manuelle 5;Un moteur V6 PRV monté en position arrière.;1300;2849;
+Alpine;A610 Turbo;Coupé;1991 - 1995;250;350;265;5,7;V6 3.0 L turbo;Manuelle 5;La dernière Alpine de série avant la renaissance de 2017.;1420;2975;818
+BMW;850 CSi;Coupé;1992 - 1996;380;550;250;6,0;V12 5.6 L;Manuelle 6;Un V12 pour le grand coupé allemand.;1790;5576;1510
+Buick;Grand National GNX;Coupé;1987 - 1987;276;475;;5,0;V6 3.8 L turbo;Automatique 4;La muscle car turbo qui battait les Ferrari au feu rouge.;1650;3791;547
+Mercedes-AMG;GT Black Series;Supercar;2020 - 2021;730;800;325;3,2;V8 4.0 L biturbo;Double embrayage 7;Le premier V8 AMG à vilebrequin plat, version piste.;1540;3982;
+Ford;Focus RS Mk2;Coupé;2009 - 2010;305;440;263;5,9;5 cylindres 2.5 L turbo;Manuelle 6;Une traction de 305 ch qui a séduit toute l'Europe.;1530;2521;
+Ford;Focus RS Mk3;Coupé;2016 - 2018;350;470;266;4,7;4 cylindres 2.3 L turbo;Manuelle 6;La Focus RS à quatre roues motrices et mode drift.;1599;2261;
+Ford;Fiesta ST (2013);Coupé;2013 - 2017;182;240;220;6,9;3 cylindres 1.6 L turbo;Manuelle 6;Une petite sportive abordable à la tenue de route exemplaire.;1163;1596;
+Peugeot;308 GTi 270;Coupé;2015 - 2020;270;330;250;6,0;4 cylindres 1.6 L turbo;Manuelle 6;La GTI de Peugeot Sport avec différentiel Torsen.;1205;1598;
+Renault;Mégane RS Trophy-R;Coupé;2019 - 2019;300;420;262;5,7;4 cylindres 1.8 L turbo;Manuelle 6;Record du Nürburgring en traction en 2019.;1306;1798;
+Honda;Civic Type R FK8;Coupé;2017 - 2021;320;400;272;5,7;4 cylindres 2.0 L VTEC turbo;Manuelle 6;Une traction de 320 ch très extrême.;1380;1996;
+Honda;Civic Type R FL5;Coupé;2022 - ;329;420;275;5,4;4 cylindres 2.0 L VTEC turbo;Manuelle 6;La dernière génération de Type R thermique.;1429;1996;
+Nissan;Z (RZ34);Coupé;2022 - ;405;475;250;4,3;V6 3.0 L biturbo;Manuelle 6;Le retour du Z avec boîte manuelle.;1600;2997;
+Audi;RS 3 (8Y);Berline;2021 - ;400;500;290;3,8;5 cylindres 2.5 L turbo;Double embrayage 7;Un cinq cylindres de 400 ch et mode drift.;1620;2480;
+BMW;M2 (G87);Coupé;2023 - ;460;550;250;4,1;6 cylindres 3.0 L biturbo;Manuelle 6;La petite M de 460 ch pour 1 800 kg.;1750;2993;
+BMW;M4 CSL (G82);Coupé;2022 - 2023;550;650;307;3,7;6 cylindres 3.0 L biturbo;Automatique 8;Le retour du sigle CSL, avec un poids réduit.;1625;2993;1000
+Mercedes-AMG;A 45 S 4MATIC+;Coupé;2019 - ;421;500;270;3,9;4 cylindres 2.0 L turbo;Double embrayage 8;La compacte de série la plus puissante jamais conçue par AMG.;1635;1991;
+Porsche;718 Cayman GT4 RS;Coupé;2021 - ;500;450;315;3,4;Flat-6 4.0 L;Double embrayage 7;Le flat-6 de la 911 GT3 dans une Cayman.;1415;3996;
+Porsche;911 GT2 RS (991);Coupé;2017 - 2018;700;750;340;2,8;Flat-6 3.8 L biturbo;Double embrayage 7;La 911 de série la plus puissante de l'histoire à l'époque.;1470;3800;1000
+Porsche;911 Turbo S (992);Coupé;2020 - ;650;800;330;2,7;Flat-6 3.7 L biturbo;Double embrayage 8;La 911 de tous les jours à 650 ch.;1640;3745;
+Cadillac;CT5-V Blackwing;Berline;2022 - ;668;893;320;3,4;V8 6.2 L compresseur;Manuelle 6;Une berline américaine avec boîte manuelle.;1865;6162;
+Lexus;RC F;Coupé;2014 - ;477;530;270;4,3;V8 5.0 L;Automatique 8;Un V8 japonais atmosphérique et gourmand.;1727;4969;
+Dodge;Challenger SRT Hellcat Redeye;Coupé;2019 - 2023;797;959;327;3,6;V8 6.2 L compresseur;Automatique 8;Plus de 800 ch pour un coupé à propulsion.;2000;6166;

@@ -7,7 +7,7 @@
  *   node scripts/add-cars.js voitures.csv --dry      -> montre ce qui serait créé, sans rien écrire
  *
  * Le tableau (CSV ou TSV, 1re ligne = en-têtes ; export Excel / Numbers / Google Sheets accepté) :
- *   marque ; modele ; categorie ; annees ; puissance ; couple ; vmax ; zero ; moteur ; transmission ; description ; histoire ; palmares
+ *   marque ; modele ; categorie ; annees ; puissance ; couple ; vmax ; zero ; moteur ; transmission ; description ; histoire ; palmares ; poids ; cylindree ; exemplaires ; prix ; conso   (les 5 derniers : fiche technique, facultatifs)
  *   (histoire = la biographie de la fiche · palmares = plusieurs lignes séparées par « ¦ », chacune « Titre : texte » ou juste un texte)
  * Seuls marque et modele sont obligatoires. « annees » : « 1998 - 2005 ». « zero » : le 0 à 100 km/h en secondes.
  * Une ligne = une voiture = une fiche (jamais plusieurs modèles sur la même fiche). L'identifiant est tiré de « marque modele ».
@@ -44,7 +44,7 @@ function parse(text) {
 }
 const KEY = { marque: "brand", brand: "brand", modele: "model", model: "model", categorie: "category", category: "category", annees: "years", years: "years", annee: "years",
   puissance: "power", ch: "power", couple: "torque", vmax: "speed", vitessemax: "speed", zero: "zero", "0100": "zero", moteur: "engine", engine: "engine",
-  transmission: "trans", boite: "trans", description: "desc", histoire: "history", palmares: "records", palmaresrecords: "records", records: "records", anecdote: "anecdote" };
+  transmission: "trans", boite: "trans", poids: "weight", weight: "weight", prix: "price", price: "price", exemplaires: "built", production: "built", cylindree: "disp", disp: "disp", conso: "cons", consommation: "cons", description: "desc", histoire: "history", palmares: "records", palmaresrecords: "records", records: "records", anecdote: "anecdote" };
 const rows = parse(fs.readFileSync(path.resolve(file), "utf8"));
 const head = rows.shift().map((h) => KEY[slug(h).replace(/-/g, "")] || null);
 if (!head.includes("brand") || !head.includes("model")) { console.error("Il faut au moins les colonnes « marque » et « modele »."); process.exit(1); }
@@ -66,7 +66,8 @@ list.forEach((o) => {
   const desc = o.desc || `${o.brand} ${o.model}${years ? " (" + years + ")" : ""}${o.category ? ", " + o.category.toLowerCase() : ""}.`;
   const recs = (o.records || "").split("¦").map((x) => x.trim()).filter(Boolean).map((x) => { const i = x.indexOf(" : "); return i > 0 && i < 40 ? [x.slice(0, i), x.slice(i + 3)] : ["Palmarès", x]; });
   out.push({ id, brand: o.brand, model: o.model, category: o.category || "Coupé", years, desc, history: o.history || "", recs,
-    e: [o.engine || "—", num(o.power), num(o.torque), num(o.speed), num(o.zero), o.trans || "—"] });
+    e: [o.engine || "—", num(o.power), num(o.torque), num(o.speed), num(o.zero), o.trans || "—"],
+    s: Object.fromEntries([["w", num(o.weight)], ["d", num(o.disp)], ["n", num(o.built)], ["p", o.price || ""], ["c", o.cons || ""]].filter((kv) => kv[1])) });
 });
 const name = slug(path.basename(file, path.extname(file))) || "pack";
 const target = path.join(root, "js", "data", `data-enrich-pack-${name}.js`);
@@ -79,7 +80,7 @@ const js = `/** MOTORAUTO — pack « ${name} » : ${out.length} voiture(s), une
   const { E, P, C, push } = MAKIT;
   push([
 ${out.map((c) => `    C(${JSON.stringify(c.id)}, ${JSON.stringify(c.brand)}, ${JSON.stringify(c.model)}, ${JSON.stringify(c.category)}, ${JSON.stringify(c.years)}, ${JSON.stringify(c.desc)},
-      [P("Version principale", "", [E(${c.e.map((v) => JSON.stringify(v)).join(", ")})])], { h: ${JSON.stringify(c.history)}, r: ${JSON.stringify(c.recs)}, approx: true })`).join(",\n")}
+      [P("Version principale", "", [E(${c.e.map((v) => JSON.stringify(v)).join(", ")})])], { h: ${JSON.stringify(c.history)}, r: ${JSON.stringify(c.recs)}, approx: true${Object.keys(c.s).length ? ", s: " + JSON.stringify(c.s) : ""} })`).join(",\n")}
   ]);
 })();
 `;

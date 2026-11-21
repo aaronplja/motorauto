@@ -642,7 +642,11 @@
     // albums « catégorie » : les familles trop grandes (Le Mans, rallye) sont découpées en collections atteignables
     ["lemans-classic", "Le Mans : l'âge d'or (avant 1980)", null, null, 100, (c) => c.category === "Le Mans" && yearOf(c) > 0 && yearOf(c) < 1980],
     ["lemans-modern", "Le Mans : l'ère moderne (1980 et après)", null, null, 100, (c) => c.category === "Le Mans" && yearOf(c) >= 1980],
-    ["rallye-monde", "Rallye : les reines des spéciales", null, null, 120, (c) => String(c.id).indexOf("rally-") === 0]
+    ["rallye-monde", "Rallye : les reines des spéciales", null, null, 120, (c) => String(c.id).indexOf("rally-") === 0],
+    ["genre-suv", "SUV et crossovers", null, null, 120, (c) => genresOf(c).indexOf("suv") >= 0],
+    ["genre-ev", "Électriques : la nouvelle ère", null, null, 100, (c) => genresOf(c).indexOf("ev") >= 0],
+    ["genre-cabrio", "Cabriolets et roadsters", null, null, 140, (c) => genresOf(c).indexOf("cabrio") >= 0],
+    ["genre-pickup", "Pick-up et tout-terrain de travail", null, null, 80, (c) => genresOf(c).indexOf("pickup") >= 0]
   ];
   const themedOf = (list, t) => (list || []).filter((c) => { const b = String(c.brand || ""); if (t[2] && !t[2].test(b)) return false; if (t[5] && !t[5](c)) return false; return !t[3] || t[3].test(b + " " + String(c.model || c.name || "")); }).map((c) => c.id);
   function setsOf(list) {
@@ -656,8 +660,8 @@
       (list || []).forEach((c) => { const v = keyFn(c); if (!v && v !== 0) return; if (!m.has(v)) m.set(v, []); m.get(v).push(c.id); });
       m.forEach((ids, v) => { if (ids.length >= min && ids.length <= max) add(prefix + ":" + v, nameFn ? nameFn(v) : v, kind, ids, LEGENDS[prefix + ":" + v]); });
     };
-    group((c) => countryOf(c.brand), "country", "country", 2, 400, (v) => (COUNTRIES.find((k) => k.id === v) || {}).label || v);
-    group((c) => decadeOf(c) || "", "decade", "decade", 2, 400, (v) => decadeLabel(Number(v)));
+    group((c) => countryOf(c.brand), "country", "country", 2, 800, (v) => (COUNTRIES.find((k) => k.id === v) || {}).label || v);
+    group((c) => decadeOf(c) || "", "decade", "decade", 2, 800, (v) => decadeLabel(Number(v)));
     group((c) => String(c.brand || "").trim(), "brand", "brand", 3, 30);
     group((c) => String(c.category || "").trim(), "cat", "category", 3, 80);
     THEMED_SETS.forEach((t) => { const ids = themedOf(list, t); if (ids.length >= 3 && ids.length <= 120) { const before = out.length; add("theme:" + t[0], t[1], "theme", ids, LEGENDS["theme:" + t[0]]); if (out.length > before) { if (out[out.length - 1].ids.length < 3) out.pop(); else out[out.length - 1].reward = Math.min(700, out[out.length - 1].reward + t[4]); } } });
@@ -1671,6 +1675,24 @@ Le Cheval cabré|Ferrari|2
   }
   /** points de quiz du mois : champ du document gstats, un par mois (la remise à zéro se fait toute seule au changement de mois) */
   const quizField = (ms) => "qp" + monthKey(ms).replace("-", "");
+  // ---- genres : un « style » en plus de la catégorie (une voiture peut en avoir plusieurs). Calculé d'après l'identifiant de la fiche et l'année.
+  const GENRES = { suv: "SUV", ev: "Électrique", cabrio: "Cabriolet", pickup: "Pick-up", young: "Youngtimer" };
+  const GT_SUV = new Set("model-x grecale xm eletre range-rover g-63 lm002 x1 x2 x3 x4 x5 x6 x7 ix3 gla glb glk glc gle gls eqa eqb eqc eqe cayenne macan urus levante purosangue dbx stelvio formentor defender wrangler trackhawk durango bronco explorer kuga captur kadjar rafale arkana duster tiguan touareg cx5 cx60 rav4 xc40 xc60 xc90 ev6 ev9 ioniq5 cybertruck jimny pajero ariya enyaq q3 q5 q7 q8 cullinan bentayga".split(" "));
+  const GT_PICK = new Set("f150 raptor silverado hilux ram tundra tacoma ranger amarok lightning mammoth maverick sierra-pickup el-camino ssr navara".split(" "));
+  const GT_CABRIO = new Set("sl grancabrio boxster spider spyder cabriolet cabrio cc roadster targa barchetta speedster slk z1 z3 z4 mx5 mx-5 gts california cti stag drophead volante convertible".split(" "));
+  const GT_EV = new Set("ev6 ev9 mach-e lucid tesla rimac polestar taycan nevera evija leaf zoe i3 i4 ix eqa eqb eqc eqe eqs ariya etech electrique electric ioniq id e-tron etron twizy battista roadster2008 enyaq".split(" "));
+  const genresOf = (c) => {
+    if (!c) return [];
+    const id = String(c.id || ""), tk = id.split("-"), has = (S) => tk.some((x) => S.has(x)) || tk.some((_, i) => i < tk.length - 1 && S.has(tk[i] + "-" + tk[i + 1])), g = [];
+    const ev = has(GT_EV) && !(tk.indexOf("ix") >= 0 && id.indexOf("bmw") !== 0) && !/evolution|evo-|hybrid/.test(id) || /^(tesla|rimac|polestar)-/.test(id) && !/polestar-polestar-1$/.test(id);
+    if ((ev || id === "ford-f-150-lightning-2022" || /^mini-cooper-se/.test(id)) && !/(lm-audi-r18|citroen-id-19|polestar-polestar-1$|rally-audi-rs-q)/.test(id)) g.push("ev");
+    if (has(GT_PICK) && !/(sierra-(rs|xr)|bronco)/.test(id)) g.push("pickup"); else if (has(GT_SUV) && id !== "ford-puma-17" && !/-(rs|xr)\d/.test(id) && !/^(alfa|rally-lancer|rally-evo)/.test(id) || /^(ford-(bronco|explorer|kuga|puma-st)|porsche-(cayenne|macan)|lamborghini-urus|toyota-land-cruiser|mb-g-|bmw-ix$)/.test(id)) g.push("suv");
+    if (has(GT_CABRIO) && !/^(bmw-3|mb-.*coupe|renault-r\d)/.test(id) && !/(gullwing|porsche-928|turbo-gts|viper-gts|dart-gts|mclaren-gts|skyline-gts|-904-|koenigsegg-cc|550-gts)/.test(id)) g.push("cabrio");
+    const y = yearOf(c);
+    if (y >= 1980 && y <= 1999 && c.category !== "Le Mans" && !/^(rally|lm)-/.test(id)) g.push("young");
+    return g;
+  };
+
   const chronoField = (ms, level) => "cw" + weekKey(ms).replace("-", "") + "L" + level;
   /** corrige un quiz : renvoie le nombre de bonnes réponses (answers = indices choisis) */
   function quizScore(questions, answers) {
@@ -1784,7 +1806,7 @@ Le Cheval cabré|Ferrari|2
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     brandFacts, clubGoalTarget, setsOf, THEMED_SETS, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, SURVIVAL, survivalSecs, survivalQuestions, survivalPlay, chronoQuestions, chronoField, quizField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, hashStr, PACKS, THEME_PACKS, themeMatch, themePackActive, themePacksNow, themePackNext, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
+    ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, SURVIVAL, survivalSecs, survivalQuestions, survivalPlay, chronoQuestions, chronoField, quizField, GENRES, genresOf, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, hashStr, PACKS, THEME_PACKS, themeMatch, themePackActive, themePacksNow, themePackNext, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
     ensureBank, FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QSPECIAL, QLEVELS, QUIZ_N, DEVINE, devineCar, devineHints, devineFeedback, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, ROMAN, TIER_MAX, romanOf, variantId, nextVariant, grantVariant, shownVariant, seasonRank, questList, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
     SHINY, CARD_WEIGHT, oddsOf, dropRates, PIN_EPIC, PIN_LEGENDARY, PRESTIGE_PACK_RX, isPrestige, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };

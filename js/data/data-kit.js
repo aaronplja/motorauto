@@ -20,7 +20,7 @@ const MAKIT = (function () {
       id, brand, model, category, years, description, image: imgOf(id), phases,
       records: (x.r || []).map((r) => ({ type: r[0], description: r[1] })), userRecords: [],
       history: x.h || "", anecdotes: (x.a || []).map((a) => ({ title: a[0], text: a[1] })),
-      related: x.rel || [], approx: !!x.approx
+      related: x.rel || [], approx: !!x.approx, specs: x.s ? Object.assign({}, x.s) : undefined
     };
   }
   function push(list) {
@@ -29,7 +29,7 @@ const MAKIT = (function () {
   }
   /**
    * Complète des fiches existantes (déjà dans MOTORAUTO_DATABASE) sans les réécrire.
-   *   enrich({ id: { h: "histoire", a: [[titre, texte]], r: [[type, texte]], e: [[couple, vmax, 0-100], …], ap: true } })
+   *   enrich({ id: { s: { w: kg, d: cm³, n: exemplaires, p: "prix", c: "conso" }, h: "histoire", a: [[titre, texte]], r: [[type, texte]], e: [[couple, vmax, 0-100], …], ap: true } })
    * h remplace l'histoire ; a et r s'ajoutent (sans doublon) ; e est aligné sur les moteurs dans l'ordre des phases
    * et ne remplit que les valeurs absentes (null / 0 = on ne touche pas) ; ap marque les chiffres comme indicatifs.
    */
@@ -52,6 +52,7 @@ const MAKIT = (function () {
           if (v[2] && !en.zeroToHundred) en.zeroToHundred = v[2];
         });
       }
+      if (x.s) { c.specs = c.specs || {}; Object.keys(x.s).forEach((k) => { if (x.s[k] && !c.specs[k]) c.specs[k] = x.s[k]; }); }
       if (x.ap) c.approx = true;
     });
   }
