@@ -5,14 +5,16 @@ const fs = require("fs"), path = require("path"), root = path.join(__dirname, ".
 
 ok("anciennes adresses redirigées, jamais supprimées", () => {
   const r = read("js/router.js");
-  [["/fusion", "/jouer/collection"], ["/marche", "/jouer/echanges"], ["/souhaits", "/jouer/echanges"], ["/jouer/troc", "/jouer/echanges"], ["/jouer/cartes", "/jouer/collection"]]
+  [["/fusion", "/jouer/collection"], ["/marche", "/jouer/echanges"], ["/souhaits", "/jouer/echanges"], ["/jouer/troc", "/jouer/echanges"]]
     .forEach(([a, b]) => assert(r.includes('"' + a + '": "' + b + '"'), a + " -> " + b));
   assert(/HINTS = \{[^}]*"\/marche": "market"[^}]*"\/souhaits": "wish"[^}]*"\/fusion": "fuse"/.test(r), "sections voulues mémorisées");
+  assert(!r.includes('"/jouer/cartes": "') && !r.includes('"/jouer/apercu": "'), "Jouer et Cartes ont leur propre écran, sans redirection");
 });
-ok("play : onglets réduits, défaut = accueil Jouer", () => {
+ok("play : entrée en tuiles (apercu), pages Cartes / Albums / Raretés / Vitrine, plus de barre Collection/Boutique", () => {
   const r = read("js/router.js");
-  assert(/tabs: \["collection", "boutique", "echanges", "minijeux", "communaute", "defis", "concours"\]/.test(r));
-  assert(/play: "collection"/.test(r) && /\["Boutique", "#\/jouer\/boutique"/.test(r), "Boutique reste un sous-onglet de Cartes ; l'onglet Jeux est inchangé");
+  assert(/tabs: \["apercu", "cartes", "albums", "raretes", "vitrine", "collection", "boutique", "echanges", "minijeux", "communaute", "defis", "concours"\]/.test(r));
+  assert(/play: "apercu"/.test(r), "#/jouer ouvre l'écran à tuiles");
+  assert(!/\["Boutique", "#\/jouer\/boutique"/.test(r), "la barre Collection/Boutique est retirée");
 });
 ok("les pages Fusion, Marché et Souhaits ne sont plus dupliquées (un identifiant = un élément)", () => {
   const src = read("index.src.html"), play = read("pages/play.html");

@@ -96,9 +96,9 @@ ok("navigation : Chat remplace Communauté, « Moi » devient Pilotes (profil ·
   assert(!/nav-me-btn|touch-me-btn/.test(nv));
   assert(/"data-s"/.test(read("js/i18n.js")), "libellés courts des onglets traduits");
 });
-ok("Jouer : 4 univers (Cartes · Jeux · Échanges · Défis) ; Échanges est un seul onglet (lot 3)", () => {
+ok("Jouer : écran d'entrée à 5 tuiles (Cartes · Boutique · Jeux · Échanges · Défis) ; Échanges est un seul onglet (lot 3)", () => {
   const rt = read("js/router.js"), h = read("index.src.html"), pl = read("js/game/play.js");
-  assert(/PLAY_GROUPS = \[\["cartes", "Cartes"\], \["minijeux", "Jeux"\], \["troc", "Échanges"\], \["communaute", "Défis"\]\]/.test(rt));
+  assert(/id="play-hub-apercu"/.test(read("pages/play.html")) && ["cartes", "boutique", "minijeux", "echanges", "defis"].every((k) => pl.indexOf("#/jouer/" + k) >= 0), "écran d'entrée : 5 tuiles Cartes, Boutique, Jeux, Échanges, Défis");
   assert(/echanges: "troc"/.test(rt) && /cardmarket: "troc", wishfeed: "troc"/.test(rt) && /fusion: "cartes"/.test(rt));
   assert(/data-tab="minijeux"[^>]*><div id="play-hub-minijeux"/.test(read("pages/play.html")) && /group === "minijeux"/.test(pl));
 });

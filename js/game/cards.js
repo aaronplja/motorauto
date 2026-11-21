@@ -615,7 +615,7 @@
   }
 
   // ------------------------------------------------------------------ page « Cartes » : deux onglets (Boutique / Mes cartes)
-  let ctab = "mine", albumKind = store.get("ma_cards_albums", "country"), countryFilter = "all", minPower = 0;
+  let cview = "all", rarSel = "", ctab = "mine", albumKind = store.get("ma_cards_albums", "country"), countryFilter = "all", minPower = 0;
   let claims = null, claimsUid = "", showcase = null, showcaseUid = "", setsSig = "", setsList = [];
   const dust$ = (n) => `${n} ${window.MA.dustIcon(14)}`;
   const lvOf = (id) => (doc && doc.lv && doc.lv[id]) || 1;
@@ -753,6 +753,27 @@
         : `<p class="lap-meta">Ajoute une voiture dans ton garage (Moi › Garage) pour la transformer en carte. Elle reste privée tant que tu ne l'affiches pas sur ton profil.</p>`}${window.MAAcc.c}`;
   }
   const kindLabel = { country: "Pays", decade: "Décennies", brand: "Marques", category: "Familles", theme: "Thèmes" };
+  const ICN = (d) => `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  /** écran Cartes : trois boutons (Albums, Raretés, Ma vitrine) et, dessous, un grand bouton Boutique */
+  function hubHtml() {
+    const sets = allSets(), full = sets.filter((s) => s.ids.length && s.ids.every((id) => countOf(id) > 0)).length;
+    const nRar = ORDER.filter((r) => C.cars.some((c) => rarityOf(c) === r)).length;
+    const nShow = ((showcase && showcase.ids) || []).filter((id) => isOwned(id) && cardObj(id)).length;
+    const packReady = !!doc && (doc.lastPack !== day() || doc.bonus > 0);
+    return `<div class="cg-hubbtns">
+      <a class="cg-hb" href="#/jouer/albums">${ICN('<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 9h16M9 9v11"/>')}<b>Albums</b><small>${full} / ${sets.length} complets</small></a>
+      <a class="cg-hb" href="#/jouer/raretes">${ICN('<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>')}<b>Raretés</b><small>${nRar} niveaux</small></a>
+      <a class="cg-hb" href="#/jouer/vitrine">${ICN('<path d="M5 4h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 9h14M9 21h6"/>')}<b>Ma vitrine</b><small>${nShow} / 6 exposées</small></a>
+    </div>
+    <a class="cg-shopbtn${packReady ? " has-pack" : ""}" href="#/jouer/boutique"><span class="cg-sb-ico">${ICN('<path d="M5 8h14l-1.2 11H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>')}</span><span class="cg-sb-t"><b>Boutique</b><small>${packReady ? "Ton pack du jour t'attend !" : "Packs, offres et roue"}</small></span><span class="cg-sb-go" aria-hidden="true">›</span></a>
+    <p class="cg-hubmore"><a href="#/jouer/collection">Voir toutes mes cartes</a> · <a href="#/fusion">Fusionner mes doublons</a></p>`;
+  }
+  /** page Raretés : un bouton par rareté ; un clic affiche les cartes de cette rareté */
+  function raretesHtml() {
+    const stat = (r) => { const all = C.cars.filter((c) => rarityOf(c) === r); return { all: all.length, have: all.filter((c) => countOf(c.id) > 0).length }; };
+    if (rarSel && RAR[rarSel]) { const s = stat(rarSel); return `<div class="cg-rarhead"><button type="button" class="cta-btn btn-ghost compact-btn" data-rar-back>‹ Raretés</button><span class="tcg-rar-chip ${rarSel}">${C.esc(RAR[rarSel].label)}</span><em>${s.have} / ${s.all}</em></div>`; }
+    return `<div class="cg-rargrid">${ORDER.map((r) => { const s = stat(r); return s.all ? `<button type="button" class="cg-rarbtn" data-rar-pick="${r}"><span class="tcg-rar-chip ${r}">${RAR[r].label}</span><b>${s.have} / ${s.all}</b>${gauge(s.have, s.all)}</button>` : ""; }).join("")}</div>`;
+  }
   function albumsHtml() {
     const sets = allSets().map((s) => { const have = s.ids.filter((id) => countOf(id) > 0).length; return Object.assign({ have, done: !!(claims && claims[s.id]), full: have === s.ids.length }, s); });
     const ready = sets.filter((s) => s.full && !s.done), list = sets.filter((s) => s.kind === albumKind).sort((a, b) => (b.full && !b.done) - (a.full && !a.done) || (a.done - b.done) || (b.have / b.ids.length) - (a.have / a.ids.length));
@@ -1030,7 +1051,8 @@
     if (best) { let tot = 0; by[best].sort((a, b) => doc.owned[b] - doc.owned[a]).forEach((id) => { if (tot < FN && sel.length < 12) { sel.push(id); tot += doc.owned[id] - 1; } }); }
     atRender();
   }
-  const isCardsRoute = () => !!(C && C.Router && (C.Router.is("play", { tab: "collection" }) || C.Router.is("play", { tab: "boutique" })));
+  const CARD_TABS = { cartes: "hub", albums: "albums", raretes: "raretes", vitrine: "vitrine", collection: "all", boutique: "shop" };
+  const isCardsRoute = () => !!(C && C.Router && Object.keys(CARD_TABS).some((t) => C.Router.is("play", { tab: t })));
 
   // ----- structure de la page
   /** met à jour l'en-tête et le panneau visible (pas la grille de la collection) */
@@ -1041,10 +1063,18 @@
     top.innerHTML = `<div class="cg-prog"><div class="cg-pt"><b>${owned}</b><span> / ${total} cartes</span><em>${pct(owned, total)} %</em></div>${gauge(owned, total, "big")}</div>
       <button type="button" class="cg-dust" data-dust-log title="Historique des cristaux"><span class="cg-di">${window.MA.dustIcon(22)}</span><b>${doc.dust}</b><small>cristaux${dups ? " · " + dups + " doublon" + (dups > 1 ? "s" : "") : ""}</small></button>`;
     document.querySelectorAll("#cards-root [data-ctab]").forEach((b) => { const on = b.dataset.ctab === ctab; b.classList.toggle("active", on); b.setAttribute("aria-selected", String(on)); });
-    const shop = document.getElementById("cg-shop"), mine = document.getElementById("cg-mine");
-    shop.hidden = ctab !== "shop"; mine.hidden = ctab !== "mine";
-    if (ctab === "shop") shop.innerHTML = (notice ? `<p class="tcg-alert" role="status">⚠ ${C.esc(notice)}</p>` : "") + shopHtml();
-    else { const t = document.getElementById("cg-mine-top"); if (t) t.innerHTML = `<div class="tcg-rar-row">${rarityChips()}${doc.specials ? `<span class="tcg-rar-chip special">✦ Éditions <b>${doc.specials}</b></span>` : ""}</div>${showcaseHtml()}${albumsHtml()}${myCarsHtml()}`; }
+    const shop = document.getElementById("cg-shop"), mine = document.getElementById("cg-mine"), hub = document.getElementById("cg-hub");
+    shop.hidden = cview !== "shop"; hub.hidden = cview !== "hub"; mine.hidden = cview === "shop" || cview === "hub";
+    const gridOn = cview === "all" || (cview === "raretes" && !!rarSel), blk = mine.querySelector('section[aria-label="Collection"]'); if (blk) blk.hidden = !gridOn;
+    if (cview === "shop") shop.innerHTML = (notice ? `<p class="tcg-alert" role="status">⚠ ${C.esc(notice)}</p>` : "") + shopHtml();
+    else if (cview === "hub") hub.innerHTML = hubHtml();
+    else {
+      const t = document.getElementById("cg-mine-top");
+      if (t) {
+        t.innerHTML = cview === "albums" ? albumsHtml() : cview === "vitrine" ? `${showcaseHtml()}${myCarsHtml()}` : cview === "raretes" ? raretesHtml() : "";
+        if (cview === "albums" || cview === "vitrine") t.querySelectorAll("details.acc").forEach((d) => window.MAAcc.quiet(d, true));
+      }
+    }
   }
   function fillTitles() {
     const box = document.getElementById("cg-titles"); if (!box || !window.MATitles || !doc) return;
@@ -1057,6 +1087,7 @@
     if (!document.getElementById("cg-top")) {
       const countries = (G.COUNTRIES || []).map((k) => `<option value="${k.id}">${C.esc(k.label)}</option>`).join("");
       root.innerHTML = `<div class="cg"><div class="cg-top" id="cg-top"></div>
+        <div id="cg-hub" hidden></div>
         <div id="cg-shop" role="tabpanel"></div>
         <div id="cg-mine" role="tabpanel" hidden><div id="cg-mine-top"></div>
           <section class="cg-block" aria-label="Collection"><header class="cg-bh"><h3>Collection</h3><button type="button" class="cg-recycle at-toggle" data-atelier-toggle aria-pressed="false">Sélectionner</button><button type="button" class="cg-recycle" data-recycle>♻️ Recycler</button><span class="tcg-count" id="tcg-count" aria-live="polite"></span></header>
@@ -1070,7 +1101,7 @@
               <span class="seg cg-viewseg" role="group" aria-label="Affichage">${[["grid", "Grille"], ["compact", "Compact"], ["binder", "Classeur"]].map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="false">${l}</button>`).join("")}</span></div>${window.MAAcc.c}
             <div class="tcg-grid" id="tcg-grid"></div></section></div></div>`;
     }
-    syncToolbar(); renderHero(); if (ctab === "mine") renderGrid();
+    syncToolbar(); renderHero(); if (cview === "all" || (cview === "raretes" && rarSel)) renderGrid();
     fillTitles();
   }
 
@@ -1115,9 +1146,10 @@
   (window.MAModules = window.MAModules || []).push(function (ctx) {
     C = Object.create(ctx);
     ctx.Router.register("play", { enter: async (p) => {
-      if (p.tab !== "collection" && p.tab !== "boutique") { if (selMode) atOff(); return; }
-      ctab = p.tab === "boutique" ? "shop" : "mine";
-      if (p.tab === "boutique" && selMode) atOff();
+      if (!CARD_TABS[p.tab]) { if (selMode) atOff(); return; }
+      cview = CARD_TABS[p.tab]; ctab = cview === "shop" ? "shop" : "mine";
+      if (cview !== "raretes" && rarSel) { rarSel = ""; rarFilter = "all"; }
+      if (cview !== "all" && cview !== "raretes" && selMode) atOff();
       const hint = p.tab === "collection" ? window.MAHint : ""; if (hint) window.MAHint = "";
       render();
       await load().catch(() => {});
@@ -1151,6 +1183,9 @@
       if (pk) { openPack(pk.dataset.pack, pk.dataset.shop, pk.dataset.offer === "1"); return; }
       const ct = e.target.closest("#cards-root [data-ctab]");
       if (ct) { ctab = ct.dataset.ctab; store.set("ma_cards_tab", ctab); render(); return; }
+      const rp = e.target.closest("#cards-root [data-rar-pick]");
+      if (rp) { rarSel = rp.dataset.rarPick; rarFilter = rarSel; syncToolbar(); render(); return; }
+      if (e.target.closest("#cards-root [data-rar-back]")) { rarSel = ""; rarFilter = "all"; syncToolbar(); render(); return; }
       const ak = e.target.closest("#cards-root [data-akind]");
       if (ak) { albumKind = ak.dataset.akind; store.set("ma_cards_albums", albumKind); renderHero(); return; }
       const al = e.target.closest("#cards-root [data-album]");
