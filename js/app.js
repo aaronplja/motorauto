@@ -1636,7 +1636,7 @@
   function openPublicProfile(userId) { Router.go("/pilote/" + encodeURIComponent(userId)); }
   let pubTok = 0;
   async function renderPublicProfile(userId) {
-    const tok = ++pubTok, stale = () => tok !== pubTok;   // seule la dernière demande peint la page (un clic sur un autre pilote annule la précédente)
+    const tok = ++pubTok, stale = () => tok !== pubTok; let step = "lecture du profil";   // seule la dernière demande peint la page (un clic sur un autre pilote annule la précédente)
     pubUid = userId; pubName = ""; pubAvatar = "";
     $("pub-profile-name").textContent = "Chargement...";
     $("pub-profile-avatar").removeAttribute("src");
@@ -1652,8 +1652,9 @@
     $("pub-admin-btn").hidden = true;
 
     try {
-      const doc = await Promise.race([db.collection("users").doc(userId).get(), new Promise((_, no) => setTimeout(() => no(new Error("délai dépassé")), 12000))]);
-      if (stale()) return;
+      const doc = await Promise.race([db.collection("users").doc(userId).get(), new Promise((_, no) => setTimeout(() => no(new Error("délai dépassé")), 8000))]);
+      if (stale()) { console.info("Profil public : demande remplacée", userId); return; }
+      step = "lecture des administrateurs";
       if (!doc.exists) { $("pub-profile-name").textContent = "Pilote introuvable"; $("pub-profile-public-content").style.display = "none"; return; }
       const data = doc.data();
       pubName = data.username || "Pilote"; pubAvatar = data.avatar || "";
@@ -1703,7 +1704,7 @@
       document.dispatchEvent(new CustomEvent("ma:profile-garage", { detail: { uid: userId, favorites: g.favorites || [] } }));
     } catch (err) {
       console.error("Erreur profil public :", err);
-      if (!stale()) $("pub-profile-name").innerHTML = `Profil indisponible <button type="button" class="cta-btn btn-ghost compact-btn" data-action="retry-profile" data-uid="${esc(userId)}">Réessayer</button>`;
+      if (!stale()) $("pub-profile-name").innerHTML = `Profil indisponible <small class="lap-meta" style="display:block;font:inherit;font-size:.7rem">${esc(String((err && (err.code || err.message)) || "erreur"))} · ${esc(step)} · ${esc(String(userId).slice(0, 6))}</small> <button type="button" class="cta-btn btn-ghost compact-btn" data-action="retry-profile" data-uid="${esc(userId)}">Réessayer</button>`;
     }
   }
 

@@ -70,8 +70,8 @@ details.acc.chal-acc .sec-lead { margin: 0; }
 details.acc.chal-acc .cc-grid { margin-top: .3rem; }
 
 /* ---------- barre Jouer / Pilotes : les deux rangées d'onglets ne se superposent plus (la barre entière reste collée, pas chaque rangée) ---------- */
-html .play-bar { position: sticky; top: calc(var(--hdr-h, 76px) + 6px); z-index: 20; transition: top .3s cubic-bezier(.3, .7, .3, 1); }
-html .hdr-hidden .play-bar { top: calc(var(--safe-top, 0px) + 8px); }
+html .play-bar { position: sticky; top: calc(var(--hdr-h, 76px) + 6px) !important; z-index: 20; transition: none !important; }
+html .hdr-hidden .play-bar { top: calc(var(--hdr-h, 76px) + 6px) !important; }   /* les barres ne bougent pas, même quand l'en-tête se range pendant le défilement */
 html .play-bar .page-tabs { position: static !important; top: auto !important; margin-left: 0; margin-right: 0; }
 
 /* ---------- recherche de cartes et bouton « Plus » : contours bien visibles ---------- */
