@@ -144,3 +144,5 @@ img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, 
 .pilot-chip .chip-avatar > img, .pilot-chip .chip-avatar > svg { border-radius: 50%; }
 /* avec un cadre : photo un peu plus petite et anneau fin, pour que le bouton garde la taille des autres */
 .app-header .pilot-chip .chip-avatar.cosm-f { width: calc(100% - 9px); height: calc(100% - 9px); margin: auto; box-shadow: 0 0 0 1.5px var(--bg-surface), 0 0 0 3px var(--cf, #f4c542), 0 0 6px 1px color-mix(in srgb, var(--cf, #f4c542) 50%, transparent); }
+/* cadre équipé : le halo animé ne doit pas toucher la cloche des notifications */
+.app-header .header-actions:has(.chip-avatar.cosm-f) .notif-btn, .app-header .header-actions:has(.chip-avatar.cosm-f) #theme-btn { margin-right: 7px; }
