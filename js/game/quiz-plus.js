@@ -145,7 +145,7 @@
     const mine = await C.db.collection("quiz_proposals").where("uid", "==", C.user.uid).limit(30).get().then((s) => s.docs.map((d) => Object.assign({ id: d.id }, d.data()))).catch(() => []);
     const ST = { pending: T("en attente"), approved: T("validée"), rejected: T("refusée") };
     b.innerHTML = `<p class="mut">${T("Écris une question avec 4 réponses (la première est la bonne : elles seront mélangées). L'administration la relit avant de la publier.")}</p>
-      <form class="qp-card" id="qp-form"><label>${T("Catégorie")}<select name="cat">${Object.keys(G.QCATS).map((k) => `<option value="${k}">${esc(T(G.QCATS[k]))}</option>`).join("")}</select></label>
+      <form class="qp-card" id="qp-form"><label>${T("Catégorie")}<select name="cat">${Object.keys(G.QCATS).filter((k) => !(G.QSPECIAL || {})[k]).map((k) => `<option value="${k}">${esc(T(G.QCATS[k]))}</option>`).join("")}</select></label>
         <label>${T("Question")}<input name="q" maxlength="200" required minlength="10" placeholder="${T("Quelle voiture a remporté…")}"></label>
         <label>${T("Bonne réponse")}<input name="o0" maxlength="120" required></label><label>${T("Mauvaise réponse")} 1<input name="o1" maxlength="120" required></label>
         <label>${T("Mauvaise réponse")} 2<input name="o2" maxlength="120" required></label><label>${T("Mauvaise réponse")} 3<input name="o3" maxlength="120" required></label>

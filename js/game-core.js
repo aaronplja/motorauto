@@ -765,7 +765,11 @@
   const PM_DAILY_CAP = 100;
 
   // ------------------------------------------------------------------ quiz par niveau : questions automatiques (catalogue) + questions écrites
-  const QCATS = { brands: "Marques", history: "Histoire", engines: "Moteurs", motorsport: "Sport auto", countries: "Pays et constructeurs", circuits: "Circuits et courses", numbers: "Chiffres", trivia: "Anecdotes et records", japan: "Japon", rally: "Rallye", ev: "Électrique et hybride" };
+  const QCATS = { brands: "Marques", history: "Histoire", engines: "Moteurs", motorsport: "Sport auto", countries: "Pays et constructeurs", circuits: "Circuits et courses", numbers: "Chiffres", trivia: "Anecdotes et records", japan: "Japon", rally: "Rallye", ev: "Électrique et hybride",
+    f1: "Formule 1", lemans: "24 Heures du Mans", sigles: "Sigles et noms", pop: "Culture pop", tech: "Mécanique", france: "Voitures françaises", italie: "Italie", allemagne: "Allemagne", usa: "États-Unis", young: "Youngtimers", pilotes: "Pilotes légendaires", design: "Design et carrosserie",
+    vf: "Vrai ou faux", intrus: "L'intrus" };
+  /** sections spéciales du quiz : elles ont leur propre onglet et ne sont pas tirées dans le chrono ni la survie */
+  const QSPECIAL = { vf: 1, intrus: 1 };
   const QLEVELS = { 1: "Facile", 2: "Moyen", 3: "Difficile", 4: "Expert" };
   // ---------------------------------------------------------------- saison : pass gratuit de 30 paliers, quêtes enchaînées, cosmétiques
   const SEASON_LEN = 31, DAY_MS = 86400000;   // une saison = un mois civil (heure de Paris) ; la saison 1 est novembre 2026
@@ -942,7 +946,7 @@
     return have;
   }
 
-  const QUIZ_N = 10, QUIZ_REWARD = 3, QUIZ_DAILY_CAP = 60;       // 3 cristaux par bonne réponse, 60 par jour au maximum
+  const QUIZ_N = 10, QUIZ_REWARD = 3, QUIZ_DAILY_CAP = Infinity;   // 3 cristaux par bonne réponse, sans plafond : rejouer rapporte toujours
   // banque de questions écrites : js/quiz-bank.js (chargée à la demande dans le navigateur, par require côté serveur)
   const QBANK = [], QMULTI = [], root = typeof self !== "undefined" ? self : globalThis;
   let bankLoaded = false, bankP = null;
@@ -1524,7 +1528,17 @@ Le Cheval cabré|Ferrari|2
     const mk = (q, opts, ans, k, x) => {
       const order = shuffle(opts.map((_, i) => i)), r = { q, o: order.map((i) => opts[i]), a: order.indexOf(ans), k };
       if (x && x.ex && x.ex.length === opts.length) { r.ex = order.map((i) => x.ex[i]); r.ids = order.map((i) => x.ids[i]); } else if (x && x.note) { r.note = x.note; r.ids = x.ids || []; }
+      if (x && x.note && r.ex) r.note = x.note;
       return r;
+    };
+    /** libellés Vrai / Faux dans la langue demandée (le français par défaut) */
+    const vfo = () => (lang === "fr" ? ["Vrai", "Faux"] : [T("Vrai") === "Vrai" ? "True" : T("Vrai"), T("Faux") === "Faux" ? "False" : T("Faux")]);
+    /** question écrite de la banque : [cat, niveau, FR, bonnes/fausses, EN, …] ; « vf » = affirmation, « intrus » = quatre voitures dont la première est l'intrus */
+    const wq = (b, fr) => {
+      if (b[0] === "vf") return { q: fr ? b[2] : b[4], o: vfo(), a: b[3][0] === "Vrai" ? 0 : 1, k: "vf" };
+      const opts = fr ? b[3] : b[5];
+      if (b[0] === "intrus") return mk(fr ? b[2] : b[4], opts, 0, "odd", b[6] ? { note: fr ? b[6] : (b[7] || b[6]), ids: [] } : null);
+      return mk(fr ? b[2] : b[4], opts, 0, "written");
     };
     const mkm = (q, opts, goods, k) => { const order = shuffle(opts.map((_, i) => i)); const m = goods.map((g) => order.indexOf(g)).sort((x, y) => x - y); return { q, o: order.map((i) => opts[i]), a: m[0], m, k }; };
     const distinct = (arr) => new Set(arr).size === arr.length;
@@ -1559,7 +1573,7 @@ Le Cheval cabré|Ferrari|2
     const nrm = (t) => String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     /** une réponse correcte écrite dans l'énoncé est une question ratée (ex. « Quelle marque fabrique l'Opel Corsa ? » → Opel) */
     const leaks = (q) => { const nq = nrm(q.q), goods = (q.m || [q.a]).map((i) => nrm(q.o[i])); return goods.some((g) => g.length >= 3 && !/^[\d\s.,]+$/.test(g) && nq.indexOf(g) >= 0); };
-    const add = (q) => { if (q && !seen.has(q.q) && distinct(q.o) && !leaks(q)) { seen.add(q.q); out.push(q); return true; } return false; };
+    const add = (q) => { const sk = q ? q.q + (q.k === "odd" ? "|" + q.o.slice().sort().join("|") : "") : ""; if (q && !seen.has(sk) && distinct(q.o) && !leaks(q)) { seen.add(sk); out.push(q); return true; } return false; };
     // questions écrites : niveau demandé d'abord, puis niveaux voisins
     const bank = QBANK.filter((b) => b[0] === cat);
     const wanted = shuffle(bank.filter((b) => b[1] === level)).concat(shuffle(bank.filter((b) => Math.abs(b[1] - level) === 1))).concat(shuffle(bank.filter((b) => Math.abs(b[1] - level) >= 2)));
@@ -1573,8 +1587,8 @@ Le Cheval cabré|Ferrari|2
     }
     const nWritten = Math.min(wanted.length, QUIZ_N / 2 - multi.length);
     for (let i = 0; i < nWritten; i++) {
-      const b = wanted[i], fr = lang === "fr", opts = fr ? b[3] : b[5];
-      add(mk(fr ? b[2] : b[4], opts, 0, "written"));
+      const b = wanted[i], fr = lang === "fr";
+      add(wq(b, fr));
     }
     // questions automatiques
     gens.japan = [
@@ -1584,18 +1598,35 @@ Le Cheval cabré|Ferrari|2
     ];
     gens.rally = [gens.motorsport[1]]; gens.ev = [];
     gens.countries = [gens.brands[1], gens.brands[0]]; gens.circuits = gens.motorsport; gens.numbers = gens.engines.concat(gens.history); gens.trivia = [];
+    // vrai ou faux : affirmations sur la puissance, la vitesse, le 0 à 100, l'année et le pays, avec un écart d'autant plus faible que le niveau monte
+    const vfq = (text, truth, c) => ({ q: text, o: vfo(), a: truth ? 0 : 1, k: "vf", note: info(c), ids: [c.id] });
+    const FACT = [0, 0.55, 0.7, 0.82, 0.9][level], GAP = [0, 25, 12, 5, 2][level];
+    gens.vf = [
+      () => { const c = pick(cars.filter((x) => x.power > 0)), t = rng() < 0.5, r = c.power >= 500 ? 50 : 10, th = t ? Math.floor(c.power * FACT / r) * r : Math.ceil(c.power / FACT / r) * r; if (th <= 0 || (t && th >= c.power) || (!t && th <= c.power)) return null; return vfq(fmt(T("{0} développe plus de {1} ch."), [c.name, th]), t, c); },
+      () => { const c = pick(cars.filter((x) => x.speed > 0)), t = rng() < 0.5, th = t ? Math.floor(c.speed * FACT / 10) * 10 : Math.ceil(c.speed / FACT / 10) * 10; if (th <= 0 || (t && th >= c.speed) || (!t && th <= c.speed)) return null; return vfq(fmt(T("{0} dépasse {1} km/h en vitesse maximale."), [c.name, th]), t, c); },
+      () => { const c = pick(cars.filter((x) => x.zero > 0)), t = rng() < 0.5, th = t ? Math.ceil(c.zero / FACT) : Math.floor(c.zero * FACT); if (th <= 1 || (t && th <= c.zero) || (!t && th >= c.zero)) return null; return vfq(fmt(T("{0} passe de 0 à 100 km/h en moins de {1} s."), [c.name, th]), t, c); },
+      () => { const c = pick(cars.filter((x) => x.year > 1900)), t = rng() < 0.5, y = t ? c.year + GAP : c.year - GAP; if (y > 2030 || y < 1895) return null; return vfq(fmt(T("{0} date d'avant {1}."), [c.name, y]), t, c); },
+      () => { const c = pick(cars.filter((x) => countryOf(x.brand) !== "xx")), real = countryOf(c.brand), t = rng() < 0.5, other = pick(COUNTRIES.filter((k) => k.id !== "xx" && k.id !== real)); if (!other) return null; return vfq(fmt(T("Pays d'origine de la marque {0} : {1}."), [familyOf(c.brand), t ? ctryLabel(real) : other.label]), t, c); }
+    ];
+    // intrus : trois voitures qui ont un point commun (pays, catégorie, décennie) et une qui n'en a pas
+    const oddQ = (odd, three, note) => { const L = [odd].concat(three); if (!distinct(L.map((x) => x.id)) || !distinct(L.map((x) => x.name))) return null; return mk(T("Quel est l'intrus ?"), L.map((x) => x.name), 0, "odd", Object.assign(xt(L), { note })); };
+    gens.intrus = [
+      () => { const ks = Array.from(new Set(cars.map((c) => countryOf(c.brand)))).filter((k) => k !== "xx" && cars.filter((c) => countryOf(c.brand) === k).length >= 3); if (ks.length < 2) return null; const k = pick(ks), three = shuffle(cars.filter((c) => countryOf(c.brand) === k)).slice(0, 3), odd = pick(cars.filter((c) => countryOf(c.brand) !== k && countryOf(c.brand) !== "xx")); return oddQ(odd, three, fmt(T("Les trois autres viennent de : {0}."), [ctryLabel(k)])); },
+      () => { const cs = Array.from(new Set(cars.map((c) => c.category))).filter((k) => k && cars.filter((c) => c.category === k).length >= 3); if (cs.length < 2) return null; const k = pick(cs), three = shuffle(cars.filter((c) => c.category === k)).slice(0, 3), odd = pick(cars.filter((c) => c.category && c.category !== k)); return oddQ(odd, three, fmt(T("Catégorie des trois autres : {0}."), [k])); },
+      () => { const ds = Array.from(new Set(cars.filter((c) => c.year > 1900).map((c) => Math.floor(c.year / 10) * 10))).filter((d) => cars.filter((c) => c.year >= d && c.year < d + 10).length >= 3); if (!ds.length) return null; const d = pick(ds), three = shuffle(cars.filter((c) => c.year >= d && c.year < d + 10)).slice(0, 3), far = [0, 40, 30, 20, 12][level], odd = pick(cars.filter((c) => c.year > 1900 && Math.abs(c.year - d) >= far)); if (!odd) return null; return oddQ(odd, three, fmt(T("Les trois autres datent des années {0}."), [d])); }
+    ];
     const tg = quizTables({ mk, pick, shuffle, T, fmt, level }); Object.keys(tg).forEach((k) => { gens[k] = (gens[k] || []).concat(tg[k]); });
     const g = gens[cat] || [];
     for (let tries = 0; tries < 400 && g.length && out.length < QUIZ_N && cars.length > 8; tries++) { let q = null; try { q = pick(g)(); } catch (e) { q = null; } add(q); }
     // complète avec des questions écrites restantes si le catalogue ne suffit pas
-    for (let i = nWritten; i < wanted.length && out.length < QUIZ_N; i++) { const b = wanted[i], fr = lang === "fr"; add(mk(fr ? b[2] : b[4], fr ? b[3] : b[5], 0, "written")); }
+    for (let i = nWritten; i < wanted.length && out.length < QUIZ_N; i++) { const b = wanted[i], fr = lang === "fr"; add(wq(b, fr)); }
     return shuffle(out).slice(0, QUIZ_N);
   }
 
   /** mode chrono : 60 s, +1 par bonne réponse, −5 s par erreur ; questions de toutes les catégories, à réponse unique */
   const CHRONO = { secs: 60, penalty: 5, reward: 2, cap: 40, max: 80 };
   function chronoQuestions(seed, level, list, opt) {
-    const cats = Object.keys(QCATS), out = [];
+    const cats = Object.keys(QCATS).filter((k) => !QSPECIAL[k]), out = [];
     for (let b = 0; out.length < CHRONO.max && b < 40; b++) quizBuild(seed + "-" + b, cats[b % cats.length], level, list, opt).forEach((q) => { if (!q.m) out.push(q); });
     return out.slice(0, CHRONO.max);
   }
@@ -1603,7 +1634,7 @@ Le Cheval cabré|Ferrari|2
   const SURVIVAL = { lives: 3, secs: 14, minSecs: 7, reward: 1, cap: 30, max: 80 };
   const survivalSecs = (okSoFar) => Math.max(SURVIVAL.minSecs, SURVIVAL.secs - Math.floor(okSoFar / 8));
   function survivalQuestions(seed, level, list, opt) {
-    const cats = Object.keys(QCATS), out = [];
+    const cats = Object.keys(QCATS).filter((k) => !QSPECIAL[k]), out = [];
     for (let b = 0; out.length < SURVIVAL.max && b < 40; b++) quizBuild(seed + "-s" + b, cats[b % cats.length], level, list, opt).forEach((q) => { if (!q.m) out.push(q); });
     return out.slice(0, SURVIVAL.max);
   }
@@ -1616,6 +1647,30 @@ Le Cheval cabré|Ferrari|2
     }
     return { ok, wrong, used };
   }
+  // ---------------------------------------------------------------- « Devine la voiture » : une voiture mystère par jour, la même pour tous
+  /** 6 essais ; chaque erreur révèle un indice de plus ; moins il y a eu d'indices, plus la récompense est grande */
+  const DEVINE = { max: 6, reward: [30, 22, 16, 11, 7, 4], season: [8, 7, 6, 5, 4, 3], streakStep: 2, streakMax: 5 };
+  const devinePool = (list) => (list || []).filter((c) => c && c.id && c.name && c.brand && c.power > 0 && c.speed > 0 && c.zero > 0 && c.year > 1900 && String(c.id).indexOf("~") < 0 && !isLivery(c.id) && !isCircuit(c.id) && !/ \/ | & |\(/.test(c.name) && countryOf(c.brand) !== "xx").sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  /** la voiture du jour (day = « AAAA-MM-JJ », heure de Paris) */
+  function devineCar(day, list) { const p = devinePool(list); return p.length ? p[Math.floor(seeded("devine|" + day)() * p.length)] : null; }
+  /** indices visibles au stade 0 (aucune erreur) à 5 (cinq erreurs) : pays et catégorie, décennie, puissance, vitesse et 0 à 100, lettres, marque et photo */
+  function devineHints(car, stage) {
+    const s = Math.max(0, Math.min(5, stage | 0)), band = (v, w) => { const lo = Math.floor(v / w) * w; return lo + "–" + (lo + w); };
+    const out = [{ k: "country", v: ctryLabel(countryOf(car.brand)) || "—" }, { k: "category", v: car.category || "—" }];
+    if (s >= 1) out.push({ k: "decade", v: String(Math.floor(car.year / 10) * 10) });
+    if (s >= 2) out.push({ k: "power", v: band(car.power, 100) });
+    if (s >= 3) out.push({ k: "speed", v: band(car.speed, 40) }, { k: "zero", v: band(car.zero, 2) });
+    if (s >= 4) out.push({ k: "letters", v: String(car.name.replace(/\s+/g, "").length) }, { k: "initial", v: car.brand.charAt(0).toUpperCase() });
+    if (s >= 5) out.push({ k: "brand", v: car.brand }, { k: "photo", v: car.id });
+    return out;
+  }
+  /** ce que la proposition a de commun avec la voiture mystère : marque, pays, catégorie, et si la voiture cherchée est plus récente (1), plus ancienne (-1) ou proche (0) ; idem pour la puissance */
+  function devineFeedback(target, guess) {
+    const dy = target.year - guess.year, rp = guess.power > 0 ? target.power / guess.power : 1;
+    return { brand: familyOf(guess.brand) === familyOf(target.brand), country: countryOf(guess.brand) === countryOf(target.brand), category: guess.category === target.category, year: Math.abs(dy) <= 2 ? 0 : dy > 0 ? 1 : -1, power: Math.abs(rp - 1) <= 0.1 ? 0 : rp > 1 ? 1 : -1 };
+  }
+  /** points de quiz du mois : champ du document gstats, un par mois (la remise à zéro se fait toute seule au changement de mois) */
+  const quizField = (ms) => "qp" + monthKey(ms).replace("-", "");
   const chronoField = (ms, level) => "cw" + weekKey(ms).replace("-", "") + "L" + level;
   /** corrige un quiz : renvoie le nombre de bonnes réponses (answers = indices choisis) */
   function quizScore(questions, answers) {
@@ -1729,8 +1784,8 @@ Le Cheval cabré|Ferrari|2
     TZ, dayKey, monthKey, weekKey, weekStart, weekEnd, parisMidnight, monthLabel,
     brandFacts, clubGoalTarget, setsOf, THEMED_SETS, setReward, yearOf, decadeOf, decadeLabel, LEGENDS, LEGEND_IDS, LV_MAX, LV_NAMES, upgradeCost, OFFER_PCT, dailyOffers, offerPackCost, dailyMissions,
     LEVELS, levelOf, BADGES, goalOf, BLANK_STATS, finish,
-    ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, SURVIVAL, survivalSecs, survivalQuestions, survivalPlay, chronoQuestions, chronoField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, hashStr, PACKS, THEME_PACKS, themeMatch, themePackActive, themePacksNow, themePackNext, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
-    ensureBank, FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QLEVELS, QUIZ_N, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, ROMAN, TIER_MAX, romanOf, variantId, nextVariant, grantVariant, shownVariant, seasonRank, questList, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
+    ARENAS, LIVERIES, isLivery, isExtra, liveryCard, circuitPick, CIRCUIT_CARDS, CIRCUIT_BY_ID, CIRCUIT_COUNTRY, isCircuit, circuitRarities, CHRONO, SURVIVAL, survivalSecs, survivalQuestions, survivalPlay, chronoQuestions, chronoField, quizField, WHEEL, wheelDraw, wheelLabel, adventToday, adventReward, adventLabel, PITY, HIST_MAX, HIST_LABEL, histAdd, isLocked, RECYCLE_MAX, RAR, ORDER, SHOP_PACK, hashStr, PACKS, THEME_PACKS, themeMatch, themePackActive, themePacksNow, themePackNext, COUNTRIES, countryOf, drawShopPack, isSpecial, computeRarities, pickRarity, drawPack, blankCollection, recount, picKey, picUrls, picKeys, picsHave, picReward,
+    ensureBank, FUSE_COUNT, FUSE_NEXT, MARKET_FEE, MARKET_MAX_LISTINGS, marketBounds, marketNet, familyOf, seeded, PM_STATS, pmPair, pmWinner, PM_REWARDS, PM_DAILY_CAP, QCATS, QSPECIAL, QLEVELS, QUIZ_N, DEVINE, devineCar, devineHints, devineFeedback, SEASON_LEN, SEASON_DAY_CAP, SEASON_FREE, seasonToday, legendOffer, epicPick, seasonInfo, PASS_TIERS, PASS_STEP, SEASON_PTS, FRAMES, TITLES, passReward, passLabel, SEASON_QUESTS, SEASON_QUEST_FINAL, ROMAN, TIER_MAX, romanOf, variantId, nextVariant, grantVariant, shownVariant, seasonRank, questList, blankSeason, seasonOf, seasonAdd, passTier, questState, FREEZE_MAX, FREEZE_COST, dayDiff, WELCOME, seasonCosm, QUIZ_REWARD, QUIZ_DAILY_CAP, QBANK, quizBuild, quizScore, setBrandsTotal,
     SHINY, CARD_WEIGHT, oddsOf, dropRates, PIN_EPIC, PIN_LEGENDARY, PRESTIGE_PACK_RX, isPrestige, CHALLENGES, DAILY, FEATURED, CARD_CHALS, CARD_GOALS, cardChalCars, featuredItems, autoFeatured, weekChallenges, dailyChallenge, PERFECT_WEEK_BONUS, THEMES
   };
 });

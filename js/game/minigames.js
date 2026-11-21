@@ -98,6 +98,9 @@
   const SV = (d) => '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + d + "</svg>";
   const QICON = { brands: SV('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'), history: SV('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'), engines: SV('<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>'), motorsport: SV('<path d="M5 21V4M5 4h13l-2 4 2 4H5"/><path d="M9 4v8M13 4v8" stroke-width="1.2"/>'), countries: SV('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'), circuits: SV('<path d="M4 15c0-5 4-3 6-6s4-4 7-1 1 8-3 9-10 2-10-2z"/>'), numbers: SV('<path d="M5 9h14M5 15h14M9 4l-2 16M17 4l-2 16"/>'), trivia: SV('<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>'), japan: SV('<circle cx="12" cy="12" r="6"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2" stroke-width="1.2"/>'), rally: SV('<path d="M3 17c3 0 3-6 7-6s3 6 7 6 3-9 4-9"/><circle cx="6" cy="19" r="1.3"/><circle cx="18" cy="19" r="1.3"/>'), ev: SV('<path d="M13 2L5 14h6l-1 8 8-12h-6z"/>') };
   const QDESC = { brands: "Logos, pays, constructeurs", history: "Dates, modèles, légendes", engines: "Puissance, cylindres, technique", motorsport: "Rallye, Le Mans, circuits", countries: "D'où vient chaque constructeur", circuits: "Le Mans, Spa, Nürburgring, Monza", numbers: "Puissance, 0 à 100, vitesse, années", trivia: "Codes moteurs, anecdotes, records", japan: "Toyota, Nissan, Honda, drift, kei cars", rally: "WRC, Dakar, Groupe B, légendes", ev: "Batteries, recharge, hybrides, Formule E" };
+  Object.assign(QICON, { f1: QICON.motorsport, lemans: QICON.circuits, sigles: QICON.numbers, pop: QICON.trivia, tech: QICON.engines, france: QICON.countries, italie: QICON.countries, allemagne: QICON.countries, usa: QICON.countries, young: QICON.history, pilotes: QICON.motorsport, design: QICON.brands,
+    vf: SV('<path d="M5 12l4 4 10-10"/><circle cx="12" cy="12" r="9"/>'), intrus: SV('<circle cx="7" cy="14" r="2.6"/><circle cx="17" cy="14" r="2.6"/><circle cx="12" cy="6.5" r="2.6"/><path d="M4 20l16-1" stroke-width="1.2"/>'), devine: SV('<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/><path d="M9 9.5a2 2 0 1 1 3 1.7c-.7.4-1 .8-1 1.5" stroke-width="1.4"/>') });
+  Object.assign(QDESC, { f1: "Pilotes, écuries, titres et records", lemans: "Légendes de la Sarthe, victoires, pilotes", sigles: "GTI, RS, Type R : ce que veulent dire les lettres", pop: "Films, séries et jeux vidéo", tech: "Moteurs, boîtes, turbo, différentiel", france: "Citroën, Peugeot, Renault, Alpine…", italie: "Ferrari, Lamborghini, Alfa Romeo, Fiat…", allemagne: "BMW, Mercedes, Audi, Porsche, Volkswagen…", usa: "Ford, Chevrolet, Dodge et muscle cars", young: "Les années 80 et 90 qui reviennent", pilotes: "Champions de F1, de rallye et d'endurance", design: "Carrosseries, designers, lignes mythiques", vf: "Vraies ou fausses : à toi de trancher", intrus: "Trois voitures ont un point commun, pas la quatrième" });
   function quizPool() {
     return (C.cars || []).map((c) => ({ id: c.id, power: Number(c.stats && c.stats.power) || 0, speed: Number(c.stats && c.stats.speed) || 0, zero: Number(c.stats && c.stats.zero) || 0, name: ((c.brand || "") + " " + (c.model || "")).trim(), brand: c.brand || "", category: c.category || "", year: G.yearOf(c) }));
   }
@@ -106,13 +109,21 @@
   const newSeed = () => { const a = new Uint32Array(2); (window.crypto || window.msCrypto).getRandomValues(a); return a[0].toString(36) + a[1].toString(36); };
   function qzRender() {
     const root = rootOf("quizgame"); if (!root) return;
-    if (qz.rows === null) { qz.rows = []; board("quizPts", 10).then((r) => { qz.rows = r; if (qz.state === "menu" || qz.state === "end") qzRender(); }).catch(() => {}); }
-    const lb = `<h3 class="sec-title">${T("Classement des quiz")}</h3>${boardHtml(qz.rows || [], T("pts"))}<p class="lap-meta">${T("Points = somme de tes meilleurs scores sur toutes les combinaisons catégorie × niveau.")}</p>`;
+    if (qz.rows === null) { qz.rows = []; board(G.quizField(Date.now()), 10).then((r) => { qz.rows = r; if (qz.state === "menu" || qz.state === "end") qzRender(); }).catch(() => {}); }
+    const lb = `<h3 class="sec-title">${T("Classement des quiz")} · ${G.monthLabel(G.monthKey(Date.now()))}</h3>${boardHtml(qz.rows || [], T("pts"))}<p class="lap-meta">${T("Points du mois : chaque bonne réponse, à chaque partie, rapporte 1 point. Rejouer compte, sans limite. Le classement repart de zéro chaque mois.")}</p>`;
     if (!C.user) { root.innerHTML = loginNote(T("jouer au quiz")) + lb; return; }
     if (qz.err) { root.innerHTML = `<div class="empty-note error">${C.esc(qz.err)}</div><button type="button" class="cta-btn btn-ghost" data-qz-menu>${T("Retour")}</button>`; return; }
     if (qz.state === "menu") {
-      const tabs = `<div class="qz-tabs" role="tablist">${[["quiz", "Quiz"], ["train", "Entraînement"], ["chrono", "Chrono"]].map(([k, l]) => `<button type="button" role="tab" aria-selected="${qz.mode === k}" class="${qz.mode === k ? "on" : ""}" data-qz-mode="${k}">${T(l)}</button>`).join("")}</div>`;
+      const tabs = `<div class="qz-tabs" role="tablist">${[["quiz", "Quiz"], ["train", "Entraînement"], ["chrono", "Chrono"], ["devine", "Devine la voiture"], ["vf", "Vrai ou faux"], ["intrus", "L'intrus"]].map(([k, l]) => `<button type="button" role="tab" aria-selected="${qz.mode === k}" class="${qz.mode === k ? "on" : ""}" data-qz-mode="${k}">${T(l)}</button>`).join("")}</div>`;
       const LV = [1, 2, 3, 4];
+      if (qz.mode === "devine") { dvRender(root, tabs); return; }
+      if (qz.mode === "vf" || qz.mode === "intrus") {
+        const sp = qz.mode, per = sp === "vf" ? 1 : G.QUIZ_REWARD;
+        root.innerHTML = `${tabs}<p class="lap-meta">${sp === "vf" ? T("Dix affirmations : vraies ou fausses ?") : T("Dix séries de quatre voitures : trouve celle qui n'a pas sa place.")} · ${per} ${per > 1 ? T("cristaux par bonne réponse") : T("cristal par bonne réponse")} · ${T("sans plafond")}</p>
+          <section class="qz-cat qz-special"><header><i aria-hidden="true">${QICON[sp]}</i><div><b>${T(G.QCATS[sp])}</b><small>${T(QDESC[sp])}</small></div></header>
+          <div class="qz-levels">${LV.map((l) => { const b = qz.best[sp + "_" + l]; return `<button type="button" class="qz-lv lv${l}" data-qz-start="${sp}" data-level="${l}" ${qz.busy ? "disabled" : ""}><span>${T(G.QLEVELS[l])}</span><small>${b !== undefined ? b + " / " + G.QUIZ_N : "—"}</small></button>`; }).join("")}</div></section>${lb}`;
+        return;
+      }
       if (qz.mode === "chrono") {
         const lv = qz.cLevel || 2, wk = qz.cRows && qz.cRows[lv];
         if (!qz.cRows) { qz.cRows = {}; }
@@ -125,8 +136,8 @@
         return;
       }
       const train = qz.mode === "train", attr = train ? "data-qz-train" : "data-qz-start";
-      root.innerHTML = `${tabs}<p class="lap-meta">${train ? T("Entraînement : questions illimitées, sans récompense, avec la correction et les chiffres de la fiche après chaque réponse.") : `${G.QUIZ_N} ${T("questions par partie")} · ${G.QUIZ_REWARD} ${T("cristaux par bonne réponse")} (${T("plafond")} ${G.QUIZ_DAILY_CAP} ${T("par jour")})`}</p>
-        <div class="qz-cats">${Object.keys(G.QCATS).map((k) => `<section class="qz-cat"><header><i aria-hidden="true">${QICON[k]}</i><div><b>${T(G.QCATS[k])}</b><small>${T(QDESC[k])}</small></div></header>
+      root.innerHTML = `${tabs}<p class="lap-meta">${train ? T("Entraînement : questions illimitées, sans récompense, avec la correction et les chiffres de la fiche après chaque réponse.") : `${G.QUIZ_N} ${T("questions par partie")} · ${G.QUIZ_REWARD} ${T("cristaux par bonne réponse")} · ${T("sans plafond")}`}</p>
+        <div class="qz-cats">${Object.keys(G.QCATS).filter((k) => !G.QSPECIAL[k]).map((k) => `<section class="qz-cat"><header><i aria-hidden="true">${QICON[k]}</i><div><b>${T(G.QCATS[k])}</b><small>${T(QDESC[k])}</small></div></header>
           <div class="qz-levels">${LV.map((l) => { const b = qz.best[k + "_" + l]; return `<button type="button" class="qz-lv lv${l}" ${attr}="${k}" data-level="${l}" ${qz.busy ? "disabled" : ""}><span>${T(G.QLEVELS[l])}</span><small>${train ? "∞" : b !== undefined ? b + " / " + G.QUIZ_N : "—"}</small></button>`; }).join("")}</div></section>`).join("")}</div>${train ? "" : lb}`;
       return;
     }
@@ -147,7 +158,7 @@
     if (qz.state === "sending") { root.innerHTML = `<div class="empty-note">${T("Correction par le serveur…")}</div>`; return; }
     const r = qz.result || { score: 0, total: G.QUIZ_N, reward: 0, best: 0 };
     root.innerHTML = `<section class="mg-card qz-end"><h2>${r.score} / ${r.total}</h2><p>${r.score === r.total ? T("Sans faute, bravo !") : r.score >= r.total * 0.7 ? T("Très bien joué !") : r.score >= r.total * 0.4 ? T("Pas mal, tu peux faire mieux.") : T("Courage, la prochaine sera la bonne.")}</p>
-      <p class="lap-meta">${qz.train ? T("Entraînement : aucune récompense.") : `${T("Ton meilleur score ici")} : ${r.best} / ${r.total}${r.reward ? ` · +${dust(r.reward, 13)}` : ` · ${T("plafond de cristaux du jour atteint")}`}`}</p>
+      <p class="lap-meta">${qz.train ? T("Entraînement : aucune récompense.") : `${T("Ton meilleur score ici")} : ${r.best} / ${r.total}${r.reward ? ` · +${dust(r.reward, 13)}` : ""}${r.month ? ` · ${T("Points du mois")} : ${r.month}` : ""}`}</p>
       <div class="fz-actions"><button type="button" class="cta-btn fill-btn" ${qz.train ? "data-qz-train" : "data-qz-start"}="${qz.cat}" data-level="${qz.level}">${T("Rejouer")}</button><button type="button" class="cta-btn btn-ghost" data-qz-menu>${T("Autre quiz")}</button></div></section>${lb}`;
   }
   /** correction détaillée (entraînement) : bonne réponse + chiffres de la fiche, avec lien vers chaque voiture */
@@ -254,9 +265,75 @@
     qzRender();
   }
   async function qzEnter() {
+    dv.s = null; dv.err = ""; dv.msg = ""; dv.pool = null;
     qz.err = ""; qz.rows = null; qz.cRows = null; if (ch.timer) { clearInterval(ch.timer); ch.timer = 0; } if (qz.state !== "play") qz.state = "menu";
     const g = await myStats(); qz.best = g && g.quizBest ? g.quizBest : {}; qz.cBest = g && g.chronoBest ? g.chronoBest : {};
     qzRender();
+  }
+
+  // ====================================================================== DEVINE LA VOITURE
+  /** une voiture mystère par jour, la même pour tous : 6 essais, un indice de plus après chaque erreur, plus de cristaux si on trouve avec peu d'indices.
+   *  La partie est tenue par le serveur (quizSubmit, op « devine » / « devineGuess ») : la voiture n'est révélée qu'à la fin. */
+  let dv = { s: null, busy: false, err: "", msg: "", pool: null };
+  const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const HINT = { country: "Pays d'origine", category: "Catégorie", decade: "Décennie", power: "Puissance", speed: "Vitesse maximale", zero: "0 à 100 km/h", letters: "Lettres dans le nom", initial: "Initiale de la marque", brand: "Marque" };
+  const hintVal = (h) => (h.k === "decade" ? T("années") + " " + h.v : h.k === "power" ? h.v + " " + (lang() === "fr" ? "ch" : "hp") : h.k === "speed" ? h.v + " km/h" : h.k === "zero" ? h.v + " s" : h.k === "country" || h.k === "category" ? T(h.v) : h.v);
+  async function dvLoad() {
+    dv.busy = true; dv.err = "";
+    try { dv.s = await window.MAGameAPI.call("quizSubmit", { op: "devine" }); }
+    catch (e) { dv.err = (e && e.message) || T("Impossible de charger la partie."); }
+    dv.busy = false; if (qz.mode === "devine" && qz.state === "menu") qzRender();
+  }
+  function dvRender(root, tabs) {
+    if (!dv.s && !dv.busy && !dv.err) dvLoad();
+    if (dv.err) { root.innerHTML = `${tabs}<div class="empty-note error">${C.esc(dv.err)}</div><button type="button" class="cta-btn btn-ghost" data-dv-retry>${T("Réessayer")}</button>`; return; }
+    if (!dv.s) { root.innerHTML = `${tabs}<div class="empty-note" aria-busy="true">${T("Chargement…")}</div>`; return; }
+    const s = dv.s, ph = s.hints.find((h) => h.k === "photo"), pc = ph && car(ph.v), pimg = pc && C.safeUrl(pc.image || "");
+    const chip = (ok, l) => `<span class="dv-chip ${ok ? "ok" : "ko"}">${T(l)}</span>`;
+    const tr = (t) => `<li class="dv-try${t.ok ? " ok" : ""}"><b>${C.esc(t.name)}</b>${t.ok ? "" : `<span class="dv-fb">${chip(t.brand, "Marque")}${chip(t.country, "Pays")}${chip(t.category, "Catégorie")}<span class="dv-chip ${t.year === 0 ? "ok" : "ko"}">${t.year === 0 ? T("même époque") : t.year > 0 ? "↑ " + T("plus récente") : "↓ " + T("plus ancienne")}</span><span class="dv-chip ${t.power === 0 ? "ok" : "ko"}">${t.power === 0 ? T("puissance proche") : t.power > 0 ? "↑ " + T("plus puissante") : "↓ " + T("moins puissante")}</span></span>`}</li>`;
+    const ans = s.answer && car(s.answer.id), aimg = ans && C.safeUrl(ans.image || "");
+    const rw = `<ol class="dv-rw" aria-label="${T("Cristaux selon le nombre d'essais")}">${s.rewards.map((v, i) => `<li class="${!s.done && i === s.n ? "cur" : ""}${s.won && i === s.n - 1 ? " won" : ""}"><span>${i + 1}</span>${dust(v, 12)}</li>`).join("")}</ol>`;
+    const end = !s.done ? "" : `<div class="dv-end ${s.won ? "won" : "lost"}"><h3>${s.won ? fmtN(T("Trouvée en {0} essai(s) !"), [s.n]) : T("Raté : c'était")}</h3>
+      ${s.answer ? `<a class="dv-ans" href="#/voiture/${encodeURIComponent(s.answer.id)}">${aimg ? `<img src="${C.esc(aimg)}" alt="" loading="lazy" decoding="async">` : ""}<b>${C.esc(s.answer.name)}</b></a>` : ""}
+      ${s.won ? `<p class="lap-meta">+${dust(s.reward, 13)}${s.streak > 1 ? " · " + T("Série") + " " + s.streak + " " + T("jours") : ""}</p>` : ""}
+      <p class="lap-meta">${T("Reviens demain pour une nouvelle voiture.")}</p>
+      <button type="button" class="cta-btn btn-ghost" data-dv-share>${T("Copier mon résultat")}</button></div>`;
+    const form = s.done ? "" : `<form class="dv-form" data-dv-form autocomplete="off"><input class="dv-in" type="text" name="q" placeholder="${T("Marque, modèle…")}" aria-label="${T("Proposer une voiture")}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" ${dv.busy ? "disabled" : ""}><ul class="dv-sugg" id="dv-sugg" role="listbox"></ul></form>${dv.msg ? `<p class="dv-msg" role="alert">${C.esc(dv.msg)}</p>` : ""}`;
+    root.innerHTML = `${tabs}<section class="mg-card dv-card">
+      <div class="qz-head"><span>${T("Voiture mystère du jour")}</span><b>${s.done ? (s.won ? s.n : "×") : s.n + 1} / ${s.max}</b></div>
+      ${s.streak > 0 && !s.done ? `<p class="dv-streak">${T("Série")} : ${s.streak} ${T("jours")}</p>` : ""}
+      <ul class="dv-hints">${s.hints.filter((h) => h.k !== "photo").map((h) => `<li><small>${T(HINT[h.k])}</small><b>${C.esc(hintVal(h))}</b></li>`).join("")}</ul>
+      ${pimg && !s.done ? `<div class="dv-photo"><img src="${C.esc(pimg)}" alt="${T("Photo floutée de la voiture mystère")}" decoding="async"></div>` : ""}
+      ${end}${form}
+      ${s.tries.length ? `<ol class="dv-tries">${s.tries.map(tr).join("")}</ol>` : ""}
+      ${rw}<p class="lap-meta">${T("Une voiture par jour, la même pour tous. Chaque erreur donne un indice de plus : moins tu en utilises, plus tu gagnes de cristaux.")}</p></section>`;
+    const inp = root.querySelector(".dv-in"); if (inp && !s.done && !dv.busy && window.matchMedia && !window.matchMedia("(pointer: coarse)").matches) { try { inp.focus({ preventScroll: true }); } catch (_) { /* ignoré */ } }
+  }
+  const fmtN = (str, a) => String(str).replace(/\{(\d)\}/g, (m, i) => (a && a[i] !== undefined ? a[i] : m));
+  function dvSugg(v) {
+    const ul = document.getElementById("dv-sugg"); if (!ul) return;
+    const q = norm(v).trim(); if (q.length < 2) { ul.innerHTML = ""; return; }
+    if (!dv.pool) dv.pool = quizPool().filter((c) => String(c.id).indexOf("~") < 0).map((c) => ({ id: c.id, name: c.name, n: norm(c.name) }));
+    const tried = new Set(((dv.s && dv.s.tries) || []).map((t) => t.id)), words = q.split(/\s+/), res = [];
+    for (const c of dv.pool) { if (tried.has(c.id)) continue; if (words.every((w) => c.n.indexOf(w) >= 0)) { res.push(c); if (res.length >= 8) break; } }
+    ul.innerHTML = res.length ? res.map((c) => `<li role="option"><button type="button" class="dv-opt" data-dv-pick="${C.esc(c.id)}">${C.esc(c.name)}</button></li>`).join("") : `<li class="dv-none">${T("Aucune voiture trouvée.")}</li>`;
+  }
+  async function dvGuess(id) {
+    if (dv.busy || !dv.s || dv.s.done) return;
+    dv.busy = true; dv.msg = ""; qzRender();
+    try {
+      const r = await window.MAGameAPI.call("quizSubmit", { op: "devineGuess", guess: id });
+      dv.s = r;
+      if (r.doc) { window.MACards.applyDoc(r.doc); document.dispatchEvent(new CustomEvent("ma:cards")); }
+      if (r.done && window.MAGame) window.MAGame.invalidate();
+    } catch (e) { dv.msg = (e && e.message) || T("Impossible de valider ta proposition."); }
+    dv.busy = false; qzRender();
+  }
+  function dvShare() {
+    const s = dv.s; if (!s || !s.done) return;
+    const txt = "MOTORAUTO · " + T("Devine la voiture") + " · " + (s.won ? s.n : "X") + "/" + s.max + " · motorauto.fr";
+    const ok = () => { dv.msg = T("Résultat copié."); qzRender(); };
+    try { navigator.clipboard.writeText(txt).then(ok, () => { dv.msg = txt; qzRender(); }); } catch (_) { dv.msg = txt; qzRender(); }
   }
 
   // ====================================================================== SUCCÈS
@@ -315,6 +392,9 @@
       const t = e.target; let b;
       if ((b = t.closest("[data-pm-start]"))) { pmStart(); return; }
       if ((b = t.closest("[data-pm-pick]"))) { pmPick(b.dataset.pmPick); return; }
+      if ((b = t.closest("[data-dv-pick]"))) { dvGuess(b.dataset.dvPick); return; }
+      if (t.closest("[data-dv-retry]")) { dv.err = ""; dv.s = null; qzRender(); return; }
+      if (t.closest("[data-dv-share]")) { dvShare(); return; }
       if ((b = t.closest("[data-qz-start]"))) { qzBegin(b.dataset.qzStart, Number(b.dataset.level) || 1); return; }
       if ((b = t.closest("[data-qz-train]"))) { qzTrain(b.dataset.qzTrain, Number(b.dataset.level) || 1); return; }
       if ((b = t.closest("[data-qz-mode]"))) { qz.mode = b.dataset.qzMode; qzRender(); return; }
@@ -333,6 +413,8 @@
       else if ((b = t.closest("[data-ac-t]"))) { ac.tier = b.dataset.acT; acRender(); }
       else if ((b = t.closest("[data-ac-open]"))) { if (C.user) acSheet(b.dataset.acOpen); }
     });
-    document.addEventListener("ma:auth", () => { pm.state = "idle"; pm.rows = null; qz.state = "menu"; qz.rows = null; const n = ctx.Router.current() && ctx.Router.current().name; if (n === "plusmoins") pmEnter(); else if (n === "quizgame") qzEnter(); else if (n === "achievements") acEnter(); });
+    document.addEventListener("input", (e) => { const t = e.target; if (t && t.classList && t.classList.contains("dv-in")) dvSugg(t.value); });
+    document.addEventListener("submit", (e) => { const f = e.target; if (f && f.matches && f.matches("[data-dv-form]")) { e.preventDefault(); const first = f.querySelector(".dv-opt"); if (first) dvGuess(first.dataset.dvPick); } });
+    document.addEventListener("ma:auth", () => { dv = { s: null, busy: false, err: "", msg: "", pool: null }; pm.state = "idle"; pm.rows = null; qz.state = "menu"; qz.rows = null; const n = ctx.Router.current() && ctx.Router.current().name; if (n === "plusmoins") pmEnter(); else if (n === "quizgame") qzEnter(); else if (n === "achievements") acEnter(); });
   });
 })();

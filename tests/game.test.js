@@ -402,7 +402,7 @@ const U1 = { uid: "u1" }, U2 = { uid: "u2" }, U3 = { uid: "u3" }, ADM = { uid: "
     ok(["japan", "rally", "ev"].every((c) => core.QCATS[c]) && core.QLEVELS[4] === "Expert" && core.QLEVELS[3] === "Difficile", "3 nouvelles catégories et niveau Expert");
     for (const c of Object.keys(core.QCATS)) for (const l of [1, 2, 3, 4]) {
       const qs = core.quizBuild("lot2" + c + l, c, l, pool);
-      ok(qs.length === core.QUIZ_N && qs.every((q) => q.o.length === 4 && (q.m ? q.m.length > 0 : q.a >= 0 && q.a < 4)), "10 questions valides : " + c + " niveau " + l);
+      ok(qs.length === core.QUIZ_N && qs.every((q) => q.o.length === (c === "vf" ? 2 : 4) && (q.m ? q.m.length > 0 : q.a >= 0 && q.a < q.o.length)), "10 questions valides : " + c + " niveau " + l);
     }
     const ex = [1, 2, 3, 4, 5, 6, 7, 8].flatMap((n) => core.quizBuild("explain" + n, "engines", 2, pool)).filter((q) => q.ex); ok(ex.length > 0 && ex.every((q) => q.ex.length === 4 && q.ids.length === 4), "explications automatiques avec chiffres de la fiche");
     const sd = "lot2seedxx", qs4 = core.quizBuild(sd, "japan", 4, pool); r = await G.quizSubmit(C2, { seed: sd, cat: "japan", level: 4, answers: qs4.map((q) => q.m || q.a) });

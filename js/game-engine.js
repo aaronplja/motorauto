@@ -1115,7 +1115,7 @@
     }
 
     // ---------------------------------------------------------------- compteurs de jeu supplémentaires (fusion, marché, Plus ou moins, quiz)
-    const blankStats = () => ({ bpDay: { day: "", dust: 0 }, bpPack: "", bpPair: null, fuse: 0, sold: 0, bought: 0, pmBest: 0, pmStreak: 0, pmPair: null, pmDay: { day: "", dust: 0 }, quizDone: 0, quizPerfect: 0, quizL3: 0, quizBest: {}, quizPts: 0, quizDay: { day: "", dust: 0 }, wishAt: 0 });
+    const blankStats = () => ({ bpDay: { day: "", dust: 0 }, bpPack: "", bpPair: null, fuse: 0, sold: 0, bought: 0, pmBest: 0, pmStreak: 0, pmPair: null, pmDay: { day: "", dust: 0 }, quizDone: 0, quizPerfect: 0, quizL3: 0, quizBest: {}, quizPts: 0, quizDay: { day: "", dust: 0 }, wishAt: 0, devine: null, devStreak: 0, devLast: "", devWins: 0 });
     async function readStats(tx, uid) { const s = await tx.get(col("gstats").doc(uid)); return s.exists ? Object.assign(blankStats(), s.data()) : blankStats(); }
     function writeStats(tx, uid, g) { g.updatedAt = ts(); tx.set(col("gstats").doc(uid), g); }
     const dayOf = (g, key) => { const today = core.dayKey(now()); if (!g[key] || g[key].day !== today) g[key] = { day: today, dust: 0 }; return g[key]; };
@@ -1224,9 +1224,50 @@
     const keyQs = (key) => String(key || "").split(";").filter((x) => x !== "").map((x) => (x[0] === "m" ? { m: x.slice(1).split(",").map(Number), a: Number(x.slice(1).split(",")[0]) } : { a: Number(x) }));
     /** question telle qu'elle part vers le site (sans les détails de correction de l'entraînement) */
     const slim = (qs) => qs.map((q) => { const r = { q: q.q, o: q.o, a: q.a, k: q.k }; if (q.m) r.m = q.m; return r; });
+    // ---------------------------------------------------------------- « Devine la voiture » : voiture mystère du jour, 6 essais, indices progressifs
+    /** op « devine » = état de la partie du jour ; op « devineGuess » = une proposition (id de voiture). La voiture n'est révélée qu'à la fin de la partie. */
+    async function devineRun(caller, data, pool) {
+      const uid = caller.uid, guess = data.op === "devineGuess" ? str(data.guess, 80) : "", byId = new Map(pool.list.map((c) => [c.id, c]));
+      return db.runTransaction(async (tx) => {
+        const g = await readStats(tx, uid), d = guess ? await readCol(tx, uid) : null, today = core.dayKey(now());
+        let dv = g.devine && g.devine.day === today ? g.devine : null, dirty = false;
+        if (!dv) {
+          const c = core.devineCar(today, pool.list);
+          if (!c) fail("unavailable", "Catalogue indisponible, réessaie dans un instant.");
+          dv = { day: today, t: c.id, g: [], done: false, won: false, reward: 0, streak: 0 }; dirty = true;
+        }
+        const car = byId.get(dv.t) || core.devineCar(today, pool.list);
+        if (guess) {
+          if (dv.done) fail("failed-precondition", "Tu as déjà joué aujourd'hui : reviens demain.");
+          const gc = byId.get(guess);
+          if (!gc || dv.g.indexOf(guess) >= 0) fail("invalid-argument", "Voiture inconnue ou déjà proposée.");
+          dv.g.push(guess); dirty = true;
+          const n = dv.g.length;
+          if (gc.id === car.id) {
+            const yesterday = core.dayKey(now() - 86400000);
+            g.devStreak = g.devLast === yesterday ? (Number(g.devStreak) || 0) + 1 : 1; g.devLast = today; g.devWins = (Number(g.devWins) || 0) + 1;
+            const bonus = Math.min(g.devStreak - 1, core.DEVINE.streakMax) * core.DEVINE.streakStep, gain = core.DEVINE.reward[n - 1] + bonus;
+            dv.done = dv.won = true; dv.reward = gain; dv.streak = g.devStreak;
+            dustMove(d, gain, "Devine la voiture");
+            core.seasonAdd(d, core.DEVINE.season[n - 1], null, now());
+            writeCol(tx, uid, d);
+          } else if (n >= core.DEVINE.max) { dv.done = true; g.devStreak = 0; dv.streak = 0; }
+        }
+        if (dirty) { g.devine = dv; writeStats(tx, uid, g); }
+        const yest = core.dayKey(now() - 86400000), streak = dv.done ? dv.streak : (g.devLast === today || g.devLast === yest ? Number(g.devStreak) || 0 : 0);
+        return {
+          day: today, max: core.DEVINE.max, n: dv.g.length, done: dv.done, won: dv.won, reward: dv.reward || 0, streak, rewards: core.DEVINE.reward,
+          hints: core.devineHints(car, dv.done ? 5 : Math.min(5, dv.g.length)),
+          tries: dv.g.map((id) => { const c = byId.get(id); return Object.assign({ id, name: c ? c.name : id, ok: id === car.id }, c && id !== car.id ? core.devineFeedback(car, c) : {}); }),
+          answer: dv.done ? { id: car.id, name: car.name } : null,
+          doc: d ? view(d) : undefined
+        };
+      });
+    }
     async function quizSubmit(caller, data) {
       const uid = caller.uid, pool = await getPool();
       if (core.ensureBank) await core.ensureBank(); // banque de questions écrites (js/quiz-bank.js) : déjà prête côté serveur, chargée à la demande dans le navigateur
+      if (data && (data.op === "devine" || data.op === "devineGuess")) return devineRun(caller, data, pool);
       if (data && data.op === "start") {
         const cat = str(data.cat, 12), level = Math.max(1, Math.min(4, Number(data.level) | 0 || 1));
         if (!core.QCATS[cat]) fail("invalid-argument", "Catégorie inconnue.");
@@ -1257,13 +1298,14 @@
         if (!g.quizBest || typeof g.quizBest !== "object") g.quizBest = {};
         g.quizBest[key] = Math.max(g.quizBest[key] || 0, score);
         g.quizPts = Object.keys(g.quizBest).reduce((t, k) => t + (g.quizBest[k] || 0), 0);
+        { const mf = core.quizField(now()); Object.keys(g).forEach((k) => { if (/^qp\d{6}$/.test(k) && k !== mf) delete g[k]; }); g[mf] = (Number(g[mf]) || 0) + score; }  // points du mois : chaque partie compte, repart de zéro chaque mois
         g.quizDone++; if (score === questions.length && questions.length >= core.QUIZ_N) { g.quizPerfect++; if (level === 4) g.quizL3++; }
-        const gain = Math.max(0, Math.min(score * core.QUIZ_REWARD, core.QUIZ_DAILY_CAP - day.dust));
+        const per = cat === "vf" ? 1 : core.QUIZ_REWARD, gain = Math.max(0, score * per); // vrai ou faux : 1 cristal par bonne réponse (une chance sur deux de tomber juste)
         core.seasonAdd(d, score * core.SEASON_PTS.quizOk + (score === questions.length ? core.SEASON_PTS.quizPerfect : 0), score >= 6 ? { quiz: 1 } : null, now());
         if (gain > 0) day.dust += gain, dustMove(d, gain, "Quiz");
         writeCol(tx, uid, d);
         writeStats(tx, uid, g);
-        return { score, total: questions.length, reward: gain, best: g.quizBest[key], pts: g.quizPts, doc: view(d) };
+        return { score, total: questions.length, reward: gain, best: g.quizBest[key], pts: g.quizPts, month: Number(g[core.quizField(now())]) || 0, doc: view(d) };
       });
     }
 
