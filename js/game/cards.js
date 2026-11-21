@@ -216,6 +216,27 @@
       <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div></div>`);
     lo.addEventListener("click", (e) => { if (e.target === lo || e.target.closest("[data-close]")) closeOverlay(); });
   }
+  /** page d'aide : ce que signifient les couleurs, indices et échelons */
+  function guideOpen() {
+    const IC_N = { F: "Ardoise", E: "Titane", D: "Bleu acier", C: "Améthyste", B: "Cuivre", A: "Or", Z: "Prisme nacré" };
+    const IC_T = { F: "Voiture courante, très répandue.", E: "Honnête, un cran au-dessus du lot.", D: "Voiture appréciée des passionnés.", C: "Belle réputation, déjà recherchée.", B: "Modèle culte ou très recherché.", A: "Icône : une des voitures les plus prestigieuses.", Z: "Mythique : réservée à une poignée de légendes (250 GTO, McLaren F1…)." };
+    const IP_N = ["Aluminium", "Bleu froid", "Turquoise", "Émeraude", "Jaune", "Ambre", "Orange", "Rouge", "Carmin", "Magenta"];
+    const cuts = G.IP_CUTS || [95, 131, 176, 231, 301, 401, 521, 681, 901];
+    const ipRange = (i) => i === 0 ? "moins de " + cuts[0] + " ch" : i === 9 ? cuts[8] + " ch et plus" : cuts[i - 1] + " à " + (cuts[i] - 1) + " ch";
+    const chips = (lv, col, names, txt, cls) => lv.map((k, i) => `<div class="gd-row"><span class="gd-chip ${cls}${k === "Z" ? " ic-Z" : ""}" style="background:${col[k]}">${k}</span><span class="gd-t"><b>${names[i] || names[k]}</b><small>${txt(k, i)}</small></span></div>`).join("");
+    const ECH = [["Série", "Les voitures du quotidien et les sportives accessibles."], ["Sport", "Des sportives et des modèles recherchés."], ["Élite", "Des voitures d'exception, déjà rares en pack."], ["Prestige", "Les grandes icônes. Très rares en pack."], ["Apex", "Le sommet : IC et IP au plus haut. Environ 1 pack sur 140."]];
+    const o = mountOverlay("guide", "Comprendre les cartes", `<div class="tcg-stage"><div class="gd">
+      <h2>Comprendre les cartes</h2>
+      <p class="tcg-hint">Chaque carte voiture porte deux indices, séparés par la diagonale : <b>IC en haut à gauche</b>, <b>IP en bas à droite</b>. Les couleurs de la carte sont celles de ces deux indices.</p>
+      <section><h3>IC · Indice de Collection</h3><p>Le prestige de la voiture : sa réputation, son histoire, sa rareté dans le monde. De F (courante) à Z (mythique).</p>${chips(G.IC_LEVELS, IC_COL, IC_N, (k) => IC_T[k], "ic")}</section>
+      <section><h3>IP · Indice de Performance</h3><p>La puissance de la voiture, de I (citadine) à X (hypercar). Le chrono 0 à 100 km/h affine le résultat.</p>${chips(G.IP_LEVELS, IP_COL, IP_N, (k, i) => ipRange(i), "ip")}</section>
+      <section><h3>Échelon</h3><p>Calculé à partir de l'IC (65 %) et de l'IP (35 %), il se lit avec les 5 points sur la carte. Il fixe la valeur de la carte : cristaux d'un doublon, coût de fabrication, fusion et échanges.</p>
+        ${ECH.map((e, i) => `<div class="gd-row"><span class="gd-pips">${[0, 1, 2, 3, 4].map((j) => `<i${j <= i ? ' class="on"' : ""}></i>`).join("")}</span><span class="gd-t"><b>${e[0]}</b><small>${e[1]}</small></span></div>`).join("")}</section>
+      <section><h3>Cartes Héritage</h3><p>Double filet or et carbone : elles se gagnent en complétant un album et ne sortent jamais d'un pack. Elles ne se fusionnent pas.</p></section>
+      <section><h3>Les packs</h3><p>Chaque carte tire son IC et son IP séparément. Les taux exacts sont affichés dans la Boutique, rubrique « Taux de drop ». Les cartes hors voiture (circuits, livrées, éditions spéciales) n'ont pas d'indices : seul leur échelon compte.</p></section>
+      <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div></div>`);
+    o.addEventListener("click", (e) => { if (e.target === o || e.target.closest("[data-close]")) closeOverlay(); });
+  }
   async function upgrade(id) {
     if (busy || !C.requireLogin()) return;
     busy = true;
@@ -788,6 +809,7 @@
       <a class="cg-hb" href="#/jouer/vitrine">${ICN('<path d="M5 4h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 9h14M9 21h6"/>')}<b>Ma vitrine</b><small>${nShow} / 6 exposées</small></a>
     <a class="cg-shopbtn${packReady ? " has-pack" : ""}" href="#/jouer/boutique"><span class="cg-sb-ico">${ICN('<path d="M5 8h14l-1.2 11H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>')}</span><span class="cg-sb-t"><b>Boutique</b></span><span class="cg-sb-go" aria-hidden="true">›</span></a>
     <a class="cg-shopbtn cg-fusbtn" href="#/fusion"><span class="cg-sb-ico">${ICN('<circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M7 10v2c0 2 5 2 5 6M17 10v2c0 2-5 2-5 6"/><circle cx="12" cy="20" r="1.4"/>')}</span><span class="cg-sb-t"><b>Fusion</b><small>5 doublons → 1 carte au-dessus</small></span><span class="cg-sb-go" aria-hidden="true">›</span></a>
+    <button type="button" class="cg-shopbtn cg-guidebtn" data-card-guide><span class="cg-sb-ico">${ICN('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><circle cx="12" cy="17" r=".6"/>')}</span><span class="cg-sb-t"><b>Comprendre les cartes</b><small>IC, IP, échelons, couleurs</small></span><span class="cg-sb-go" aria-hidden="true">›</span></button>
     </div>`;
   }
   /** page Raretés : un bouton par rareté ; un clic affiche les cartes de cette rareté */
@@ -1197,6 +1219,7 @@
     document.addEventListener("ma:auth", () => { doc = null; loadedFor = null; wish = null; claims = null; showcase = null; if (isCardsRoute()) { render(); load(true).then(render).catch(() => {}); } });
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-dust-log]")) { showDustLog(); return; }
+      if (e.target.closest("#cards-root [data-card-guide]")) { guideOpen(); return; }
       if (e.target.closest("#cards-root [data-recycle]")) { recycleOpen(); return; }
       if (e.target.closest("#cards-root [data-wheel]")) { wheelOpen(); return; }
       const adv = e.target.closest("#cards-root [data-advent]"); if (adv) { adventOpen(Number(adv.dataset.advent)); return; }
