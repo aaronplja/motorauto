@@ -58,3 +58,27 @@
   setTimeout(centerActiveTabs, 600);
   syncLocks();
 })();
+
+
+/* Comportement d'application : barre du bas collée au bas de l'écran visible, pas de menu contextuel au toucher long */
+(function () {
+  "use strict";
+  const vv = window.visualViewport;
+  const sync = () => {
+    if (!vv) return;
+    // écart entre le bas de la zone visible et le bas de la fenêtre de mise en page (zoom, clavier, rebond) : on y recale la barre fixe
+    const shift = Math.round(vv.height + vv.offsetTop - window.innerHeight);
+    document.documentElement.style.setProperty("--vv-shift", (Math.abs(shift) > 1 && !document.body.classList.contains("kb-open") ? shift : 0) + "px");
+  };
+  if (vv) { vv.addEventListener("resize", sync); vv.addEventListener("scroll", sync); }
+  window.addEventListener("orientationchange", () => setTimeout(sync, 250));
+  window.addEventListener("pageshow", sync);
+  document.addEventListener("scroll", () => { if (vv && Math.abs(vv.height + vv.offsetTop - window.innerHeight) > 1) sync(); }, { passive: true });
+  sync();
+  // pas de menu « ouvrir dans un nouvel onglet / copier l'image » au toucher long, sauf dans les champs de saisie et les textes autorisés
+  const editable = (t) => !!(t && t.closest && t.closest("input, textarea, select, [contenteditable], .selectable, .msg-text, .b-text, .bubble"));
+  document.addEventListener("contextmenu", (e) => {
+    if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches && !editable(e.target)) e.preventDefault();
+  });
+  document.addEventListener("dragstart", (e) => { if (e.target && e.target.tagName === "IMG") e.preventDefault(); });
+})();

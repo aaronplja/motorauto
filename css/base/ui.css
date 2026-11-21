@@ -374,3 +374,15 @@ button.pro-stat{cursor:pointer}button.pro-stat:hover{border-color:var(--accent)}
 .pic-gal .pg-th.on { border-color: var(--accent); }
 .pic-gal .pg-th.lock { cursor: default; opacity: .55; background: repeating-linear-gradient(135deg, rgba(255,255,255,.06) 0 6px, rgba(255,255,255,.12) 6px 12px); }
 .pic-gal .pg-th.lock b { font-size: 1rem; opacity: .7; }
+
+/* ===== Comportement d'application : pas de zoom accidentel, pas de menu au toucher long, pas de rebond qui décale les barres fixes ===== */
+html { touch-action: manipulation; overscroll-behavior-y: none; -webkit-text-size-adjust: 100%; }
+body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+body, body * { -webkit-touch-callout: none; }
+@media (pointer: coarse) {
+  body { -webkit-user-select: none; user-select: none; }
+  input, textarea, select, [contenteditable="true"], [contenteditable=""], .selectable, .msg-text, .b-text, .bubble, .bubble * { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+  img, svg, a { -webkit-user-drag: none; user-drag: none; }
+}
+/* la barre du bas suit le bas réel de l'écran visible (corrigé par js/polish.js) */
+@media (max-width: 999px) { #mobile-touch-bar { transform: translate3d(0, var(--vv-shift, 0px), 0) !important; } }
