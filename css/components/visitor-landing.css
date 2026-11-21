@@ -1,0 +1,20 @@
+/* Accueil des visiteurs (non connectés) : présentation éditoriale. Le pilote connecté garde son accueil. */
+html.ma-garage .vl { display: none; }
+html:not(.ma-garage) #page-home > .hero-stage { display: none; }
+.vl { display: flex; flex-direction: column; padding-block: 1.2rem 1.6rem; }
+.vl-top { display: flex; justify-content: space-between; align-items: center; gap: .8rem; padding-bottom: .8rem; border-bottom: 2px solid var(--color-ink); }
+.vl-brand { font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; font-size: 1.5rem; letter-spacing: .01em; color: var(--color-ink); }
+.vl-brand b { color: var(--accent-ink, var(--accent)); font-weight: 800; }
+.vl-issue { font-size: .7rem; font-weight: 700; letter-spacing: .16em; color: var(--color-secondary); text-align: right; }
+.vl-title { margin: 1.6rem 0 .8rem; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(3.4rem, 13vw, 6.4rem); line-height: .92; letter-spacing: -.03em; color: var(--color-ink); text-wrap: balance; }
+.vl-title em { font-style: italic; color: var(--accent-ink, var(--accent)); }
+.vl-lead { margin: 0 0 1.2rem; max-width: 34rem; font-size: 1.05rem; line-height: 1.55; color: var(--color-secondary); border-left: 3px solid var(--accent); padding-left: .9rem; }
+.vl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.3rem; border-top: 1px solid var(--stroke-line); }
+.vl-item { display: block; padding: .9rem 0; border-bottom: 1px solid var(--stroke-line); text-decoration: none; color: inherit; }
+.vl-item small { display: block; font-size: .7rem; font-weight: 700; letter-spacing: .14em; color: var(--accent-ink, var(--accent)); }
+.vl-item b { display: block; margin-top: .25rem; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 1.5rem; line-height: 1.05; color: var(--color-ink); }
+.vl-item:hover b, .vl-item:focus-visible b { text-decoration: underline; text-underline-offset: 3px; }
+.vl-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.vl-cta { display: flex; gap: .7rem; margin-top: 1.4rem; }
+.vl-cta .cta-btn { flex: 1 1 0; justify-content: center; border-radius: 999px; min-height: 3.2rem; }
+@media (min-width: 760px) { .vl-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .vl-cta { max-width: 26rem; } }

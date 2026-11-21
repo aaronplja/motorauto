@@ -2746,6 +2746,7 @@
     "delete-lap": (d) => deleteGlobalLap(d.id),
     "remove-engine": (d, node) => node.closest(".admin-engine-block").remove(),
     "dup-engine": (d, node) => { const b = node.closest(".admin-engine-block"); if (b) addEngineBlock(engineBlockValues(b)); },
+    "open-login": () => { $("tab-login-btn").click(); askLogin(""); },
     "open-auth": () => { $("tab-register-btn").click(); askLogin(""); },
     "quick-search": (d) => {
       filters.query = d.q; filters.page = 1;

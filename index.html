@@ -45,14 +45,14 @@
   <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=8af02d5c9d","quiz":"js/lazy-quiz.min.js?v=8b63385a7d","quizbank":"js/lazy-quizbank.min.js?v=957b116121"};</script>
   <script defer src="js/bundle1.min.js?v=d17be6a9f1"></script>
   <script defer src="js/bundle2.min.js?v=93952a7671"></script>
-  <script defer src="js/bundle3.min.js?v=ed0f76e599"></script>
+  <script defer src="js/bundle3.min.js?v=06a5d6eea8"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
   <link rel="preload" href="fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/hanken-grotesk-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/bundle.min.css?v=c84af216b7">
+  <link rel="stylesheet" href="css/bundle.min.css?v=85f4494232">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -115,6 +115,23 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
 
   <div id="page-main" class="app-pages" tabindex="-1">
   <div class="page" id="page-home" data-page="home">
+  <!-- ============ ACCUEIL VISITEUR (non connecté) ============ -->
+  <section class="stage-shell vl" id="visitor-landing" aria-labelledby="vl-title">
+    <div class="vl-top"><span class="vl-brand">MOTOR<b>AUTO</b></span><span class="vl-issue">N° 1 · L'ARCHIVE VIVANTE</span></div>
+    <h2 class="vl-title" id="vl-title">L'archive <em>vivante</em> de l'automobile.</h2>
+    <p class="vl-lead">Écrite par ceux qui conduisent : chaque fiche est comparée, commentée, jouée.</p>
+    <div class="vl-grid">
+      <a class="vl-item" href="#/catalogue"><small>LIRE</small><b>Les fiches, une à une</b></a>
+      <a class="vl-item" href="#/jouer"><small>JOUER</small><b>Cartes, quiz et défis</b></a>
+      <a class="vl-item" href="#/classement"><small>PARTAGER</small><b>Ton garage et tes chronos</b></a>
+      <a class="vl-item" href="#/chat"><small>DISCUTER</small><b>Le salon des pilotes</b></a>
+    </div>
+    <div class="vl-cta">
+      <button type="button" class="cta-btn fill-btn" data-action="open-login">Se connecter</button>
+      <button type="button" class="cta-btn btn-ghost" data-action="open-auth">S'inscrire</button>
+    </div>
+  </section>
+
   <!-- ============ HERO ============ -->
   <h1 class="sr-only" id="home-sr-h1">MOTORAUTO — ton garage, tes chronos, ta communauté</h1>
       <section class="hero-stage">
