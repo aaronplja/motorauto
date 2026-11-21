@@ -182,7 +182,7 @@
   const PILOT_GROUPS = [["espace", "Mon espace"], ["communaute", "Communauté"], ["classement", "Classement"]];
   const PILOT_HREF = { espace: "#/pilotes", communaute: "#/communaute/fil", classement: "#/classement/chronos" };
   const PILOT_SUBS = {
-    espace: [["Profil", "#/pilotes", (r) => r.name === "pilotes" || (r.name === "pilot" && r.params.uid === me())], ["Suivi", "#/garage/suivi", (r) => r.name === "garage" && r.params.tab === "suivi"]],
+    espace: [],
     communaute: [["Fil", "#/communaute/fil", (r) => r.name === "community" && r.params.tab === "fil"], ["Membres", "#/communaute/pilotes", (r) => r.name === "community" && r.params.tab === "pilotes"], ["Garages", "#/communaute/voitures", (r) => r.name === "community" && r.params.tab === "voitures" || r.name === "commcar"], ["Clubs", "#/clubs", (r) => r.name === "clubs" || r.name === "club"], ["Sorties", "#/communaute/evenements", (r) => r.name === "community" && (r.params.tab === "evenements" || r.params.tab === "carte")]],
     classement: [["Chronos", "#/classement/chronos", (r) => r.name === "leaderboard" && r.params.tab === "chronos"], ["Circuits", "#/classement/circuits", (r) => r.name === "leaderboard" && r.params.tab === "circuits" || r.name === "circuit"], ["Modèles", "#/classement/voitures", (r) => r.name === "leaderboard" && r.params.tab === "voitures"], ["Pilotes", "#/classement/pilotes", (r) => r.name === "leaderboard" && r.params.tab === "pilotes"], ["Cartes", "#/classement/collection", (r) => r.name === "leaderboard" && r.params.tab === "collection"]]
   };
@@ -196,9 +196,9 @@
     const g = pilotGroup(route), logged = !!me(), t = route.name === "community" ? route.params.tab : "";
     nav.removeAttribute("aria-label"); nav.removeAttribute("role"); nav.classList.add("play-bar", "inner"); nav.classList.remove("page-tabs", "fit");
     const subs = PILOT_SUBS[g] || [];
-    if (t === "apercu" || (g === "espace" && !logged)) { nav.innerHTML = ""; nav.style.display = "none"; return; }
+    if (t === "apercu" || (g === "espace" && (!logged || route.name !== "garage" && route.name !== "settings"))) { nav.innerHTML = ""; nav.style.display = "none"; return; }
     nav.style.display = "";
-    const back = g === "espace" ? "" : `<a class="play-back" href="#/communaute" aria-label="Communauté"><span aria-hidden="true">‹</span> <span class="pb-l">Communauté</span></a>`;
+    const back = g === "espace" ? `<a class="play-back" href="#/pilotes" aria-label="Mon profil"><span aria-hidden="true">‹</span> <span class="pb-l">Mon profil</span></a>` : `<a class="play-back" href="#/communaute" aria-label="Communauté"><span aria-hidden="true">‹</span> <span class="pb-l">Communauté</span></a>`;
     nav.innerHTML = back + (subs.length ? `<div class="page-tabs fit play-subtabs" role="tablist" aria-label="${g === "espace" ? "Mon espace" : g === "classement" ? "Classement" : "Communauté"}" style="--n:${subs.length}">${subs.map((x) => { const on = !!x[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${x[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}><span class="tl" data-s="${x[4] || x[0]}">${x[0]}</span></a>`; }).join("")}</div>` : "");
   }
 

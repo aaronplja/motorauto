@@ -15,6 +15,7 @@
     const mine = !!(C && C.user && C.user.uid === uid);
     b.hidden = !mine;
     const g = $("pub-settings-btn"); if (g) g.hidden = !mine;
+    const sv = $("pub-suivi-btn"); if (sv) sv.hidden = !mine;
     const f = document.querySelector('#public-profile-modal [data-action="toggle-follow"]'); if (f && mine) f.hidden = true;
   }
 

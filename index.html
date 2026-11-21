@@ -43,9 +43,9 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=8af02d5c9d","quiz":"js/lazy-quiz.min.js?v=8b63385a7d","quizbank":"js/lazy-quizbank.min.js?v=957b116121"};</script>
-  <script defer src="js/bundle1.min.js?v=44f42316b8"></script>
+  <script defer src="js/bundle1.min.js?v=866552c183"></script>
   <script defer src="js/bundle2.min.js?v=93952a7671"></script>
-  <script defer src="js/bundle3.min.js?v=402aad07a2"></script>
+  <script defer src="js/bundle3.min.js?v=6f52cd18e3"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
@@ -526,6 +526,7 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
         <a class="icon-btn pub-gear" id="pub-settings-btn" href="#/reglages/profil" aria-label="Réglages" title="Réglages" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
         <button type="button" class="cta-btn fill-btn compact-btn" id="pub-edit-btn" hidden><span class="mi-w"><i class="mi mi-pencil" data-e="✏" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20l1-4.5L16.5 4a2.1 2.1 0 0 1 3 3L8 18.5z"/><path d="M14.5 6l3.5 3.5"/></svg><b class="mi-t">✏</b></i> Personnaliser le profil</span></button>
         <button type="button" class="cta-btn btn-ghost compact-btn" data-action="show-stats"><span class="mi-w"><i class="mi mi-chart" data-e="📊" role="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 4v16h16"/><path d="M7.5 12h2.5v5H7.5zM12 8h2.5v9H12zM16.5 10.5H19V17h-2.5z" fill="currentColor" stroke="none"/></svg><b class="mi-t">📊</b></i> Caractéristiques</span></button>
+        <a class="cta-btn btn-ghost compact-btn" id="pub-suivi-btn" href="#/garage/suivi" hidden>Suivi de ma voiture</a>
         <button type="button" class="cta-btn btn-ghost compact-btn" id="pub-block-btn" data-action="toggle-block" hidden>Bloquer</button>
         <button type="button" class="cta-btn btn-ghost compact-btn grade-btn" id="pub-admin-btn" data-action="toggle-admin" hidden>Nommer admin</button>
       </div>

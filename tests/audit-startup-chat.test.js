@@ -309,7 +309,7 @@ ok("structure : Pilotes = Mon espace / Communauté / Classement, libellés uniqu
   const rt = read("js/router.js"), idx = read("index.src.html");
   assert.ok(/PILOT_GROUPS = \[\["espace", "Mon espace"\], \["communaute", "Communauté"\], \["classement", "Classement"\]\]/.test(rt), "trois univers dans Pilotes");
   const sub = rt.slice(rt.indexOf("espace: [[\"Profil\""), rt.indexOf("communaute: [[\"Fil\""));
-  ["Profil", "Suivi"].forEach((l) => assert.ok(sub.includes('["' + l + '"'), "Mon espace contient " + l)); ["Aperçu", "Mes voitures", "Réglages"].forEach((l) => assert.ok(!sub.includes('["' + l + '"'), "Mon espace ne contient plus " + l));
+  ["Profil", "Suivi"].forEach((l) => assert.ok(!sub.includes('["' + l + '"'), "Mon espace n'a plus de barre : " + l)); ["Aperçu", "Mes voitures", "Réglages"].forEach((l) => assert.ok(!sub.includes('["' + l + '"'), "Mon espace ne contient plus " + l));
   assert.ok(/\["Garages", "#\/communaute\/voitures"/.test(rt) && /\["Modèles", "#\/classement\/voitures"/.test(rt) && /\["profil", "Compte"\]/.test(rt), "libellés en double renommés");
   assert.ok(idx.indexOf('id="home-contest"') < idx.indexOf('id="home-feed-sec"') && idx.indexOf('id="home-feed-sec"') < idx.indexOf('id="home-community"'), "accueil : défi et sorties avant le fil, puis les garages");
   assert.ok(/hub-grid \{ grid-template-columns: repeat\(2/.test(read("css/system.css")), "tuiles de Jouer en deux colonnes");
