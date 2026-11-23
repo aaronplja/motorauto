@@ -93,8 +93,18 @@
 .tcg-3d-face.rev.tcg-mythic { filter: drop-shadow(0 0 3px #f5d061) drop-shadow(0 0 28px rgba(245, 208, 97, .65)); }
 
 /* ---- fluidité : seules les propriétés gérées par le GPU s'animent (transform, opacité) ---- */
-.tcg-grid .tcg { content-visibility: auto; contain-intrinsic-size: auto 150px auto 210px; }
 .tcg-flips .flip.pend::before { content: none !important; }
 .pk-rays { width: min(150vmax, 1500px); will-change: transform; }
 .tcg-flips .flip-in, .tcg-flips.stack .flip { will-change: transform; }
 .tcg-flips .flip.pend .pkw { filter: drop-shadow(0 0 22px var(--burst, #b86bff)); }
+
+/* ---- retournement : la face avant est déjà dessinée (plus de latence), mouvement en deux temps avec léger soulèvement et reflet ---- */
+.tcg-flips.stack .flip-front { visibility: visible; transition: none; }
+.tcg-flips .flip-in { transition: none; backface-visibility: visible; transform: translateZ(0); }
+.tcg-flips .flip.on .flip-in { animation: cgFlip .85s cubic-bezier(.3, .7, .2, 1) both; }
+@keyframes cgFlip { 0% { transform: rotateY(0) scale(1); } 38% { transform: rotateY(96deg) scale(1.09) translateY(-3%); } 100% { transform: rotateY(180deg) scale(1); } }
+.tcg-flips .flip-front::before { content: ""; position: absolute; inset: 0; z-index: 9; pointer-events: none; clip-path: var(--chamfer); opacity: 0;
+  background: linear-gradient(112deg, transparent 32%, rgba(255, 255, 255, .55) 48%, rgba(255, 255, 255, .12) 56%, transparent 68%); transform: translateX(-110%); }
+.tcg-flips .flip.on .flip-front::before { animation: cgSweep .9s .5s ease-out both; }
+@keyframes cgSweep { 0% { opacity: 1; transform: translateX(-110%); } 100% { opacity: 1; transform: translateX(110%); } }
+@media (prefers-reduced-motion: reduce) { .tcg-flips .flip.on .flip-in { animation: none; transform: rotateY(180deg); } .tcg-flips .flip.on .flip-front::before { animation: none; } }

@@ -165,6 +165,21 @@
   async function loadWish(uid) {
     try { const s = await C.db.collection("wishlists").doc(uid).get(); return s.exists && Array.isArray(s.data().ids) ? s.data().ids : []; } catch (_) { return []; }
   }
+  /** précharge toutes les images de la collection, par paquets, quand le navigateur est au repos : plus de cartes noires au défilement */
+  let warmed = false;
+  function warmImages() {
+    if (warmed || !C.cars || !C.cars.length) return;
+    const cn = navigator.connection; if (cn && (cn.saveData || /(^|-)2g$/.test(cn.effectiveType || ""))) return;
+    warmed = true;
+    const urls = []; C.cars.forEach((c) => { const u = c && c.image && C.safeUrl(c.image); if (u) urls.push(u); });
+    const idle = window.requestIdleCallback || ((f) => setTimeout(f, 120));
+    let i = 0;
+    const step = () => {
+      for (let n = 0; n < 8 && i < urls.length; n++, i++) { const im = new Image(); im.decoding = "async"; im.src = urls[i]; }
+      if (i < urls.length) idle(() => setTimeout(step, 150));
+    };
+    idle(step);
+  }
   /** charge ma collection : affichage immédiat depuis Firestore, puis synchronisation serveur (packs bonus des badges) */
   async function load(force) {
     if (!C.user) { doc = null; loadedFor = null; wish = null; return null; }
@@ -175,7 +190,7 @@
     const [snap, w] = await Promise.all([col(uid).get().catch(() => null), loadWish(uid), loadSpecials(), loadRarOv()]);
     wish = w;
     if (snap && snap.exists) applyDoc(Object.assign({}, snap.data(), { bonus: snap.data().bonus || 0 }));
-    notice = "";
+    notice = ""; setTimeout(warmImages, 1500);
     try {
       const r = await API("syncCollection");
       applyDoc(r.doc);
@@ -483,6 +498,7 @@
   }
   function showPack(results, dust, kind, bonus, shopId) {
     const theme = shopId && shopId !== "world" ? packTheme(shopId) : null;
+    results.forEach((r) => { const u = r.image || (r.car && r.car.image); if (u && C.safeUrl(u)) { const im = new Image(); im.decoding = "async"; im.src = C.safeUrl(u); if (im.decode) im.decode().catch(() => {}); } });
     const pa = PA(), pkId = pa ? pa.idFor(shopId && !(G.THEME_PACKS && G.THEME_PACKS[shopId]) ? shopId : "", kind) : "";
     const rank = (r) => (r === "special" ? ORDER.length + 2 : ORDER.length - ORDER.indexOf(r));
     const best = results.reduce((b, r) => (rank(rarityOf(r.car)) > rank(rarityOf(b.car)) ? r : b), results[0]);
@@ -632,7 +648,7 @@
     const desc = String(car.description || "").replace(/\s+/g, " ");
     return `<h3>${e(car.brand)} ${e(String(car.model).replace(/\s*\(.*$/, ""))}</h3>
       <dl><dt>Années</dt><dd>${e(car.years || "—")}</dd><dt>Catégorie</dt><dd>${e(car.category)}</dd><dt>Rareté</dt><dd>${R.label}</dd><dt>N°</dt><dd>#${String(numberOf(car)).padStart(3, "0")}</dd><dt>Puissance</dt><dd>${st.power} ch</dd><dt>Vitesse</dt><dd>${st.speed} km/h</dd><dt>0-100</dt><dd>${st.zero ? st.zero + " s" : "—"}</dd>${fiche(car)}<dt>Exemplaires</dt><dd>${n}</dd></dl>
-      <div><small>Album ${e(car.brand)} : ${have} / ${all.length}</small><div class="ab-bar"><i style="width:${Math.round((have / all.length) * 100)}%"></i></div></div>${desc ? `<p>${e(desc.slice(0, 150))}${desc.length > 150 ? "…" : ""}</p>` : ""}`;
+      <div><small>Album ${e(car.brand)} : ${have} / ${all.length}</small><div class="ab-bar"><i style="width:${Math.round((have / all.length) * 100)}%"></i></div></div>`;
   }
   /** courbe de progression des images d'une carte : images débloquées (choisis celle qui s'affiche) et silhouettes verrouillées */
   function picGallery(car, n) {
