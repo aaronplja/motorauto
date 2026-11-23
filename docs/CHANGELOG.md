@@ -2,6 +2,12 @@
 
 > Fichier généré par `node scripts/build.js` depuis `js/news-seed.js` : ne pas le modifier à la main.
 
+## 2026-11-23 — Campagne : un globe à parcourir, des packs et des cartes refaits
+
+Une nouvelle Campagne arrive dans Jouer : un globe interactif (ou une carte plate zoomable sur les appareils lents) où chaque pays est un chapitre. Le premier, la France, enchaîne six épreuves : des quiz et des batailles de cartes contre l'IA, jusqu'au boss de l'Hexagone. Chaque épreuve rapporte de 1 à 3 étoiles et débloque la suivante ; l'Italie, l'Allemagne, le Japon, les États-Unis, le Royaume-Uni et la Suède arrivent ensuite. Les packs et les cartes prennent un nouveau style aux angles coupés, jusque dans l'ouverture : le pack déchiré avec ses ondes de choc, les cartes empilées que l'on retourne une à une, un tout révéler vers l'avant et un final plus spectaculaire pour les cartes Prestige et Apex. Les packs thématiques ont chacun leur motif (damier du Mans, soleil levant JDM, étoiles des muscle cars…). Les pastilles IC et IP apparaissent sur les fiches et le comparateur, et tu filtres tes favoris du Garage par IC et IP.
+
+#/campagne
+
 ## 2026-11-21 — Cartes : double indice IC / IP et échelons
 
 Fini Commune, Rare, Épique, Légendaire et Shiny. Chaque voiture a maintenant deux indices : l'IC (collection, de F à Z) et l'IP (performance, de I à X), séparés par une diagonale sur la carte, avec le numéro de la carte à la place de l'ancienne rareté. Un échelon calculé à partir des deux (Série, Sport, Élite, Prestige, Apex) donne la valeur de la carte. Les cartes Légende deviennent Héritage : elles se gagnent en complétant un album et ne sortent jamais d'un pack. Les photos se fondent dans les couleurs de la carte et l'ouverture des packs reprend ces couleurs. Les taux de drop sont visibles dans la Boutique, une page « Comprendre les cartes » explique chaque couleur, et tu peux filtrer et trier par IC et IP dans ta collection et dans le Catalogue.
