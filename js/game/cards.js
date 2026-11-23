@@ -119,22 +119,29 @@
 
 
   // couleur dominante de la photo (--pc) : les bords de l'image s'y fondent. Si l'image n'autorise pas la lecture (CORS), on garde le fond sombre de la carte.
-  const pcCache = new Map();
+  const pcCache = new Map(), pcQ = []; let pcBusy = false;
+  const pcPump = () => { if (pcBusy || !pcQ.length) return; pcBusy = true; const job = pcQ.shift(); (window.requestIdleCallback || ((f) => setTimeout(f, 60)))(() => job(() => { pcBusy = false; pcPump(); })); };
   document.addEventListener("load", (e) => {
     const im = e.target; if (!im || im.tagName !== "IMG" || !im.closest || !im.closest(".tcg-dual .tcg-art")) return;
     const art = im.closest(".tcg-art"), src = im.currentSrc || im.src; if (!src || src.startsWith("data:")) return;
     const apply = (c) => { if (c) art.style.setProperty("--pc", c); };
     if (pcCache.has(src)) { apply(pcCache.get(src)); return; }
-    const pr = new Image(); pr.crossOrigin = "anonymous";
-    pr.onload = () => { try {
-      const cv = document.createElement("canvas"); cv.width = cv.height = 6; const cx = cv.getContext("2d"); cx.drawImage(pr, 0, 0, 6, 6);
-      const d = cx.getImageData(0, 0, 6, 6).data; let r = 0, g = 0, b = 0, n = 0;
-      for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; }
-      const c = "rgb(" + Math.round(r / n * .8) + "," + Math.round(g / n * .8) + "," + Math.round(b / n * .8) + ")";
-      pcCache.set(src, c); apply(c);
-    } catch (_) { pcCache.set(src, ""); } };
-    pr.onerror = () => pcCache.set(src, "");
-    pr.src = src;
+    // un seul calcul à la fois, quand le navigateur est au repos : le défilement de la collection n'est jamais bloqué
+    pcQ.push((done) => {
+      if (pcCache.has(src)) { apply(pcCache.get(src)); return done(); }
+      const pr = new Image(); pr.crossOrigin = "anonymous"; let ended = false;
+      const end = () => { if (!ended) { ended = true; done(); } };
+      pr.onload = () => { try {
+        const cv = document.createElement("canvas"); cv.width = cv.height = 6; const cx = cv.getContext("2d"); cx.drawImage(pr, 0, 0, 6, 6);
+        const d = cx.getImageData(0, 0, 6, 6).data; let r = 0, g = 0, b = 0, n = 0;
+        for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; }
+        const c = "rgb(" + Math.round(r / n * .8) + "," + Math.round(g / n * .8) + "," + Math.round(b / n * .8) + ")";
+        pcCache.set(src, c); apply(c);
+      } catch (_) { pcCache.set(src, ""); } end(); };
+      pr.onerror = () => { pcCache.set(src, ""); end(); };
+      setTimeout(end, 1500); pr.src = src;
+    });
+    pcPump();
   }, true);
 
   // ------------------------------------------------------------------ données

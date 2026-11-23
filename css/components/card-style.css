@@ -21,12 +21,11 @@
 .tcg-shiny { --ec: var(--ic, #22d3ee); --ew: 2.4px; --ew2: 1px; }
 .tcg-special { --ec: #f472b6; --ew: 2.2px; }
 .tcg-mythic { --ec: #f5d061; --ew: 3px; --ew2: 1.4px; }
-.tcg-edge { filter: drop-shadow(0 0 2px color-mix(in srgb, var(--ec, transparent) 70%, transparent)); }
 /* halos de rareté : sur l'enveloppe de la carte (révélation et fiche 3D) */
 @keyframes cgGlow { 0% { filter: drop-shadow(0 0 0 transparent); } 30% { filter: drop-shadow(0 0 5px var(--gl)) drop-shadow(0 0 36px var(--gl)); } 100% { filter: drop-shadow(0 0 3px var(--gl)) drop-shadow(0 0 16px color-mix(in srgb, var(--gl) 65%, transparent)); } }
 .tcg-flips .flip[data-r="rare"] { --gl: #3b82f6; } .tcg-flips .flip[data-r="epic"] { --gl: #a855f7; } .tcg-flips .flip[data-r="legendary"] { --gl: #f59e0b; }
 .tcg-flips .flip[data-r="special"] { --gl: #f472b6; } .tcg-flips .flip[data-r="mythic"] { --gl: #f5d061; } .tcg-flips .flip[data-r="shiny"] { --gl: var(--ring, #22d3ee); }
-.tcg-flips .flip.on:is([data-r="rare"], [data-r="epic"], [data-r="legendary"], [data-r="special"], [data-r="mythic"], [data-r="shiny"]) .flip-front { animation: cgGlow 1.6s ease-out both; }
+.tcg-flips .flip.on:is([data-r="rare"], [data-r="epic"], [data-r="legendary"], [data-r="special"], [data-r="mythic"], [data-r="shiny"]) .flip-front { filter: drop-shadow(0 0 3px var(--gl)) drop-shadow(0 0 14px color-mix(in srgb, var(--gl) 65%, transparent)); }
 /* les anciens anneaux rectangulaires sont remplacés par le halo ci-dessus */
 .tcg-flips .flip.on::after { content: none !important; }
 .tcg-3d-face { filter: drop-shadow(0 18px 22px rgba(0, 0, 0, .55)); }
@@ -92,3 +91,10 @@
 .tcg-3d-face.rev.tcg-legendary { filter: drop-shadow(0 0 3px #f59e0b) drop-shadow(0 0 24px rgba(245, 158, 11, .6)); }
 .tcg-3d-face.rev.tcg-special { filter: drop-shadow(0 0 3px #f472b6) drop-shadow(0 0 22px rgba(244, 114, 182, .55)); }
 .tcg-3d-face.rev.tcg-mythic { filter: drop-shadow(0 0 3px #f5d061) drop-shadow(0 0 28px rgba(245, 208, 97, .65)); }
+
+/* ---- fluidité : seules les propriétés gérées par le GPU s'animent (transform, opacité) ---- */
+.tcg-grid .tcg { content-visibility: auto; contain-intrinsic-size: auto 150px auto 210px; }
+.tcg-flips .flip.pend::before { content: none !important; }
+.pk-rays { width: min(150vmax, 1500px); will-change: transform; }
+.tcg-flips .flip-in, .tcg-flips.stack .flip { will-change: transform; }
+.tcg-flips .flip.pend .pkw { filter: drop-shadow(0 0 22px var(--burst, #b86bff)); }
