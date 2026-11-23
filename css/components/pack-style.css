@@ -24,6 +24,7 @@
 .pkx-name { position: absolute; left: 7%; right: 7%; top: 50%; transform: translateY(-50%); z-index: 5; padding: 3.4cqw 3cqw 3.4cqw 5cqw; white-space: nowrap; font-size: 9.4cqw; font-weight: 800; font-style: italic; letter-spacing: .05em; text-transform: uppercase;
   background: linear-gradient(90deg, rgba(6, 8, 16, .9), rgba(6, 8, 16, .62)); clip-path: polygon(3% 0, 100% 0, 97% 100%, 0 100%); box-shadow: inset 1.6cqw 0 0 var(--k); }
 .pkx-name.s { font-size: 7.4cqw; }
+.pkx-name.xs { font-size: 5.6cqw; }
 .pkx.gold .pkx-brand, .pkx.gold .pkx-name, .pkx.gold .pkx-cnt { color: #f6e3a0; }
 
 /* tuile de la boutique : le pack remplace l'ancienne vignette */

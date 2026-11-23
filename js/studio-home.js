@@ -75,7 +75,7 @@
       qp = requestAnimationFrame(() => {
         qp = 0;
         const pk = document.getElementById("pk3"), ready = !!pk && !pk.classList.contains("pk3-loading");
-        if (ready && !was) confetti(); was = ready;
+        was = ready; // plus de confettis à l'ouverture d'un pack (animation d'arrivée du pack : à choisir)
       });
     }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
   }

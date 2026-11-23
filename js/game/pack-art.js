@@ -21,16 +21,26 @@
     se: { code: "SE", name: "Suède", cnt: "3 cartes", k: "#fecc00", a: "#006aa7", bg: () => `${R(0, 0, 100, 140, "#006aa7")}${R(28, 0, 16, 140, "#fecc00")}${R(0, 62, 100, 16, "#fecc00")}` },
     xx: { code: "XX", name: "Autres pays", cnt: "3 cartes", k: "#fbbf24", a: "#0f766e", bg: (u) => `<defs><linearGradient id="g${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f766e"/><stop offset=".55" stop-color="#4f46e5"/><stop offset="1" stop-color="#0f172a"/></linearGradient></defs>${R(0, 0, 100, 140, `url(#g${u})`)}<g fill="#fbbf24" fill-opacity=".8"><circle cx="20" cy="28" r="1.6"/><circle cx="72" cy="36" r="1.2"/><circle cx="84" cy="88" r="1.6"/><circle cx="30" cy="102" r="1.2"/><circle cx="58" cy="116" r="1.6"/><circle cx="14" cy="70" r="1"/></g><g fill="none" stroke="#fff" stroke-opacity=".3" stroke-width=".8"><path d="M20 28 72 36 84 88 30 102 20 28M72 36 30 102M84 88 58 116 30 102"/></g>` }
   };
+  /** packs thématiques (calendrier) : même style, couleurs prises dans leur définition (--p1 fond, --p2 accent, --p3 détail) */
+  function addTheme(t) {
+    if (!t || !t.id || DEFS[t.id]) return;
+    const m = {}; String(t.style || "").replace(/--(p\d):(#[0-9a-f]{3,8})/gi, (x, k, v) => { m[k] = v; return x; });
+    const p1 = m.p1 || "#1e293b", p2 = m.p2 || "#fbbf24", p3 = m.p3 || "#f8fafc";
+    DEFS[t.id] = { code: String(t.name || "").replace(/[^A-Za-zÀ-ÿ0-9 ]/g, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "TH", name: t.name, cnt: t.min === "epic" ? "Élite ou mieux" : "3 cartes", k: p2, a: p1,
+      bg: (u) => `<defs><linearGradient id="g${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></linearGradient></defs>${R(0, 0, 100, 140, p1)}<g stroke="${p2}" stroke-opacity=".38" stroke-width="5"><path d="M-10 120 90 -10M14 150 114 20M-34 90 66 -40"/></g><circle cx="50" cy="70" r="27" fill="none" stroke="${p3}" stroke-opacity=".4" stroke-width="1.2"/>${R(0, 0, 100, 140, `url(#g${u})`)}` };
+  }
   const SHOP = { world: "mo", circuit: "ci", prestige: "pr", fr: "fr", de: "de", it: "it", gb: "gb", jp: "jp", us: "us", se: "se", xx: "xx" };
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const api = {
+    color: (id) => (DEFS[id] || DEFS.mo).k,
     has: (id) => !!SHOP[id] || !!DEFS[id],
     /** id d'illustration pour un pack de la boutique (shopId) ou un pack offert (kind : daily, bonus, test…) */
-    idFor(shopId, kind) { if (shopId && SHOP[shopId]) return SHOP[shopId]; return kind === "bonus" || kind === "test" ? "bn" : kind === "daily" ? "dj" : "mo"; },
+    addTheme,
+    idFor(shopId, kind) { if (shopId && (SHOP[shopId] || DEFS[shopId])) return SHOP[shopId] || shopId; return kind === "bonus" || kind === "test" ? "bn" : kind === "daily" ? "dj" : "mo"; },
     /** le pack entier ; { back:true } : sans nom, sans « MOTORAUTO » ni « 3 cartes » (dos des cartes du pack) */
     face(id, o) {
       const d = DEFS[id] || DEFS.mo, back = !!(o && o.back), u = ++uid;
-      const txt = back ? "" : `<span class="pkx-brand">MOTORAUTO</span><span class="pkx-name${d.name.length > 9 ? " s" : ""}">${esc(d.name)}</span><span class="pkx-cnt">${esc(d.cnt)}</span>`;
+      const txt = back ? "" : `<span class="pkx-brand">MOTORAUTO</span><span class="pkx-name${d.name.length > 14 ? " xs" : d.name.length > 9 ? " s" : ""}">${esc(d.name)}</span><span class="pkx-cnt">${esc(d.cnt)}</span>`;
       return `<span class="pkw${back ? " back" : ""}"><span class="pkx${d.gold ? " gold" : ""}" style="--k:${d.k};--a:${d.a}" data-pk="${id}">${svg(d.bg(u))}${back ? "" : `<i class="pkx-gh">${d.code}</i>`}<i class="pkx-fr"></i>${txt}<i class="pkx-sh"></i></span></span>`;
     },
     /** fond de la page d'ouverture : le décor du pack seul (flouté et assombri en CSS) */

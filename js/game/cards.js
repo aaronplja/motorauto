@@ -230,9 +230,10 @@
     const k = (G.COUNTRIES || []).find((x) => x.id === id);
     return k ? { label: k.label, f: k.f, style: `--p1:${k.c[0]};--p2:${k.c[1]};--p3:${k.c[2]}` } : { label: "Monde", f: "world", style: "--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24" };
   }
-  const PA = () => window.MAPackArt;
+  let paThemes = false;
+  const PA = () => { const a = window.MAPackArt; if (a && !paThemes && G.THEME_PACKS) { paThemes = true; Object.keys(G.THEME_PACKS).forEach((k) => a.addTheme(G.THEME_PACKS[k])); } return a; };
   function packInner(id, sub) {
-    if (PA() && PA().has(id) && !(G.THEME_PACKS && G.THEME_PACKS[id])) return PA().face(PA().idFor(id));
+    if (PA() && PA().has(id)) return PA().face(PA().idFor(id));
     const t = packTheme(id);
     return `<i class="pkart-flag" data-f="${t.f}" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>${C.esc(t.label)}</b><em>${C.esc(sub || "3 cartes")}</em></span>`;
   }
@@ -242,7 +243,7 @@
     const theme = shopId && shopId !== "world" ? packTheme(shopId) : null;
     busy = true; renderHero();
     // le pack apparaît tout de suite pendant que le serveur tire les cartes (plus d'écran figé)
-    const pa0 = PA(), pk0 = pa0 ? pa0.idFor(shopId && !(G.THEME_PACKS && G.THEME_PACKS[shopId]) ? shopId : "", kind) : "";
+    const pa0 = PA(), pk0 = pa0 ? pa0.idFor(shopId || "", kind) : "";
     const ov0 = mountOverlay("pack", "Ouverture de pack", `<div class="pk3 pk3-loading" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : kind === "shop" ? "Ton pack cristal" : "Ton pack"}</h2><div class="pk3-pack ${C.esc(kind)}${pa0 ? " pkx-btn" : theme ? " country" : ""} pk3-wait" ${theme && !pa0 ? `style="${theme.style}"` : ""} aria-hidden="true">${pa0 ? pa0.face(pk0) : theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</div><p class="tcg-hint" role="status">Préparation du pack…</p></div>`);
     if (pa0) { ov0.classList.add("pk-themed"); ov0.insertAdjacentHTML("afterbegin", `<div class="pkbg" aria-hidden="true">${pa0.bg(pk0)}</div>`); }
     try {
@@ -499,10 +500,10 @@
   function showPack(results, dust, kind, bonus, shopId) {
     const theme = shopId && shopId !== "world" ? packTheme(shopId) : null;
     results.forEach((r) => { const u = r.image || (r.car && r.car.image); if (u && C.safeUrl(u)) { const im = new Image(); im.decoding = "async"; im.src = C.safeUrl(u); if (im.decode) im.decode().catch(() => {}); } });
-    const pa = PA(), pkId = pa ? pa.idFor(shopId && !(G.THEME_PACKS && G.THEME_PACKS[shopId]) ? shopId : "", kind) : "";
+    const pa = PA(), pkId = pa ? pa.idFor(shopId || "", kind) : "";
     const rank = (r) => (r === "special" ? ORDER.length + 2 : ORDER.length - ORDER.indexOf(r));
     const best = results.reduce((b, r) => (rank(rarityOf(r.car)) > rank(rarityOf(b.car)) ? r : b), results[0]);
-    const html0 = `<div class="pk3" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : "Ton pack"}</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}${pa ? " pkx-btn" : theme ? " country" : ""}" id="pk3-open" ${theme && !pa ? `style="${theme.style}"` : ""} aria-label="Ouvrir le pack">${pa ? pa.face(pkId) : theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`;
+    const html0 = `<div class="pk3" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : "Ton pack"}</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}${pa ? " pkx-btn arrive" : theme ? " country" : ""}" id="pk3-open" ${pa ? `style="--wk:${pa.color(pkId)}"` : theme ? `style="${theme.style}"` : ""} aria-label="Ouvrir le pack">${pa ? pa.face(pkId) + `<i class="pkwave" aria-hidden="true"></i><i class="pkwave" aria-hidden="true"></i><i class="pkwave" aria-hidden="true"></i>` : theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`;
     // l'écran « Préparation du pack… » est réutilisé : on ne remplace que le pack, sans fermer ni rouvrir l'écran (plus de flash)
     const keep = overlay && overlay.dataset.kind === "pack" && overlay.querySelector("#pk3.pk3-loading");
     let o; if (keep) { keep.outerHTML = html0; o = overlay; } else o = mountOverlay("pack", "Ouverture de pack", html0);
