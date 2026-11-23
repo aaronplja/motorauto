@@ -46,7 +46,7 @@
 .pkbg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .pkbg { left: 0; top: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
 /* le décor déborde largement de l'écran dans les quatre sens (offsets explicites, centré) : le flou ne laisse jamais de bord ni de bande sombre */
-.pkbg > svg { position: absolute; left: -25%; top: -25%; right: auto; bottom: auto; width: 150%; height: 150%; filter: blur(24px); will-change: transform; }
+.pkbg > svg { position: absolute; left: -25%; top: -25%; right: auto; bottom: auto; width: 150%; height: 150%; max-width: none; max-height: none; filter: blur(24px); will-change: transform; }
 .pkbg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, rgba(3, 4, 10, .5), rgba(3, 4, 10, .85)); }
 
 /* cartes empilées : une par une, en grand */
