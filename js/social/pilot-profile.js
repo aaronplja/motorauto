@@ -75,7 +75,7 @@
   // ---------------------------------------------------------------- classement des collectionneurs
   let collMode = "count", collCache = null;
   const VAL = { common: 1, rare: 3, epic: 8, legendary: 20, shiny: 30, mythic: 50 };
-  const MODES = [["count", "Cartes uniques"], ["value", "Valeur"], ["legend", "Rares et +"]];
+  const MODES = [["count", "Cartes uniques"], ["value", "Valeur"], ["legend", "Prestige et +"]];
   async function renderCollectors() {
     const box = $("collectors-rank-list"), C = ctx(); if (!box || !C) return;
     let bar = document.getElementById("collectors-modes");
@@ -102,7 +102,7 @@
     const total = Math.max(1, (C.cars || []).length);
     box.innerHTML = rows.length ? rows.map((r, i) => {
       const d = r.d, u = users.get(d.uid) || {}, pct = Math.round(((d.count || 0) / total) * 100);
-      const main = collMode === "value" ? `<b>${r.value}</b><small>points</small>` : collMode === "legend" ? `<b>${r.rare}</b><small>rare${r.rare > 1 ? "s" : ""}+</small>` : `<b>${d.count || 0}</b><small>cartes</small>`;
+      const main = collMode === "value" ? `<b>${r.value}</b><small>points</small>` : collMode === "legend" ? `<b>${r.rare}</b><small>Prestige et +</small>` : `<b>${d.count || 0}</b><small>cartes</small>`;
       const sub = `${pct} % de la collection${d.specials ? " · " + d.specials + " édition" + (d.specials > 1 ? "s" : "") + " spéciale" + (d.specials > 1 ? "s" : "") : ""}`;
       return `<li><a class="rank-row" href="#/pilote/${encodeURIComponent(d.uid)}"><span class="rank-pos">${i + 1}</span>${C.avatarImg(u.avatar, "pilot-row-avatar")}<span class="rank-main"><b>${esc(u.username || "Pilote")}</b><small>${sub}</small></span><span class="rank-score">${main}</span></a></li>`;
     }).join("") : `<li class="empty-note">Personne n'a encore de cartes : ouvre ton premier pack dans l'onglet Jouer.</li>`;

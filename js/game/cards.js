@@ -638,12 +638,16 @@
     return out.join("");
   }
   /** bloc « Carte à collectionner » affiché sur la fiche : même rareté et mêmes chiffres que dans le jeu */
+  /** pastilles IC (collection) + IP (performance) d'un véhicule */
+  function ixPills(car) {
+    try { const x = window.MAGameCore && window.MAGameCore.indexOf && window.MAGameCore.indexOf(car.id); if (!x) return ""; return `<span class="ix-pill ix-ic" title="Indice de Collection">IC ${x.ic}</span><span class="ix-pill ix-ip" title="Indice de Performance">IP ${x.ip}</span>`; } catch (_) { return ""; }
+  }
   function sheetBadge(car) {
     try {
       if (!car || !C || !C.cars || !car.stats) return "";
       const r = rarityOf(car), R = RAR[r]; if (!R) return "";
       const n = doc ? countOf(car.id) : 0, st = car.stats;
-      return `<div class="sheet-cardlink"><span class="scl-pill tcg-${r}">${C.esc(R.label)}</span><span class="scl-txt"><b>Carte #${String(numberOf(car)).padStart(3, "0")}</b><small>${st.power} ch · ${st.speed || "—"} km/h · ${st.zero ? st.zero + " s" : "—"} · ${n > 0 ? "dans ta collection" + (n > 1 ? " ×" + n : "") : "à collectionner"}</small></span><button type="button" class="cta-btn btn-ghost compact-btn" data-sheet-card="${C.esc(car.id)}">Voir la carte</button></div>`;
+      return `<div class="sheet-cardlink"><span class="scl-pill tcg-${r}">${C.esc(R.label)}</span>${ixPills(car)}<span class="scl-txt"><b>Carte #${String(numberOf(car)).padStart(3, "0")}</b><small>${st.power} ch · ${st.speed || "—"} km/h · ${st.zero ? st.zero + " s" : "—"} · ${n > 0 ? "dans ta collection" + (n > 1 ? " ×" + n : "") : "à collectionner"}</small></span><button type="button" class="cta-btn btn-ghost compact-btn" data-sheet-card="${C.esc(car.id)}">Voir la carte</button></div>`;
     } catch (_) { return ""; }
   }
   function backHtml(car, id) {

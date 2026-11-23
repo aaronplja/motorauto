@@ -951,11 +951,24 @@
     $("user-telemetry-journal").innerHTML = garage.telemetry.length === 0
       ? `<div class="empty-note">Aucun chrono enregistré.</div>`
       : garage.telemetry.map((t, idx) => lapRow(t, { removable: true, idx })).join("");
-    const favCars = garage.favorites.map((id) => carsById.get(id)).filter(Boolean);
-    $("user-favorites-grid").innerHTML = favCars.length === 0
-      ? `<div class="empty-note" style="grid-column: 1/-1;">Aucun favori.</div>`
-      : favCars.map(carCard).join("");
+    renderFavGrid();
   }
+
+  /** favoris du Garage, filtrables par IC / IP */
+  const favFilter = { ic: "all", ip: "all" };
+  function renderFavGrid() {
+    const all = garage.favorites.map((id) => carsById.get(id)).filter(Boolean);
+    const fb = $("fav-filters");
+    if (fb) fb.hidden = all.length < 2;
+    const favCars = all.filter((c) => { const x = carIx(c); return (favFilter.ic === "all" || (x && x.ic === favFilter.ic)) && (favFilter.ip === "all" || (x && x.ip === favFilter.ip)); });
+    $("user-favorites-grid").innerHTML = all.length === 0
+      ? `<div class="empty-note" style="grid-column: 1/-1;">Aucun favori.</div>`
+      : favCars.length === 0 ? `<div class="empty-note" style="grid-column: 1/-1;">Aucun favori pour ces indices.</div>` : favCars.map(carCard).join("");
+  }
+  document.addEventListener("change", (ev) => {
+    const t = ev.target;
+    if (t && (t.id === "fav-ic" || t.id === "fav-ip")) { favFilter[t.id === "fav-ic" ? "ic" : "ip"] = t.value; renderFavGrid(); }
+  });
 
   function openGarageModal(tab) { Router.go("/garage" + (tab ? "/" + tab : "")); }
 
@@ -2155,6 +2168,7 @@
         { label: "Freins", unit: "/5", get: (c) => tk(c, "brakes"), better: "high" },
         { label: "Transmission (solidité)", unit: "/5", get: (c) => tk(c, "trans"), better: "high" });
     }
+    const ixRows = [["IC (collection)", (c) => { const x = carIx(c); return x ? x.ic : "—"; }], ["IP (performance)", (c) => { const x = carIx(c); return x ? x.ip : "—"; }]];
     const textRows = window.MATrack ? [
       ["Transmission", (c) => (c.drives || []).map((d) => window.MATrack.DRIVES[d] ? window.MATrack.DRIVES[d][0] : "").filter(Boolean).join(", ") || "—"],
       ["Boîtes de vitesses", (c) => Array.from(new Set(eng(c).flatMap((e) => window.MATrack.gearboxes(e.transmission || "")))).slice(0, 4).join(" · ") || "—"],
@@ -2166,6 +2180,7 @@
         <div class="cmp-brand">${esc(c.brand)}</div>
         <div class="cmp-name">${esc(c.model)}</div>
         <div class="cmp-years">${esc(c.years)} · ${esc(c.category)}</div>
+        ${(() => { const x = carIx(c); return x ? `<div class="cmp-ix"><span class="ix-pill ix-ic">IC ${esc(x.ic)}</span><span class="ix-pill ix-ip">IP ${esc(x.ip)}</span></div>` : ""; })()}
         <button type="button" class="cta-btn btn-ghost compact-btn" data-action="open-car-from-compare" data-id="${esc(c.id)}">Voir la fiche</button>
       </div>`).join("");
     const body = rows.map((r) => {
@@ -2179,7 +2194,7 @@
         return `<div class="cmp-cell${win ? " win" : ""}"><b>${v > 0 ? v : "—"}${v > 0 && r.unit ? `<small> ${r.unit}</small>` : ""}</b><i style="--w:${pct}%"></i></div>`;
       }).join("");
       return `<div class="cmp-label">${r.label}</div>${cells}`;
-    }).join("") + textRows.map(([l, f]) => `<div class="cmp-label">${l}</div>${cars.map((c) => `<div class="cmp-cell txt"><b>${esc(String(f(c)))}</b></div>`).join("")}`).join("");
+    }).join("") + ixRows.concat(textRows).map(([l, f]) => `<div class="cmp-label">${l}</div>${cars.map((c) => `<div class="cmp-cell txt"><b>${esc(String(f(c)))}</b></div>`).join("")}`).join("");
     $("compare-content").innerHTML = `<div class="cmp-grid" style="--cols:${cars.length}"><div></div>${head}${body}</div><div id="cmp-extra"></div>${compareCharts(cars)}`;
     openModal($("compare-modal"));
     document.dispatchEvent(new CustomEvent("ma:compare-opened", { detail: { cars } }));

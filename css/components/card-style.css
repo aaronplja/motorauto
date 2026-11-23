@@ -120,3 +120,20 @@
 .pk3-pack.arrive .pkwave:nth-of-type(3) { animation-delay: .75s; }
 @keyframes pkWave { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(2.1); } }
 @media (prefers-reduced-motion: reduce) { .pk3-pack.arrive .pkw, .pk3-pack.arrive .pkwave { animation: none; } }
+
+/* pastilles IC / IP (fiche, comparateur) et filtres des favoris */
+.ix-pill{flex:none;display:inline-flex;align-items:center;padding:.25rem .7rem;border-radius:999px;font-size:.72rem;font-weight:800;letter-spacing:.02em;background:var(--bg-elevated);border:1px solid var(--stroke-line,rgba(255,255,255,.14))}
+.ix-pill.ix-ic{color:#f5c04a}.ix-pill.ix-ip{color:#7cc4ff}
+.cmp-ix{display:flex;gap:.35rem;justify-content:center;flex-wrap:wrap;margin:.35rem 0}
+.sheet-cardlink{flex-wrap:wrap}
+.fav-filters{display:flex;gap:.6rem;flex-wrap:wrap;margin:0 0 .8rem}
+.fav-filters label{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:700}
+.fav-filters select{border-radius:999px}
+
+/* placeholder pendant le chargement : la case a déjà la forme (chanfrein) et la teinte de sa rareté ; l'image la recouvre dès qu'elle est prête */
+#tcg-grid .tcg { background: linear-gradient(165deg, color-mix(in srgb, var(--rc, #64748b) 30%, #0e1320) 0%, #0a0d16 70%); }
+#tcg-grid .tcg-art { background: linear-gradient(165deg, color-mix(in srgb, var(--rc, #64748b) 22%, #0e1320), #0a0d16); }
+#tcg-grid .tcg-art::before { content: ""; position: absolute; inset: 0; z-index: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.09) 50%, transparent 70%); transform: translateX(-100%); animation: tcgPh 1.4s linear infinite; pointer-events: none; }
+#tcg-grid .tcg-art img { position: relative; z-index: 1; }
+@keyframes tcgPh { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { #tcg-grid .tcg-art::before { animation: none; } }
