@@ -233,23 +233,94 @@
   const pick = (a, n) => shuffle(a).slice(0, n);
   function play(trial) {
     const pc = D.CHAPTERS.find((c) => c.trials.includes(trial)); if (pc && !D.canPlay(pc, done)) { C.toast("Termine d'abord l'histoire en cours.", "err"); return; }
-    if (trial.type === "battle") {
-      if (!window.MABattle) { C.toast("La bataille n'est pas disponible pour l'instant.", "err"); return; }
-      const ch = pc || D.byId(sel), G = window.MAGameCore, cfg = D.battleSetup(ch, trial);
-      Promise.resolve(C.catReady).catch(() => 0).then(() => {
-        const pool = (C.cars || []).filter((c) => G && G.countryOf(c.brand) === ch.id);
-        const lvl = cfg.skill < 0.2 ? T("facile") : cfg.skill < 0.4 ? T("moyenne") : cfg.skill < 0.55 ? T("forte") : T("redoutable");
-        window.MABattle.open({
-          camp: () => ({ pool, skill: cfg.skill, bias: cfg.bias, note: `${T(ch.name)} · ${T("IA")} ${lvl} · ${T("3 manches, cartes du chapitre")}` }),
-          onEnd: (r) => {
-            const s = D.battleStars(r.me, r.ai), fresh = award(trial, s); panel();
-            return s ? `${"★".repeat(s)}${"☆".repeat(3 - s)} · ${fresh ? T("Épreuve validée") : T("Victoire")}` : T("Pas cette fois : retente ta chance !");
-          }
-        });
-      });
-      return;
-    }
+    if (trial.type === "battle") { runBattle(trial, pc || D.byId(sel)); return; }
     runItems(trial, () => makeItems(trial));
+  }
+  // ------------------------------------------------------------------ bataille de campagne (propre à la campagne : 3 manches, cartes du chapitre, IA réglée selon l'avancée)
+  const BSTATS = [["power", "Puissance", "ch", 1], ["speed", "Vitesse", "km/h", 1], ["zero", "0 à 100", "s", -1]];
+  const bval = (c, k) => Number(c && c.stats && c.stats[k]) || 0;
+  const bwin = (a, b, k) => { const d = BSTATS.find((x) => x[0] === k)[3]; return a && b ? Math.sign((a - b) * d) : 0; };
+  async function runBattle(trial, ch) {
+    try { await C.catReady; } catch (_) { /* catalogue partiel */ }
+    const G = window.MAGameCore, UI = window.MABattleUI, MC = window.MACards;
+    if (!UI || !MC || !MC.cardHtml || !Array.isArray(C.cars)) { C.toast("La bataille n'est pas prête : réessaie dans un instant.", "err"); return; }
+    const full = (c) => BSTATS.every(([k]) => bval(c, k) > 0);
+    let pool = C.cars.filter((c) => c && full(c) && G && G.countryOf(c.brand) === ch.id);
+    if (pool.length < 8) pool = C.cars.filter(full);
+    if (pool.length < 8) { C.toast("Pas assez de voitures dans le catalogue pour cette bataille.", "err"); return; }
+    const sortedBy = {}; BSTATS.forEach(([k]) => { sortedBy[k] = C.cars.map((c) => bval(c, k)).filter((v) => v > 0).sort((x, y) => x - y); });
+    const pct = (c, k) => { const arr = sortedBy[k], v = bval(c, k); let lo = 0, hi = arr.length; while (lo < hi) { const m = (lo + hi) >> 1; if (arr[m] < v) lo = m + 1; else hi = m; } const p = arr.length ? lo / arr.length : 0; return BSTATS.find((x) => x[0] === k)[3] < 0 ? 1 - p : p; };
+    const rating = (c) => BSTATS.reduce((t, [k]) => t + pct(c, k), 0) / BSTATS.length;
+    const cfg = D.battleSetup(ch, trial), e = C.esc;
+    const lvl = cfg.skill < 0.2 ? T("facile") : cfg.skill < 0.4 ? T("moyenne") : cfg.skill < 0.55 ? T("forte") : T("redoutable");
+    let g = null, ov = null;
+    const deal = () => {
+      const sorted = pool.slice().sort((x, y) => rating(x) - rating(y)), lo = Math.floor(sorted.length * 0.2), hi = Math.ceil(sorted.length * 0.8);
+      const hand = shuffle(sorted.slice(lo, hi)).slice(0, 3), ids = new Set(hand.map((c) => c.id)), rest = shuffle(pool.filter((c) => !ids.has(c.id))), foes = [];
+      hand.forEach((c) => {
+        const r = rating(c) + cfg.bias; let bi = -1, bd = 9;
+        rest.forEach((x, i) => { const d = Math.abs(rating(x) - r); if (d < bd) { bd = d; bi = i; } });
+        if (bi >= 0) foes.push(rest.splice(bi, 1)[0]);
+      });
+      g = { hand, foes: shuffle(foes), used: new Set(), foeUsed: new Set(), res: [], round: 0, me: 0, ai: 0, pick: -1, foePick: -1, stat: "", shown: false, msg: "", cls: "", prize: "", done: false };
+    };
+    const respond = (k) => {
+      const mine = bval(g.hand[g.pick], k), free = g.foes.map((c, i) => i).filter((i) => !g.foeUsed.has(i));
+      if (Math.random() > cfg.skill) return free[Math.floor(Math.random() * free.length)];
+      const win = free.filter((i) => bwin(bval(g.foes[i], k), mine, k) > 0).sort((x, y) => bwin(bval(g.foes[x], k), bval(g.foes[y], k), k));
+      return win.length ? win[0] : free.sort((x, y) => pct(g.foes[x], k) - pct(g.foes[y], k))[0];
+    };
+    const view = () => {
+      if (!ov || !g) return;
+      const total = g.hand.length, over = g.shown && g.round >= total - 1, my = g.pick >= 0 ? g.hand[g.pick] : null, foe = g.shown ? g.foes[g.foePick] : null, card = (c) => MC.cardHtml(c, { owned: true });
+      const mark = { w: "l", l: "w", t: "t" }, pad = (a) => a.concat(Array(Math.max(0, total - a.length)).fill(""));
+      const m = { ak: g.round + "-" + (g.shown ? 1 : 0) + "-" + (over ? 1 : 0) + "-" + g.pick, me: { name: "Toi", score: g.me, pips: pad(g.res) }, foe: { name: "Adversaire (IA)", score: g.ai, pips: pad(g.res.map((x) => mark[x])) },
+        mid: T(ch.name) + " · " + T("Manche") + " " + Math.min(g.round + 1, total) + " / " + total, turn: g.shown ? "" : "me", myCard: my ? card(my) : "", foeCard: foe ? card(foe) : "", reveal: g.shown,
+        note: `${T("IA")} ${lvl} · ${T("cartes du chapitre")}` };
+      if (g.shown) {
+        m.cmp = BSTATS.map(([k, label, unit, dir]) => { const a = bval(my, k), b = bval(foe, k), r = bwin(a, b, k); return { label, unit, my: a || "—", foe: b || "—", dir, hot: k === g.stat, win: r > 0 ? "me" : r < 0 ? "foe" : "tie" }; });
+        if (!over) m.verdict = { cls: g.cls, text: g.msg };
+      }
+      if (over) {
+        if (!g.done) {
+          g.done = true; const st = D.battleStars(g.me, g.ai), fresh = award(trial, st);
+          g.prize = st ? `${"★".repeat(st)}${"☆".repeat(3 - st)} · ${T(fresh ? "Épreuve validée" : "Victoire")}` : T("Pas cette fois : retente ta chance !"); panel();
+        }
+        m.end = { cls: g.me > g.ai ? "win" : g.me < g.ai ? "lose" : "tie", title: g.me > g.ai ? "Victoire !" : g.me < g.ai ? "Défaite" : "Match nul", sub: g.me + " – " + g.ai, prize: e(g.prize) };
+        m.actions = [{ a: "close", label: T("Continuer"), primary: true }, { a: "again", label: T("Rejouer") }];
+      } else if (g.shown) m.actions = [{ a: "next", label: T("Manche suivante"), primary: true }];
+      else if (!my) { m.banner = { main: "C'est à toi !", sub: "Choisis la carte que tu joues" }; m.hand = g.hand.map((c, i) => ({ i, html: card(c), used: g.used.has(i), label: c.brand + " " + c.model })); }
+      else { m.banner = { main: "C'est à toi !", sub: "Choisis la caractéristique" }; m.stats = BSTATS.map(([k, label, unit]) => ({ k, label, unit, val: bval(my, k) })); m.actions = [{ a: "unpick", label: T("Changer de carte") }]; }
+      UI.render(ov.querySelector(".bt"), m);
+    };
+    const close = () => { document.removeEventListener("keydown", onKey); if (ov) ov.remove(); ov = null; document.body.classList.remove("tcg-open"); panel(); };
+    const onKey = (ev) => { if (ev.key === "Escape") close(); };
+    deal();
+    if (g.hand.length < 3 || g.foes.length < 3) { C.toast("Pas assez de voitures dans le catalogue pour cette bataille.", "err"); return; }
+    ov = document.createElement("div");
+    ov.className = "tcg-overlay on"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", trial.title);
+    ov.innerHTML = `<div class="tcg-stage"><div class="bt"></div><button type="button" class="cta-btn btn-ghost" data-act="close">${T("Quitter")}</button></div>`;
+    document.body.appendChild(ov); document.body.classList.add("tcg-open"); document.addEventListener("keydown", onKey);
+    ov.addEventListener("click", (ev) => {
+      const b = ev.target.closest("[data-act]"), h = ev.target.closest("[data-h]"), st = ev.target.closest("[data-stat]");
+      if (b) {
+        const a = b.dataset.act;
+        if (a === "close") close();
+        else if (a === "again") { deal(); view(); }
+        else if (a === "next") { g.round++; g.pick = -1; g.foePick = -1; g.stat = ""; g.shown = false; view(); }
+        else if (a === "unpick" && !g.shown) { g.pick = -1; view(); }
+      } else if (h && !g.shown && g.pick < 0 && !g.used.has(Number(h.dataset.h))) { g.pick = Number(h.dataset.h); view(); }
+      else if (st && g.pick >= 0 && !g.shown) {
+        const k = st.dataset.stat, s = BSTATS.find((x) => x[0] === k); g.stat = k; g.foePick = respond(k);
+        const me = g.hand[g.pick], foe = g.foes[g.foePick], a = bval(me, k), bb = bval(foe, k), r = bwin(a, bb, k);
+        g.shown = true; g.used.add(g.pick); g.foeUsed.add(g.foePick); g.res.push(r > 0 ? "w" : r < 0 ? "l" : "t");
+        if (r > 0) { g.me++; g.cls = "win"; g.msg = `Manche gagnée ! ${s[1]} : ${a} ${s[2]} contre ${bb} ${s[2]}`; }
+        else if (r < 0) { g.ai++; g.cls = "lose"; g.msg = `Manche perdue. ${s[1]} : ${a} ${s[2]} contre ${bb} ${s[2]}`; }
+        else { g.cls = "tie"; g.msg = `Égalité (${s[1]})`; }
+        view();
+      }
+    });
+    view();
   }
   /** questions d'une épreuve ; renvoie null si le catalogue ne permet pas de la tirer */
   function makeItems(trial) {
