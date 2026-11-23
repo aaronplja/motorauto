@@ -146,3 +146,9 @@ img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, 
 .app-header .pilot-chip .chip-avatar.cosm-f { width: calc(100% - 9px); height: calc(100% - 9px); margin: auto; box-shadow: 0 0 0 1.5px var(--bg-surface), 0 0 0 3px var(--cf, #f4c542), 0 0 6px 1px color-mix(in srgb, var(--cf, #f4c542) 50%, transparent); }
 /* cadre équipé : le halo animé ne doit pas toucher la cloche des notifications */
 .app-header .header-actions:has(.chip-avatar.cosm-f) .notif-btn, .app-header .header-actions:has(.chip-avatar.cosm-f) #theme-btn { margin-right: 7px; }
+
+/* tuile Campagne : pleine largeur, deux fois moins haute que les autres */
+.hub-tile.hub-slim { display: flex; align-items: center; gap: .8rem; padding: .7rem 1.2rem; }
+.hub-tile.hub-slim small { margin-left: auto; text-align: right; }
+.hub-tile.hub-slim .hub-ico { font-size: 1.4rem; display: inline-flex; }
+@media (max-width: 520px) { .hub-tile.hub-slim small { display: none; } }
