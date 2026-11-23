@@ -207,7 +207,9 @@
     const k = (G.COUNTRIES || []).find((x) => x.id === id);
     return k ? { label: k.label, f: k.f, style: `--p1:${k.c[0]};--p2:${k.c[1]};--p3:${k.c[2]}` } : { label: "Monde", f: "world", style: "--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24" };
   }
+  const PA = () => window.MAPackArt;
   function packInner(id, sub) {
+    if (PA() && PA().has(id) && !(G.THEME_PACKS && G.THEME_PACKS[id])) return PA().face(PA().idFor(id));
     const t = packTheme(id);
     return `<i class="pkart-flag" data-f="${t.f}" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>${C.esc(t.label)}</b><em>${C.esc(sub || "3 cartes")}</em></span>`;
   }
@@ -471,9 +473,11 @@
   }
   function showPack(results, dust, kind, bonus, shopId) {
     const theme = shopId && shopId !== "world" ? packTheme(shopId) : null;
+    const pa = PA(), pkId = pa ? pa.idFor(shopId && !(G.THEME_PACKS && G.THEME_PACKS[shopId]) ? shopId : "", kind) : "";
     const rank = (r) => (r === "special" ? ORDER.length + 2 : ORDER.length - ORDER.indexOf(r));
     const best = results.reduce((b, r) => (rank(rarityOf(r.car)) > rank(rarityOf(b.car)) ? r : b), results[0]);
-    const o = mountOverlay("pack", "Ouverture de pack", `<div class="pk3" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : "Ton pack"}</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}${theme ? " country" : ""}" id="pk3-open" ${theme ? `style="${theme.style}"` : ""} aria-label="Ouvrir le pack"> ${theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`);
+    const o = mountOverlay("pack", "Ouverture de pack", `<div class="pk3" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : "Ton pack"}</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}${pa ? " pkx-btn" : theme ? " country" : ""}" id="pk3-open" ${theme && !pa ? `style="${theme.style}"` : ""} aria-label="Ouvrir le pack">${pa ? pa.face(pkId) : theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`);
+    if (pa) { o.classList.add("pk-themed"); o.insertAdjacentHTML("afterbegin", `<div class="pkbg" aria-hidden="true">${pa.bg(pkId)}</div>`); }
     const openBtn = o.querySelector("#pk3-open"); openBtn.focus();
     let started = false;
     openBtn.addEventListener("click", () => {
@@ -484,8 +488,8 @@
     });
     function stage() {
       const box = o.querySelector("#pk3"); if (!box || overlay !== o) return;
-      box.innerHTML = `<h2>Ton pack</h2><p class="tcg-hint" id="tcg-hint">Touche chaque carte pour la révéler</p>
-        <div class="tcg-flips">${results.map((r, i) => `<div class="flip deal" style="--i:${i}${flipCol(r.car)}" data-i="${i}" data-r="${rarityOf(r.car)}" role="button" tabindex="0" aria-label="Révéler la carte ${i + 1}"><div class="flip-in"><div class="flip-face flip-back"><span class="fb-frame" aria-hidden="true"></span><svg class="fb-mark" viewBox="180 280 660 466" aria-hidden="true"><polygon points="415,288 544,288 320,736 192,736"/><polygon points="703,288 832,288 608,736 480,736"/></svg><b>MOTOR<span>AUTO</span></b><small>Révéler</small><i class="fb-shine" aria-hidden="true"></i></div><div class="flip-face flip-front">${cardHtml(r.car, r.newPic ? { image: r.image } : null)}<span class="tcg-tag ${r.fresh || r.newPic ? "new" : "dup"}">${r.fresh ? "NOUVELLE" : r.newPic ? "NOUVELLE IMAGE " + r.picN + "/" + r.picTotal + (r.reward ? " · +" + r.reward : "") : "DOUBLON +" + RAR[rarityOf(r.car)].dust}</span></div></div><i class="flip-ring" aria-hidden="true"></i></div>`).join("")}</div>
+      box.innerHTML = `<h2>Ton pack</h2><p class="tcg-hint" id="tcg-hint">${pa ? "Touche la carte pour la révéler" : "Touche chaque carte pour la révéler"}</p>
+        <div class="tcg-flips${pa ? " stack" : ""}" id="tcg-stack">${results.map((r, i) => `<div class="flip${pa ? "" : " deal"}" style="--i:${i}${flipCol(r.car)}" data-i="${i}" data-r="${rarityOf(r.car)}" role="button" tabindex="0" aria-label="Révéler la carte ${i + 1}"><div class="flip-in"><div class="flip-face flip-back${pa ? " pkback" : ""}">${pa ? pa.face(pkId, { back: true }) : ""}<span class="fb-frame" aria-hidden="true"></span><svg class="fb-mark" viewBox="180 280 660 466" aria-hidden="true"><polygon points="415,288 544,288 320,736 192,736"/><polygon points="703,288 832,288 608,736 480,736"/></svg><b>MOTOR<span>AUTO</span></b><small>Révéler</small><i class="fb-shine" aria-hidden="true"></i></div><div class="flip-face flip-front">${cardHtml(r.car, r.newPic ? { image: r.image } : null)}<span class="tcg-tag ${r.fresh || r.newPic ? "new" : "dup"}">${r.fresh ? "NOUVELLE" : r.newPic ? "NOUVELLE IMAGE " + r.picN + "/" + r.picTotal + (r.reward ? " · +" + r.reward : "") : "DOUBLON +" + RAR[rarityOf(r.car)].dust}</span></div></div><i class="flip-ring" aria-hidden="true"></i></div>`).join("")}</div>
         <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" id="tcg-all">Tout révéler</button></div>
         <div class="pk3-sum" id="tcg-sum" hidden></div>
         <div class="tcg-actions" id="tcg-end" hidden><button type="button" class="cta-btn fill-btn" id="tcg-done">Terminer</button></div>`;
@@ -508,7 +512,8 @@
         else if (rr === "epic") { sparks(el, 10); buzz([20, 30, 20]); }
         else if (rr === "legendary" || rr === "shiny" || rr === "special" || rr === "mythic") { sparks(el, 18); buzz([30, 40, 60]); }
         if (BURST[rr] && rr !== "rare") { { const bx = G.indexOf(results[+(el && el.dataset ? el.dataset.i : 0)] ? results[+(el.dataset.i)].car.id : ""); o.style.setProperty("--burst", bx && IC_COL[bx.ic] ? IC_COL[bx.ic] : BURST[rr]); } o.classList.remove("flash"); void o.offsetWidth; o.classList.add("flash"); }
-        if (shown === results.length) finish();
+        if (shown === results.length) { if (stackOn) setTimeout(() => { if (overlay === o) { endStack(); finish(); } }, 1100); else finish(); }
+        else if (stackOn) { const h = o.querySelector("#tcg-hint"); if (h) h.textContent = "Touche la carte pour passer à la suivante"; }
       };
       const finish = () => {
         const news = results.filter((r) => r.fresh).length, pics = results.filter((r) => r.newPic).length, dups = results.length - news - pics;
@@ -527,7 +532,26 @@
         if (grid && endBox && cols > 1 && results.length % cols !== 0) { endBox.classList.add("in-grid"); grid.appendChild(endBox); }
         o.querySelector("#tcg-done").focus();
       };
-      o.querySelectorAll(".flip").forEach((f) => { f.addEventListener("click", () => reveal(f)); f.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); reveal(f); } }); });
+      // cartes empilées (packs illustrés) : on révèle la carte du dessus, puis un toucher la fait passer à la suivante ; les trois s'affichent côte à côte à la fin
+      const flips = [...o.querySelectorAll(".flip")], stackEl = o.querySelector("#tcg-stack");
+      let stackOn = !!(stackEl && stackEl.classList.contains("stack")), act = 0;
+      const setDepth = () => flips.forEach((f, i) => { f.classList.toggle("act", stackOn && i === act); f.style.setProperty("--d", Math.max(0, i - act)); if (stackOn) f.tabIndex = i === act ? 0 : -1; });
+      function endStack() {
+        if (!stackOn) return;
+        stackOn = false; stackEl.classList.remove("stack");
+        flips.forEach((f) => { f.classList.remove("out", "act"); f.style.removeProperty("--d"); f.tabIndex = 0; f.classList.remove("deal"); void f.offsetWidth; f.classList.add("deal"); });
+      }
+      const tap = (f) => {
+        if (!stackOn) return reveal(f);
+        if (flips.indexOf(f) !== act) return;
+        if (!f.classList.contains("on")) return reveal(f);
+        if (f.classList.contains("pend") || act >= flips.length - 1) return;
+        f.classList.add("out"); act++; setDepth(); buzz(8);
+        const h = o.querySelector("#tcg-hint"); if (h) h.textContent = "Touche la carte pour la révéler";
+        flips[act].focus({ preventScroll: true });
+      };
+      if (stackOn) setDepth();
+      flips.forEach((f) => { f.addEventListener("click", () => tap(f)); f.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(f); } }); });
       o.querySelector("#tcg-all").addEventListener("click", () => o.querySelectorAll(".flip").forEach((f, i) => setTimeout(() => reveal(f), i * 260)));
       o.querySelector("#tcg-done").addEventListener("click", closeOverlay);
       const f0 = o.querySelector(".flip"); if (f0) f0.focus({ preventScroll: true });
@@ -717,7 +741,7 @@
     const free = p.id === "prestige" && (doc.prestigeFree || 0) > 0 && o.cost == null;
     const dust = doc.dust, cost = free ? 0 : o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
     const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
-    const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>3 cartes</em>
+    const art = p.id === "world" && !PA() ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>3 cartes</em>
 </span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : p.id === "prestige" ? "Élite ou mieux" : "");
     const lack = dust < cost, price = free ? `<b>Offert ×${doc.prestigeFree}</b> 🎄` : o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
     return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}${o.cost != null ? " promo" : ""}" data-pack="shop" data-shop="${p.id}"${o.offer ? ` data-offer="1"` : ""} ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${cost} cristaux">
