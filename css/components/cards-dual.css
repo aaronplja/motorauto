@@ -99,3 +99,12 @@ button.cg-shopbtn { width: 100%; font: inherit; text-align: left; cursor: pointe
 button.cg-ratesbtn { margin-bottom: .8rem; }
 .rt-pity { display: flex; flex-direction: column; gap: 10px; }
 .gd.rt h2 + p + .dr-grid, .gd.rt .dr-grid { grid-template-columns: 1fr; }
+
+/* taux de drop : lisibles dans tous les thèmes (fond translucide, texte hérité du fond sombre de la page) */
+.dr-grid section { background: rgba(127, 127, 127, .14) !important; color: inherit !important; border: 1px solid rgba(127, 127, 127, .3) !important; }
+.dr-grid h4, .dr-row em { color: inherit !important; opacity: 1 !important; }
+.dr-bar { background: rgba(127, 127, 127, .3) !important; }
+.tcg-overlay .gd, .tcg-overlay .gd * { color: #f4f6f5; }
+.tcg-overlay .gd .tcg-hint { color: rgba(244, 246, 245, .75); }
+.tcg-overlay .dr-chip { color: #fff; }
+.tcg-overlay .dr-chip.ic-Z, .tcg-overlay .gd-chip.ic-Z { color: #16231c; }

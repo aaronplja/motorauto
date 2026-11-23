@@ -799,7 +799,7 @@
     let t; try { t = G.dropTable(rarityMap, C.cars.map((c) => c.id), 1); } catch (e) { return ""; }
     const pc = (v) => (v * 100 >= 10 ? (v * 100).toFixed(0) : (v * 100).toFixed(1)).replace(".", ",") + " %";
     const max = (a) => Math.max.apply(null, a.map((x) => x.p)) || 1;
-    const rows = (a, col, cls) => a.map((x) => `<div class="dr-row"><span class="dr-chip ${cls}" style="background:${col[x.k] || "#888"}">${x.k}</span><i class="dr-bar"><b style="width:${Math.max(2, Math.round((x.p / max(a)) * 100))}%;background:${col[x.k] || "#888"}"></b></i><em>${pc(x.p)}</em></div>`).join("");
+    const rows = (a, col, cls) => a.map((x) => `<div class="dr-row"><span class="dr-chip ${cls}${x.k === "Z" ? " ic-Z" : ""}" style="background:${col[x.k] || "#888"}">${x.k}</span><i class="dr-bar"><b style="width:${Math.max(2, Math.round((x.p / max(a)) * 100))}%;background:${col[x.k] || "#888"}"></b></i><em>${pc(x.p)}</em></div>`).join("");
     return `<div class="dr-grid"><section><h4>IC · Collection</h4>${rows(t.ic, IC_COL, "ic")}</section><section><h4>IP · Performance</h4>${rows(t.ip, IP_COL, "ip")}</section></div>`;
   }
   function shopHtml() {
