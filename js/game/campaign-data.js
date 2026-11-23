@@ -320,8 +320,8 @@
 
   /** étoiles d'un quiz selon le nombre de bonnes réponses (0 = raté) ; il faut au moins 60 % de bonnes réponses */
   const quizStars = (ok, n) => (ok >= n ? 3 : ok >= Math.ceil(n * 0.75) ? 2 : ok >= Math.ceil(n * 0.6) ? 1 : 0);
-  /** étoiles d'une bataille selon le score final (0 = défaite ou égalité) */
-  const battleStars = (me, ai) => (me > ai ? (ai === 0 ? 3 : me - ai >= 2 ? 2 : 1) : 0);
+  /** étoiles d'une bataille en 3 manches : 1 = victoire, 2 = victoire sans manche perdue, 3 = 3-0 ; 0 = défaite ou égalité */
+  const battleStars = (me, ai) => (me > ai ? (ai === 0 ? (me >= 3 ? 3 : 2) : 1) : 0);
   const byId = (id) => CHAPTERS.find((c) => c.id === id) || null;
   /** épreuve débloquée si la précédente du chapitre est validée (≥ 1 étoile) */
   const unlocked = (ch, i, done) => i === 0 || (done[ch.trials[i - 1].id] || 0) > 0;
@@ -333,6 +333,11 @@
   const current = (done) => CHAPTERS.find((c) => chapterStars(c, done) > 0 && !chapterDone(c, done)) || null;
   /** un chapitre peut être joué s'il est en cours, ou si aucun autre chapitre n'est en cours */
   const canPlay = (ch, done) => { const cur = current(done); return !cur || cur.id === ch.id; };
-  const api = { current, canPlay, CHAPTERS, quizStars, battleStars, byId, unlocked, chapterStars, chapterDone, nextTrial };
+  /** réglage de l'IA d'une bataille : de plus en plus adroite et avec des cartes plus fortes au fil de l'histoire (et d'un pays à l'autre) */
+  const battleSetup = (ch, trial) => {
+    const bs = ch.trials.filter((t) => t.type === "battle"), k = Math.max(0, bs.findIndex((t) => t.id === trial.id)), p = bs.length > 1 ? k / (bs.length - 1) : 0, ci = Math.max(0, CHAPTERS.indexOf(ch));
+    return { skill: Math.min(0.75, 0.05 + 0.45 * p + 0.025 * ci + (trial.boss ? 0.08 : 0)), bias: -0.1 + 0.18 * p + 0.01 * ci + (trial.boss ? 0.04 : 0) };
+  };
+  const api = { battleSetup, current, canPlay, CHAPTERS, quizStars, battleStars, byId, unlocked, chapterStars, chapterDone, nextTrial };
   if (typeof module === "object" && module.exports) module.exports = api; else window.MA.register("CampaignData", api);
 })();

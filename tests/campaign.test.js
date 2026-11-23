@@ -28,12 +28,14 @@ D.CHAPTERS.forEach((c) => ok(c.trials.filter((t) => t.type === "battle").length 
 // étoiles
 ok(D.quizStars(5, 5) === 3 && D.quizStars(4, 5) === 2 && D.quizStars(3, 5) === 1 && D.quizStars(2, 5) === 0, "étoiles de quiz (5 questions)");
 ok(D.quizStars(4, 4) === 3 && D.quizStars(3, 4) === 2 && D.quizStars(2, 4) === 0, "étoiles de quiz (4 questions)");
-ok(D.battleStars(3, 0) === 3 && D.battleStars(4, 1) === 2 && D.battleStars(3, 2) === 1 && D.battleStars(2, 2) === 0 && D.battleStars(1, 3) === 0, "étoiles de bataille");
+ok(D.battleStars(3, 0) === 3 && D.battleStars(2, 0) === 2 && D.battleStars(2, 1) === 1 && D.battleStars(3, 2) === 1 && D.battleStars(2, 2) === 0 && D.battleStars(1, 3) === 0, "étoiles de bataille");
 // déblocage dans l'ordre
 const fr = D.byId("fr");
 ok(D.unlocked(fr, 0, {}) && !D.unlocked(fr, 1, {}) && D.unlocked(fr, 1, { "fr-1": 1 }) && !D.unlocked(fr, 2, { "fr-1": 3 }), "épreuves débloquées dans l'ordre");
 ok(!D.chapterDone(fr, { "fr-1": 3 }) && D.chapterDone(fr, Object.fromEntries(fr.trials.map((t) => [t.id, 1]))), "chapitre terminé quand toutes les épreuves sont validées");
 ok(D.chapterStars(fr, { "fr-1": 3, "fr-2": 2, "zz": 3 }) === 5, "étoiles d'un chapitre");
+const bsA = D.battleSetup(fr, fr.trials.find((t) => t.type === "battle")), bsB = D.battleSetup(fr, fr.trials[fr.trials.length - 1]), bsC = D.battleSetup(D.byId("se"), D.byId("se").trials[19]);
+ok(bsA.skill < bsB.skill && bsA.bias < bsB.bias && bsB.skill < bsC.skill && bsC.skill <= 0.75, "l'IA se durcit au fil de l'histoire");
 const it = D.byId("it");
 ok(D.canPlay(fr, {}) && D.canPlay(it, {}), "rien en cours : tous les chapitres sont ouverts");
 ok(D.current({ "fr-1": 2 }).id === "fr" && D.canPlay(fr, { "fr-1": 2 }) && !D.canPlay(it, { "fr-1": 2 }), "un chapitre commencé verrouille les autres");

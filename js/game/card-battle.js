@@ -68,6 +68,23 @@
     startRound(g);
     return g;
   }
+  /** partie de campagne : 3 manches, cartes prêtées du thème du chapitre, adversaire réglé d'avance (o.skill = adresse de l'IA, o.bias = force de ses cartes) */
+  function newCampGame(o) {
+    const m = buildMeta(); let pool = (o.pool || []).filter(complete);
+    if (pool.length < 8) pool = C.cars.filter(complete);
+    const sorted = pool.slice().sort((a, b) => m.rating(a) - m.rating(b)), lo = Math.floor(sorted.length * 0.2), hi = Math.ceil(sorted.length * 0.8);
+    const hand = shuffle(sorted.slice(lo, hi)).slice(0, 3), ids = new Set(hand.map((c) => c.id)), rest = shuffle(pool.filter((c) => !ids.has(c.id))), foes = [];
+    hand.forEach((c) => {
+      const r = m.rating(c) + (o.bias || 0); let bi = -1, bd = 9;
+      rest.forEach((x, i) => { const d = Math.abs(m.rating(x) - r); if (d < bd) { bd = d; bi = i; } });
+      if (bi >= 0) foes.push(rest.splice(bi, 1)[0]);
+    });
+    if (hand.length < 3 || foes.length < 3) return null;
+    AI_SKILL = o.skill == null ? 0.25 : o.skill;
+    const g = { hand, foes: shuffle(foes), used: new Set(), foeUsed: new Set(), res: [], round: 0, me: 0, ai: 0, pick: -1, foePick: -1, stat: "", shown: false, msg: "", cls: "", first: "me", leader: "me", level: "normal", daily: false, giant: false, reported: false, prize: "", camp: true, note: o.note || "" };
+    startRound(g);
+    return g;
+  }
   /** début de manche : si c'est l'adversaire qui mène, il joue tout de suite sa carte et sa caractéristique */
   function startRound(g) {
     g.pick = -1; g.foePick = -1; g.stat = ""; g.shown = false; g.msg = ""; g.cls = "";
@@ -107,7 +124,7 @@
       ak: st.round + "-" + (st.shown ? 1 : 0) + "-" + (over ? 1 : 0) + "-" + st.pick,
       me: { name: "Toi", score: st.me, pips: pad(st.res) }, foe: { name: "Adversaire (IA)", score: st.ai, pips: pad(st.res.map((x) => mark[x])) },
       mid: "Manche " + Math.min(st.round + 1, total) + " / " + total, turn: st.shown ? "" : "me",
-      myCard: my ? card(my) : "", foeCard: foe ? card(foe) : "", reveal: st.shown, note: st.daily ? `Défi du jour : gagne pour recevoir ${DAILY_DUST} cristaux (une fois par jour).` : `Niveau ${LEVELS[st.level].label} · entraînement équitable, sans récompense.`
+      myCard: my ? card(my) : "", foeCard: foe ? card(foe) : "", reveal: st.shown, note: st.camp ? st.note : st.daily ? `Défi du jour : gagne pour recevoir ${DAILY_DUST} cristaux (une fois par jour).` : `Niveau ${LEVELS[st.level].label} · entraînement équitable, sans récompense.`
     };
     if (st.shown) {
       m.cmp = STATS.map(([k, label, unit, dir]) => { const a = val(my, k), b = val(foe, k), r = beats(a, b, k); return { label, unit, my: a || "—", foe: b || "—", dir, hot: k === st.stat, win: r > 0 ? "me" : r < 0 ? "foe" : "tie" }; });
@@ -116,7 +133,7 @@
     if (over) {
       const res = st.me > st.ai ? "Victoire !" : st.me < st.ai ? "Défaite" : "Match nul";
       m.end = { cls: st.me > st.ai ? "win" : st.me < st.ai ? "lose" : "tie", title: res, sub: st.me + " – " + st.ai, prize: st.prize || "" };
-      m.actions = [{ a: "again", label: "Rejouer", primary: true }, { a: "menu", label: "Réglages et historique" }, { a: "close", label: "Fermer" }];
+      m.actions = st.camp ? [{ a: "close", label: "Continuer", primary: true }, { a: "again", label: "Rejouer" }] : [{ a: "again", label: "Rejouer", primary: true }, { a: "menu", label: "Réglages et historique" }, { a: "close", label: "Fermer" }];
       if (!st.reported) report();
     } else if (st.shown) m.actions = [{ a: "next", label: "Manche suivante", primary: true }];
     else if (!my) {
@@ -133,10 +150,10 @@
   }
 
   // ------------------------------------------------------------------ résultat → serveur (historique, trophées, défi du jour)
-  let campCb = null;   // campagne : fonction appelée à la fin de chaque partie ({ me, ai, level })
+  let campCb = null, campMake = null;   // campagne : fonction appelée à la fin de chaque partie ({ me, ai, level })
   async function report() {
     const g = st; if (!g || g.reported) return; g.reported = true;
-    if (campCb) { try { campCb({ me: g.me, ai: g.ai, level: g.level }); } catch (_) { /* la campagne ne doit jamais bloquer la bataille */ } }
+    if (campCb) { try { const p = campCb({ me: g.me, ai: g.ai, level: g.level }); if (typeof p === "string") g.prize = p; } catch (_) { /* la campagne ne doit jamais bloquer la bataille */ } if (g.camp) { if (g === st && ov) view(); return; } }
     if (!window.MAGameAPI || !C.user) return;
     try {
       const r = await window.MAGameAPI.call("battleReport", { me: g.me, ai: g.ai, level: g.level, daily: g.daily, giant: g.giant });
@@ -206,13 +223,13 @@
     if (!ov) return;
     document.removeEventListener("keydown", onKey);
     document.body.classList.remove("tcg-open");
-    campCb = null;
+    campCb = null; campMake = null;
     const o = ov; ov = null; st = null; o.classList.remove("on"); setTimeout(() => o.remove(), 180);
   }
   function onKey(e) { if (e.key === "Escape") close(); }
   function open(o) {
     if (ov) return;
-    if (myPool().length < 3) { C.toast("Il te faut au moins 3 cartes complètes (chevaux, vitesse max et 0 à 100) pour lancer une bataille.", "err"); return; }
+    if (!(o && o.camp) && myPool().length < 3) { C.toast("Il te faut au moins 3 cartes complètes (chevaux, vitesse max et 0 à 100) pour lancer une bataille.", "err"); return; }
     cfg = loadCfg(); scr = "setup"; st = null; picking = false; pickQ = "";
     ov = document.createElement("div");
     ov.className = "tcg-overlay"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "Bataille de cartes");
@@ -237,6 +254,7 @@
       if (b) {
         const a = b.dataset.bt || b.dataset.act;
         if (a === "close") close();
+        else if (a === "again" && campMake) { const g = newCampGame(campMake()); if (g) { st = g; applyArena(); view(); } }
         else if (a === "again") { const g = newGame({ level: cfg.level, deck: cfg.useDeck ? cfg.deck : null, daily: false }); if (g) { st = g; applyArena(); view(); } }
         else if (a === "menu") { st = null; scr = "setup"; picking = false; ov.querySelector(".tcg-stage").style.background = ""; setupView(); }
         else if (a === "next") { st.round++; startRound(st); view(); }
@@ -249,6 +267,12 @@
     });
     ov.addEventListener("input", (e) => { const q = e.target.closest("[data-su-q]"); if (q && scr === "setup") { pickQ = q.value; const pos = q.selectionStart; setupView(); const n = ov && ov.querySelector("[data-su-q]"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) { /* stockage ou API indisponible : sans effet */ } } } });
     setupView();
+    if (o && typeof o.camp === "function") {
+      campCb = typeof o.onEnd === "function" ? o.onEnd : null; campMake = o.camp;
+      const g = newCampGame(campMake());
+      if (!g) { C.toast("Pas assez de cartes dans le catalogue pour cette bataille.", "err"); close(); return; }
+      st = g; scr = "game"; applyArena(); view(); return;
+    }
     if (o && o.level && LEVELS[o.level]) { cfg.level = o.level; cfg.useDeck = false; campCb = typeof o.onEnd === "function" ? o.onEnd : null; launch(false); }
   }
   /** simulation (tests) : joueur « hasard » ou « malin » contre l'adversaire, sur n parties */
@@ -275,6 +299,6 @@
     }
     st = saved; out.ratingGap /= Math.max(1, n); return out;
   }
-  window.MABattle = { open, _test: { sim, newGame, LEVELS, setSkill: (v) => { AI_SKILL = v; } } };
+  window.MABattle = { open, _test: { sim, newCampGame, newGame, LEVELS, setSkill: (v) => { AI_SKILL = v; } } };
   (window.MAModules = window.MAModules || []).push(function (ctx) { C = ctx; });
 })();

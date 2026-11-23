@@ -235,11 +235,18 @@
     const pc = D.CHAPTERS.find((c) => c.trials.includes(trial)); if (pc && !D.canPlay(pc, done)) { C.toast("Termine d'abord l'histoire en cours.", "err"); return; }
     if (trial.type === "battle") {
       if (!window.MABattle) { C.toast("La bataille n'est pas disponible pour l'instant.", "err"); return; }
-      window.MABattle.open({ level: trial.level, onEnd: (r) => {
-        const s = D.battleStars(r.me, r.ai), fresh = award(trial, s);
-        C.toast(s ? `${fresh ? "Épreuve validée" : "Victoire"} · ${"★".repeat(s)}${"☆".repeat(3 - s)}` : "Pas cette fois : retente ta chance !", s ? "ok" : "err");
-        panel();
-      } });
+      const ch = pc || D.byId(sel), G = window.MAGameCore, cfg = D.battleSetup(ch, trial);
+      Promise.resolve(C.catReady).catch(() => 0).then(() => {
+        const pool = (C.cars || []).filter((c) => G && G.countryOf(c.brand) === ch.id);
+        const lvl = cfg.skill < 0.2 ? T("facile") : cfg.skill < 0.4 ? T("moyenne") : cfg.skill < 0.55 ? T("forte") : T("redoutable");
+        window.MABattle.open({
+          camp: () => ({ pool, skill: cfg.skill, bias: cfg.bias, note: `${T(ch.name)} · ${T("IA")} ${lvl} · ${T("3 manches, cartes du chapitre")}` }),
+          onEnd: (r) => {
+            const s = D.battleStars(r.me, r.ai), fresh = award(trial, s); panel();
+            return s ? `${"★".repeat(s)}${"☆".repeat(3 - s)} · ${fresh ? T("Épreuve validée") : T("Victoire")}` : T("Pas cette fois : retente ta chance !");
+          }
+        });
+      });
       return;
     }
     runItems(trial, () => makeItems(trial));
