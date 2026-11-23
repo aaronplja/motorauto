@@ -502,8 +502,11 @@
     const pa = PA(), pkId = pa ? pa.idFor(shopId && !(G.THEME_PACKS && G.THEME_PACKS[shopId]) ? shopId : "", kind) : "";
     const rank = (r) => (r === "special" ? ORDER.length + 2 : ORDER.length - ORDER.indexOf(r));
     const best = results.reduce((b, r) => (rank(rarityOf(r.car)) > rank(rarityOf(b.car)) ? r : b), results[0]);
-    const o = mountOverlay("pack", "Ouverture de pack", `<div class="pk3" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : "Ton pack"}</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}${pa ? " pkx-btn" : theme ? " country" : ""}" id="pk3-open" ${theme && !pa ? `style="${theme.style}"` : ""} aria-label="Ouvrir le pack">${pa ? pa.face(pkId) : theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`);
-    if (pa) { o.classList.add("pk-themed"); o.insertAdjacentHTML("afterbegin", `<div class="pkbg" aria-hidden="true">${pa.bg(pkId)}</div>`); }
+    const html0 = `<div class="pk3" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : "Ton pack"}</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}${pa ? " pkx-btn" : theme ? " country" : ""}" id="pk3-open" ${theme && !pa ? `style="${theme.style}"` : ""} aria-label="Ouvrir le pack">${pa ? pa.face(pkId) : theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`;
+    // l'écran « Préparation du pack… » est réutilisé : on ne remplace que le pack, sans fermer ni rouvrir l'écran (plus de flash)
+    const keep = overlay && overlay.dataset.kind === "pack" && overlay.querySelector("#pk3.pk3-loading");
+    let o; if (keep) { keep.outerHTML = html0; o = overlay; } else o = mountOverlay("pack", "Ouverture de pack", html0);
+    if (pa) { o.classList.add("pk-themed"); if (!o.querySelector(".pkbg")) o.insertAdjacentHTML("afterbegin", `<div class="pkbg" aria-hidden="true">${pa.bg(pkId)}</div>`); }
     const openBtn = o.querySelector("#pk3-open"); openBtn.focus();
     let started = false;
     openBtn.addEventListener("click", () => {
