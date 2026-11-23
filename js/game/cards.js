@@ -207,7 +207,12 @@
     const k = (G.COUNTRIES || []).find((x) => x.id === id);
     return k ? { label: k.label, f: k.f, style: `--p1:${k.c[0]};--p2:${k.c[1]};--p3:${k.c[2]}` } : { label: "Monde", f: "world", style: "--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24" };
   }
+  const PK_IMG = { world: 1, circuit: 1, prestige: 1, fr: 1, de: 1, it: 1, gb: 1, jp: 1, us: 1, se: 1, xx: 1 };
+  /** illustration du booster (nom du pays et « 3 cartes » sont dans l'image) ; null si le pack n'en a pas */
+  function packImg(id) { return PK_IMG[id] ? "/img/packs/" + id + ".webp" : null; }
+  function packBg(id) { return "/img/packs/" + (PK_IMG[id] ? id : "world") + "-bg.webp"; }
   function packInner(id, sub) {
+    if (packImg(id)) return `<img class="pkart-img" src="${packImg(id)}" alt="" loading="lazy" decoding="async" draggable="false">`;
     const t = packTheme(id);
     return `<i class="pkart-flag" data-f="${t.f}" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>${C.esc(t.label)}</b><em>${C.esc(sub || "3 cartes")}</em></span>`;
   }
@@ -471,9 +476,11 @@
   }
   function showPack(results, dust, kind, bonus, shopId) {
     const theme = shopId && shopId !== "world" ? packTheme(shopId) : null;
+    const pkId = shopId && PK_IMG[shopId] ? shopId : "world";
     const rank = (r) => (r === "special" ? ORDER.length + 2 : ORDER.length - ORDER.indexOf(r));
     const best = results.reduce((b, r) => (rank(rarityOf(r.car)) > rank(rarityOf(b.car)) ? r : b), results[0]);
-    const o = mountOverlay("pack", "Ouverture de pack", `<div class="pk3" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : "Ton pack"}</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}${theme ? " country" : ""}" id="pk3-open" ${theme ? `style="${theme.style}"` : ""} aria-label="Ouvrir le pack"> ${theme ? packInner(shopId) : `<b>MOTOR<span>AUTO</span></b>`}</button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`);
+    const o = mountOverlay("pack", "Ouverture de pack", `<div class="pk3" id="pk3"><h2>${theme ? C.esc("Pack " + theme.label) : "Ton pack"}</h2><button type="button" class="pk3-pack ${C.esc(kind || "daily")}${theme ? " country" : ""} has-img" id="pk3-open" ${theme ? `style="${theme.style}"` : ""} aria-label="Ouvrir le pack">${packInner(pkId)}</button><p class="tcg-hint">Touche le pack pour l'ouvrir</p></div>`);
+    o.classList.add("pk-themed"); o.style.setProperty("--pk-bg", `url("${packBg(pkId)}")`);
     const openBtn = o.querySelector("#pk3-open"); openBtn.focus();
     let started = false;
     openBtn.addEventListener("click", () => {
@@ -717,7 +724,7 @@
     const free = p.id === "prestige" && (doc.prestigeFree || 0) > 0 && o.cost == null;
     const dust = doc.dust, cost = free ? 0 : o.cost != null ? o.cost : p.cost, ok = dust >= cost && !busy && p.total >= 2 && !o.used, miss = Math.max(0, cost - dust), full = p.total > 0 && p.have >= p.total;
     const st = p.id === "world" ? `style="--p1:#f59e0b;--p2:#78350f;--p3:#fbbf24"` : `style="${packTheme(p.id).style}"`;
-    const art = p.id === "world" ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>3 cartes</em>
+    const art = p.id === "world" && !packImg("world") ? `<i class="pkart-flag" data-f="world" aria-hidden="true"></i><span class="pkart-plate"><small>MOTORAUTO</small><b>Monde</b><em>3 cartes</em>
 </span>` : packInner(p.id, p.id === "circuit" ? "3 cartes" : p.id === "prestige" ? "Élite ou mieux" : "");
     const lack = dust < cost, price = free ? `<b>Offert ×${doc.prestigeFree}</b> 🎄` : o.cost != null ? `<s>${p.cost}</s> <b>${cost}</b> ${window.MA.dustIcon(14)}` : `<b>${cost}</b> ${window.MA.dustIcon(14)}`;
     return `<button type="button" class="cg-pack ${ok ? "ready" : "off"}${o.cost != null ? " promo" : ""}" data-pack="shop" data-shop="${p.id}"${o.offer ? ` data-offer="1"` : ""} ${ok ? "" : "disabled"} aria-label="${C.esc(p.id === "world" ? "Pack mondial" : "Pack " + p.label)} : ${cost} cristaux">
