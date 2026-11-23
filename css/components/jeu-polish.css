@@ -90,8 +90,10 @@ img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, 
 .hub-grid-main { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
 .hub-grid-main > .hub-tile { padding: 1.1rem 1rem; border-radius: 24px; min-height: 8.2rem; }
 .hub-grid-main > .hub-tile.hub-wide { grid-column: 1 / -1; min-height: 6.4rem; }
+.hub-grid > .hub-tile.hub-full { grid-column: 1 / -1; }
+.hub-grid-main > .hub-tile.hub-full { min-height: 6.4rem; }
 .hub-grid-main .hub-ico { color: var(--accent-ink, var(--accent)); }
-@media (min-width: 760px) { .hub-grid-main { grid-template-columns: repeat(3, minmax(0, 1fr)); } .hub-grid-main > .hub-tile.hub-wide { grid-column: span 3; } }
+@media (min-width: 760px) { .hub-grid-main { grid-template-columns: repeat(4, minmax(0, 1fr)); } .hub-grid-main > .hub-tile.hub-wide, .hub-grid-main > .hub-tile.hub-full { grid-column: span 4; } }
 
 /* Cartes : trois boutons, un grand bouton Boutique */
 .cg-hubbtns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; margin: .9rem 0 .7rem; }
@@ -147,8 +149,8 @@ img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, 
 /* cadre équipé : le halo animé ne doit pas toucher la cloche des notifications */
 .app-header .header-actions:has(.chip-avatar.cosm-f) .notif-btn, .app-header .header-actions:has(.chip-avatar.cosm-f) #theme-btn { margin-right: 7px; }
 
-/* tuile Campagne : pleine largeur, deux fois moins haute que les autres */
-.hub-tile.hub-slim { display: flex; align-items: center; gap: .8rem; padding: .7rem 1.2rem; }
-.hub-tile.hub-slim small { margin-left: auto; text-align: right; }
-.hub-tile.hub-slim .hub-ico { font-size: 1.4rem; display: inline-flex; }
-@media (max-width: 520px) { .hub-tile.hub-slim small { display: none; } }
+/* tuile Campagne : pleine largeur comme Cartes, deux fois moins haute */
+.hub-grid-main > .hub-tile.hub-slim { display: flex; align-items: center; gap: .8rem; min-height: 0; height: 3.2rem; padding: 0 1.2rem; }
+.hub-grid-main > .hub-tile.hub-slim small { margin-left: auto; text-align: right; }
+.hub-grid-main > .hub-tile.hub-slim .hub-ico { font-size: 1.4rem; display: inline-flex; }
+@media (max-width: 520px) { .hub-grid-main > .hub-tile.hub-slim small { display: none; } }

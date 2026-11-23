@@ -155,8 +155,8 @@
     const tile = (href, ico, title, sub, badge, cls) => `<a class="hub-tile ${cls || ""}" href="${href}"><i class="hub-ico" aria-hidden="true">${ico}</i><b>${title}</b><small>${sub}</small>${badge ? `<span class="hub-badge">${badge}</span>` : ""}</a>`;
     const draw = (st) => {
       const html = group === "apercu" ? `<div class="hub-grid hub-grid-main">
-        ${tile("#/jouer/cartes", HUBI.cards, T("Cartes"), st.cards, "", "hub-wide")}
-        ${tile("#/campagne", HUBI.globe, T("Campagne"), T("Parcours le monde, chapitre après chapitre"), "", "hub-wide hub-slim")}
+        ${tile("#/jouer/cartes", HUBI.cards, T("Cartes"), st.cards, "", "hub-full")}
+        ${tile("#/campagne", HUBI.globe, T("Campagne"), T("Parcours le monde, chapitre après chapitre"), "", "hub-full hub-slim")}
         ${tile("#/jouer/boutique", HUBI.shop, T("Boutique"), st.shop, st.shopBadge)}
         ${tile("#/jouer/minijeux", HUBI.games, T("Jeux"), T("Quiz, Devine la voiture, Vrai ou faux, Duel, Frise, Bataille"), "")}
         ${tile("#/jouer/echanges", HUBI.swap, T("Échanges"), st.trade, st.tradeBadge)}

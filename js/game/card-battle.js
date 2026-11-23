@@ -133,8 +133,10 @@
   }
 
   // ------------------------------------------------------------------ résultat → serveur (historique, trophées, défi du jour)
+  let campCb = null;   // campagne : fonction appelée à la fin de chaque partie ({ me, ai, level })
   async function report() {
     const g = st; if (!g || g.reported) return; g.reported = true;
+    if (campCb) { try { campCb({ me: g.me, ai: g.ai, level: g.level }); } catch (_) { /* la campagne ne doit jamais bloquer la bataille */ } }
     if (!window.MAGameAPI || !C.user) return;
     try {
       const r = await window.MAGameAPI.call("battleReport", { me: g.me, ai: g.ai, level: g.level, daily: g.daily, giant: g.giant });
@@ -204,10 +206,11 @@
     if (!ov) return;
     document.removeEventListener("keydown", onKey);
     document.body.classList.remove("tcg-open");
+    campCb = null;
     const o = ov; ov = null; st = null; o.classList.remove("on"); setTimeout(() => o.remove(), 180);
   }
   function onKey(e) { if (e.key === "Escape") close(); }
-  function open() {
+  function open(o) {
     if (ov) return;
     if (myPool().length < 3) { C.toast("Il te faut au moins 3 cartes complètes (chevaux, vitesse max et 0 à 100) pour lancer une bataille.", "err"); return; }
     cfg = loadCfg(); scr = "setup"; st = null; picking = false; pickQ = "";
@@ -246,6 +249,7 @@
     });
     ov.addEventListener("input", (e) => { const q = e.target.closest("[data-su-q]"); if (q && scr === "setup") { pickQ = q.value; const pos = q.selectionStart; setupView(); const n = ov && ov.querySelector("[data-su-q]"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) { /* stockage ou API indisponible : sans effet */ } } } });
     setupView();
+    if (o && o.level && LEVELS[o.level]) { cfg.level = o.level; cfg.useDeck = false; campCb = typeof o.onEnd === "function" ? o.onEnd : null; launch(false); }
   }
   /** simulation (tests) : joueur « hasard » ou « malin » contre l'adversaire, sur n parties */
   function sim(n, smart) {

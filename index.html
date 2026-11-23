@@ -43,16 +43,16 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
   <script>window.MA_LAZY={"admin":"js/lazy-admin.min.js?v=1c1afba2e2","quiz":"js/lazy-quiz.min.js?v=8b63385a7d","quizbank":"js/lazy-quizbank.min.js?v=957b116121"};</script>
-  <script defer src="js/bundle1.min.js?v=a0aa1b2b32"></script>
+  <script defer src="js/bundle1.min.js?v=19880f244c"></script>
   <script defer src="js/bundle2.min.js?v=0425d7dce0"></script>
-  <script defer src="js/bundle3.min.js?v=7caddf66ae"></script>
+  <script defer src="js/bundle3.min.js?v=4eefef038b"></script>
 
   <script src="js/i18n-boot.js"></script>
   <script>try{if(localStorage.getItem("ma_in")==="1")document.documentElement.classList.add("ma-garage")}catch(e){}</script>
   <link rel="preload" href="fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/hanken-grotesk-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/bundle.min.css?v=5e2ee29595">
+  <link rel="stylesheet" href="css/bundle.min.css?v=bec8329112">
 <style id="splash-css">#splash{display:none}
 #splash,#boot-splash{--sp-bg:var(--spx-bg,var(--bg-core,#0b0e0c));--sp-ink:var(--spx-ink,var(--color-ink,#fff));--sp-ac:var(--spx-ac,var(--accent,#3fbf82));background:var(--sp-bg);color:var(--sp-ink)}
 html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-items:center;align-content:center;justify-items:center;gap:1.2rem;touch-action:manipulation;contain:strict;animation:spLife 1.4s linear forwards}
@@ -978,6 +978,14 @@ html.splash-on #splash{display:grid;position:fixed;inset:0;z-index:99999;place-i
     <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Jouer</span><h1 class="page-title">Succès</h1><p class="page-sub">Tous tes badges et ta progression.</p></div></header>
     <nav data-section="play"></nav>
     <div id="achievements-root"></div>
+  </div>
+  </div>
+
+  <div class="page page-layer" id="page-campaign" data-page="campaign">
+  <div class="stage-shell page-wrap">
+    <header class="page-head"><div class="page-head-text"><span class="status-tag-verified">Jouer</span><h1 class="page-title">Campagne</h1><p class="page-sub">Parcours le monde : chaque pays est un chapitre fait de quiz et de batailles de cartes.</p></div></header>
+    <nav data-section="play"></nav>
+    <div id="campaign-root"></div>
   </div>
   </div>
 

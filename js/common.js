@@ -602,7 +602,7 @@
       let col = 0, prev = null;
       [...g.children].forEach((t) => {
         t.classList.remove("hub-wide");
-        if (t.classList.contains("hub-feature")) { if (col === 1 && prev) prev.classList.add("hub-wide"); col = 0; prev = null; return; }
+        if (t.classList.contains("hub-feature") || t.classList.contains("hub-full")) { if (col === 1 && prev) prev.classList.add("hub-wide"); col = 0; prev = null; return; }
         col ^= 1; prev = t;
         if (col === 0) prev = null;
       });
