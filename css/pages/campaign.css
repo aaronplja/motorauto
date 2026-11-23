@@ -59,3 +59,14 @@
 .cp-zoom { position: absolute; right: .6rem; bottom: .6rem; display: grid; gap: .35rem; z-index: 2; }
 .cp-zoom button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--stroke-line); background: color-mix(in srgb, var(--bg-surface) 88%, transparent); color: inherit; font: 700 1.15rem/1 system-ui, sans-serif; cursor: pointer; backdrop-filter: blur(6px); }
 .cp-zoom button:hover { border-color: var(--accent); }
+
+/* épreuves : vrai ou faux, photos, listes longues */
+.cp-trials { max-height: 60vh; overflow-y: auto; position: relative; padding-right: .25rem; }
+@media (max-width: 800px) { .cp-trials { max-height: none; overflow: visible; } }
+.cp-trial.next { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.cp-qimg { width: 100%; max-height: 220px; object-fit: cover; border-radius: 20px; background: var(--bg-elevated); }
+.cp-opts.pics { grid-template-columns: 1fr 1fr; }
+.cp-opt.pic { display: grid; gap: .4rem; padding: .5rem; border-radius: 22px; text-align: center; }
+.cp-opt.pic img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; }
+.cp-opt.pic span { font-size: .85rem; }
+.cp-opt.pic em { font-style: normal; font-weight: 700; }

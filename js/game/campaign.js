@@ -197,6 +197,10 @@
   // ------------------------------------------------------------------ panneau du chapitre
   const star = (on) => `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.6l1.2-6.5L2.5 9.5l6.6-.9z" fill="${on ? "#f5c04a" : "none"}" stroke="${on ? "#f5c04a" : "currentColor"}" stroke-width="1.6" stroke-linejoin="round" opacity="${on ? 1 : 0.4}"/></svg>`;
   const ICO = {
+    vf: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>',
+    guess: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
+    pm: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-5"/></svg>',
+    old: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
     quiz: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.7"/><path d="M12 17h.01"/></svg>',
     battle: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="10" height="14" rx="2" transform="rotate(-12 8 12)"/><rect x="11" y="5" width="10" height="14" rx="2" transform="rotate(12 16 12)"/></svg>',
     lock: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
@@ -207,13 +211,16 @@
     const e = C.esc, total = ch.trials.length * 3, got = D.chapterStars(ch, done);
     const head = `<header class="cp-head"><span class="cp-dot" style="--c:${ch.color}"></span><div><h2>${e(T(ch.name))}</h2><small>${e(ch.era)}</small></div>${ch.trials.length ? `<span class="cp-total" title="${T("Étoiles obtenues")}">${star(true)}<b>${got}</b> / ${total}</span>` : ""}</header><p class="cp-blurb">${e(ch.blurb)}</p>`;
     if (!ch.trials.length) { el.innerHTML = head + `<div class="cp-soon">${ICO.lock}<div><b>${T("Chapitre bientôt disponible")}</b><small>${T("Les épreuves arrivent dans une prochaine mise à jour.")}</small></div></div>`; return; }
+    const nx = D.nextTrial(ch, done);
     el.innerHTML = head + `<ol class="cp-trials">${ch.trials.map((t, i) => {
       const s = done[t.id] || 0, open = D.unlocked(ch, i, done);
-      return `<li><button type="button" class="cp-trial${s ? " done" : ""}${open ? "" : " locked"}${t.boss ? " boss" : ""}" data-trial="${e(t.id)}" ${open ? "" : "disabled"}>
+      return `<li><button type="button" class="cp-trial${s ? " done" : ""}${i === nx ? " next" : ""}${open ? "" : " locked"}${t.boss ? " boss" : ""}" data-trial="${e(t.id)}" ${open ? "" : "disabled"}>
         <i class="cp-ti" aria-hidden="true">${open ? ICO[t.type] : ICO.lock}</i>
         <span class="cp-tt"><b>${e(t.title)}</b><small>${e(t.sub)}</small></span>
         <span class="cp-stars" role="img" aria-label="${s} / 3">${[1, 2, 3].map((n) => star(n <= s)).join("")}</span></button></li>`;
     }).join("")}</ol>${D.chapterDone(ch, done) ? `<p class="cp-win">${T("Chapitre terminé : bravo !")}</p>` : ""}`;
+    const nb = el.querySelector(".cp-trial.next"), ls = el.querySelector(".cp-trials");
+    if (nb && ls && ls.scrollHeight > ls.clientHeight) ls.scrollTop = Math.max(0, nb.offsetTop - ls.offsetTop - 8);
   }
   function select(id) {
     const ch = D.byId(id); if (!ch) return;
@@ -222,8 +229,9 @@
   }
 
   // ------------------------------------------------------------------ épreuves
+  const shuffle = (a) => a.map((v) => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
+  const pick = (a, n) => shuffle(a).slice(0, n);
   function play(trial) {
-    if (trial.type === "quiz") return runQuiz(trial);
     if (trial.type === "battle") {
       if (!window.MABattle) { C.toast("La bataille n'est pas disponible pour l'instant.", "err"); return; }
       window.MABattle.open({ level: trial.level, onEnd: (r) => {
@@ -231,12 +239,45 @@
         C.toast(s ? `${fresh ? "Épreuve validée" : "Victoire"} · ${"★".repeat(s)}${"☆".repeat(3 - s)}` : "Pas cette fois : retente ta chance !", s ? "ok" : "err");
         panel();
       } });
+      return;
     }
+    runItems(trial, () => makeItems(trial));
   }
-  function runQuiz(trial) {
-    const e = C.esc, shuffle = (a) => a.map((v) => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
-    const qs = trial.qs.map((q) => { const opts = shuffle(q.a.map((t, i) => ({ t, good: i === 0 }))); return { q: q.q, opts }; });
-    let i = 0, ok = 0, locked = false;
+  /** questions d'une épreuve ; renvoie null si le catalogue ne permet pas de la tirer */
+  function makeItems(trial) {
+    if (trial.type === "quiz") return trial.qs.map((q) => ({ q: q.q, opts: shuffle(q.a.map((t, i) => ({ t, good: i === 0 }))) }));
+    if (trial.type === "vf") return shuffle(trial.items).map((it) => ({ q: it.q, opts: [{ t: T("Vrai"), good: it.ok }, { t: T("Faux"), good: !it.ok }] }));
+    const G = window.MAGameCore; if (!G || !Array.isArray(C.cars)) return null;
+    const url = (c) => C.safeUrl ? C.safeUrl(c.image) : "";
+    const pool = C.cars.filter((c) => c && c.image && url(c) && G.countryOf(c.brand) === trial.country);
+    const label = (c) => (c.brand + " " + c.model).trim();
+    if (trial.type === "guess") {
+      const names = Array.from(new Set(pool.map(label))); if (pool.length < 8 || names.length < 8) return null;
+      return pick(pool, 5).map((c) => {
+        const wrong = pick(names.filter((n) => n !== label(c)), 3);
+        return { q: T("Quelle est cette voiture ?"), img: url(c), opts: shuffle([{ t: label(c), good: true }].concat(wrong.map((t) => ({ t, good: false })))) };
+      });
+    }
+    const key = trial.type === "pm" ? (c) => Number(c.stats && c.stats.power) || 0 : (c) => G.yearOf(c) || 0;
+    const ok = pool.filter((c) => key(c) > 0); if (ok.length < 10) return null;
+    const better = trial.type === "pm" ? (x, y) => x > y : (x, y) => x < y;
+    const near = trial.type === "pm" ? (x, y) => Math.max(x, y) / Math.min(x, y) < 1.25 : (x, y) => Math.abs(x - y) < 10;
+    const out = [], used = new Set();
+    for (let tries = 0; tries < 400 && out.length < 5; tries++) {
+      const [x, y] = pick(ok, 2); if (!x || !y || used.has(x.id) || used.has(y.id) || near(key(x), key(y))) continue;
+      used.add(x.id); used.add(y.id);
+      const w = better(key(x), key(y)) ? x : y, show = (c) => trial.type === "pm" ? key(c) + " ch" : String(key(c));
+      out.push({ q: trial.type === "pm" ? T("Laquelle est la plus puissante ?") : T("Laquelle est la plus ancienne ?"), pic: true,
+        opts: shuffle([x, y].map((c) => ({ t: label(c), img: url(c), good: c === w, reveal: show(c) }))) });
+    }
+    return out.length === 5 ? out : null;
+  }
+  async function runItems(trial, make) {
+    if (trial.type !== "quiz" && trial.type !== "vf") { try { await C.catReady; } catch (_) { /* catalogue partiel */ } }
+    const qs = make();
+    if (!qs || !qs.length) { C.toast("Le catalogue n'est pas prêt : réessaie dans un instant.", "err"); return; }
+    const e = C.esc;
+    let items = qs, i = 0, ok = 0, locked = false;
     const ov = document.createElement("div");
     ov.className = "cp-run"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", trial.title);
     document.body.appendChild(ov); document.body.classList.add("tcg-open");
@@ -244,28 +285,29 @@
     const onKey = (ev) => { if (ev.key === "Escape") close(); };
     document.addEventListener("keydown", onKey);
     const view = () => {
-      if (i >= qs.length) {
-        const s = D.quizStars(ok, qs.length), fresh = award(trial, s);
+      if (i >= items.length) {
+        const s = D.quizStars(ok, items.length), fresh = award(trial, s);
         ov.innerHTML = `<div class="cp-card cp-end"><h3>${s ? T("Épreuve validée !") : T("Pas tout à fait…")}</h3><div class="cp-bigstars">${[1, 2, 3].map((n) => star(n <= s)).join("")}</div>
-          <p>${ok} / ${qs.length} ${T("bonnes réponses")}${s ? "" : " · " + T("il en faut au moins") + " " + Math.ceil(qs.length * 0.6)}${fresh && s ? " · " + T("nouveau record") : ""}</p>
+          <p>${ok} / ${items.length} ${T("bonnes réponses")}${s ? "" : " · " + T("il en faut au moins") + " " + Math.ceil(items.length * 0.6)}${fresh && s ? " · " + T("nouveau record") : ""}</p>
           <div class="cp-actions"><button type="button" class="cta-btn fill-btn" data-cp="close">${T("Continuer")}</button><button type="button" class="cta-btn btn-ghost" data-cp="again">${T("Rejouer")}</button></div></div>`;
         return;
       }
-      const q = qs[i];
-      ov.innerHTML = `<div class="cp-card"><div class="cp-qhead"><span>${C.esc(trial.title)}</span><span>${i + 1} / ${qs.length}</span></div><div class="xp-bar small"><i style="width:${Math.round((i / qs.length) * 100)}%"></i></div>
-        <h3 class="cp-q">${e(q.q)}</h3><div class="cp-opts">${q.opts.map((o, k) => `<button type="button" class="cp-opt" data-k="${k}">${e(o.t)}</button>`).join("")}</div>
+      const q = items[i], pic = !!q.pic;
+      ov.innerHTML = `<div class="cp-card"><div class="cp-qhead"><span>${C.esc(trial.title)}</span><span>${i + 1} / ${items.length}</span></div><div class="xp-bar small"><i style="width:${Math.round((i / items.length) * 100)}%"></i></div>
+        <h3 class="cp-q">${e(q.q)}</h3>${q.img ? `<img class="cp-qimg" src="${e(q.img)}" alt="" draggable="false">` : ""}
+        <div class="cp-opts${pic ? " pics" : ""}">${q.opts.map((o, k) => `<button type="button" class="cp-opt${pic ? " pic" : ""}" data-k="${k}">${o.img ? `<img src="${e(o.img)}" alt="" draggable="false">` : ""}<span>${e(o.t)}</span>${o.reveal ? `<em hidden>${e(o.reveal)}</em>` : ""}</button>`).join("")}</div>
         <div class="cp-actions"><button type="button" class="cta-btn btn-ghost" data-cp="close">${T("Quitter")}</button></div></div>`;
       locked = false;
     };
     ov.addEventListener("click", (ev) => {
       const b = ev.target.closest("[data-cp],[data-k]"); if (!b) return;
       if (b.dataset.cp === "close") { close(); return; }
-      if (b.dataset.cp === "again") { i = 0; ok = 0; view(); return; }
-      if (locked || i >= qs.length) return;
-      locked = true; const q = qs[i], k = Number(b.dataset.k);
-      ov.querySelectorAll(".cp-opt").forEach((n, j) => { n.disabled = true; if (q.opts[j].good) n.classList.add("good"); else if (j === k) n.classList.add("bad"); });
+      if (b.dataset.cp === "again") { const n = make(); if (n) items = n; i = 0; ok = 0; view(); return; }
+      if (locked || i >= items.length) return;
+      locked = true; const q = items[i], k = Number(b.dataset.k);
+      ov.querySelectorAll(".cp-opt").forEach((n, j) => { n.disabled = true; const r = n.querySelector("em"); if (r) r.hidden = false; if (q.opts[j].good) n.classList.add("good"); else if (j === k) n.classList.add("bad"); });
       if (q.opts[k].good) ok++;
-      setTimeout(() => { if (!ov.isConnected) return; i++; view(); }, 900);
+      setTimeout(() => { if (!ov.isConnected) return; i++; view(); }, q.pic ? 1500 : 900);
     });
     view();
     const f = ov.querySelector(".cp-opt"); if (f) f.focus({ preventScroll: true });

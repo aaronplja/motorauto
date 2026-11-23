@@ -16,11 +16,15 @@ D.CHAPTERS.forEach((ch) => {
     if (t.type === "quiz") {
       ok(t.qs.length >= 3, t.id + " : au moins 3 questions");
       t.qs.forEach((q, i) => ok(q.q.length > 10 && q.a.length === 4 && new Set(q.a).size === 4 && q.a.every((x) => x && x.length < 60), t.id + " q" + (i + 1) + " : 4 réponses distinctes"));
-    } else if (t.type === "battle") ok(["easy", "normal", "hard"].includes(t.level), t.id + " : niveau de bataille connu");
+    } else if (t.type === "vf") {
+      ok(t.items.length >= 3 && t.items.every((x) => x.q.length > 10 && typeof x.ok === "boolean"), t.id + " : affirmations vrai ou faux valides");
+    } else if (["guess", "pm", "old"].includes(t.type)) ok(t.country === ch.id, t.id + " : jeu tiré du catalogue du pays");
+    else if (t.type === "battle") ok(["easy", "normal", "hard"].includes(t.level), t.id + " : niveau de bataille connu");
     else ok(false, t.id + " : type d'épreuve inconnu (" + t.type + ")");
   });
 });
-ok(D.CHAPTERS.some((c) => c.trials.length >= 5), "au moins un chapitre jouable complet");
+D.CHAPTERS.forEach((c) => ok(c.trials.length >= 20, c.id + " : au moins 20 épreuves (" + c.trials.length + ")"));
+D.CHAPTERS.forEach((c) => ok(c.trials.filter((t) => t.type === "battle").length >= 4 && new Set(c.trials.map((t) => t.type)).size >= 5, c.id + " : variété des jeux"));
 // étoiles
 ok(D.quizStars(5, 5) === 3 && D.quizStars(4, 5) === 2 && D.quizStars(3, 5) === 1 && D.quizStars(2, 5) === 0, "étoiles de quiz (5 questions)");
 ok(D.quizStars(4, 4) === 3 && D.quizStars(3, 4) === 2 && D.quizStars(2, 4) === 0, "étoiles de quiz (4 questions)");
