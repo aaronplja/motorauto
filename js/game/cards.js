@@ -545,10 +545,14 @@
         if (el.classList.contains("on")) return;
         el.classList.add("on"); shown++;
         const rr = el.dataset.r;
-        if (rr === "rare") buzz(15);
-        else if (rr === "epic") { sparks(el, 10); buzz([20, 30, 20]); }
-        else if (rr === "legendary" || rr === "shiny" || rr === "special" || rr === "mythic") { sparks(el, rr === "shiny" || rr === "mythic" ? 40 : 28); buzz([30, 40, 60, 40, 90]); if (CINE[rr] && !calm()) { el.classList.add("slam"); setTimeout(() => el.classList.remove("slam"), 1000); banner(rr, el); } }
-        if (BURST[rr] && rr !== "rare") { { const bx = G.indexOf(results[+(el && el.dataset ? el.dataset.i : 0)] ? results[+(el.dataset.i)].car.id : ""); o.style.setProperty("--burst", bx && IC_COL[bx.ic] ? IC_COL[bx.ic] : BURST[rr]); } o.classList.remove("flash"); void o.offsetWidth; o.classList.add("flash"); }
+        // le retournement démarre tout de suite ; étincelles, éclair et bandeau arrivent un instant après, pour ne pas charger la première image
+        setTimeout(() => {
+          if (overlay !== o) return;
+          if (rr === "rare") buzz(15);
+          else if (rr === "epic") { sparks(el, 10); buzz([20, 30, 20]); }
+          else if (rr === "legendary" || rr === "shiny" || rr === "special" || rr === "mythic") { sparks(el, rr === "shiny" || rr === "mythic" ? 40 : 28); buzz([30, 40, 60, 40, 90]); if (CINE[rr] && !calm()) { el.classList.add("slam"); setTimeout(() => el.classList.remove("slam"), 1000); banner(rr, el); } }
+          if (BURST[rr] && rr !== "rare") { { const bx = G.indexOf(results[+(el && el.dataset ? el.dataset.i : 0)] ? results[+(el.dataset.i)].car.id : ""); o.style.setProperty("--burst", bx && IC_COL[bx.ic] ? IC_COL[bx.ic] : BURST[rr]); } o.classList.remove("flash"); void o.offsetWidth; o.classList.add("flash"); }
+        }, 320);
         if (shown === results.length) { if (stackOn) setTimeout(() => { if (overlay === o) { endStack(); finish(); } }, 1100); else finish(); }
         else if (stackOn) { const h = o.querySelector("#tcg-hint"); if (h) h.textContent = "Touche la carte pour passer à la suivante"; }
       };
