@@ -497,12 +497,23 @@
         <div class="pk3-sum" id="tcg-sum" hidden></div>
         <div class="tcg-actions" id="tcg-end" hidden><button type="button" class="cta-btn fill-btn" id="tcg-done">Terminer</button></div>`;
       let shown = 0;
-      const SUSP = { epic: 450, legendary: 900, shiny: 1200, special: 1200, mythic: 1400 };
+      const SUSP = { epic: 450, legendary: 1500, shiny: 1900, special: 1200, mythic: 2100 };
+      // mise en scène Prestige / Apex / Héritage : rayons qui montent pendant l'attente, puis impact, bandeau et étincelles
+      const CINE = { legendary: "Prestige", shiny: "Apex", mythic: "Héritage" };
+      const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const rays = (rr) => { o.querySelectorAll(".pk-rays").forEach((x) => x.remove()); if (CINE[rr] && !calm()) o.insertAdjacentHTML("beforeend", `<i class="pk-rays ${rr}" aria-hidden="true"></i>`); };
+      const banner = (rr, el) => {
+        if (!CINE[rr] || calm()) return;
+        const r = results[+el.dataset.i], nm = r && r.car ? C.esc(String(r.car.brand || "") + " " + String(r.car.model || "").replace(/\s*\(.*$/, "")) : "";
+        o.querySelectorAll(".pk-banner").forEach((x) => x.remove());
+        o.insertAdjacentHTML("beforeend", `<div class="pk-banner ${rr}" role="status"><b>${CINE[rr]}</b><small>${nm}</small></div>`);
+        const b = o.lastElementChild; setTimeout(() => b && b.classList.contains("pk-banner") && b.remove(), 2500);
+      };
       const reveal = (el) => {
         if (el.classList.contains("on") || el.classList.contains("pend")) return;
         const w = SUSP[el.dataset.r];
         if (w && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          el.classList.add("pend", "susp-" + el.dataset.r); buzz([10, 60, 10]); o.classList.add("dim");
+          el.classList.add("pend", "susp-" + el.dataset.r); buzz([10, 60, 10]); o.classList.add("dim"); rays(el.dataset.r);
           return void setTimeout(() => { el.classList.remove("pend"); o.classList.remove("dim"); doReveal(el); }, w);
         }
         doReveal(el);
@@ -513,7 +524,7 @@
         const rr = el.dataset.r;
         if (rr === "rare") buzz(15);
         else if (rr === "epic") { sparks(el, 10); buzz([20, 30, 20]); }
-        else if (rr === "legendary" || rr === "shiny" || rr === "special" || rr === "mythic") { sparks(el, 18); buzz([30, 40, 60]); }
+        else if (rr === "legendary" || rr === "shiny" || rr === "special" || rr === "mythic") { sparks(el, rr === "shiny" || rr === "mythic" ? 40 : 28); buzz([30, 40, 60, 40, 90]); if (CINE[rr] && !calm()) { el.classList.add("slam"); setTimeout(() => el.classList.remove("slam"), 1000); banner(rr, el); } }
         if (BURST[rr] && rr !== "rare") { { const bx = G.indexOf(results[+(el && el.dataset ? el.dataset.i : 0)] ? results[+(el.dataset.i)].car.id : ""); o.style.setProperty("--burst", bx && IC_COL[bx.ic] ? IC_COL[bx.ic] : BURST[rr]); } o.classList.remove("flash"); void o.offsetWidth; o.classList.add("flash"); }
         if (shown === results.length) { if (stackOn) setTimeout(() => { if (overlay === o) { endStack(); finish(); } }, 1100); else finish(); }
         else if (stackOn) { const h = o.querySelector("#tcg-hint"); if (h) h.textContent = "Touche la carte pour passer à la suivante"; }
@@ -544,18 +555,38 @@
         stackOn = false; stackEl.classList.remove("stack");
         flips.forEach((f) => { f.classList.remove("out", "act"); f.style.removeProperty("--d"); f.tabIndex = 0; f.classList.remove("deal"); void f.offsetWidth; f.classList.add("deal"); });
       }
+      let auto = false;
+      const dismiss = (f, fwd) => {
+        f.classList.add("out"); if (fwd) f.classList.add("fwd"); act++; setDepth(); buzz(8);
+        o.querySelectorAll(".pk-rays").forEach((x) => x.remove());
+        const h = o.querySelector("#tcg-hint"); if (h && !auto) h.textContent = "Touche la carte pour la révéler";
+        if (!auto) flips[act].focus({ preventScroll: true });
+      };
       const tap = (f) => {
         if (!stackOn) return reveal(f);
-        if (flips.indexOf(f) !== act) return;
+        if (auto || flips.indexOf(f) !== act) return;
         if (!f.classList.contains("on")) return reveal(f);
         if (f.classList.contains("pend") || act >= flips.length - 1) return;
-        f.classList.add("out"); act++; setDepth(); buzz(8);
-        const h = o.querySelector("#tcg-hint"); if (h) h.textContent = "Touche la carte pour la révéler";
-        flips[act].focus({ preventScroll: true });
+        dismiss(f, false);
       };
+      // « Tout révéler » : chaque carte se retourne puis part vers l'avant pour laisser voir la suivante ; les trois s'étalent à la fin
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      async function playAll() {
+        if (auto) return; auto = true;
+        const btn = o.querySelector("#tcg-all"); if (btn) btn.disabled = true;
+        const h = o.querySelector("#tcg-hint"); if (h) h.textContent = "Révélation en cours…";
+        for (let i = act; i < flips.length; i++) {
+          const f = flips[i];
+          if (!f.classList.contains("on")) reveal(f);
+          while (!f.classList.contains("on")) { await sleep(60); if (overlay !== o) return; }
+          if (i === flips.length - 1) break;
+          await sleep(CINE[f.dataset.r] && !calm() ? 2500 : 1050); if (overlay !== o) return;
+          dismiss(f, true); await sleep(480); if (overlay !== o) return;
+        }
+      }
       if (stackOn) setDepth();
       flips.forEach((f) => { f.addEventListener("click", () => tap(f)); f.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(f); } }); });
-      o.querySelector("#tcg-all").addEventListener("click", () => o.querySelectorAll(".flip").forEach((f, i) => setTimeout(() => reveal(f), i * 260)));
+      o.querySelector("#tcg-all").addEventListener("click", () => { if (stackOn) playAll(); else o.querySelectorAll(".flip").forEach((f, i) => setTimeout(() => reveal(f), i * 260)); });
       o.querySelector("#tcg-done").addEventListener("click", closeOverlay);
       const f0 = o.querySelector(".flip"); if (f0) f0.focus({ preventScroll: true });
     }
@@ -626,7 +657,7 @@
     if (n === 0 && !sp) actions.push(`<button type="button" class="cta-btn btn-ghost" data-wish aria-pressed="${inWish}">${inWish ? "★ Dans ma wishlist" : "☆ Wishlist"}</button>`);
     actions.push(`<button type="button" class="cta-btn btn-ghost" data-close>Fermer</button>`);
     const i = navIds.indexOf(id), nav = i >= 0 && navIds.length > 1 ? `<div class="tcg-nav"><button type="button" data-nav="-1" aria-label="Carte précédente" ${i > 0 ? "" : "disabled"}>‹</button><span class="tcg-hint">${i + 1} / ${navIds.length}</span><button type="button" data-nav="1" aria-label="Carte suivante" ${i < navIds.length - 1 ? "" : "disabled"}>›</button></div>` : "";
-    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n, lv: n > 0 && !peek ? lv : 1 })}</div><div class="tcg-3d-face rev">${backHtml(car, id)}</div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${sp ? "" : pctHtml(id)}${lvBlock}${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}${peek ? "" : histHtml(id)}${car.circuit && C.isAdmin ? `<div class="cg-cphoto"><label for="cp-url">Photo du circuit (admin) : adresse https d'une image</label><div class="inline-field"><input type="url" id="cp-url" value="${C.esc(circPhotos[id] || "")}" placeholder="https://…/photo.jpg"><button type="button" class="cta-btn fill-btn compact-btn" data-cphoto>Enregistrer</button></div><small class="tcg-hint">Vide = retirer la photo (le tracé reste affiché).</small></div>` : ""}<div class="tcg-actions">${actions.join("")}</div></div>`;
+    return `<div class="tcg-stage"><div class="tcg-solo"><div class="tcg-3d rest${back ? " back" : ""}" id="tcg-3d"><div class="tcg-3d-in"><div class="tcg-3d-face">${cardHtml(car, { owned: n > 0, count: n, lv: n > 0 && !peek ? lv : 1 })}</div><div class="tcg-3d-face rev tcg-${rarityOf(car)}${n > 0 && !car.special && !car.circuit && dualOf(car) ? " rev-dual" : ""}"${n > 0 && dualOf(car) ? ` style="--ic:${IC_COL[dualOf(car).ic]};--ip:${IP_COL[dualOf(car).ip]}"` : ""}><svg class="tcg-edge" viewBox="0 0 100 140" preserveAspectRatio="none" aria-hidden="true" focusable="false"><polygon class="o" points="1,1 90.5,1 99,8.2 99,139 9.5,139 1,131.8"/><polygon class="i" points="3.6,3.6 89.8,3.6 96.4,9.5 96.4,136.4 10.2,136.4 3.6,130.5"/></svg><div class="rev-in">${backHtml(car, id)}</div></div></div></div></div>${nav}<p class="tcg-hint" id="tcg-serial">${C.esc(info).replace(/\u0001/g, window.MA.dustIcon(14))}</p>${sp ? "" : pctHtml(id)}${lvBlock}${picGallery(car, n)}${sp && sp.text && sp.power > 0 ? `<p class="tcg-hint">${C.esc(sp.text)}</p>` : ""}${peek ? "" : histHtml(id)}${car.circuit && C.isAdmin ? `<div class="cg-cphoto"><label for="cp-url">Photo du circuit (admin) : adresse https d'une image</label><div class="inline-field"><input type="url" id="cp-url" value="${C.esc(circPhotos[id] || "")}" placeholder="https://…/photo.jpg"><button type="button" class="cta-btn fill-btn compact-btn" data-cphoto>Enregistrer</button></div><small class="tcg-hint">Vide = retirer la photo (le tracé reste affiché).</small></div>` : ""}<div class="tcg-actions">${actions.join("")}</div></div>`;
   }
   function showDetail(id, ids, opts) {
     peek = opts && opts.peek ? id : "";
