@@ -32,7 +32,7 @@
 
 /* taux de drop (boutique) */
 .dr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.dr-grid section{background:var(--surface,#fffdf8);border:1px solid var(--line,rgba(22,35,28,.14));border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:7px}
+.dr-grid section{background:var(--bg-surface);color:var(--color-ink);border:1px solid var(--stroke-line, rgba(127,127,127,.25));border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:7px}
 .dr-grid h4{margin:0 0 2px;font-size:14px}
 .dr-row{display:flex;align-items:center;gap:10px}
 .dr-chip{min-width:30px;height:20px;padding:0 6px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.35)}
@@ -95,3 +95,7 @@ button.cg-shopbtn { width: 100%; font: inherit; text-align: left; cursor: pointe
 @media (max-width: 520px) { .tr-steps { grid-template-columns: 1fr; } .tr-steps li { flex-direction: row; align-items: center; } }
 .fz2-count { margin-left: auto; font-size: .8rem; font-weight: 600; opacity: .7; }
 .fz2-none, .fz2-need { margin: 0; font-size: .85rem; opacity: .7; }
+
+button.cg-ratesbtn { margin-bottom: .8rem; }
+.rt-pity { display: flex; flex-direction: column; gap: 10px; }
+.gd.rt h2 + p + .dr-grid, .gd.rt .dr-grid { grid-template-columns: 1fr; }

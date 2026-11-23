@@ -28,6 +28,7 @@
     } else if (ment) {
       z.innerHTML = `<p><b>🎓 ${T("Mentor")}</b> · ${T("ce pilote aide les nouveaux venus.")}</p>${sent ? `<small class="lap-meta">${sent.status === "accepted" ? T("Demande acceptée") : T("Demande envoyée")}</small>` : `<button type="button" class="cta-btn fill-btn compact-btn" data-mentor-ask="${C.esc(uid)}">${T("Demander un mentorat")}</button>`}`;
     } else return;
+    host.querySelectorAll(".mentor-zone").forEach((n) => n.remove());   // deux appels simultanés ne doivent pas doubler le bloc
     host.appendChild(z);
   }
   async function toggle(on) {

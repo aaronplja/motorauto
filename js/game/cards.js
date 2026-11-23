@@ -765,35 +765,52 @@
     return `<section class="cg-block cg-offers" aria-label="Offres du jour"><header class="cg-bh"><h3>Offres du jour</h3><span class="cg-sub">changent à minuit · <b data-nextday>${leftToday()}</b></span></header><div class="cg-offer-row">${packOffer}${cardOffer}</div></section>`;
   }
   /** compteurs de chance garantie + historique des ouvertures */
+  /** barres de chance garantie, de Sport à Apex */
+  function pityBarsHtml() {
+    const op = doc.opened || 0, toRare = G.PITY.rare - (op % G.PITY.rare), toEpic = G.PITY.epic - (op % G.PITY.epic), toLeg = Math.max(1, G.PITY.legend - (doc.pity || 0)), toApex = Math.max(1, G.PITY.apex - (doc.pityApex || 0));
+    const bar = (n, tot, name, cls) => `<div class="pity ${cls}"><div class="pity-t"><b>${name} ou mieux</b><small>${n === 1 ? "garanti dans le prochain pack" : "garanti dans " + n + " packs au plus"}</small></div><span class="pity-bar" aria-hidden="true"><u style="width:${Math.round(100 * (tot - n) / tot)}%"></u></span></div>`;
+    return bar(toRare, G.PITY.rare, "Sport", "rare") + bar(toEpic, G.PITY.epic, "Élite", "epic") + bar(toLeg, G.PITY.legend, "Prestige", "legendary") + bar(toApex, G.PITY.apex, "Apex", "shiny");
+  }
+  /** page « Taux et garanties » (ouverte depuis le haut de la Boutique) */
+  function ratesOpen() {
+    if (!doc) return;
+    const o = mountOverlay("rates", "Taux de drop et chances garanties", `<div class="tcg-stage"><div class="gd rt">
+      <h2>Taux de drop</h2>
+      <p class="tcg-hint">Chaque carte tire un IC et un IP séparément. Les cartes Héritage ne sortent jamais d'un pack.</p>
+      ${dropRatesBody()}
+      <h2>Chances garanties</h2>
+      <p class="tcg-hint">Sur les packs du jour et les packs bonus, la dernière carte est garantie à partir d'un certain nombre de packs.</p>
+      <section class="rt-pity">${pityBarsHtml()}</section>
+      <div class="tcg-actions"><button type="button" class="cta-btn btn-ghost" data-close>Fermer</button></div></div></div>`);
+    o.addEventListener("click", (e) => { if (e.target === o || e.target.closest("[data-close]")) closeOverlay(); });
+  }
   function packStatsHtml() {
     const op = doc.opened || 0, toRare = G.PITY.rare - (op % G.PITY.rare), toEpic = G.PITY.epic - (op % G.PITY.epic), toLeg = Math.max(1, G.PITY.legend - (doc.pity || 0)), all = Math.max(doc.packsAll || 0, op);
     const best = String(doc.best || "").split("|"), bc = best[0] && cardObj(best[0]), br = best[1] && RAR[best[1]];
     const log = (doc.log || []).slice(-8).reverse();
     const kinds = { daily: "Pack du jour", bonus: "Pack bonus", shop: "Pack acheté" };
-    const toApex = Math.max(1, G.PITY.apex - (doc.pityApex || 0));
-    const bar = (n, tot, name, cls) => `<div class="pity ${cls}"><div class="pity-t"><b>${name} ou mieux</b><small>${n === 1 ? "garanti dans le prochain pack" : "garanti dans " + n + " packs au plus"}</small></div><span class="pity-bar" aria-hidden="true"><u style="width:${Math.round(100 * (tot - n) / tot)}%"></u></span></div>`;
-    return `${window.MAAcc.o("pity", "Chance garantie", "packs du jour et packs bonus · de Sport à Apex", false, "cg-block cg-pity", "Chance garantie et historique")}
-      ${bar(toRare, G.PITY.rare, "Sport", "rare")}${bar(toEpic, G.PITY.epic, "Élite", "epic")}${bar(toLeg, G.PITY.legend, "Prestige", "legendary")}${bar(toApex, G.PITY.apex, "Apex", "shiny")}
+    return `${window.MAAcc.o("pity", "Historique des packs", "packs ouverts et dernières pioches", false, "cg-block cg-pity", "Historique des packs")}
       <div class="pity-stats"><div><b>${all}</b><small>packs ouverts</small></div>${bc && br ? `<div class="pity-best"><b class="${best[1]}">${br.label}</b><small>meilleure pioche : ${C.esc((bc.brand || "") + " " + (bc.model || ""))}</small></div>` : `<div><b>–</b><small>meilleure pioche</small></div>`}</div>
       ${log.length ? `<details class="pity-log"><summary>Historique des derniers packs</summary><ul>${log.map((l) => { const c = cardObj(l.id), rr = RAR[l.r]; return `<li><span class="pl-d">${C.esc(String(l.t || "").slice(5).split("-").reverse().join("/"))}</span><span class="pl-k">${kinds[l.k] || "Pack"}</span><span class="pl-r tcg-rar-chip ${l.r}">${rr ? rr.label : l.r}</span><span class="pl-c">${c ? C.esc((c.brand || "") + " " + (c.model || "")) : ""}</span></li>`; }).join("")}</ul></details>` : ""}${window.MAAcc.c}`;
   }
   /** taux de drop réels d'un pack (mêmes calculs que le tirage), par IC et par IP */
-  function dropRatesHtml() {
+  function dropRatesBody() {
     if (!rarityMap || !G.dropTable) return "";
     let t; try { t = G.dropTable(rarityMap, C.cars.map((c) => c.id), 1); } catch (e) { return ""; }
     const pc = (v) => (v * 100 >= 10 ? (v * 100).toFixed(0) : (v * 100).toFixed(1)).replace(".", ",") + " %";
     const max = (a) => Math.max.apply(null, a.map((x) => x.p)) || 1;
     const rows = (a, col, cls) => a.map((x) => `<div class="dr-row"><span class="dr-chip ${cls}" style="background:${col[x.k] || "#888"}">${x.k}</span><i class="dr-bar"><b style="width:${Math.max(2, Math.round((x.p / max(a)) * 100))}%;background:${col[x.k] || "#888"}"></b></i><em>${pc(x.p)}</em></div>`).join("");
-    return `${window.MAAcc.o("droprates", "Taux de drop", "Chaque carte tire un IC et un IP séparément · les cartes Héritage ne sortent jamais d'un pack", false, "cg-block", "Taux de drop")}<div class="dr-grid"><section><h4>IC · Collection</h4>${rows(t.ic, IC_COL, "ic")}</section><section><h4>IP · Performance</h4>${rows(t.ip, IP_COL, "ip")}</section></div>${window.MAAcc.c}`;
+    return `<div class="dr-grid"><section><h4>IC · Collection</h4>${rows(t.ic, IC_COL, "ic")}</section><section><h4>IP · Performance</h4>${rows(t.ip, IP_COL, "ip")}</section></div>`;
   }
   function shopHtml() {
     const rows = packRows(), canDaily = doc.lastPack !== day();
-        return `<div class="cg-free">
+        return `<button type="button" class="cg-shopbtn cg-fusbtn cg-ratesbtn" data-rates><span class="cg-sb-ico">${ICN('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>')}</span><span class="cg-sb-t"><b>Taux et garanties</b><small>chances de drop, packs garantis</small></span><span class="cg-sb-go" aria-hidden="true">›</span></button>
+        <div class="cg-free">
         <button type="button" class="cg-gift ${canDaily ? "ready" : "off"}" data-pack="daily" ${canDaily && !busy ? "" : "disabled"} aria-label="Pack du jour"><span class="cg-gi">🎁</span><b>${canDaily ? "Pack du jour" : "Reviens demain"}</b><small>${canDaily ? "3 cartes gratuites" : "déjà ouvert"}</small></button>
         <button type="button" class="cg-gift bonus ${doc.bonus ? "ready" : "off"}" data-pack="bonus" ${doc.bonus && !busy ? "" : "disabled"} aria-label="Pack bonus"><span class="cg-gi">★</span><b>${doc.bonus} pack${doc.bonus > 1 ? "s" : ""} bonus</b><small>badges, défis, parrainage</small></button>
         ${adventBtnHtml()}
       </div>${wheelHtml()}${adventHtml()}${packStatsHtml()}${offersHtml(rows)}${missionsHtml()}
-      ${dropRatesHtml()}${window.MAAcc.o("packs", "Packs par pays", "3 voitures du pays, dont 1 Sport ou mieux · Circuit : 3 circuits · Prestige : Élite ou mieux · les doublons rapportent des cristaux", true, "cg-block", "Packs par pays")}<div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div>${window.MAAcc.c}`;
+      ${window.MAAcc.o("packs", "Packs par pays", "3 voitures du pays, dont 1 Sport ou mieux · Circuit : 3 circuits · Prestige : Élite ou mieux · les doublons rapportent des cristaux", true, "cg-block", "Packs par pays")}<div class="cg-packgrid">${rows.map((r) => packTileHtml(r)).join("")}</div>${window.MAAcc.c}`;
   }
 
   // ----- Mes cartes
@@ -1241,6 +1258,7 @@
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-dust-log]")) { showDustLog(); return; }
       if (e.target.closest("#cards-root [data-card-guide]")) { guideOpen(); return; }
+      if (e.target.closest("#cards-root [data-rates]")) { ratesOpen(); return; }
       if (e.target.closest("#cards-root [data-recycle]")) { recycleOpen(); return; }
       if (e.target.closest("#cards-root [data-wheel]")) { wheelOpen(); return; }
       const adv = e.target.closest("#cards-root [data-advent]"); if (adv) { adventOpen(Number(adv.dataset.advent)); return; }
