@@ -329,6 +329,10 @@
   const chapterDone = (ch, done) => ch.trials.length > 0 && ch.trials.every((t) => (done[t.id] || 0) > 0);
   /** première épreuve jouable pas encore validée (pour la mettre en avant) */
   const nextTrial = (ch, done) => ch.trials.findIndex((t, i) => !(done[t.id] > 0) && unlocked(ch, i, done));
-  const api = { CHAPTERS, quizStars, battleStars, byId, unlocked, chapterStars, chapterDone, nextTrial };
+  /** chapitre commencé (au moins une étoile) mais pas terminé : il faut le finir avant d'en ouvrir un autre */
+  const current = (done) => CHAPTERS.find((c) => chapterStars(c, done) > 0 && !chapterDone(c, done)) || null;
+  /** un chapitre peut être joué s'il est en cours, ou si aucun autre chapitre n'est en cours */
+  const canPlay = (ch, done) => { const cur = current(done); return !cur || cur.id === ch.id; };
+  const api = { current, canPlay, CHAPTERS, quizStars, battleStars, byId, unlocked, chapterStars, chapterDone, nextTrial };
   if (typeof module === "object" && module.exports) module.exports = api; else window.MA.register("CampaignData", api);
 })();

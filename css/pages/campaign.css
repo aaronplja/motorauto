@@ -70,3 +70,4 @@
 .cp-opt.pic img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; }
 .cp-opt.pic span { font-size: .85rem; }
 .cp-opt.pic em { font-style: normal; font-weight: 700; }
+.cp-lockmsg { margin: 0 0 .6rem; padding: .6rem 1rem; border-radius: 999px; background: var(--bg-elevated); border: 1px solid var(--stroke-line); font-size: .9rem; }

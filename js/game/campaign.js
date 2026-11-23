@@ -211,9 +211,9 @@
     const e = C.esc, total = ch.trials.length * 3, got = D.chapterStars(ch, done);
     const head = `<header class="cp-head"><span class="cp-dot" style="--c:${ch.color}"></span><div><h2>${e(T(ch.name))}</h2><small>${e(ch.era)}</small></div>${ch.trials.length ? `<span class="cp-total" title="${T("Étoiles obtenues")}">${star(true)}<b>${got}</b> / ${total}</span>` : ""}</header><p class="cp-blurb">${e(ch.blurb)}</p>`;
     if (!ch.trials.length) { el.innerHTML = head + `<div class="cp-soon">${ICO.lock}<div><b>${T("Chapitre bientôt disponible")}</b><small>${T("Les épreuves arrivent dans une prochaine mise à jour.")}</small></div></div>`; return; }
-    const nx = D.nextTrial(ch, done);
-    el.innerHTML = head + `<ol class="cp-trials">${ch.trials.map((t, i) => {
-      const s = done[t.id] || 0, open = D.unlocked(ch, i, done);
+    const nx = D.canPlay(ch, done) ? D.nextTrial(ch, done) : -1, cur = D.current(done), lockedBy = cur && cur.id !== ch.id ? cur : null;
+    el.innerHTML = head + `${lockedBy ? `<p class="cp-lockmsg">${T("Termine d'abord ton histoire en cours")} : <b>${e(T(lockedBy.name))}</b>.</p>` : ""}<ol class="cp-trials">${ch.trials.map((t, i) => {
+      const s = done[t.id] || 0, open = D.unlocked(ch, i, done) && D.canPlay(ch, done);
       return `<li><button type="button" class="cp-trial${s ? " done" : ""}${i === nx ? " next" : ""}${open ? "" : " locked"}${t.boss ? " boss" : ""}" data-trial="${e(t.id)}" ${open ? "" : "disabled"}>
         <i class="cp-ti" aria-hidden="true">${open ? ICO[t.type] : ICO.lock}</i>
         <span class="cp-tt"><b>${e(t.title)}</b><small>${e(t.sub)}</small></span>
@@ -232,6 +232,7 @@
   const shuffle = (a) => a.map((v) => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
   const pick = (a, n) => shuffle(a).slice(0, n);
   function play(trial) {
+    const pc = D.CHAPTERS.find((c) => c.trials.includes(trial)); if (pc && !D.canPlay(pc, done)) { C.toast("Termine d'abord l'histoire en cours.", "err"); return; }
     if (trial.type === "battle") {
       if (!window.MABattle) { C.toast("La bataille n'est pas disponible pour l'instant.", "err"); return; }
       window.MABattle.open({ level: trial.level, onEnd: (r) => {
