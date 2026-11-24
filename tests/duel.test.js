@@ -20,6 +20,14 @@ ok(E.simulate(car({ kg: 1800, zero: 0, vmax: 0 })).t400 > E.simulate(car({ kg: 1
 const dry = (d) => E.simulate(car({ hp: 500, kg: 1600, drive: d, zero: 0, vmax: 300 }), { surface: "dry" }), wet = (d) => E.simulate(car({ hp: 500, kg: 1600, drive: d, zero: 0, vmax: 300 }), { surface: "wet" });
 ok(wet("R").t100 - dry("R").t100 > 1.5, "propulsion sur le mouillé : grosse perte");
 ok(wet("A").t100 - dry("A").t100 < wet("R").t100 - dry("R").t100, "le 4x4 perd moins que la propulsion");
+// terrains : terre et neige ralentissent, le 4x4 de rallye s'en sort mieux, la supercar à pneus route perd énormément
+const sp = (o) => Object.assign({ hp: 300, kg: 1300, drive: "F", vmax: 240, zero: 6.5, year: 2005, category: "Coupé", name: "Voiture" }, o);
+const on = (c, surface) => E.simulate(c, { surface });
+const evo = sp({ drive: "A", zero: 4.8, name: "Mitsubishi Lancer Evolution" }), rwd = sp({ hp: 420, kg: 1500, drive: "R", zero: 4.4, name: "Berline sport" }), ferr = sp({ hp: 650, kg: 1500, drive: "R", zero: 3.2, vmax: 330, category: "Supercar", name: "Ferrari 488" });
+ok(on(rwd, "dirt").t100 > on(rwd, "dry").t100 + 2 && on(rwd, "snow").t100 > on(rwd, "dirt").t100, "terre puis neige : de plus en plus lent");
+ok(on(evo, "dirt").t100 - on(evo, "dry").t100 < on(rwd, "dirt").t100 - on(rwd, "dry").t100, "la voiture de rallye perd moins sur terre");
+ok(E.terrainFit(evo) && !E.terrainFit(ferr), "voiture adaptée au terrain reconnue");
+ok(on(ferr, "dirt").vmax <= 125 && on(evo, "dirt").vmax > on(ferr, "dirt").vmax, "vitesse limitée sur terre, moins pour la voiture adaptée");
 // pilote
 ok(E.simulate(car({ zero: 0, vmax: 0 }), { driver: "amateur" }).t400 > E.simulate(car({ zero: 0, vmax: 0 }), { driver: "pro" }).t400, "pilote pro plus rapide");
 // boîte : séquentielle plus rapide qu'une manuelle ancienne

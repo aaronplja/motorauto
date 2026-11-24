@@ -340,3 +340,12 @@ body[data-page="news"] .news-btn,.news-btn[aria-current="page"]{border-color:var
 /* ---- fiche voiture : bloc « fiche technique » sous les chiffres clés ---- */
 .sheet-kpis.sheet-specs { margin-top: 10px; }
 #genre-filter-chips { margin-top: 6px; }
+
+/* Devine la voiture : ligne marque + ligne modèle */
+.dv-form { display: grid; gap: 10px; }
+.dv-field { display: grid; gap: 4px; position: relative; }
+.dv-field label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--color-muted); }
+.dv-field label em { font-style: normal; text-transform: none; letter-spacing: 0; color: #22c55e; margin-left: .35rem; }
+.dv-field.locked .dv-in { border-color: #22c55e; background: color-mix(in srgb, #22c55e 12%, transparent); opacity: 1; font-weight: 700; }
+.dv-in:disabled { opacity: .6; cursor: not-allowed; }
+.dv-field.locked .dv-in:disabled { cursor: default; -webkit-text-fill-color: currentColor; }

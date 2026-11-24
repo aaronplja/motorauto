@@ -154,3 +154,12 @@ img[loading="lazy"] { background: color-mix(in srgb, var(--color-ink, #000) 6%, 
 .hub-grid-main > .hub-tile.hub-slim small { margin-left: auto; text-align: right; }
 .hub-grid-main > .hub-tile.hub-slim .hub-ico { font-size: 1.4rem; display: inline-flex; }
 @media (max-width: 520px) { .hub-grid-main > .hub-tile.hub-slim small { display: none; } }
+
+/* barres de sous-onglets longues (Jeux : 7 entrées) : une seule ligne qui défile, chaque onglet garde son libellé entier */
+@media (max-width: 700px) {
+  html .page-tabs.fit.many { display: flex; overflow-x: auto; overflow-y: hidden; gap: .25rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  html .page-tabs.fit.many::-webkit-scrollbar { display: none; }
+  html .page-tabs.fit.many .page-tab { flex: 0 0 auto; padding-inline: .8rem; min-height: 44px; }
+  html .page-tabs.fit.many .page-tab .tl { overflow: visible; }
+  html .play-bar.inner .play-subtabs.many { max-width: none; }
+}

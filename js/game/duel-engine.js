@@ -14,6 +14,16 @@
   const G = 9.81, RHO = 1.2, KMH = 3.6, HP = 735.5;
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
+  // ------------------------------------------------------------ terrains
+  /** terre et neige : adhérence plus faible, résistance au roulement plus forte, vitesse limitée ; une voiture « faite pour ça » (rallye, 4×4, tout-terrain) s'en sort mieux, une voiture très basse ou à pneus slicks bien moins */
+  const SURF = {
+    dirt: { mu: 0.66, crr: 2.6, fit: 1.22, poor: 0.8, v: 150, vFit: 175, vPoor: 120 },
+    snow: { mu: 0.36, crr: 2.2, fit: 1.15, poor: 0.85, v: 125, vFit: 145, vPoor: 100 }
+  };
+  const OFFROAD = /wrc|rally|rallye|\bevo|lancer|impreza|sti\b|quattro|delta|integrale|stratos|t16|rs ?200|celica|gt-?four|cosworth|defender|land rover|range rover|discovery|jeep|wrangler|cherokee|g ?63|g-?class|classe g|hilux|raptor|bronco|pajero|jimny|duster|syncro|lm002|urus|macan|cayenne|4x4|safari|dakar|baja|trophy|ranger|tacoma|land cruiser|patrol|sandero stepway|panda 4x4/i;
+  /** la voiture est-elle à l'aise sur terre ou sur neige ? */
+  function terrainFit(spec) { return OFFROAD.test((spec && spec.name) || "") || /rally|4x4|tout-terrain|pick-?up/i.test((spec && spec.category) || ""); }
+
   // ------------------------------------------------------------ données déduites
   function firstYear(years) { const m = String(years || "").match(/(19|20)\d{2}/); return m ? Number(m[0]) : 2000; }
   const isTurbo = (name) => /turbo|tdi|tfsi|tsi|\bt\b|gti? ?t|bi-?turbo|compress|kompressor|ecoboost|sti|evo|gt-?r|\brs\b|cosworth|twin/i.test(name || "");
@@ -119,6 +129,7 @@
           F = v < vLaunch ? pw / vLaunch : pw / Math.max(v, 1);
           if (v >= vg[g] * 1.0 && g === n - 1) F = Math.min(F, drag(v));                // régime maxi en dernière
           if (P.vmaxPub > 0 && v >= P.vmaxPub) F = Math.min(F, drag(v));
+          if (P.vcap && v >= P.vcap) F = Math.min(F, drag(v));                          // terre ou neige : la vitesse reste limitée
         }
       }
       // limite d'adhérence
@@ -164,6 +175,12 @@
       }
     }
     if (wet) { P.mu *= P.wetFactor; P.wet = true; }
+    const sf = opt && SURF[opt.surface];
+    if (sf) {
+      const fit = terrainFit(spec), poor = !fit && (P.lemans || P.super_);
+      P.mu *= sf.mu * (fit ? sf.fit : poor ? sf.poor : 1);
+      P.crr *= sf.crr; P.vcap = (fit ? sf.vFit : poor ? sf.vPoor : sf.v) / KMH; P.surf = opt.surface; P.fit = fit; P.poorFit = poor;
+    }
     return P;
   }
 
@@ -171,7 +188,7 @@
   function simulate(spec, opt) {
     const P = make(spec, opt), o = run(P, { dist: 1000 });
     const mk = o.marks;
-    return { P, samples: o, t100: mk.t100, t200: mk.t200 || null, t400: mk.t400, v400: mk.v400, t1000: mk.t1000, v1000: mk.v1000, vmax: P.vmax * KMH, gears: P.gears, shiftKind: P.shiftKind, shifts: o.shifts, kappa: P.kappa, calibrated: P.calibrated, tractionKind: P.drive };
+    return { P, samples: o, t100: mk.t100, t200: mk.t200 || null, t400: mk.t400, v400: mk.v400, t1000: mk.t1000, v1000: mk.v1000, vmax: Math.min(P.vmax, P.vcap || 1e9) * KMH, gears: P.gears, shiftKind: P.shiftKind, shifts: o.shifts, kappa: P.kappa, calibrated: P.calibrated, tractionKind: P.drive };
   }
 
   /** valeur interpolée des échantillons */
@@ -187,5 +204,5 @@
   /** temps pour parcourir la distance d (ou atteindre la vitesse kmh) */
   function timeFor(S, kind) { return kind === "100" ? S.t100 : kind === "200" ? S.t200 : kind === "400" ? S.t400 : S.t1000; }
 
-  return { simulate, at, timeFor, firstYear, isTurbo, build, run, make, KMH };
+  return { SURF, terrainFit, simulate, at, timeFor, firstYear, isTurbo, build, run, make, KMH };
 });

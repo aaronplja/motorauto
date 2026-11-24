@@ -171,7 +171,7 @@
   // ----- Jouer : trois onglets (Cartes / Mini-jeux / Communauté) et, dessous, les sous-onglets du groupe ; la même barre est posée sur chaque sous-page
   const PLAY_SUBS = {
     cartes: [],
-    minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame" && !r.params.mode], ["Devine", "#/quiz/devine", (r) => r.name === "quizgame" && r.params.mode === "devine", "", "Devine la voiture"], ["Vrai ou faux", "#/quiz/vraifaux", (r) => r.name === "quizgame" && r.params.mode === "vraifaux"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Frise", "#/frise", (r) => r.name === "timeline"], ["Bataille", "#/jouer/minijeux", () => false, "data-battle-tile"]],
+    minijeux: [["Quiz", "#/quiz", (r) => r.name === "quizgame" && !r.params.mode], ["Devine", "#/quiz/devine", (r) => r.name === "quizgame" && r.params.mode === "devine"], ["Vrai ou faux", "#/quiz/vraifaux", (r) => r.name === "quizgame" && r.params.mode === "vraifaux"], ["Plus ou moins", "#/plusmoins", (r) => r.name === "plusmoins"], ["Duel", "#/duel", (r) => r.name === "duel"], ["Frise", "#/frise", (r) => r.name === "timeline"], ["Bataille", "#/jouer/minijeux", () => false, "data-battle-tile"]],
     troc: [],
     communaute: [["Défis", "#/jouer/defis", (r) => r.name === "play" && (r.params.tab === "defis" || r.params.tab === "concours")], ["Succès", "#/succes", (r) => r.name === "achievements"]]
   };
@@ -201,7 +201,7 @@
     if (t === "apercu" || (g === "espace" && (!logged || route.name !== "garage" && route.name !== "settings"))) { nav.innerHTML = ""; nav.style.display = "none"; return; }
     nav.style.display = "";
     const back = g === "espace" ? `<a class="play-back" href="#/pilotes" aria-label="Mon profil"><span aria-hidden="true">‹</span> <span class="pb-l">Mon profil</span></a>` : `<a class="play-back" href="#/communaute" aria-label="Communauté"><span aria-hidden="true">‹</span> <span class="pb-l">Communauté</span></a>`;
-    nav.innerHTML = back + (subs.length ? `<div class="page-tabs fit play-subtabs" role="tablist" aria-label="${g === "espace" ? "Mon espace" : g === "classement" ? "Classement" : "Communauté"}" style="--n:${subs.length}">${subs.map((x) => { const on = !!x[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${x[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}><span class="tl" data-s="${x[4] || x[0]}">${x[0]}</span></a>`; }).join("")}</div>` : "");
+    nav.innerHTML = back + (subs.length ? `<div class="page-tabs fit play-subtabs${subs.length > 5 ? " many" : ""}" role="tablist" aria-label="${g === "espace" ? "Mon espace" : g === "classement" ? "Classement" : "Communauté"}" style="--n:${subs.length}">${subs.map((x) => { const on = !!x[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${x[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}><span class="tl" data-s="${x[4] || x[0]}">${x[0]}</span></a>`; }).join("")}</div>` : "");
   }
 
   function groupBar(nav, route, label, groups, subs, g, landing, hrefOf, backTo) {
@@ -210,9 +210,9 @@
     // dans une sous-page : plus de barre des univers, seulement un lien de retour et les sous-onglets
     const inner = !!backTo && !landing, gl = (groups.find((x) => x[0] === g) || [g, g])[1];
     nav.innerHTML = inner ? `<a class="play-back" href="${hrefOf(g)}" aria-label="${gl}"><span aria-hidden="true">‹</span> <span class="pb-l">${gl}</span></a>
-      <div class="page-tabs fit play-subtabs" role="tablist" aria-label="${gl}" style="--n:${subs[g].length}">${subs[g].map((s) => { const on = !!s[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}><span class="tl" data-s="${s[4] || s[0]}">${s[0]}</span></a>`; }).join("")}</div>` :
+      <div class="page-tabs fit play-subtabs${subs[g].length > 5 ? " many" : ""}" role="tablist" aria-label="${gl}" style="--n:${subs[g].length}">${subs[g].map((s) => { const on = !!s[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}><span class="tl" data-s="${s[4] || s[0]}">${s[0]}</span></a>`; }).join("")}</div>` :
       `<div class="page-tabs fit" role="tablist" aria-label="${label}" style="--n:${groups.length}">${groups.map(([k, l]) => `<a role="tab" class="page-tab${k === g ? " active" : ""}" href="${hrefOf(k)}" aria-selected="${k === g}"${k === g ? ' aria-current="page"' : ""}><span class="tl" data-s="${l}">${l}</span></a>`).join("")}</div>
-      ${landing || !subs[g].length ? "" : `<div class="page-tabs fit play-subtabs" role="tablist" aria-label="${groups.find((x) => x[0] === g)[1]}" style="--n:${subs[g].length}">${subs[g].map((s) => { const on = !!s[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}><span class="tl" data-s="${s[4] || s[0]}">${s[0]}</span></a>`; }).join("")}</div>`}`;
+      ${landing || !subs[g].length ? "" : `<div class="page-tabs fit play-subtabs${subs[g].length > 5 ? " many" : ""}" role="tablist" aria-label="${groups.find((x) => x[0] === g)[1]}" style="--n:${subs[g].length}">${subs[g].map((s) => { const on = !!s[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}><span class="tl" data-s="${s[4] || s[0]}">${s[0]}</span></a>`; }).join("")}</div>`}`;
   }
   /** Jouer : l'entrée (#/jouer) n'a pas de barre, seulement des tuiles. Les pages dessous ont un lien de retour et, au besoin, de petits sous-onglets. */
   function renderPlayBar(nav, route) {
@@ -232,7 +232,7 @@
       else { back = ["Défis", "#/jouer/defis"]; subs = PLAY_SUBS.communaute; }
     }
     nav.innerHTML = `<a class="play-back" href="${back[1]}" aria-label="${back[0]}"><span aria-hidden="true">‹</span> <span class="pb-l">${back[0]}</span></a>` +
-      (subs.length ? `<div class="page-tabs fit play-subtabs" role="tablist" aria-label="${back[0]}" style="--n:${subs.length}">${subs.map((s) => { const on = !!s[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}><span class="tl" data-s="${s[4] || s[0]}">${s[0]}</span></a>`; }).join("")}</div>` : "");
+      (subs.length ? `<div class="page-tabs fit play-subtabs${subs.length > 5 ? " many" : ""}" role="tablist" aria-label="${back[0]}" style="--n:${subs.length}">${subs.map((s) => { const on = !!s[2](route); return `<a role="tab" class="page-tab${on ? " active" : ""}" href="${s[1]}" aria-selected="${on}"${on ? ' aria-current="page"' : ""}${s[3] ? " " + s[3] : ""}><span class="tl" data-s="${s[4] || s[0]}">${s[0]}</span></a>`; }).join("")}</div>` : "");
   }
   function renderSectionTabs(pageEl, route) {
     if (!pageEl) return;

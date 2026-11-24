@@ -88,9 +88,9 @@
     root.innerHTML = `<div class="duel-pickers">${slot(ca, "a")}<span class="duel-vs">VS</span>${slot(cb, "b")}</div>
       <div class="duel-tools"><button type="button" class="btn-ghost compact-btn" id="duel-swap">⇄ Inverser</button><button type="button" class="btn-ghost compact-btn" id="duel-rand">🎲 Au hasard</button></div>
       <div class="duel-opts"><div class="seg-switch" role="group" aria-label="Épreuve">${chips("mode", Object.entries(MODES).map(([k, v]) => [k, v[0]]), st.mode)}</div>
-        <div class="seg-switch" role="group" aria-label="Sol">${chips("surface", [["dry", "☀️ Sec"], ["wet", "🌧️ Mouillé"]], st.surface)}</div>
+        <div class="seg-switch" role="group" aria-label="Sol">${chips("surface", [["dry", "Asphalte sec"], ["wet", "Asphalte mouillé"], ["dirt", "Terre"], ["snow", "Neige"]], st.surface)}</div>
         <div class="seg-switch" role="group" aria-label="Pilote">${chips("driver", [["amateur", "Amateur"], ["normal", "Normal"], ["pro", "Pro"]], st.driver)}</div></div>
-      <div class="duel-track" id="duel-track" aria-label="Piste de course">${lane(ca, 0)}${lane(cb, 1)}</div>
+      <div class="duel-track" id="duel-track" data-surface="${st.surface}" aria-label="Piste de course">${lane(ca, 0)}${lane(cb, 1)}</div>
       <div class="duel-hud"><div id="dh0"><b>0</b><small>km/h</small><span class="duel-gear" id="dg0">N</span><i class="duel-rpm"><u id="dr0"></u></i></div><div class="duel-clock" id="duel-clock">0,00 s</div><div id="dh1"><b>0</b><small>km/h</small><span class="duel-gear" id="dg1">N</span><i class="duel-rpm"><u id="dr1"></u></i></div></div>
       <div class="duel-actions"><button type="button" class="cta-btn fill-btn" id="duel-go">🏁 Lancer la course</button><button type="button" class="cta-btn btn-ghost" id="duel-share" hidden>Partager le résultat</button></div>
       <div id="duel-result" class="duel-result" aria-live="polite"></div>
@@ -132,7 +132,15 @@
       if (P.muBoost > 1.05 || (d === "F" && sp[i].hp / sp[i].kg > 0.18)) out.push(`<b>${C.esc(nm[i])}</b> ${d === "F" ? "(traction)" : d === "R" ? "(propulsion)" : ""} est limitée par l'adhérence au départ : une partie de la puissance se perd en patinage.`);
       if (st.surface === "wet" && d === "R" && sp[i].hp / sp[i].kg > 0.12) out.push(`Sol mouillé : la propulsion <b>${C.esc(nm[i])}</b> patine beaucoup et perd plusieurs secondes.`);
       else if (st.surface === "wet" && d === "A") out.push(`Sol mouillé : le 4×4 <b>${C.esc(nm[i])}</b> garde le meilleur appui.`);
+      if (st.surface === "dirt" || st.surface === "snow") {
+        const lib = st.surface === "dirt" ? "Sur terre" : "Sur la neige";
+        if (P.fit) out.push(`${lib} : <b>${C.esc(nm[i])}</b> est faite pour ça (rallye, 4×4 ou tout-terrain) : elle garde de l'adhérence et sa suspension encaisse.`);
+        else if (P.poorFit) out.push(`${lib} : <b>${C.esc(nm[i])}</b> est trop basse et chaussée pour la route ou la piste : elle perd énormément d'adhérence.`);
+        else if (d === "R" && sp[i].hp / sp[i].kg > 0.1) out.push(`${lib} : la propulsion <b>${C.esc(nm[i])}</b> patine, la puissance ne passe pas au sol.`);
+        else if (d === "A") out.push(`${lib} : la transmission intégrale de <b>${C.esc(nm[i])}</b> répartit la puissance sur les quatre roues.`);
+      }
     });
+    if (st.surface === "dirt" || st.surface === "snow") out.push(`Sur ${st.surface === "dirt" ? "terre" : "neige"}, la vitesse est limitée (≈ ${nf(Math.min(SA.vmax, SB.vmax), 0)} km/h pour la plus lente) et la résistance au roulement fait perdre de l'énergie.`);
     if (SA.gears !== SB.gears || SA.shiftKind !== SB.shiftKind) { const f = SA.P.shift < SB.P.shift ? 0 : 1; if (Math.abs(SA.P.shift - SB.P.shift) > 0.08) out.push(`Boîte : <b>${C.esc(nm[f])}</b> passe ses rapports plus vite (${S[f].shiftKind}, ≈ ${nf(S[f].P.shift * 1000, 0)} ms) : moins de temps sans accélérer.`); }
     const pw = [sp[0].kg / sp[0].hp, sp[1].kg / sp[1].hp];
     if (Math.abs(pw[0] - pw[1]) / Math.max(pw[0], pw[1]) > 0.1) { const f = pw[0] < pw[1] ? 0 : 1; out.push(`Rapport poids / puissance : avantage <b>${C.esc(nm[f])}</b> (${nf(pw[f], 1)} contre ${nf(pw[1 - f], 1)} kg/ch).`); }

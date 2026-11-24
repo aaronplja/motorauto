@@ -276,7 +276,7 @@
       if (h) h.textContent = T(qz.mode === "devine" ? "Devine la voiture" : qz.mode === "vf" ? "Vrai ou faux" : "Quiz");
       if (sub) sub.textContent = T(qz.mode === "devine" ? "Une voiture mystère par jour : six essais, un indice de plus après chaque erreur." : qz.mode === "vf" ? "Dix affirmations : vraies ou fausses ?" : "Marques, histoire, moteurs, sport auto : choisis ta catégorie et ton niveau.");
     }
-    dv.s = null; dv.err = ""; dv.msg = ""; dv.pool = null;
+    dv.s = null; dv.err = ""; dv.msg = ""; dv.pool = null; dv.brand = "";
     qz.err = ""; qz.rows = null; qz.cRows = null; if (ch.timer) { clearInterval(ch.timer); ch.timer = 0; } if (qz.state !== "play") qz.state = "menu";
     const g = await myStats(); qz.best = g && g.quizBest ? g.quizBest : {}; qz.cBest = g && g.chronoBest ? g.chronoBest : {};
     qzRender();
@@ -285,7 +285,7 @@
   // ====================================================================== DEVINE LA VOITURE
   /** une voiture mystère par jour, la même pour tous : 6 essais, un indice de plus après chaque erreur, plus de cristaux si on trouve avec peu d'indices.
    *  La partie est tenue par le serveur (quizSubmit, op « devine » / « devineGuess ») : la voiture n'est révélée qu'à la fin. */
-  let dv = { s: null, busy: false, err: "", msg: "", pool: null };
+  let dv = { s: null, busy: false, err: "", msg: "", pool: null, brand: "" };
   const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const HINT = { country: "Pays d'origine", category: "Catégorie", decade: "Décennie", power: "Puissance", speed: "Vitesse maximale", zero: "0 à 100 km/h", letters: "Lettres dans le nom", initial: "Initiale de la marque", brand: "Marque" };
   const hintVal = (h) => (h.k === "decade" ? T("années") + " " + h.v : h.k === "power" ? h.v + " " + (lang() === "fr" ? "ch" : "hp") : h.k === "speed" ? h.v + " km/h" : h.k === "zero" ? h.v + " s" : h.k === "country" || h.k === "category" ? T(h.v) : h.v);
@@ -309,7 +309,10 @@
       ${s.won ? `<p class="lap-meta">+${dust(s.reward, 13)}${s.streak > 1 ? " · " + T("Série") + " " + s.streak + " " + T("jours") : ""}</p>` : ""}
       <p class="lap-meta">${T("Reviens demain pour une nouvelle voiture.")}</p>
       <button type="button" class="cta-btn btn-ghost" data-dv-share>${T("Copier mon résultat")}</button></div>`;
-    const form = s.done ? "" : `<form class="dv-form" data-dv-form autocomplete="off"><input class="dv-in" type="text" name="q" placeholder="${T("Marque, modèle…")}" aria-label="${T("Proposer une voiture")}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" ${dv.busy ? "disabled" : ""}><ul class="dv-sugg" id="dv-sugg" role="listbox"></ul></form>${dv.msg ? `<p class="dv-msg" role="alert">${C.esc(dv.msg)}</p>` : ""}`;
+    const lockFam = dvLocked(), brandVal = lockFam || dv.brand || "";
+    const form = s.done ? "" : `<form class="dv-form" data-dv-form autocomplete="off">
+      <div class="dv-field${lockFam ? " locked" : ""}"><label for="dv-brand">${T("Marque")}${lockFam ? ` <em>${T("trouvée")}</em>` : ""}</label><input class="dv-in dv-brand" id="dv-brand" type="text" value="${C.esc(brandVal)}" placeholder="${T("Marque")}" autocomplete="off" autocapitalize="off" spellcheck="false" ${lockFam || dv.busy ? "disabled" : ""}><ul class="dv-sugg" id="dv-sugg-b" role="listbox"></ul></div>
+      <div class="dv-field"><label for="dv-model">${T("Modèle")}</label><input class="dv-in dv-model" id="dv-model" type="text" name="q" placeholder="${brandVal ? T("Modèle") : T("Choisis d'abord la marque")}" aria-label="${T("Proposer une voiture")}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" ${brandVal && !dv.busy ? "" : "disabled"}><ul class="dv-sugg" id="dv-sugg" role="listbox"></ul></div></form>${dv.msg ? `<p class="dv-msg" role="alert">${C.esc(dv.msg)}</p>` : ""}`;
     root.innerHTML = `${tabs}<section class="mg-card dv-card">
       <div class="qz-head"><span>${T("Voiture mystère du jour")}</span><b>${s.done ? (s.won ? s.n : "×") : s.n + 1} / ${s.max}</b></div>
       ${s.streak > 0 && !s.done ? `<p class="dv-streak">${T("Série")} : ${s.streak} ${T("jours")}</p>` : ""}
@@ -318,20 +321,49 @@
       ${end}${form}
       ${s.tries.length ? `<ol class="dv-tries">${s.tries.map(tr).join("")}</ol>` : ""}
       ${rw}<p class="lap-meta">${T("Une voiture par jour, la même pour tous. Chaque erreur donne un indice de plus : moins tu en utilises, plus tu gagnes de cristaux.")}</p></section>`;
-    const inp = root.querySelector(".dv-in"); if (inp && !s.done && !dv.busy && window.matchMedia && !window.matchMedia("(pointer: coarse)").matches) { try { inp.focus({ preventScroll: true }); } catch (_) { /* ignoré */ } }
+    const inp = root.querySelector(lockFam ? ".dv-model" : ".dv-brand"); if (inp && !s.done && !dv.busy && window.matchMedia && !window.matchMedia("(pointer: coarse)").matches) { try { inp.focus({ preventScroll: true }); } catch (_) { /* ignoré */ } }
   }
   const fmtN = (str, a) => String(str).replace(/\{(\d)\}/g, (m, i) => (a && a[i] !== undefined ? a[i] : m));
+  /** voitures proposables : nom, marque (famille) et modèle */
+  function dvPool() {
+    if (!dv.pool) dv.pool = quizPool().filter((c) => String(c.id).indexOf("~") < 0).map((c) => {
+      const fam = G.familyOf(c.brand) || c.brand, nm = c.name, model = norm(nm).indexOf(norm(c.brand)) === 0 ? nm.slice(c.brand.length).trim() : nm;
+      return { id: c.id, name: nm, fam, model: model || nm, nf: norm(fam), n: norm(model || nm) };
+    });
+    return dv.pool;
+  }
+  /** marque déjà trouvée (une proposition de la bonne marque, ou l'indice « marque » du dernier essai) : elle ne peut plus changer */
+  function dvLocked() {
+    const s = dv.s; if (!s) return "";
+    const good = (s.tries || []).find((t) => t.brand || t.ok);
+    if (good) { const c = car(good.id); if (c) return G.familyOf(c.brand) || c.brand; }
+    const h = (s.hints || []).find((x) => x.k === "brand"); if (h) return G.familyOf(h.v) || h.v;
+    return "";
+  }
+  function dvBrands() { const m = new Map(); dvPool().forEach((c) => { if (!m.has(c.fam)) m.set(c.fam, c.nf); }); return Array.from(m, ([fam, nf]) => ({ fam, nf })).sort((x, y) => x.fam.localeCompare(y.fam, "fr")); }
+  function dvSuggBrand(v) {
+    const ul = document.getElementById("dv-sugg-b"); if (!ul) return;
+    const q = norm(v).trim(); if (!q) { ul.innerHTML = ""; return; }
+    const res = dvBrands().filter((b) => b.nf.indexOf(q) >= 0).sort((x, y) => (x.nf.indexOf(q) === 0 ? 0 : 1) - (y.nf.indexOf(q) === 0 ? 0 : 1)).slice(0, 8);
+    ul.innerHTML = res.length ? res.map((b) => `<li role="option"><button type="button" class="dv-opt" data-dv-brand="${C.esc(b.fam)}">${C.esc(b.fam)}</button></li>`).join("") : `<li class="dv-none">${T("Aucune marque trouvée.")}</li>`;
+  }
+  function dvSetBrand(fam) {
+    dv.brand = fam;
+    const bi = document.getElementById("dv-brand"), mi = document.getElementById("dv-model"), ul = document.getElementById("dv-sugg-b");
+    if (ul) ul.innerHTML = ""; if (bi) bi.value = fam;
+    if (mi) { mi.disabled = false; mi.placeholder = T("Modèle"); mi.value = ""; mi.focus(); }
+    dvSugg("");
+  }
   function dvSugg(v) {
     const ul = document.getElementById("dv-sugg"); if (!ul) return;
-    const q = norm(v).trim(); if (q.length < 2) { ul.innerHTML = ""; return; }
-    if (!dv.pool) dv.pool = quizPool().filter((c) => String(c.id).indexOf("~") < 0).map((c) => ({ id: c.id, name: c.name, n: norm(c.name) }));
-    const tried = new Set(((dv.s && dv.s.tries) || []).map((t) => t.id)), words = q.split(/\s+/), res = [];
-    for (const c of dv.pool) { if (tried.has(c.id)) continue; if (words.every((w) => c.n.indexOf(w) >= 0)) { res.push(c); if (res.length >= 8) break; } }
-    ul.innerHTML = res.length ? res.map((c) => `<li role="option"><button type="button" class="dv-opt" data-dv-pick="${C.esc(c.id)}">${C.esc(c.name)}</button></li>`).join("") : `<li class="dv-none">${T("Aucune voiture trouvée.")}</li>`;
+    const fam = dvLocked() || dv.brand; if (!fam) { ul.innerHTML = ""; return; }
+    const words = norm(v).trim().split(/\s+/).filter(Boolean), tried = new Set(((dv.s && dv.s.tries) || []).map((t) => t.id)), res = [];
+    for (const c of dvPool()) { if (c.fam !== fam || tried.has(c.id)) continue; if (words.every((w) => c.n.indexOf(w) >= 0)) { res.push(c); if (res.length >= 12) break; } }
+    ul.innerHTML = res.length ? res.map((c) => `<li role="option"><button type="button" class="dv-opt" data-dv-pick="${C.esc(c.id)}">${C.esc(c.model)}</button></li>`).join("") : `<li class="dv-none">${T("Aucune voiture trouvée.")}</li>`;
   }
   async function dvGuess(id) {
     if (dv.busy || !dv.s || dv.s.done) return;
-    dv.busy = true; dv.msg = ""; qzRender();
+    dv.busy = true; dv.msg = ""; dv.brand = ""; qzRender();
     try {
       const r = await window.MAGameAPI.call("quizSubmit", { op: "devineGuess", guess: id });
       dv.s = r;
@@ -404,6 +436,7 @@
       if ((b = t.closest("[data-pm-start]"))) { pmStart(); return; }
       if ((b = t.closest("[data-pm-pick]"))) { pmPick(b.dataset.pmPick); return; }
       if ((b = t.closest("[data-dv-pick]"))) { dvGuess(b.dataset.dvPick); return; }
+      if ((b = t.closest("[data-dv-brand]"))) { dvSetBrand(b.dataset.dvBrand); return; }
       if (t.closest("[data-dv-retry]")) { dv.err = ""; dv.s = null; qzRender(); return; }
       if (t.closest("[data-dv-share]")) { dvShare(); return; }
       if ((b = t.closest("[data-qz-start]"))) { qzBegin(b.dataset.qzStart, Number(b.dataset.level) || 1); return; }
@@ -424,8 +457,12 @@
       else if ((b = t.closest("[data-ac-t]"))) { ac.tier = b.dataset.acT; acRender(); }
       else if ((b = t.closest("[data-ac-open]"))) { if (C.user) acSheet(b.dataset.acOpen); }
     });
-    document.addEventListener("input", (e) => { const t = e.target; if (t && t.classList && t.classList.contains("dv-in")) dvSugg(t.value); });
-    document.addEventListener("submit", (e) => { const f = e.target; if (f && f.matches && f.matches("[data-dv-form]")) { e.preventDefault(); const first = f.querySelector(".dv-opt"); if (first) dvGuess(first.dataset.dvPick); } });
-    document.addEventListener("ma:auth", () => { dv = { s: null, busy: false, err: "", msg: "", pool: null }; pm.state = "idle"; pm.rows = null; qz.state = "menu"; qz.rows = null; const n = ctx.Router.current() && ctx.Router.current().name; if (n === "plusmoins") pmEnter(); else if (n === "quizgame") qzEnter(); else if (n === "achievements") acEnter(); });
+    document.addEventListener("input", (e) => {
+      const t = e.target; if (!t || !t.classList) return;
+      if (t.classList.contains("dv-brand")) { dv.brand = ""; const mi = document.getElementById("dv-model"); if (mi) { mi.disabled = true; mi.value = ""; mi.placeholder = T("Choisis d'abord la marque"); } const u = document.getElementById("dv-sugg"); if (u) u.innerHTML = ""; dvSuggBrand(t.value); }
+      else if (t.classList.contains("dv-model")) dvSugg(t.value);
+    });
+    document.addEventListener("submit", (e) => { const f = e.target; if (f && f.matches && f.matches("[data-dv-form]")) { e.preventDefault(); const m = f.querySelector("#dv-sugg .dv-opt"), br = f.querySelector("#dv-sugg-b .dv-opt"); if (m) dvGuess(m.dataset.dvPick); else if (br) dvSetBrand(br.dataset.dvBrand); } });
+    document.addEventListener("ma:auth", () => { dv = { s: null, busy: false, err: "", msg: "", pool: null, brand: "" }; pm.state = "idle"; pm.rows = null; qz.state = "menu"; qz.rows = null; const n = ctx.Router.current() && ctx.Router.current().name; if (n === "plusmoins") pmEnter(); else if (n === "quizgame") qzEnter(); else if (n === "achievements") acEnter(); });
   });
 })();

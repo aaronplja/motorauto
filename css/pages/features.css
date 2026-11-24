@@ -186,3 +186,7 @@
 .scl-pill { flex: none; padding: .25rem .8rem; border-radius: 999px; font-size: .75rem; font-weight: 800; background: var(--bg-elevated); border: 1px solid var(--stroke-line); text-transform: uppercase; letter-spacing: .08em; }
 .scl-txt { flex: 1 1 180px; min-width: 0; display: grid; }
 .scl-txt small { color: var(--color-muted); font-size: .78rem; }
+/* duel : l'aspect de la piste suit le terrain choisi */
+.duel-track[data-surface="wet"] { background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(180,210,255,.18) calc(10% - 2px) 10%), linear-gradient(180deg, #1c2a3a, #263a52); }
+.duel-track[data-surface="dirt"] { background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(255,255,255,.14) calc(10% - 2px) 10%), radial-gradient(rgba(0,0,0,.18) 1px, transparent 1.5px) 0 0/9px 9px, linear-gradient(180deg, #5b3a1e, #7a5230); }
+.duel-track[data-surface="snow"] { background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(40,60,90,.2) calc(10% - 2px) 10%), linear-gradient(180deg, #aebfcf, #cfdae5); }
