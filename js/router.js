@@ -228,7 +228,7 @@
       const g = playGroup(route);
       if (g === "cartes") back = ["Cartes", "#/jouer/cartes"];
       else if (g === "troc") back = ["Échanges", "#/jouer/echanges"];
-      else if (g === "minijeux") { back = ["Jeux", "#/jouer/minijeux"]; subs = PLAY_SUBS.minijeux; }
+      else if (g === "minijeux") { back = ["Jeux", "#/jouer/minijeux"]; subs = []; }
       else { back = ["Défis", "#/jouer/defis"]; subs = PLAY_SUBS.communaute; }
     }
     nav.innerHTML = `<a class="play-back" href="${back[1]}" aria-label="${back[0]}"><span aria-hidden="true">‹</span> <span class="pb-l">${back[0]}</span></a>` +
